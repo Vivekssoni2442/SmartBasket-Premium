@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Basket Products</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- AI Camera Shopping Assistant (additive only, does not affect existing styles) -->
+    <link rel="stylesheet" href="{{ asset('css/ai-camera.css') }}">
+   <style>
+body{
+    background:#020617;
+    color:#fff;
+    min-height:100vh;
+}
+
+.product-card{
+    background:#111827;
+    border:1px solid #334155;
+    border-radius:1.2rem;
+    overflow:hidden;
+    transition:.3s;
+    box-shadow:0 10px 30px rgba(0,0,0,.35);
+}
+
+.product-card:hover{
+    transform:translateY(-5px);
+    box-shadow:0 15px 35px rgba(59,130,246,.25);
+}
+
+.product-img{
+    height:220px;
+    object-fit:cover;
+    width:100%;
+}
+
+.pill{
+    font-size:.8rem;
+}
+
+.action-btn{
+    border-radius:999px;
+    font-weight:600;
+}
+
+form{
+    background:#111827 !important;
+}
+
+.form-control,
+.form-select{
+    background:#1e293b;
+    color:#fff;
+    border:1px solid #334155;
+}
+
+.form-control:focus,
+.form-select:focus{
+    background:#1e293b;
+    color:#fff;
+    border-color:#3b82f6;
+    box-shadow:none;
+}
+
+.card-title,
+h1,
+h5,
+label{
+    color:#fff;
+}
+
+.text-muted{
+    color:#cbd5e1 !important;
+}
+</style>
+</head>
+<body>
+    <div class="d-flex justify-content-end mb-4 gap-2 flex-wrap">
+        <a href="{{ route('profile') }}" class="btn btn-outline-light rounded-pill px-4">
+            <i class="fa fa-user"></i> Profile
+        </a>
+        <a href="{{route('cart.index')}}" class="btn btn-dark rounded-pill px-4">
+            <i class="fa fa-shopping-cart"></i> Cart
+        </a>
+    </div>
+    <div class="container py-5">
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+            <div>
+                <p class="text-primary fw-semibold mb-2">Smart Basket</p>
+                <h1 class="display-6 fw-bold mb-0">Featured Products</h1>
+                <p class="text-muted mb-0">Fresh items added by the seller, ready for customers.</p>
+            </div>
+            <div class="text-muted fw-semibold">{{ $pagedProducts->total() }} Products</div>
+        </div>
+
+        <form method="GET" action="{{ route('products.index') }}" class="row g-3 rounded-4 p-3 shadow-sm mb-4">
+            <div class="col-12 col-md-6">
+                <label class="form-label small text-muted">Search</label>
+                <input type="text" name="search" class="form-control" value="{{ $search }}" placeholder="Search products or category">
+            </div>
+            <div class="col-12 col-md-4">
+                <label class="form-label small text-muted">Category</label>
+                <select name="category" class="form-select">
+                    <option value="">All Categories</option>
+                    @foreach($categories as $categoryOption)
+                        <option value="{{ $categoryOption }}" {{ $category === $categoryOption ? 'selected' : '' }}>{{ $categoryOption }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-12 col-md-2 d-flex align-items-end">
+                <button class="btn btn-primary w-100 action-btn">Apply</button>
+            </div>
+        </form>
+
+        @php
+            $recentlyViewed = []; 
+            if (auth()->check()) {
+                $recentlyViewed = \App\Models\RecentlyViewedProduct::with('product')
+                    ->where('user_id', auth()->id())
+                    ->latest()
+                    ->limit(4)
+                    ->get();
+            }
+        @endphp
+
+        @if(auth()->check() && $recentlyViewed->isNotEmpty())
+            <div class="mb-4">
+                <h5 class="fw-semibold mb-3">Recently viewed</h5>
+                <div class="row g-3">
+                    @foreach($recentlyViewed as $view)
+                        @if($view->product)
+                            <div class="col-12 col-sm-6 col-lg-3">
+                                <div class="card border-0 shadow-sm rounded-4">
+                                    <div class="card-body">
+                                        <h6 class="fw-semibold mb-1">{{ $view->product->name }}</h6>
+                                        <p class="text-muted small mb-2">{{ $view->product->category }}</p>
+                                        <a href="{{ route('products.show', $view->product->id) }}" class="btn btn-outline-light btn-sm">View</a>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
+        @if($pagedProducts->count() > 0)
+            <div class="row g-4">
+                @foreach($pagedProducts as $product)
+                    <div class="col-12 col-sm-6 col-lg-3">
+                        <div class="card product-card h-100">
+                            <img src="{{ asset('products/' . $product->image) }}" class="product-img" alt="{{ $product->name }}">
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                                    <div>
+                                        <h5 class="card-title mb-1">{{ $product->name }}</h5>
+                                        <p class="text-muted mb-0 small">{{ $product->category }}</p>
+                                    </div>
+                                    <span class="badge bg-primary-subtle text-primary pill">In Stock</span>
+                                </div>
+
+                                <div class="d-flex align-items-center text-warning mb-2">
+                                    <i class="fa-solid fa-star"></i>
+                                    <span class="ms-2 fw-semibold">{{ number_format($product->rating, 1) }}</span>
+                                    <span class="text-muted ms-2">• {{ $product->stock }} left</span>
+                                </div>
+
+                                <p class="text-muted small flex-grow-1">{{ $product->description ? \Illuminate\Support\Str::limit($product->description, 90) : 'Premium quality product from Smart Basket.' }}</p>
+
+                                <div class="mt-3">
+
+    <!-- Price Top -->
+    <div class="fw-bold fs-5 text-white mb-3">
+        ₹{{ number_format($product->price, 2) }}
+    </div>
+
+    <!-- Buttons Bottom -->
+    <div class="d-flex gap-2">
+
+        <a href="{{ route('products.show', $product->id) }}" class="btn btn-outline-dark btn-sm action-btn flex-fill">
+            View
+        </a>
+
+        <a href="{{ url('/buy-now/' . $product->id) }}" 
+           class="btn btn-outline-light btn-sm action-btn flex-fill">
+            Buy Now
+        </a>
+
+        <form action="{{ route('cart.add', $product->id) }}" method="POST" class="flex-fill">
+            @csrf
+            <button type="submit" class="btn btn-primary btn-sm action-btn w-100">
+                Add to Cart
+            </button>
+        </form>
+
+    </div>
+
+</div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+
+            <div class="d-flex justify-content-center mt-5">
+                {{ $pagedProducts->appends(request()->query())->links('pagination::bootstrap-5') }}
+            </div>
+        @else
+            <div class="alert alert-light border text-center py-5 rounded-4">
+                <h4 class="fw-semibold mb-2">No products found</h4>
+                <p class="text-muted mb-0">Try adjusting your search or category filter.</p>
+            </div>
+        @endif
+    </div>
+
+<!-- ========================================================================== -->
+<!-- AI Camera Shopping Assistant Modal (new, isolated — no existing code moved) -->
+<!-- ========================================================================== -->
+<div class="modal fade" id="aiCameraModal" tabindex="-1" aria-labelledby="aiCameraModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="aiCameraModalLabel">
+                    <i class="fa-solid fa-camera-retro me-2"></i>AI Camera Shopping Assistant
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <!-- Privacy note -->
+                <div class="ai-privacy-note mb-3">
+                    <i class="fa-solid fa-shield-halved me-1"></i>
+                    <strong>Privacy First:</strong> All AI processing happens locally in your browser.
+                    No camera images are uploaded or stored. Only anonymous body-proportion numbers are sent for recommendations.
+                </div>
+
+                <div class="row g-3">
+                    <!-- Camera stage -->
+                    <div class="col-lg-5">
+                        <div class="ai-camera-stage">
+                            <div class="ai-camera-placeholder" id="aiPlaceholder">
+                                <i class="fa-solid fa-video"></i>
+                                <div>Click <strong>AI Camera Assistant</strong> to start</div>
+                            </div>
+                            <video id="aiVideo" autoplay playsinline muted style="display:none;"></video>
+                            <canvas id="aiOverlay" class="ai-overlay"></canvas>
+                            <div class="ai-scan-line" id="aiScanLine"></div>
+                            <div class="ai-status-badge" id="aiStatusBadge"><span class="ai-pulse-dot"></span> Idle</div>
+                            <button class="ai-camera-flip" id="aiCameraFlip" title="Switch camera" type="button">
+                                <i class="fa-solid fa-camera-rotate"></i>
+                            </button>
+                            <!-- Instructions overlay -->
+                            <div class="ai-instructions" id="aiInstructions">
+                                <ul>
+                                    <li><i class="fa-solid fa-person-walking"></i> Stand 2-3 meters away from camera</li>
+                                    <li><i class="fa-solid fa-person"></i> Make sure your full body is visible</li>
+                                    <li><i class="fa-solid fa-mobile-screen"></i> Keep camera straight and steady</li>
+                                    <li><i class="fa-solid fa-lightbulb"></i> Ensure good lighting on your body</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Progress bar -->
+                        <div class="ai-progress-wrap" id="aiProgressWrap">
+                            <div class="ai-progress-bar">
+                                <div class="ai-progress-fill" id="aiProgressFill"></div>
+                            </div>
+                            <div class="ai-progress-label">
+                                <span id="aiProgressLabel">Scanning...</span>
+                                <span class="ai-progress-percent" id="aiProgressPercent">0%</span>
+                            </div>
+                        </div>
+
+                        <!-- Success burst -->
+                        <div class="ai-success-burst" id="aiSuccessBurst">
+                            <div class="ai-success-icon"><i class="fa-solid fa-check"></i></div>
+                            <div class="ai-success-text" id="aiSuccessText">Body analysis completed</div>
+                            <div class="ai-success-sub" id="aiSuccessSub">Generating recommendations...</div>
+                        </div>
+
+                        <!-- Preference chips -->
+                        <div class="mt-3">
+                            <small class="text-muted fw-semibold d-block mb-2">Optional preferences:</small>
+
+                            <div class="ai-pref-chips mb-2">
+                                <span class="ai-chip" data-group="fit" data-value="slim">Slim Fit</span>
+                                <span class="ai-chip" data-group="fit" data-value="regular">Regular</span>
+                                <span class="ai-chip" data-group="fit" data-value="relaxed">Relaxed</span>
+                                <span class="ai-chip" data-group="fit" data-value="oversized">Oversized</span>
+                            </div>
+
+                            <div class="ai-pref-chips mb-2">
+                                <span class="ai-chip" data-group="style" data-value="casual">Casual</span>
+                                <span class="ai-chip" data-group="style" data-value="formal">Formal</span>
+                                <span class="ai-chip" data-group="style" data-value="sporty">Sporty</span>
+                                <span class="ai-chip" data-group="style" data-value="ethnic">Ethnic</span>
+                                <span class="ai-chip" data-group="style" data-value="party">Party</span>
+                            </div>
+
+                            <div class="ai-pref-chips">
+                                <span class="ai-chip" data-group="color" data-value="light">Light</span>
+                                <span class="ai-chip" data-group="color" data-value="dark">Dark</span>
+                                <span class="ai-chip" data-group="color" data-value="warm">Warm</span>
+                                <span class="ai-chip" data-group="color" data-value="cool">Cool</span>
+                                <span class="ai-chip" data-group="color" data-value="neutral">Neutral</span>
+                            </div>
+                        </div>
+
+                        <button id="aiAnalyzeBtn" class="btn btn-primary w-100 mt-3 rounded-pill fw-bold">
+                            <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Re-analyze / Get Recommendations
+                        </button>
+                    </div>
+
+                    <!-- Results panel -->
+                    <div class="col-lg-7">
+                        <div id="aiResults">
+                            <div class="text-muted text-center py-5">
+                                <i class="fa-solid fa-camera-retro fs-2 d-block mb-2 text-primary"></i>
+                                <div class="fw-semibold">AI Camera Ready</div>
+                                <small>Allow camera access to start body analysis</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Floating AI Camera Button (premium FAB) -->
+<button id="btnAiCamera" class="ai-fab" type="button">
+    <i class="fa-solid fa-camera-retro"></i>
+    <span class="ai-fab-label">AI Camera Assistant</span>
+</button>
+
+<!-- CSRF token for AI API fetch call -->
+<meta name="ai-csrf-token" content="{{ csrf_token() }}">
+<script>window.aiCameraCsrfToken = "{{ csrf_token() }}";</script>
+
+<!-- Bootstrap JS (for modal) + AI Camera logic (additive only) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ asset('js/ai-camera.js') }}"></script>
+</body>
+</html>

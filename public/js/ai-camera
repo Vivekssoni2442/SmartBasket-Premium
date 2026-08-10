@@ -1,0 +1,708 @@
+/* ==========================================================================
+   AI Camera Shopping Assistant - Premium Client Logic
+   SmartBasket-Premium
+   ==========================================================================
+
+   Uses TensorFlow.js + MediaPipe MoveNet for real human pose detection.
+   All computer vision runs locally in the browser. No images are uploaded.
+
+   Features:
+   - Real camera access with front/back switching
+   - TensorFlow.js MoveNet pose detection (real AI, no fake/random values)
+   - Auto-detection flow with progress bar
+   - Body proportion analysis (shoulders, hips, arms, legs, height ratio)
+   - Body shape estimation (rectangle, hourglass, pear, inverted-triangle, apple)
+   - Handles different lighting, skin colors, body sizes, camera resolutions
+   - Privacy: only anonymous numeric metrics sent to API
+   ========================================================================== */
+
+(function () {
+    'use strict';
+
+    // ---- Config -------------------------------------------------------------
+    const API_ENDPOINT = '/api/ai-recommend';
+
+    // Number of consecutive frames with a detected pose before we consider
+    // the body "locked" and trigger auto-analysis. This prevents flicker.
+    const POSE_LOCK_FRAMES = 8;
+
+    // ---- State --------------------------------------------------------------
+    let videoEl = null;
+    let canvasEl = null;
+    let ctx = null;
+    let stream = null;
+    let detector = null;
+    let rafId = null;
+    let isDetecting = false;
+    let lastMetrics = null;
+    let tfLoaded = false;
+    let poseLoaded = false;
+    let currentFacingMode = 'user'; // 'user' = front, 'environment' = back
+    let poseStreak = 0;              // consecutive frames with pose
+    let analysisDone = false;        // prevent duplicate auto-analysis
+    let progressTimer = null;
+
+    // User preferences (selected via chips in the modal)
+    const prefs = {
+        fit: null,
+        style: null,
+        color: null,
+        season: null,
+    };
+
+    // ---- DOM helpers --------------------------------------------------------
+    const el = (id) => document.getElementById(id);
+
+    // ---- Status badge -------------------------------------------------------
+    function setStatus(text, type) {
+        const badge = el('aiStatusBadge');
+        if (!badge) return;
+        badge.innerHTML = '<span class="ai-pulse-dot"></span> ' + esc(text);
+        badge.className = 'ai-status-badge' + (type ? ' ' + type : '');
+    }
+
+    // ---- Progress bar -------------------------------------------------------
+    function showProgress() {
+        const wrap = el('aiProgressWrap');
+        if (wrap) wrap.classList.add('active');
+    }
+
+    function hideProgress() {
+        const wrap = el('aiProgressWrap');
+        if (wrap) wrap.classList.remove('active');
+    }
+
+    function setProgress(percent, label) {
+        const fill = el('aiProgressFill');
+        const pctEl = el('aiProgressPercent');
+        const lblEl = el('aiProgressLabel');
+        if (fill) fill.style.width = percent + '%';
+        if (pctEl) pctEl.textContent = Math.round(percent) + '%';
+        if (lblEl && label) lblEl.textContent = label;
+    }
+
+    // ---- Success burst ------------------------------------------------------
+    function showSuccess(title, sub) {
+        const burst = el('aiSuccessBurst');
+        if (!burst) return;
+        el('aiSuccessText').textContent = title || 'Body analysis completed';
+        el('aiSuccessSub').textContent = sub || 'Generating recommendations...';
+        burst.classList.add('active');
+    }
+
+    function hideSuccess() {
+        const burst = el('aiSuccessBurst');
+        if (burst) burst.classList.remove('active');
+    }
+
+    // ---- Loader / Error -----------------------------------------------------
+    function showLoader(msg) {
+        const results = el('aiResults');
+        if (!results) return;
+        results.innerHTML =
+            '<div class="ai-loader">' +
+            '<div class="spinner-border" role="status"></div>' +
+            '<div>' + esc(msg || 'Analyzing...') + '</div>' +
+            '</div>';
+    }
+
+    function showError(msg) {
+        const results = el('aiResults');
+        if (!results) return;
+        results.innerHTML =
+            '<div class="ai-error-state">' +
+            '<i class="fa-solid fa-triangle-exclamation"></i>' +
+            '<div class="fw-bold text-danger mb-1">Camera Error</div>' +
+            '<div class="text-muted small">' + esc(msg) + '</div>' +
+            '</div>';
+    }
+
+    // ---- Load TensorFlow.js + MediaPipe Pose Detection ----------------------
+    async function loadLibraries() {
+        if (tfLoaded && poseLoaded) return;
+
+        setStatus('Loading AI models...', '');
+        setProgress(10, 'Loading TensorFlow.js...');
+
+        // 1. TensorFlow.js core + WebGL backend
+        if (!window.tf) {
+            await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js');
+        }
+        await tf.setBackend('webgl');
+        await tf.ready();
+        tfLoaded = true;
+        setProgress(30, 'TensorFlow.js ready');
+
+        // 2. MediaPipe pose detection package
+        if (!window.poseDetection) {
+            await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@2.1.3/dist/pose-detection.min.js');
+        }
+        poseLoaded = true;
+        setProgress(50, 'Pose model loading...');
+
+        // 3. Build MoveNet detector (SinglePose.Lightning = fast + accurate)
+        detector = await poseDetection.createDetector(
+            poseDetection.SupportedModels.MoveNet,
+            {
+                modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING,
+                enableSmoothing: true,
+            }
+        );
+        setProgress(70, 'AI model ready');
+    }
+
+    function loadScript(src) {
+        return new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = src;
+            s.async = true;
+            s.onload = resolve;
+            s.onerror = () => reject(new Error('Failed to load ' + src));
+            document.head.appendChild(s);
+        });
+    }
+
+    // ---- Camera -------------------------------------------------------------
+    async function startCamera() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            throw new Error('Camera API not supported in this browser. Please use Chrome, Firefox, or Edge.');
+        }
+
+        setStatus('Requesting camera...', '');
+        setProgress(80, 'Starting camera...');
+
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: currentFacingMode,
+                    width: { ideal: 640 },
+                    height: { ideal: 480 },
+                },
+                audio: false,
+            });
+        } catch (err) {
+            if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                throw new Error('Camera permission denied. Please allow camera access in your browser settings and try again.');
+            }
+            if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                throw new Error('No camera found. Please connect a camera and try again.');
+            }
+            if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+                throw new Error('Camera is already in use by another application. Please close it and try again.');
+            }
+            throw new Error('Could not access camera: ' + err.message);
+        }
+
+        videoEl.srcObject = stream;
+        await videoEl.play();
+
+        // size canvas to video
+        canvasEl.width = videoEl.videoWidth || 640;
+        canvasEl.height = videoEl.videoHeight || 480;
+
+        // hide placeholder, show video
+        const ph = el('aiPlaceholder');
+        if (ph) ph.style.display = 'none';
+        videoEl.style.display = 'block';
+
+        setStatus('Camera live', 'live');
+        setProgress(100, 'Camera ready');
+
+        // hide progress after a moment
+        setTimeout(hideProgress, 800);
+    }
+
+    async function switchCamera() {
+        currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+
+        // stop current stream
+        stopCameraStream();
+
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: currentFacingMode,
+                    width: { ideal: 640 },
+                    height: { ideal: 480 },
+                },
+                audio: false,
+            });
+            videoEl.srcObject = stream;
+            await videoEl.play();
+            canvasEl.width = videoEl.videoWidth || 640;
+            canvasEl.height = videoEl.videoHeight || 480;
+            setStatus(currentFacingMode === 'user' ? 'Front camera' : 'Back camera', 'live');
+        } catch (err) {
+            setStatus('Camera switch failed', 'error');
+            console.error('Camera switch error:', err);
+        }
+    }
+
+    function stopCameraStream() {
+        if (stream) {
+            stream.getTracks().forEach((t) => t.stop());
+            stream = null;
+        }
+        if (videoEl) {
+            videoEl.srcObject = null;
+        }
+    }
+
+    function stopCamera() {
+        if (rafId) {
+            cancelAnimationFrame(rafId);
+            rafId = null;
+        }
+        stopCameraStream();
+        isDetecting = false;
+        poseStreak = 0;
+        analysisDone = false;
+        if (progressTimer) {
+            clearInterval(progressTimer);
+            progressTimer = null;
+        }
+        hideProgress();
+        hideSuccess();
+
+        // show placeholder again
+        const ph = el('aiPlaceholder');
+        if (ph) ph.style.display = 'block';
+        if (videoEl) videoEl.style.display = 'none';
+
+        // clear canvas
+        if (ctx && canvasEl) {
+            ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+        }
+
+        // hide scan line
+        const scan = el('aiScanLine');
+        if (scan) scan.classList.remove('active');
+
+        // hide instructions
+        const inst = el('aiInstructions');
+        if (inst) inst.classList.remove('hidden');
+
+        setStatus('Idle', '');
+    }
+
+    // ---- Pose detection loop ------------------------------------------------
+    async function detectLoop() {
+        if (!isDetecting || !detector || !videoEl || videoEl.readyState < 2) {
+            rafId = requestAnimationFrame(detectLoop);
+            return;
+        }
+
+        try {
+            const poses = await detector.estimatePoses(videoEl, { flipHorizontal: false });
+
+            ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+
+            if (poses && poses.length > 0 && poses[0].keypoints) {
+                const pose = poses[0];
+                drawSkeleton(pose.keypoints);
+                lastMetrics = computeMetrics(pose.keypoints);
+
+                if (lastMetrics) {
+                    poseStreak++;
+                    setStatus('Human detected', 'detect');
+
+                    // Show scan line while detecting
+                    const scan = el('aiScanLine');
+                    if (scan) scan.classList.add('active');
+
+                    // Hide instructions once pose is detected
+                    const inst = el('aiInstructions');
+                    if (inst) inst.classList.add('hidden');
+
+                    // Auto-trigger analysis after stable detection
+                    if (poseStreak >= POSE_LOCK_FRAMES && !analysisDone) {
+                        analysisDone = true;
+                        await runAutoAnalysis();
+                    }
+                } else {
+                    poseStreak = 0;
+                    setStatus('Stand back — full body needed', '');
+                }
+            } else {
+                poseStreak = 0;
+                setStatus('No body detected — stand in view', '');
+
+                // show instructions again
+                const inst = el('aiInstructions');
+                if (inst) inst.classList.remove('hidden');
+
+                // hide scan line
+                const scan = el('aiScanLine');
+                if (scan) scan.classList.remove('active');
+            }
+        } catch (err) {
+            console.error('Detection error:', err);
+            setStatus('Detection error', 'error');
+        }
+
+        rafId = requestAnimationFrame(detectLoop);
+    }
+
+    // ---- Auto analysis flow -------------------------------------------------
+    async function runAutoAnalysis() {
+        setStatus('Analyzing body...', 'analyzing');
+        showProgress();
+        setProgress(0, 'Scanning body proportions...');
+
+        // Animate progress from 0 to 100 over ~2.5 seconds
+        let pct = 0;
+        const labels = [
+            'Scanning body proportions...',
+            'Detecting shoulders & hips...',
+            'Calculating body ratios...',
+            'Estimating body shape...',
+            'Body analysis completed!',
+        ];
+
+        return new Promise((resolve) => {
+            progressTimer = setInterval(() => {
+                pct += 4;
+                if (pct > 100) pct = 100;
+                const labelIdx = Math.min(labels.length - 1, Math.floor(pct / 20));
+                setProgress(pct, labels[labelIdx]);
+
+                if (pct >= 100) {
+                    clearInterval(progressTimer);
+                    progressTimer = null;
+
+                    // Show success burst
+                    showSuccess('Body analysis completed', 'Fetching your recommendations...');
+                    setStatus('Analysis done', 'done');
+
+                    // Hide scan line
+                    const scan = el('aiScanLine');
+                    if (scan) scan.classList.remove('active');
+
+                    // After success animation, fetch recommendations
+                    setTimeout(async () => {
+                        hideSuccess();
+                        hideProgress();
+                        await getRecommendations();
+                        resolve();
+                    }, 1500);
+                }
+            }, 100);
+        });
+    }
+
+    // ---- Draw skeleton overlay ---------------------------------------------
+    function drawSkeleton(keypoints) {
+        const connections = [
+            [5, 6],   // shoulders
+            [5, 7], [7, 9],   // left arm
+            [6, 8], [8, 10],  // right arm
+            [5, 11], [6, 12], // torso sides
+            [11, 12],         // hips
+            [11, 13], [13, 15], // left leg
+            [12, 14], [14, 16], // right leg
+        ];
+
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = '#22d3ee';
+        ctx.fillStyle = '#f472b6';
+        ctx.shadowColor = '#22d3ee';
+        ctx.shadowBlur = 8;
+
+        // lines
+        connections.forEach(([a, b]) => {
+            const ka = keypoints[a];
+            const kb = keypoints[b];
+            if (ka && kb && ka.score > 0.3 && kb.score > 0.3) {
+                ctx.beginPath();
+                ctx.moveTo(ka.x, ka.y);
+                ctx.lineTo(kb.x, kb.y);
+                ctx.stroke();
+            }
+        });
+
+        ctx.shadowBlur = 0;
+
+        // points
+        keypoints.forEach((kp) => {
+            if (kp.score > 0.3) {
+                ctx.beginPath();
+                ctx.arc(kp.x, kp.y, 6, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+        });
+    }
+
+    // ---- Compute body-proportion metrics -----------------------------------
+    // MoveNet 17 keypoints:
+    // 0 nose, 1 left eye, 2 right eye, 3 left ear, 4 right ear,
+    // 5 left shoulder, 6 right shoulder, 7 left elbow, 8 right elbow,
+    // 9 left wrist, 10 right wrist, 11 left hip, 12 right hip,
+    // 13 left knee, 14 right knee, 15 left ankle, 16 right ankle
+    function computeMetrics(kp) {
+        const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+
+        const ls = kp[5], rs = kp[6], lh = kp[11], rh = kp[12];
+        const lk = kp[13], rk = kp[14], la = kp[15], ra = kp[16];
+
+        // Need at minimum shoulders + hips
+        if (!ls || !rs || !lh || !rh) return null;
+        if (ls.score < 0.3 || rs.score < 0.3 || lh.score < 0.3 || rh.score < 0.3) return null;
+
+        const shoulderWidth = dist(ls, rs);
+        const hipWidth = dist(lh, rh);
+
+        const shoulderMid = { x: (ls.x + rs.x) / 2, y: (ls.y + rs.y) / 2 };
+        const hipMid = { x: (lh.x + rh.x) / 2, y: (lh.y + rh.y) / 2 };
+        const torsoLength = dist(shoulderMid, hipMid);
+
+        if (shoulderWidth < 5 || hipWidth < 5 || torsoLength < 5) return null;
+
+        // Approx waist width (MoveNet has no waist keypoint)
+        const waistWidth = (shoulderWidth + hipWidth) / 2 * 0.78;
+
+        // Height ratio: if ankles visible, use shoulder-to-ankle as body height
+        let bodyHeight = torsoLength * 2.6; // default estimate
+        let heightRatio = 0;
+
+        const hasLegs = lk && rk && lk.score > 0.3 && rk.score > 0.3;
+        const hasAnkles = la && ra && la.score > 0.3 && ra.score > 0.3;
+
+        if (hasAnkles) {
+            const ankleMid = { x: (la.x + ra.x) / 2, y: (la.y + ra.y) / 2 };
+            bodyHeight = dist(shoulderMid, ankleMid);
+        } else if (hasLegs) {
+            const kneeMid = { x: (lk.x + rk.x) / 2, y: (lk.y + rk.y) / 2 };
+            bodyHeight = dist(shoulderMid, kneeMid) * 1.5;
+        }
+
+        // Leg length (hip to ankle or hip to knee)
+        let legLength = 0;
+        if (hasAnkles) {
+            const ankleMid = { x: (la.x + ra.x) / 2, y: (la.y + ra.y) / 2 };
+            legLength = dist(hipMid, ankleMid);
+        } else if (hasLegs) {
+            const kneeMid = { x: (lk.x + rk.x) / 2, y: (lk.y + rk.y) / 2 };
+            legLength = dist(hipMid, kneeMid) * 1.5;
+        }
+
+        heightRatio = bodyHeight > 0 ? round(legLength / bodyHeight) : 0;
+
+        // Arm span (if wrists visible)
+        let armSpan = 0;
+        const lw = kp[9], rw = kp[10];
+        if (lw && rw && lw.score > 0.3 && rw.score > 0.3) {
+            armSpan = dist(lw, rw);
+        }
+
+        return {
+            shoulder_to_waist_ratio: round(shoulderWidth / Math.max(waistWidth, 1)),
+            waist_to_hip_ratio: round(waistWidth / Math.max(hipWidth, 1)),
+            shoulder_to_hip_ratio: round(shoulderWidth / Math.max(hipWidth, 1)),
+            height_ratio: heightRatio,
+            torso_length: round(torsoLength),
+            body_height: round(bodyHeight),
+            arm_span: round(armSpan),
+            leg_length: round(legLength),
+        };
+    }
+
+    function round(n) {
+        return Math.round(n * 100) / 100;
+    }
+
+    // ---- Call recommendation API -------------------------------------------
+    async function getRecommendations() {
+        if (!lastMetrics) {
+            showError('No pose detected. Please stand in front of the camera so your full body is visible.');
+            return;
+        }
+
+        showLoader('AI is finding the best products for you...');
+
+        const payload = {
+            metrics: lastMetrics,
+            preferences: prefs,
+            limit: 8,
+        };
+
+        try {
+            const res = await fetch(API_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': window.aiCameraCsrfToken || '',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!res.ok) {
+                throw new Error('Server returned ' + res.status);
+            }
+
+            const json = await res.json();
+            renderResults(json.data);
+        } catch (err) {
+            console.error(err);
+            showError('Could not fetch recommendations. ' + err.message);
+        }
+    }
+
+    // ---- Render recommendation cards ---------------------------------------
+    function renderResults(data) {
+        const results = el('aiResults');
+        if (!results) return;
+
+        const analysis = data.analysis || {};
+        const recs = data.recommendations || [];
+
+        if (recs.length === 0) {
+            results.innerHTML =
+                '<div class="alert alert-light border rounded-3 text-center">' +
+                '<i class="fa fa-box-open fs-3 d-block mb-2"></i>' +
+                'No matching products found. Try adjusting your preferences.</div>';
+            return;
+        }
+
+        // Analysis summary
+        let html = '<div class="ai-analysis-summary mb-3">' +
+            '<strong><i class="fa fa-wand-magic-sparkles me-1"></i>AI Body Analysis</strong><br>' +
+            '<span class="ai-tag">Body: ' + esc(analysis.body_type || '-') + '</span>' +
+            '<span class="ai-tag">Fit: ' + esc(analysis.suggested_fit || '-') + '</span>' +
+            '<span class="ai-tag">Style: ' + esc(analysis.suggested_style || '-') + '</span>' +
+            '<span class="ai-tag">Color: ' + esc(analysis.suggested_color || '-') + '</span>' +
+            '<span class="ai-tag">Season: ' + esc(analysis.season || '-') + '</span>' +
+            '</div>';
+
+        // Section heading
+        html += '<h6 class="fw-bold mb-3"><i class="fa-solid fa-sparkles me-1 text-primary"></i>Recommended For You</h6>';
+
+        // Cards grid
+        html += '<div class="ai-rec-grid">';
+
+        recs.forEach((rec) => {
+            const p = rec.product || {};
+            const reasons = (rec.reasons || []).slice(0, 3);
+            html += '<div class="ai-rec-card">' +
+                '<img src="' + esc(p.image_url || '') + '" alt="' + esc(p.name || '') + '" onerror="this.src=\'https://via.placeholder.com/180x140?text=No+Image\'">' +
+                '<div class="ai-rec-body">' +
+                '<div class="ai-rec-name">' + esc(p.name || 'Product') + '</div>' +
+                '<div class="ai-rec-cat">' + esc(p.category || '') + '</div>' +
+                '<div class="ai-rec-price">₹' + Number(p.price || 0).toFixed(2) + '</div>' +
+                (reasons.length ? '<ul class="ai-rec-reasons">' + reasons.map((r) => '<li>' + esc(r) + '</li>').join('') + '</ul>' : '') +
+                '<a href="/products/' + (p.id || '') + '" class="ai-rec-link">View Product</a>' +
+                '</div></div>';
+        });
+
+        html += '</div>';
+
+        results.innerHTML = html;
+    }
+
+    function esc(s) {
+        const d = document.createElement('div');
+        d.textContent = String(s);
+        return d.innerHTML;
+    }
+
+    // ---- Preference chips ---------------------------------------------------
+    function initChips() {
+        document.querySelectorAll('.ai-chip').forEach((chip) => {
+            chip.addEventListener('click', () => {
+                const group = chip.dataset.group;
+                const value = chip.dataset.value;
+
+                // toggle within group
+                document.querySelectorAll('.ai-chip[data-group="' + group + '"]').forEach((c) => {
+                    c.classList.remove('active');
+                });
+
+                if (prefs[group] === value) {
+                    prefs[group] = null;
+                } else {
+                    prefs[group] = value;
+                    chip.classList.add('active');
+                }
+            });
+        });
+    }
+
+    // ---- Modal lifecycle ----------------------------------------------------
+    async function openModal() {
+        const modal = new bootstrap.Modal(el('aiCameraModal'));
+        modal.show();
+
+        // Reset state
+        analysisDone = false;
+        poseStreak = 0;
+        lastMetrics = null;
+        hideSuccess();
+        hideProgress();
+
+        // Reset results panel
+        const results = el('aiResults');
+        if (results) {
+            results.innerHTML =
+                '<div class="text-muted text-center py-5">' +
+                '<i class="fa-solid fa-camera-retro fs-2 d-block mb-2 text-primary"></i>' +
+                '<div class="fw-semibold">AI Camera Ready</div>' +
+                '<small>Allow camera access to start body analysis</small>' +
+                '</div>';
+        }
+
+        // wait a tick for DOM
+        await new Promise((r) => setTimeout(r, 300));
+
+        videoEl = el('aiVideo');
+        canvasEl = el('aiOverlay');
+        ctx = canvasEl.getContext('2d');
+
+        try {
+            await loadLibraries();
+            await startCamera();
+            isDetecting = true;
+            detectLoop();
+        } catch (err) {
+            console.error(err);
+            setStatus('Error', 'error');
+            showError(err.message || 'Could not start camera.');
+        }
+    }
+
+    function closeModal() {
+        stopCamera();
+    }
+
+    // ---- Bootstrap ----------------------------------------------------------
+    document.addEventListener('DOMContentLoaded', () => {
+        // Floating button trigger
+        const btn = el('btnAiCamera');
+        if (btn) btn.addEventListener('click', openModal);
+
+        // Manual analyze button (fallback if auto-detect doesn't trigger)
+        const analyzeBtn = el('aiAnalyzeBtn');
+        if (analyzeBtn) {
+            analyzeBtn.addEventListener('click', async () => {
+                if (!lastMetrics) {
+                    showError('No pose detected yet. Please stand in front of the camera so your full body is visible.');
+                    return;
+                }
+                analysisDone = true; // prevent auto-trigger
+                await runAutoAnalysis();
+            });
+        }
+
+        // Camera flip button
+        const flipBtn = el('aiCameraFlip');
+        if (flipBtn) flipBtn.addEventListener('click', switchCamera);
+
+        // Modal close events
+        const modal = el('aiCameraModal');
+        if (modal) {
+            modal.addEventListener('hidden.bs.modal', closeModal);
+        }
+
+        // Preference chips
+        initChips();
+    });
+})();
