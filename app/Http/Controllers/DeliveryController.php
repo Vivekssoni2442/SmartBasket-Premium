@@ -16,6 +16,8 @@ class DeliveryController extends Controller
             return redirect('/seller-login');
         }
 
+        abort_unless($order->belongsToSeller((int) session('seller_id')), 404);
+
         $validated = $request->validate([
             'delivery_partner_id' => 'nullable|exists:delivery_partners,id',
             'name' => 'required_without:delivery_partner_id|string|max:255',

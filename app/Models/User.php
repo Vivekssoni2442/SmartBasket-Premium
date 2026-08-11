@@ -7,14 +7,25 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Models\SecuritySetting;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
+    protected static function booted(): void
+    {
+        static::creating(function (self $user) {
+            if ($user->customer_uid) return;
+            do { $user->customer_uid = 'CUS-'.Str::upper(Str::random(8)); }
+            while (static::where('customer_uid', $user->customer_uid)->exists());
+        });
+    }
+
 
     protected $fillable = [
         'name',
+        'customer_uid',
         'username',
         'email',
         'password',

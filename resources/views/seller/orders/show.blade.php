@@ -78,7 +78,7 @@
 
 
 
-@foreach($order->items ?? [] as $item)
+@foreach($order->seller_items ?? [] as $item)
 
 @php
 $product = $products[$item['product_id'] ?? null] ?? null;

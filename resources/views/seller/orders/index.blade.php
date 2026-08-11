@@ -73,7 +73,7 @@
                                 <small class="d-block text-muted">{{ $order->address }}, {{ $order->city }}</small>
                             </td>
                             <td>
-                                @foreach($order->items ?? [] as $item)
+                                @foreach($order->seller_items ?? [] as $item)
                                     <div class="small">{{ $item['name'] ?? ($products[$item['product_id'] ?? null]?->name ?? 'Product') }} × {{ $item['quantity'] ?? 1 }}</div>
                                 @endforeach
                             </td>
@@ -95,7 +95,6 @@
                                             title="View full delivery details">
                                         <i class="fa-solid fa-eye me-1"></i> View Delivery Details
                                     </button>
-                                    <a href="{{ route('seller.orders.show', $order) }}" class="btn btn-primary btn-sm">Details</a>
                                 </div>
                             </td>
                         </tr>

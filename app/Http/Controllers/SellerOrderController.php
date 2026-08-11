@@ -17,20 +17,30 @@ class SellerOrderController extends Controller
             return redirect('/seller-login');
         }
 
-        $orders = Order::with('deliveryDetail.deliveryPartner')->latest()->get();
-        $products = Product::whereIn('id', $orders->flatMap(fn ($order) => collect($order->items ?? [])->pluck('product_id'))->filter()->unique())->get()->keyBy('id');
+        $sellerId = (int) session('seller_id');
+        $sellerProductIds = Product::where('seller_id', $sellerId)->pluck('id');
+        $orders = Order::forSeller($sellerId)
+            ->with('deliveryDetail.deliveryPartner')
+            ->latest()
+            ->get();
+        $this->attachSellerItems($orders, $sellerProductIds);
+        $products = Product::whereIn('id', $sellerProductIds)->get()->keyBy('id');
 
         return view('seller.orders.index', compact('orders', 'products'));
     }
 
-public function show(Order $order)
+    public function show(Order $order)
     {
         if (! session('seller_login')) {
             return redirect('/seller-login');
         }
 
+        $sellerId = (int) session('seller_id');
+        $sellerProductIds = Product::where('seller_id', $sellerId)->pluck('id');
+        $order = Order::forSeller($sellerId)->whereKey($order->id)->firstOrFail();
         $order->load('deliveryDetail.deliveryPartner');
-        $products = Product::whereIn('id', collect($order->items ?? [])->pluck('product_id')->filter())->get()->keyBy('id');
+        $this->attachSellerItems(collect([$order]), $sellerProductIds);
+        $products = Product::whereIn('id', $sellerProductIds)->get()->keyBy('id');
         $deliveryPartners = DeliveryPartner::latest()->get();
 
         return view('seller.orders.show', compact('order', 'products', 'deliveryPartners'));
@@ -44,6 +54,8 @@ public function show(Order $order)
         if (! session('seller_login')) {
             return redirect('/seller-login');
         }
+
+        $this->ensureSellerOwnsOrder($order);
 
         $validated = $request->validate([
             'name'             => 'required|string|max:255',
@@ -109,6 +121,8 @@ public function show(Order $order)
             return redirect('/seller-login');
         }
 
+        $this->ensureSellerOwnsOrder($order);
+
         $detail = $order->deliveryDetail;
 
         if (! $detail) {
@@ -124,5 +138,25 @@ public function show(Order $order)
         }
 
         return redirect()->route('seller.orders.index')->with('success', 'Delivery details deleted successfully.');
+    }
+
+    /** Supply only the seller-owned portion of each mixed-seller order to Blade. */
+    private function attachSellerItems($orders, $sellerProductIds): void
+    {
+        $ownedProductIds = $sellerProductIds->map(fn ($id) => (int) $id)->all();
+
+        foreach ($orders as $order) {
+            $order->setAttribute('seller_items', collect($order->items ?? [])
+                ->filter(fn ($item) => (int) ($item['seller_id'] ?? 0) === (int) session('seller_id') || in_array((int) ($item['product_id'] ?? 0), $ownedProductIds, true))
+                ->values()
+                ->all());
+        }
+    }
+
+    /** Block direct order and delivery URLs that belong to another seller. */
+    private function ensureSellerOwnsOrder(Order $order): void
+    {
+        $sellerId = (int) session('seller_id');
+        abort_unless(Order::forSeller($sellerId)->whereKey($order->id)->exists(), 404);
     }
 }
