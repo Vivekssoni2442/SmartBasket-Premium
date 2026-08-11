@@ -59,4 +59,17 @@ return [
             'model' => 'gpt-4o-mini',
         ],
     ],
+
+    // A separate capability from AI Camera Assistant vision analysis. Configure
+    // only with a provider/model that accepts two images and returns an edited image.
+    'virtual_tryon' => [
+        'provider' => env('VIRTUAL_TRYON_PROVIDER'),
+        'timeout' => env('VIRTUAL_TRYON_TIMEOUT', 90),
+        'openai' => [
+            'key' => env('VIRTUAL_TRYON_API_KEY'),
+            'url' => env('VIRTUAL_TRYON_BASE_URL', 'https://api.openai.com/v1/images/edits'),
+            'model' => env('VIRTUAL_TRYON_MODEL', 'gpt-image-1'),
+            'size' => env('VIRTUAL_TRYON_SIZE', '1024x1024'),
+        ],
+    ],
 ];

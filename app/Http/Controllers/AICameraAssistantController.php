@@ -169,27 +169,12 @@ class AICameraAssistantController extends Controller
             }
         }
 
-        $result = $this->virtualTryOnService->generate(
-            $imageBinary,
-            $mime,
-            $garmentImage,
-            $garmentLabel
-        );
-
-        if (! $result['success']) {
-            return response()->json(['success' => false, 'message' => $result['message']], 422);
-        }
-
-        // Persist the source + result image to history for logged-in users.
-        $this->saveHistoryWithImages($request, $result['result_image'], $garmentLabel);
-
+        // Kept for backwards compatibility with the existing AI Camera UI.
+        // Product Details owns the real, server-bound image-editing workflow.
         return response()->json([
-            'success'      => true,
-            'message'      => $result['message'],
-            'processor'    => $result['processor'],
-            'result_image' => Storage::disk('public')->url($result['result_image']),
-            'meta'         => $result['meta'] ?? [],
-        ]);
+            'success' => false,
+            'message' => 'AI Virtual Try-On is available from a product details page.',
+        ], 422);
     }
 
     /**

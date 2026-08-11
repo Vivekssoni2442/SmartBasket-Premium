@@ -11,7 +11,7 @@ class VirtualTryOnTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_virtual_try_on_endpoint_returns_json_result()
+    public function test_legacy_virtual_try_on_endpoint_does_not_fake_an_image_result()
     {
         $image = public_path('products/1785564606.jpg');
 
@@ -24,20 +24,13 @@ class VirtualTryOnTest extends TestCase
             'label' => 'Test Outfit',
         ], ['X-Requested-With' => 'XMLHttpRequest']);
 
-        $response->assertOk();
+        $response->assertUnprocessable();
         $response->assertJson([
-            'success' => true,
-        ]);
-        $response->assertJsonStructure([
-            'success',
-            'message',
-            'processor',
-            'result_image',
-            'meta',
+            'success' => false,
         ]);
     }
 
-    public function test_virtual_try_on_saves_history_for_logged_in_user()
+    public function test_legacy_virtual_try_on_does_not_store_customer_images_or_history()
     {
         $user = User::factory()->create();
         $this->actingAs($user);
@@ -53,12 +46,7 @@ class VirtualTryOnTest extends TestCase
             'label' => 'Test Outfit',
         ], ['X-Requested-With' => 'XMLHttpRequest']);
 
-        $response->assertOk();
-        $response->assertJson(['success' => true]);
-
-        $this->assertDatabaseHas('ai_camera_histories', [
-            'user_id' => $user->id,
-            'query'   => 'Virtual Try-On: Test Outfit',
-        ]);
+        $response->assertUnprocessable();
+        $this->assertDatabaseMissing('ai_camera_histories', ['user_id' => $user->id]);
     }
 }
