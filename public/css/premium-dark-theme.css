@@ -14,6 +14,17 @@
     --sb-muted: #94A3B8;
 }
 
+/* Per-account themes are applied by the authenticated customer/seller views. */
+html:has(body[data-sb-theme="light"]), body[data-sb-theme="light"] {
+    --sb-bg: #f8fafc;
+    --sb-card: #ffffff;
+    --sb-secondary: #f1f5f9;
+    --sb-border: #cbd5e1;
+    --sb-text: #0f172a;
+    --sb-text-secondary: #334155;
+    --sb-muted: #64748b;
+}
+
 html, body {
     min-height: 100%;
     background: var(--sb-bg) !important;

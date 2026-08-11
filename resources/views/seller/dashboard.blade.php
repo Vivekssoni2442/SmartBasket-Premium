@@ -222,7 +222,7 @@ border-radius:12px;
 </head>
 
 
-<body>
+<body data-sb-theme="{{ $seller->theme ?? 'dark' }}">
 
 
 <!-- Sidebar -->
@@ -260,7 +260,7 @@ Add Product
 </a>
 
 
-<a href="#">
+<a href="{{ route('seller.products.index') }}">
 <i class="fa fa-box"></i>
 My Products
 </a>
@@ -272,9 +272,14 @@ Orders
 </a>
 
 
-<a href="#">
+<a href="{{ route('seller.profile') }}">
 <i class="fa fa-user"></i>
 Profile
+</a>
+
+<a href="{{ route('seller.settings') }}">
+<i class="fa fa-gear"></i>
+Settings
 </a>
 
 
@@ -394,7 +399,7 @@ Pending Orders
 
 
 <p>
-Revenue
+Total Earnings
 </p>
 
 
