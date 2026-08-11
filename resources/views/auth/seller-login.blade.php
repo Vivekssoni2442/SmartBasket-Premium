@@ -481,6 +481,12 @@ SMART BASKET SELLER PANEL
 
 </form>
 
+<a class="back" href="{{ route('seller.register') }}">
+
+    Create Seller Account
+
+</a>
+
 
 
 <a class="back" href="{{url('/login')}}">
