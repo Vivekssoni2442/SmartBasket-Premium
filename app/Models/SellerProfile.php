@@ -11,6 +11,7 @@ class SellerProfile extends Model
         'seller_name',
         'shop_name',
         'email',
+        'password',
         'mobile_number',
         'shop_address',
         'city',
@@ -18,6 +19,18 @@ class SellerProfile extends Model
         'pincode',
         'gst_number',
         'shop_logo',
+        'payment_qr',
+        'theme',
+        'notifications_enabled',
+        'online_payments_enabled',
+    ];
+
+    /**
+     * Seller passwords are only used for authentication and must never be
+     * exposed when this model is serialized.
+     */
+    protected $hidden = [
+        'password',
     ];
 
     public function user()
@@ -27,6 +40,11 @@ class SellerProfile extends Model
 
     public function products()
     {
-        return $this->hasMany(Product::class, 'seller_id', 'user_id');
+        return $this->hasMany(Product::class, 'seller_id');
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class, 'seller_id');
     }
 }
