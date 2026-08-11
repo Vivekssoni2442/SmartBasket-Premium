@@ -26,10 +26,16 @@ class CartController extends Controller
         return view('cart.index', compact('cartItems', 'subtotal'));
     }
 
-    public function add(Product $product)
+    public function add(Request $request, Product $product)
     {
         if (!Auth::check()) {
             return redirect('/login');
+        }
+
+        $validated = $request->validate(['quantity' => ['nullable', 'integer', 'min:1']]);
+        $quantity = (int) ($validated['quantity'] ?? 1);
+        if ($product->stock !== null && $quantity > (int) $product->stock) {
+            return back()->with('error', 'Requested quantity exceeds available stock.');
         }
 
         $cart = Cart::where('user_id', Auth::id())
@@ -37,13 +43,16 @@ class CartController extends Controller
             ->first();
 
         if ($cart) {
-            $cart->quantity = max(1, (int) $cart->quantity + 1);
+            $cart->quantity = max(1, (int) $cart->quantity + $quantity);
+            if ($product->stock !== null && $cart->quantity > (int) $product->stock) {
+                return back()->with('error', 'Requested quantity exceeds available stock.');
+            }
             $cart->save();
         } else {
             Cart::create([
                 'user_id' => Auth::id(),
                 'product_id' => $product->id,
-                'quantity' => 1,
+                'quantity' => $quantity,
             ]);
         }
 

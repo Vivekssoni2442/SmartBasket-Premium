@@ -80,6 +80,7 @@ required>
 </option>
 
 
+@if($onlinePaymentAvailable ?? false)
 <option value="UPI">
 📱 UPI Payment
 </option>
@@ -88,6 +89,7 @@ required>
 <option value="Card">
 💳 Card Payment
 </option>
+@endif
 
 
 </select>
@@ -131,20 +133,16 @@ placeholder="example@upi">
 
 <div class="text-center mt-3">
 
-<img 
-src="{{ asset('images/my-qr.png') }}"
-alt="UPI QR Code"
-style="
-width:220px;
-height:220px;
-border-radius:15px;
-object-fit:contain;
-box-shadow:0 5px 20px rgba(0,0,0,.3);
-">
-
-<p class="mt-3 fw-bold">
-📲 Scan QR Code & Pay
-</p>
+@php($paymentSellers = collect($checkoutItems)->map(fn($item) => $item['product'] ?? $item->product ?? null)->filter()->map(fn($product) => $product->seller)->filter()->unique('id'))
+@forelse($paymentSellers as $paymentSeller)
+    @if($paymentSeller->payment_qr)
+        <p class="small fw-bold mb-2">Pay {{ $paymentSeller->shop_name ?: $paymentSeller->seller_name }}</p>
+        <img src="{{ asset('storage/'.$paymentSeller->payment_qr) }}" alt="Payment QR" style="width:220px;height:220px;border-radius:15px;object-fit:contain;box-shadow:0 5px 20px rgba(0,0,0,.3);">
+        <p class="mt-3 fw-bold">Scan QR Code & Pay</p>
+    @endif
+@empty
+    <p class="small text-muted mt-3">Seller payment QR is not available for these items.</p>
+@endforelse
 
 </div>
 
