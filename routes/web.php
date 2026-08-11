@@ -17,6 +17,9 @@ use App\Http\Controllers\AiHubController;
 use App\Http\Controllers\SellerOrderController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\SecurityController;
+use App\Http\Controllers\VirtualTryOnController;
+use App\Http\Controllers\CustomerSettingsController;
+use App\Http\Controllers\SellerPaymentController;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\FailedLoginAlert;
 /*
@@ -127,38 +130,32 @@ Route::get('/success', function () {
     return view('auth.success');
 });
 
-Route::get('/seller-login', function () {
-    return view('auth.seller-login');
-})->name('seller.login');
-
-Route::post('/seller-login', function (Request $request) {
-
-    $request->validate([
-        'email' => 'required|email',
-        'password' => 'required',
-    ]);
-
-    if (
-        $request->email === 'seller@smartbasket.com' &&
-        $request->password === '12345678'
-    ) {
-
-        session([
-            'seller_login' => true,
-            'seller_email' => $request->email,
-            'seller_id' => 1,
-        ]);
-
-        return redirect()->route('seller.dashboard');
-    }
-
-    return back()->with('error', 'Invalid Seller Login');
-
-})->name('seller.login.submit');
+Route::get('/seller-login', [SellerController::class, 'showLogin'])->name('seller.login');
+Route::post('/seller-login', [SellerController::class, 'login'])->name('seller.login.submit');
+Route::get('/seller-register', [SellerController::class, 'showRegistration'])->name('seller.register');
+Route::post('/seller-register', [SellerController::class, 'register'])->name('seller.register.submit');
 // Seller logout route
 
 Route::get('/seller-dashboard', [SellerController::class,'dashboard'])
-    ->name('seller.dashboard');
+    ->name('seller.dashboard')->middleware('seller.auth');
+Route::get('/seller-my-products', [SellerController::class, 'myProducts'])
+    ->name('seller.products.index')->middleware('seller.auth');
+Route::get('/seller-profile', [SellerController::class, 'profile'])
+    ->name('seller.profile')->middleware('seller.auth');
+Route::put('/seller-profile', [SellerController::class, 'updateProfile'])
+    ->name('seller.profile.update')->middleware('seller.auth');
+Route::post('/seller-profile/payment-qr', [SellerController::class, 'updatePaymentQr'])
+    ->name('seller.payment-qr.update')->middleware('seller.auth');
+Route::delete('/seller-profile/payment-qr', [SellerController::class, 'deletePaymentQr'])
+    ->name('seller.payment-qr.delete')->middleware('seller.auth');
+Route::get('/seller-settings', [SellerController::class, 'settings'])
+    ->name('seller.settings')->middleware('seller.auth');
+Route::put('/seller-settings', [SellerController::class, 'updateSettings'])
+    ->name('seller.settings.update')->middleware('seller.auth');
+Route::get('/seller/payments', [SellerPaymentController::class, 'index'])
+    ->name('seller.payments.index')->middleware('seller.auth');
+Route::get('/seller/payments/{order}', [SellerPaymentController::class, 'show'])
+    ->name('seller.payments.show')->middleware('seller.auth');
 // Seller Logout
 Route::post('/seller-logout', function(Request $request){
 
@@ -174,20 +171,20 @@ Route::post('/seller-logout', function(Request $request){
         ->with('success','Seller logout successfully');
 
 })->name('seller.logout');
-Route::post('/seller/orders/{order}/status', [SellerController::class, 'updateOrderStatus'])->name('seller.orders.update-status');
+Route::post('/seller/orders/{order}/status', [SellerController::class, 'updateOrderStatus'])->name('seller.orders.update-status')->middleware('seller.auth');
 Route::get('/seller/orders', [SellerOrderController::class, 'index'])->name('seller.orders.index')->middleware('seller.auth');
 Route::get('/seller/order-details/{order}', [SellerOrderController::class, 'show'])->name('seller.orders.show')->middleware('seller.auth');
 Route::post('/seller/orders/{order}/delivery', [SellerOrderController::class, 'storeDelivery'])->name('seller.orders.delivery.store')->middleware('seller.auth');
 Route::put('/seller/orders/{order}/delivery', [SellerOrderController::class, 'updateDelivery'])->name('seller.orders.delivery.update')->middleware('seller.auth');
 Route::delete('/seller/orders/{order}/delivery', [SellerOrderController::class, 'destroyDelivery'])->name('seller.orders.delivery.destroy')->middleware('seller.auth');
-Route::post('/assign-delivery/{order}', [DeliveryController::class, 'assign'])->name('delivery.assign');
-Route::get('/seller-product-add', [SellerController::class, 'create'])->name('seller.product.add');
-Route::post('/seller-product-store', [SellerController::class, 'store'])->name('seller.product.store');
+Route::post('/assign-delivery/{order}', [DeliveryController::class, 'assign'])->name('delivery.assign')->middleware('seller.auth');
+Route::get('/seller-product-add', [SellerController::class, 'create'])->name('seller.product.add')->middleware('seller.auth');
+Route::post('/seller-product-store', [SellerController::class, 'store'])->name('seller.product.store')->middleware('seller.auth');
 
 // Seller product management routes (edit/update/delete)
-Route::get('/seller-product-edit/{id}', [SellerController::class, 'edit'])->name('seller.product.edit');
-Route::post('/seller-product-update/{id}', [SellerController::class, 'update'])->name('seller.product.update');
-Route::post('/seller-product-delete/{id}', [SellerController::class, 'destroy'])->name('seller.product.delete');
+Route::get('/seller-product-edit/{id}', [SellerController::class, 'edit'])->name('seller.product.edit')->middleware('seller.auth');
+Route::post('/seller-product-update/{id}', [SellerController::class, 'update'])->name('seller.product.update')->middleware('seller.auth');
+Route::post('/seller-product-delete/{id}', [SellerController::class, 'destroy'])->name('seller.product.delete')->middleware('seller.auth');
 
 Route::get('/verify-otp', function () {
     return view('auth.verify-otp');
@@ -239,18 +236,14 @@ Route::get('/trending-products', [AiHubController::class, 'trending'])->name('tr
 Route::get('/compare-products', [AiHubController::class, 'compare'])->name('compare-products');
 Route::get('/wishlist', [AiHubController::class, 'wishlist'])->name('wishlist');
 Route::delete('/wishlist/{wishlist}', [AiHubController::class, 'removeWishlist'])->name('wishlist.remove');
-Route::get('/products/{product}', function ($productId) {
-    $product = Product::findOrFail($productId);
+Route::get('/product/{product}', [ProductController::class, 'show'])->name('product.show');
+Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
 
-    if (Auth::check()) {
-        \App\Models\RecentlyViewedProduct::firstOrCreate([
-            'user_id' => Auth::id(),
-            'product_id' => $product->id,
-        ]);
-    }
-
-    return view('products.show', compact('product'));
-})->name('products.show');
+Route::post('/products/{product}/virtual-try-on', [VirtualTryOnController::class, 'generate'])
+    ->name('products.virtual-try-on.generate');
+Route::get('/products/{product}/virtual-try-on/result/{token}', [VirtualTryOnController::class, 'result'])
+    ->where('token', '[A-Za-z0-9]{40}')
+    ->name('products.virtual-try-on.result');
 
 Route::post('/wishlist/add/{product}', function ($productId) {
     if (!Auth::check()) {
@@ -271,7 +264,7 @@ Route::get('/checkout', function () {
     $total = 0.0;
 
     if (Auth::check()) {
-        $cartItems = \App\Models\Cart::with('product')
+        $cartItems = \App\Models\Cart::with('product.seller')
             ->where('user_id', Auth::id())
             ->get();
 
@@ -285,7 +278,7 @@ Route::get('/checkout', function () {
 
     $buyProductId = session('buy_product');
     if ($buyProductId) {
-        $product = \App\Models\Product::find($buyProductId);
+        $product = \App\Models\Product::with('seller')->find($buyProductId);
         if ($product) {
             $cartItems = [[
                 'product' => $product,
@@ -295,13 +288,19 @@ Route::get('/checkout', function () {
         }
     }
 
-    return view('checkout', compact('cartItems', 'total'));
+    $checkoutSellers = collect($cartItems)->map(fn ($item) => $item['product'] ?? $item->product ?? null)
+        ->filter()->map(fn ($product) => $product->seller)->filter()->unique('id');
+    $onlinePaymentAvailable = $checkoutSellers->isNotEmpty()
+        && $checkoutSellers->every(fn ($seller) => (bool) $seller->online_payments_enabled);
+
+    return view('checkout', compact('cartItems', 'total', 'onlinePaymentAvailable'));
 });
 
 Route::post('/place-order', [OrderController::class, 'placeOrder'])->name('place.order');
 Route::get('/order-success', function () { return view('order-success'); });
 Route::get('/my-orders', [OrderController::class, 'myOrders'])->name('orders.index');
 Route::get('/order-details/{order}', [OrderController::class, 'show'])->name('orders.show');
+Route::post('/order-details/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
 
 Route::post('/cart/add/{product}', [CartController::class, 'add'])->name('cart.add');
 Route::post('/cart/update/{product}', [CartController::class, 'update'])->name('cart.update');
@@ -324,6 +323,9 @@ Route::post('/confirm-buy', function () {
 
 Route::get('/profile', [ProfileController::class, 'index'])
     ->name('profile');
+
+Route::get('/settings', [CustomerSettingsController::class, 'edit'])->name('settings');
+Route::put('/settings', [CustomerSettingsController::class, 'update'])->name('settings.update');
 
 Route::post('/profile/update', [ProfileController::class, 'update'])
     ->name('profile.update');
