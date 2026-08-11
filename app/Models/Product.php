@@ -37,11 +37,16 @@ class Product extends Model
     ];
 
     /**
-     * A product belongs to a seller (User).
-     * Uses seller_id column. Returns null for legacy products.
+     * A product belongs to the seller profile identified by seller_id.
+     * Returns null for legacy products without a seller.
      */
     public function seller()
     {
-        return $this->belongsTo(User::class, 'seller_id');
+        return $this->belongsTo(SellerProfile::class, 'seller_id');
+    }
+
+    public function images()
+    {
+        return $this->hasMany(ProductImage::class)->orderBy('sort_order');
     }
 }

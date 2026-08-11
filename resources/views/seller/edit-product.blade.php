@@ -93,6 +93,11 @@ body { background: linear-gradient(135deg, #020617, #000, #111827); color: #fff;
                 <label class="form-label mt-2">Change Image (optional)</label>
                 <input type="file" name="image" class="form-control" accept="image/jpeg,image/png,image/jpg,image/webp">
             </div>
+            <div class="col-12">
+                <label class="form-label">Add More Product Images</label>
+                <input type="file" name="images[]" class="form-control" multiple accept="image/jpeg,image/png,image/jpg,image/webp">
+                @if($product->images->isNotEmpty())<div class="d-flex gap-2 flex-wrap mt-2">@foreach($product->images as $extraImage)<img src="{{ asset('storage/'.$extraImage->path) }}" alt="Product view" width="90" height="70" style="object-fit:cover;border-radius:8px">@endforeach</div>@endif
+            </div>
             <div class="col-12 mt-4">
                 <button type="submit" class="btn-submit"><i class="fa-solid fa-save"></i> UPDATE PRODUCT</button>
             </div>

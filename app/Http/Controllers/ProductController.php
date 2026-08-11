@@ -10,11 +10,10 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::latest()->get();
-
-        $sellerProducts = $query->filter(function ($product) {
-            return $this->isSellerUploadedProduct($product);
-        })->values();
+        // Customer catalog remains global; seller ownership is enforced only in seller queries.
+        $sellerProducts = Product::query()->with('seller')->where(function ($query) {
+            $query->whereNull('status')->orWhere('status', 'active');
+        })->latest()->get();
 
         $search = trim((string) $request->get('search', ''));
         $category = trim((string) $request->get('category', ''));
@@ -53,27 +52,27 @@ class ProductController extends Controller
         return view('products.index', compact('pagedProducts', 'categories', 'search', 'category'));
     }
 
-    private function isSellerUploadedProduct(Product $product): bool
+    /** Display the selected real product with its own images and seller. */
+    public function show(Product $product)
     {
-        if (empty($product->image)) {
-            return false;
+        $product->load(['images', 'seller']);
+
+        if (auth()->check()) {
+            \App\Models\RecentlyViewedProduct::firstOrCreate([
+                'user_id' => auth()->id(),
+                'product_id' => $product->id,
+            ]);
         }
 
-        $image = $product->image;
+        $relatedProducts = Product::query()
+            ->whereKeyNot($product->id)
+            ->where('category', $product->category)
+            ->where(fn ($query) => $query->whereNull('status')->orWhere('status', 'active'))
+            ->latest()
+            ->limit(4)
+            ->get();
 
-        if ($image === null || $image === '') {
-            return false;
-        }
-
-        if (str_starts_with($image, 'http://') || str_starts_with($image, 'https://')) {
-            return false;
-        }
-
-        $relativePath = ltrim($image, '/');
-        $candidate = str_starts_with($relativePath, 'products/')
-            ? public_path($relativePath)
-            : public_path('products/' . $relativePath);
-
-        return file_exists($candidate);
+        return view('products.show', compact('product', 'relatedProducts'));
     }
+
 }

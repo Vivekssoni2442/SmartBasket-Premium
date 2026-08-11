@@ -153,6 +153,8 @@ body{
 
 }
 
+.product-card .card-body > .d-flex { position:relative; z-index:2; }
+
 
 
 .product-card h5{
@@ -268,7 +270,7 @@ body{
 </head>
 
 
-<body>
+<body data-sb-theme="{{ auth()->user()?->dark_mode ?? 'dark' }}">
 
 
 
@@ -282,6 +284,10 @@ body{
     <a href="{{ route('profile') }}" class="btn btn-outline-dark sb-nav-btn">
         <i class="fa fa-user"></i>
         Profile
+    </a>
+
+    <a href="{{ route('settings') }}" class="btn btn-outline-dark sb-nav-btn">
+        <i class="fa fa-gear"></i> Settings
     </a>
 
     <a href="{{ route('cart.index') }}" class="btn btn-outline-dark sb-nav-btn">
@@ -550,9 +556,11 @@ Recently Viewed
 
 
 
+<a href="{{ route('product.show', $product) }}" class="text-decoration-none text-reset">
 <img src="{{ asset('products/'.$product->image) }}"
 class="product-img"
-alt="{{ $product->name }}">
+alt="{{ $product->name }}" onerror="this.onerror=null;this.src='{{ asset('products/index.php') }}';">
+</a>
 
 
 
@@ -564,7 +572,7 @@ alt="{{ $product->name }}">
 
 <h5 class="fw-bold">
 
-{{ $product->name }}
+<a href="{{ route('product.show', $product) }}" class="text-decoration-none text-reset">{{ $product->name }}</a>
 
 </h5>
 
@@ -602,6 +610,8 @@ $product->description ?? 'Premium quality product from Smart Basket.',
 
 
 </p>
+
+<a href="{{ route('product.show', $product) }}" class="stretched-link" aria-label="View {{ $product->name }} details"></a>
 
 
 

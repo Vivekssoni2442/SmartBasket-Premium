@@ -105,6 +105,11 @@ body { background: linear-gradient(135deg, #020617, #000, #111827); color: #fff;
                 <input type="file" name="image" id="imageInput" class="form-control d-none" accept="image/jpeg,image/png,image/jpg,image/webp" required onchange="previewImage(this)">
                 <img id="imagePreview" class="image-preview" src="" alt="Preview">
             </div>
+            <div class="col-12">
+                <label class="form-label">Additional Product Images</label>
+                <input type="file" name="images[]" class="form-control" multiple accept="image/jpeg,image/png,image/jpg,image/webp">
+                <small class="text-muted">Optional: upload up to 8 extra views (front, back, side, detail).</small>
+            </div>
             <div class="col-12 mt-4">
                 <button type="submit" class="btn-submit">
                     <i class="fa-solid fa-plus"></i> ADD PRODUCT
