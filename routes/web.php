@@ -20,6 +20,7 @@ use App\Http\Controllers\SecurityController;
 use App\Http\Controllers\VirtualTryOnController;
 use App\Http\Controllers\CustomerSettingsController;
 use App\Http\Controllers\SellerPaymentController;
+use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\FailedLoginAlert;
 /*
@@ -297,6 +298,10 @@ Route::get('/checkout', function () {
 });
 
 Route::post('/place-order', [OrderController::class, 'placeOrder'])->name('place.order');
+Route::get('/payments/{payment}', [PaymentController::class, 'show'])->name('payments.show');
+Route::post('/payments/{payment}/verify', [PaymentController::class, 'verify'])->name('payments.verify');
+Route::post('/payments/{payment}/cancel', [PaymentController::class, 'cancel'])->name('payments.cancel');
+Route::post('/payments/razorpay/webhook', [PaymentController::class, 'webhook'])->name('payments.razorpay.webhook');
 Route::get('/order-success', function () { return view('order-success'); });
 Route::get('/my-orders', [OrderController::class, 'myOrders'])->name('orders.index');
 Route::get('/order-details/{order}', [OrderController::class, 'show'])->name('orders.show');
