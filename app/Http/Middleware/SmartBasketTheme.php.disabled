@@ -1,0 +1,198 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Auth;
+
+class SmartBasketTheme
+{
+    /**
+     * Handle an incoming request.
+     */
+    public function handle(Request $request, Closure $next): Response
+    {
+        $response = $next($request);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Only modify HTML responses
+        |--------------------------------------------------------------------------
+        */
+
+        $contentType = $response->headers->get('Content-Type', '');
+
+        if (
+            !str_contains(strtolower($contentType), 'text/html')
+        ) {
+            return $response;
+        }
+
+        $content = $response->getContent();
+
+        if (!$content) {
+            return $response;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Determine user's saved theme
+        |--------------------------------------------------------------------------
+        */
+
+        $theme = 'system';
+
+        /*
+        |--------------------------------------------------------------------------
+        | Customer / normal authenticated user
+        |--------------------------------------------------------------------------
+        */
+
+        if (Auth::check()) {
+            $theme = Auth::user()->dark_mode ?? 'system';
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Seller session
+        |--------------------------------------------------------------------------
+        |
+        | Seller login in this project uses seller session.
+        |
+        */
+
+        if (
+            session()->has('seller_id') ||
+            session()->has('seller_profile_id')
+        ) {
+            try {
+                $seller = null;
+
+                if (session()->has('seller_id')) {
+                    $seller = \App\Models\SellerProfile::find(
+                        session('seller_id')
+                    );
+                }
+
+                if (!$seller && session()->has('seller_profile_id')) {
+                    $seller = \App\Models\SellerProfile::find(
+                        session('seller_profile_id')
+                    );
+                }
+
+                if ($seller) {
+                    $theme = $seller->theme ?? 'system';
+                }
+            } catch (\Throwable $e) {
+                // Keep default theme if seller profile cannot be loaded.
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validate theme
+        |--------------------------------------------------------------------------
+        */
+
+        if (!in_array($theme, ['light', 'dark', 'system'], true)) {
+            $theme = 'system';
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Global theme assets
+        |--------------------------------------------------------------------------
+        */
+
+        $themeCss = asset('css/premium-dark-theme.css');
+        $themeJs = asset('js/smartbasket-theme.js');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Meta information
+        |--------------------------------------------------------------------------
+        */
+
+        $themeMeta = '<meta name="smartbasket-user-theme" content="' .
+            e($theme) .
+            '">';
+
+        /*
+        |--------------------------------------------------------------------------
+        | CSS
+        |--------------------------------------------------------------------------
+        */
+
+        $themeLink =
+            '<link rel="stylesheet" href="' .
+            e($themeCss) .
+            '">';
+
+        /*
+        |--------------------------------------------------------------------------
+        | JavaScript
+        |--------------------------------------------------------------------------
+        */
+
+        $themeScript =
+            '<script src="' .
+            e($themeJs) .
+            '"></script>';
+
+        /*
+        |--------------------------------------------------------------------------
+        | Prevent duplicate injection
+        |--------------------------------------------------------------------------
+        */
+
+        if (!str_contains($content, 'smartbasket-theme.js')) {
+
+            /*
+            | Inject CSS + meta + JS before </head>
+            */
+
+            $headInjection =
+                $themeMeta .
+                $themeLink .
+                $themeScript;
+
+            $content = preg_replace(
+                '/<\/head>/i',
+                $headInjection . '</head>',
+                $content,
+                1
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Add current theme to HTML element
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            !str_contains($content, 'data-sb-server-theme')
+        ) {
+            $content = preg_replace(
+                '/<html([^>]*)>/i',
+                '<html$1 data-sb-server-theme="' .
+                    e($theme) .
+                    '">',
+                $content,
+                1
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Replace response content
+        |--------------------------------------------------------------------------
+        */
+
+        $response->setContent($content);
+
+        return $response;
+    }
+}

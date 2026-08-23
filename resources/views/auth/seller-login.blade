@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>SMART BASKET | Seller Login</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+
+/* =========================================================
+   RESET
+========================================================= */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+
+/* =========================================================
+   PAGE
+========================================================= */
+
+html,
+body{
+    width:100%;
+    height:100%;
+}
+
+body{
+
+    min-height:100vh;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    overflow:hidden;
+
+    position:relative;
+
+    background:
+        linear-gradient(
+            135deg,
+            #020617 0%,
+            #000000 50%,
+            #111827 100%
+        );
+
+}
+
+
+/* =========================================================
+   BACKGROUND GLOW
+========================================================= */
+
+body::before{
+
+    content:"";
+
+    position:absolute;
+
+    width:500px;
+    height:500px;
+
+    background:#00ff99;
+
+    opacity:.15;
+
+    filter:blur(150px);
+
+    top:-150px;
+    left:-150px;
+
+    pointer-events:none;
+
+}
+
+
+body::after{
+
+    content:"";
+
+    position:absolute;
+
+    width:500px;
+    height:500px;
+
+    background:#FFD700;
+
+    opacity:.15;
+
+    filter:blur(150px);
+
+    right:-150px;
+    bottom:-150px;
+
+    pointer-events:none;
+
+}
+
+
+/* =========================================================
+   SELLER LOGIN CARD
+   EXACT BACKGROUND = RGB(20, 21, 24)
+========================================================= */
+
+.card{
+
+    width:420px;
+
+    padding:40px;
+
+    border-radius:30px;
+
+    background:rgb(20, 21, 24) !important;
+
+    background-color:rgb(20, 21, 24) !important;
+
+    background-image:none !important;
+
+    backdrop-filter:none !important;
+
+    -webkit-backdrop-filter:none !important;
+
+    border:1px solid rgba(0,255,153,.5);
+
+    box-shadow:
+        0 0 50px rgba(0,255,153,.4);
+
+    position:relative;
+
+    z-index:5;
+
+    animation:show 1s ease;
+
+}
+
+
+/* =========================================================
+   CARD ANIMATION
+========================================================= */
+
+@keyframes show{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(80px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+
+
+/* =========================================================
+   LOGO
+========================================================= */
+
+.logo{
+
+    width:95px;
+
+    height:95px;
+
+    margin:auto;
+
+    border-radius:30px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:45px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #fff700,
+            #00cc77
+        );
+
+    box-shadow:
+        0 0 40px #d0ff00;
+
+}
+
+
+/* =========================================================
+   TITLE
+========================================================= */
+
+h1{
+
+    text-align:center;
+
+    margin-top:25px;
+
+    color:#ffffff;
+
+    font-size:35px;
+
+    font-weight:800;
+
+    letter-spacing:2px;
+
+}
+
+
+h1 span{
+
+    color:#00ff99;
+
+}
+
+
+/* =========================================================
+   SUBTITLE
+========================================================= */
+
+.subtitle{
+
+    text-align:center;
+
+    color:#cccccc;
+
+    font-size:13px;
+
+    margin:10px 0 35px;
+
+}
+
+
+/* =========================================================
+   ERROR MESSAGE
+========================================================= */
+
+.seller-error{
+
+    background:rgba(255,0,0,.20);
+
+    color:#ff6b6b;
+
+    padding:12px;
+
+    border-radius:10px;
+
+    text-align:center;
+
+    margin-bottom:20px;
+
+    font-weight:600;
+
+}
+
+
+/* =========================================================
+   SUCCESS MESSAGE
+========================================================= */
+
+.seller-success{
+
+    background:rgba(0,255,153,.20);
+
+    color:#00ff99;
+
+    padding:12px;
+
+    border-radius:10px;
+
+    text-align:center;
+
+    margin-bottom:20px;
+
+    font-weight:600;
+
+}
+
+
+/* =========================================================
+   INPUT
+========================================================= */
+
+.input-box{
+
+    margin-bottom:20px;
+
+}
+
+
+.input-box input{
+
+    width:100%;
+
+    height:55px;
+
+    padding:0 20px;
+
+    border:none;
+
+    outline:none;
+
+    border-radius:18px;
+
+    background:rgba(255,255,255,.12);
+
+    color:#ffffff;
+
+    font-size:15px;
+
+}
+
+
+.input-box input::placeholder{
+
+    color:#aaaaaa;
+
+}
+
+
+.input-box input:focus{
+
+    background:rgba(255,255,255,.15);
+
+    box-shadow:
+        0 0 0 2px rgba(0,255,153,.20);
+
+}
+
+
+/* =========================================================
+   OPTIONS
+========================================================= */
+
+.options{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    color:#ffffff;
+
+    font-size:13px;
+
+    margin-bottom:25px;
+
+}
+
+
+.options label{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:8px;
+
+    cursor:pointer;
+
+}
+
+
+.options input[type="checkbox"]{
+
+    width:16px;
+
+    height:16px;
+
+    cursor:pointer;
+
+    accent-color:#00ff99;
+
+}
+
+
+/* =========================================================
+   FORGOT PASSWORD
+========================================================= */
+
+.forgot-password{
+
+    color:#00ff99;
+
+    text-decoration:none;
+
+    font-weight:600;
+
+    transition:.2s ease;
+
+}
+
+
+.forgot-password:hover{
+
+    color:#ffffff;
+
+    text-decoration:underline;
+
+}
+
+
+/* =========================================================
+   LOGIN AS SELLER BUTTON
+   NORMAL = DARK
+   HOVER = GREEN
+========================================================= */
+
+button{
+
+    width:100%;
+
+    height:55px;
+
+    border:none;
+
+    border-radius:20px;
+
+    background:rgb(20, 21, 24) !important;
+
+    background-color:rgb(20, 21, 24) !important;
+
+    background-image:none !important;
+
+    color:#00ff99 !important;
+
+    font-size:18px;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:
+        background-color .25s ease,
+        color .25s ease,
+        box-shadow .25s ease,
+        transform .25s ease;
+
+}
+
+
+/* =========================================================
+   HOVER = GREEN
+========================================================= */
+
+button:hover{
+
+    background:#00ff99 !important;
+
+    background-color:#00ff99 !important;
+
+    background-image:none !important;
+
+    color:#000000 !important;
+
+    transform:scale(1.03);
+
+    box-shadow:
+        0 0 15px rgba(0,255,153,.55),
+        0 0 30px rgba(0,255,153,.30);
+
+}
+
+
+/* =========================================================
+   CLICK
+========================================================= */
+
+button:active{
+
+    background:#00ff99 !important;
+
+    background-color:#00ff99 !important;
+
+    color:#000000 !important;
+
+    transform:scale(.98);
+
+}
+
+
+/* =========================================================
+   CUSTOMER LOGIN
+========================================================= */
+
+.back{
+
+    display:block;
+
+    text-align:center;
+
+    margin-top:25px;
+
+    color:#FFD700;
+
+    text-decoration:none;
+
+    font-weight:600;
+
+    transition:.2s ease;
+
+}
+
+
+.back:hover{
+
+    color:#ffffff;
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media(max-width:500px){
+
+    .card{
+
+        width:calc(100% - 30px);
+
+        padding:30px 22px;
+
+    }
+
+
+    h1{
+
+        font-size:29px;
+
+    }
+
+
+    .options{
+
+        font-size:12px;
+
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="card">
+
+
+    <!-- =====================================================
+         LOGO
+    ====================================================== -->
+
+    <div class="logo">
+        🏪
+    </div>
+
+
+    <!-- =====================================================
+         TITLE
+    ====================================================== -->
+
+    <h1>
+        SELLER <span>LOGIN</span>
+    </h1>
+
+
+    <div class="subtitle">
+        SMART BASKET SELLER PANEL
+    </div>
+
+
+    <!-- =====================================================
+         ERROR
+    ====================================================== -->
+
+    @if(session('error'))
+
+        <div class="seller-error">
+            {{ session('error') }}
+        </div>
+
+    @endif
+
+
+    <!-- =====================================================
+         SUCCESS
+    ====================================================== -->
+
+    @if(session('success'))
+
+        <div class="seller-success">
+            {{ session('success') }}
+        </div>
+
+    @endif
+
+
+    <!-- =====================================================
+         SELLER LOGIN FORM
+    ====================================================== -->
+
+    <form
+        method="POST"
+        action="{{ route('seller.login.submit') }}"
+    >
+
+        @csrf
+
+
+        <!-- EMAIL -->
+
+        <div class="input-box">
+
+            <input
+                type="email"
+                name="email"
+                value="{{ old('email') }}"
+                placeholder="Enter Seller Email"
+                autocomplete="email"
+                required
+            >
+
+        </div>
+
+
+        <!-- PASSWORD -->
+
+        <div class="input-box">
+
+            <input
+                type="password"
+                name="password"
+                placeholder="Enter Password"
+                autocomplete="current-password"
+                required
+            >
+
+        </div>
+
+
+        <!-- OPTIONS -->
+
+        <div class="options">
+
+
+            <label>
+
+                <input
+                    type="checkbox"
+                    name="remember"
+                    value="1"
+                >
+
+                Remember Me
+
+            </label>
+
+
+            <a
+                class="forgot-password"
+                href="{{ url('/forgot-password') }}"
+            >
+                Forgot Password?
+            </a>
+
+
+        </div>
+
+
+        <!-- LOGIN BUTTON -->
+
+        <button type="submit">
+            LOGIN AS SELLER
+        </button>
+
+
+    </form>
+
+
+    <!-- =====================================================
+         CUSTOMER LOGIN
+    ====================================================== -->
+
+    <a
+        class="back"
+        href="{{ url('/login') }}"
+    >
+        ← Customer Login
+    </a>
+
+
+</div>
+
+
+</body>
+
+</html>

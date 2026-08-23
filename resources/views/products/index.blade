@@ -1,346 +1,2477 @@
+```html
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="csrf-token"
+        content="{{ csrf_token() }}"
+    >
+
     <title>Smart Basket Products</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <!-- AI Camera Shopping Assistant (additive only, does not affect existing styles) -->
-    <link rel="stylesheet" href="{{ asset('css/ai-camera.css') }}">
-   <style>
-body{
-    background:#020617;
-    color:#fff;
-    min-height:100vh;
-}
 
-.product-card{
-    background:#111827;
-    border:1px solid #334155;
-    border-radius:1.2rem;
-    overflow:hidden;
-    transition:.3s;
-    box-shadow:0 10px 30px rgba(0,0,0,.35);
-}
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
 
-.product-card:hover{
-    transform:translateY(-5px);
-    box-shadow:0 15px 35px rgba(59,130,246,.25);
-}
+    <link
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+        rel="stylesheet"
+    >
 
-.product-img{
-    height:220px;
-    object-fit:cover;
-    width:100%;
-}
+    <link
+        rel="stylesheet"
+        href="{{ asset('css/ai-camera.css') }}"
+    >
 
-.pill{
-    font-size:.8rem;
-}
+    <style>
 
-.action-btn{
-    border-radius:999px;
-    font-weight:600;
-}
+        /* =========================================================
+           SMART BASKET GLOBAL THEME
+        ========================================================= */
 
-form{
-    background:#111827 !important;
-}
+        :root {
 
-.form-control,
-.form-select{
-    background:#1e293b;
-    color:#fff;
-    border:1px solid #334155;
-}
+            --sb-bg: #020617;
+            --sb-surface: #0f172a;
+            --sb-card: #111827;
+            --sb-card-2: #1e293b;
+            --sb-border: #334155;
 
-.form-control:focus,
-.form-select:focus{
-    background:#1e293b;
-    color:#fff;
-    border-color:#3b82f6;
-    box-shadow:none;
-}
+            --sb-text: #f8fafc;
+            --sb-text-secondary: #cbd5e1;
+            --sb-muted: #94a3b8;
 
-.card-title,
-h1,
-h5,
-label{
-    color:#fff;
-}
+            --sb-primary: #3b82f6;
+            --sb-primary-hover: #60a5fa;
 
-.text-muted{
-    color:#cbd5e1 !important;
-}
-</style>
+            --sb-gold: #fbbf24;
+
+            --sb-shadow: rgba(0,0,0,.35);
+
+            --sb-overlay: rgba(2,6,23,.92);
+        }
+
+
+        /* =========================================================
+           LIGHT THEME
+        ========================================================= */
+
+        html[data-theme="light"] {
+
+            --sb-bg: #f8fafc;
+            --sb-surface: #ffffff;
+            --sb-card: #ffffff;
+            --sb-card-2: #f1f5f9;
+            --sb-border: #dbe2ea;
+
+            --sb-text: #0f172a;
+            --sb-text-secondary: #475569;
+            --sb-muted: #64748b;
+
+            --sb-primary: #2563eb;
+            --sb-primary-hover: #1d4ed8;
+
+            --sb-gold: #d97706;
+
+            --sb-shadow: rgba(15,23,42,.10);
+
+            --sb-overlay: rgba(255,255,255,.94);
+        }
+
+
+        /* =========================================================
+           GLOBAL
+        ========================================================= */
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100%;
+        }
+
+
+        html {
+            background: var(--sb-bg) !important;
+            color: var(--sb-text) !important;
+        }
+
+
+        body {
+
+            min-height: 100vh;
+
+            overflow-x: hidden;
+
+            font-family:
+                'Poppins',
+                Arial,
+                sans-serif;
+
+            background:
+                var(--sb-bg) !important;
+
+            color:
+                var(--sb-text) !important;
+
+            transition:
+                background-color .25s ease,
+                color .25s ease;
+        }
+
+
+        /* =========================================================
+           TEXT
+        ========================================================= */
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        label {
+
+            color:
+                var(--sb-text) !important;
+        }
+
+
+        p {
+
+            color:
+                var(--sb-text-secondary);
+        }
+
+
+        .text-muted {
+
+            color:
+                var(--sb-muted) !important;
+        }
+
+
+        /* =========================================================
+           BOOTSTRAP
+        ========================================================= */
+
+        .container {
+            max-width: 1400px;
+        }
+
+
+        .text-primary {
+
+            color:
+                var(--sb-primary) !important;
+        }
+
+
+        .btn-primary {
+
+            background:
+                var(--sb-primary) !important;
+
+            border-color:
+                var(--sb-primary) !important;
+        }
+
+
+        .btn-primary:hover {
+
+            background:
+                var(--sb-primary-hover) !important;
+
+            border-color:
+                var(--sb-primary-hover) !important;
+        }
+
+
+        /* =========================================================
+           TOP BAR
+        ========================================================= */
+
+        .sb-topbar {
+
+            width: 100%;
+            height: 70px;
+
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+
+            padding: 12px 24px;
+
+            position: sticky;
+            top: 0;
+
+            z-index: 5000;
+
+            background:
+                var(--sb-overlay) !important;
+
+            backdrop-filter:
+                blur(18px);
+
+            -webkit-backdrop-filter:
+                blur(18px);
+
+            border-bottom:
+                1px solid var(--sb-border) !important;
+
+            box-shadow:
+                0 8px 30px var(--sb-shadow);
+
+            transition:
+                background-color .25s ease,
+                border-color .25s ease,
+                box-shadow .25s ease;
+        }
+
+
+        /* =========================================================
+           MENU BUTTON
+        ========================================================= */
+
+        .sb-menu-wrapper {
+            position: relative;
+        }
+
+
+        .sb-menu-button {
+
+            width: 48px;
+            height: 48px;
+
+            border:
+                1px solid var(--sb-border) !important;
+
+            border-radius: 50%;
+
+            background:
+                var(--sb-card) !important;
+
+            color:
+                var(--sb-text) !important;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            cursor: pointer;
+
+            transition:
+                all .25s ease;
+
+            box-shadow:
+                0 8px 25px var(--sb-shadow);
+        }
+
+
+        .sb-menu-button:hover {
+
+            transform:
+                translateY(-2px);
+
+            color:
+                var(--sb-gold) !important;
+
+            border-color:
+                var(--sb-gold) !important;
+        }
+
+
+        .sb-menu-button:active {
+            transform: scale(.94);
+        }
+
+
+        .sb-menu-button i {
+            font-size: 20px;
+        }
+
+
+        /* =========================================================
+           DROPDOWN
+        ========================================================= */
+
+        .sb-dropdown {
+
+            position: absolute;
+
+            top: calc(100% + 12px);
+            right: 0;
+
+            width: 250px;
+
+            padding: 10px;
+
+            border-radius: 18px;
+
+            background:
+                var(--sb-card) !important;
+
+            border:
+                1px solid var(--sb-border) !important;
+
+            box-shadow:
+                0 25px 60px var(--sb-shadow);
+
+            opacity: 0;
+            visibility: hidden;
+
+            transform:
+                translateY(-8px)
+                scale(.97);
+
+            transform-origin:
+                top right;
+
+            transition:
+                opacity .2s ease,
+                visibility .2s ease,
+                transform .2s ease;
+        }
+
+
+        .sb-dropdown.show {
+
+            opacity: 1;
+            visibility: visible;
+
+            transform:
+                translateY(0)
+                scale(1);
+        }
+
+
+        .sb-menu-title {
+
+            padding:
+                8px 12px 10px;
+
+            font-size: 12px;
+            font-weight: 700;
+
+            color:
+                var(--sb-muted) !important;
+
+            text-transform:
+                uppercase;
+
+            letter-spacing:
+                .8px;
+        }
+
+
+        .sb-menu-item {
+
+            width: 100%;
+
+            display: flex;
+            align-items: center;
+
+            gap: 12px;
+
+            padding: 12px 13px;
+
+            margin-bottom: 3px;
+
+            border-radius: 12px;
+
+            color:
+                var(--sb-text) !important;
+
+            text-decoration:
+                none !important;
+
+            font-size: 14px;
+            font-weight: 600;
+
+            transition:
+                all .2s ease;
+        }
+
+
+        .sb-menu-item:hover {
+
+            background:
+                var(--sb-card-2) !important;
+
+            color:
+                var(--sb-gold) !important;
+
+            transform:
+                translateX(3px);
+        }
+
+
+        .sb-menu-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+
+        .sb-menu-item .menu-arrow {
+
+            margin-left: auto;
+
+            font-size: 11px;
+
+            color:
+                var(--sb-muted) !important;
+        }
+
+
+        .sb-menu-divider {
+
+            height: 1px;
+
+            background:
+                var(--sb-border) !important;
+
+            margin:
+                8px 4px;
+        }
+
+
+        /* =========================================================
+           SEARCH
+        ========================================================= */
+
+        .sb-search-form {
+
+            background:
+                var(--sb-card) !important;
+
+            border:
+                1px solid var(--sb-border) !important;
+
+            box-shadow:
+                0 10px 30px var(--sb-shadow) !important;
+        }
+
+
+        .form-control,
+        .form-select {
+
+            background:
+                var(--sb-card-2) !important;
+
+            color:
+                var(--sb-text) !important;
+
+            border:
+                1px solid var(--sb-border) !important;
+
+            min-height:
+                44px;
+        }
+
+
+        .form-control::placeholder {
+
+            color:
+                var(--sb-muted) !important;
+        }
+
+
+        .form-control:focus,
+        .form-select:focus {
+
+            background:
+                var(--sb-card-2) !important;
+
+            color:
+                var(--sb-text) !important;
+
+            border-color:
+                var(--sb-primary) !important;
+
+            box-shadow:
+                0 0 0 .2rem
+                rgba(59,130,246,.15) !important;
+        }
+
+
+        .form-select option {
+
+            background:
+                var(--sb-card);
+
+            color:
+                var(--sb-text);
+        }
+
+
+        /* =========================================================
+           PRODUCT CARD
+        ========================================================= */
+
+        .product-card {
+
+            background:
+                var(--sb-card) !important;
+
+            border:
+                1px solid var(--sb-border) !important;
+
+            border-radius:
+                1.2rem;
+
+            overflow:
+                hidden;
+
+            transition:
+                transform .3s ease,
+                box-shadow .3s ease,
+                border-color .3s ease,
+                background-color .25s ease;
+
+            box-shadow:
+                0 10px 30px var(--sb-shadow);
+
+            height:
+                100%;
+        }
+
+
+        .product-card:hover {
+
+            transform:
+                translateY(-5px);
+
+            border-color:
+                var(--sb-primary) !important;
+
+            box-shadow:
+                0 15px 35px
+                rgba(59,130,246,.18);
+        }
+
+
+        .product-img {
+
+            height:
+                220px;
+
+            object-fit:
+                cover;
+
+            width:
+                100%;
+
+            display:
+                block;
+
+            background:
+                var(--sb-card-2);
+        }
+
+
+        .product-card .card-body {
+
+            min-height:
+                255px;
+
+            display:
+                flex;
+
+            flex-direction:
+                column;
+
+            padding:
+                18px;
+        }
+
+
+        .product-card .card-title {
+
+            color:
+                var(--sb-text) !important;
+
+            font-size:
+                17px;
+
+            font-weight:
+                700;
+
+            line-height:
+                1.35;
+
+            display:
+                -webkit-box;
+
+            -webkit-line-clamp:
+                2;
+
+            -webkit-box-orient:
+                vertical;
+
+            overflow:
+                hidden;
+
+            min-height:
+                46px;
+        }
+
+
+        .product-card .product-description {
+
+            color:
+                var(--sb-text-secondary) !important;
+
+            line-height:
+                1.45;
+
+            display:
+                -webkit-box;
+
+            -webkit-line-clamp:
+                3;
+
+            -webkit-box-orient:
+                vertical;
+
+            overflow:
+                hidden;
+
+            min-height:
+                63px;
+        }
+
+
+        .product-card .product-price {
+
+            color:
+                var(--sb-text) !important;
+
+            font-size:
+                20px;
+
+            font-weight:
+                800;
+
+            white-space:
+                nowrap;
+        }
+
+
+        /* =========================================================
+           BADGE
+        ========================================================= */
+
+        .pill {
+
+            font-size:
+                .75rem;
+
+            white-space:
+                nowrap;
+
+            background:
+                rgba(59,130,246,.12) !important;
+
+            color:
+                var(--sb-primary) !important;
+        }
+
+
+        /* =========================================================
+           BUTTONS
+        ========================================================= */
+
+        .action-btn {
+
+            border-radius:
+                999px;
+
+            font-weight:
+                600;
+
+            min-height:
+                38px;
+
+            white-space:
+                nowrap;
+        }
+
+
+        .btn-outline-light {
+
+            color:
+                var(--sb-text) !important;
+
+            border-color:
+                var(--sb-border) !important;
+
+            background:
+                transparent !important;
+        }
+
+
+        .btn-outline-light:hover {
+
+            color:
+                var(--sb-text) !important;
+
+            background:
+                var(--sb-card-2) !important;
+
+            border-color:
+                var(--sb-primary) !important;
+        }
+
+
+        /* =========================================================
+           RECENTLY VIEWED
+        ========================================================= */
+
+        .recent-card {
+
+            background:
+                var(--sb-card) !important;
+
+            border:
+                1px solid var(--sb-border) !important;
+
+            color:
+                var(--sb-text) !important;
+
+            box-shadow:
+                0 8px 25px var(--sb-shadow) !important;
+        }
+
+
+        .recent-card h6 {
+
+            color:
+                var(--sb-text) !important;
+        }
+
+
+        /* =========================================================
+           EMPTY
+        ========================================================= */
+
+        .sb-empty {
+
+            background:
+                var(--sb-card) !important;
+
+            border:
+                1px solid var(--sb-border) !important;
+
+            color:
+                var(--sb-text) !important;
+        }
+
+
+        /* =========================================================
+           PAGINATION
+        ========================================================= */
+
+        .pagination .page-link {
+
+            background:
+                var(--sb-card) !important;
+
+            color:
+                var(--sb-text-secondary) !important;
+
+            border-color:
+                var(--sb-border) !important;
+        }
+
+
+        .pagination .page-link:hover {
+
+            background:
+                var(--sb-card-2) !important;
+
+            color:
+                var(--sb-primary) !important;
+        }
+
+
+        .pagination .active .page-link {
+
+            background:
+                var(--sb-primary) !important;
+
+            color:
+                #ffffff !important;
+
+            border-color:
+                var(--sb-primary) !important;
+        }
+
+
+        /* =========================================================
+           MODAL
+        ========================================================= */
+
+        .modal-content {
+
+            background:
+                var(--sb-card) !important;
+
+            color:
+                var(--sb-text) !important;
+
+            border:
+                1px solid var(--sb-border) !important;
+        }
+
+
+        .modal-header {
+
+            border-bottom-color:
+                var(--sb-border) !important;
+        }
+
+
+        .modal-title {
+
+            color:
+                var(--sb-text) !important;
+        }
+
+
+        html[data-theme="dark"]
+        .modal-header .btn-close {
+
+            filter:
+                invert(1);
+        }
+
+
+        html[data-theme="light"]
+        .modal-header .btn-close {
+
+            filter:
+                none;
+        }
+
+
+        /* =========================================================
+           LIGHT MODE HARD OVERRIDES
+           ========================================================= */
+
+        html[data-theme="light"] body {
+
+            background:
+                #f8fafc !important;
+
+            color:
+                #0f172a !important;
+        }
+
+
+        html[data-theme="light"] .container {
+
+            color:
+                #0f172a;
+        }
+
+
+        html[data-theme="light"] .product-card,
+        html[data-theme="light"] .recent-card,
+        html[data-theme="light"] .sb-search-form,
+        html[data-theme="light"] .sb-dropdown,
+        html[data-theme="light"] .sb-empty {
+
+            background:
+                #ffffff !important;
+
+            color:
+                #0f172a !important;
+        }
+
+
+        html[data-theme="light"] .form-control,
+        html[data-theme="light"] .form-select {
+
+            background:
+                #ffffff !important;
+
+            color:
+                #0f172a !important;
+
+            border-color:
+                #cbd5e1 !important;
+        }
+
+
+        html[data-theme="light"] .btn-outline-light {
+
+            color:
+                #334155 !important;
+
+            border-color:
+                #cbd5e1 !important;
+        }
+
+
+        html[data-theme="light"] .btn-outline-light:hover {
+
+            background:
+                #f1f5f9 !important;
+
+            color:
+                #0f172a !important;
+        }
+
+
+        html[data-theme="light"] .text-muted {
+
+            color:
+                #64748b !important;
+        }
+
+
+        html[data-theme="light"] .product-card .product-description {
+
+            color:
+                #64748b !important;
+        }
+
+
+        html[data-theme="light"] .pagination .page-link {
+
+            background:
+                #ffffff !important;
+
+            color:
+                #334155 !important;
+
+            border-color:
+                #e2e8f0 !important;
+        }
+
+
+        html[data-theme="light"] .modal-content {
+
+            background:
+                #ffffff !important;
+
+            color:
+                #0f172a !important;
+        }
+
+
+        /* =========================================================
+           THEME TRANSITION
+        ========================================================= */
+
+        html,
+        body,
+        .sb-topbar,
+        .sb-dropdown,
+        .sb-menu-button,
+        .sb-menu-item,
+        .sb-search-form,
+        .product-card,
+        .recent-card,
+        .sb-empty,
+        .form-control,
+        .form-select,
+        .modal-content {
+
+            transition:
+                background-color .25s ease,
+                color .25s ease,
+                border-color .25s ease,
+                box-shadow .25s ease;
+        }
+
+
+        /* =========================================================
+           MOBILE
+        ========================================================= */
+
+        @media(max-width:576px) {
+
+            .sb-topbar {
+
+                height:
+                    62px;
+
+                padding:
+                    8px 14px;
+            }
+
+
+            .sb-menu-button {
+
+                width:
+                    44px;
+
+                height:
+                    44px;
+            }
+
+
+            .sb-dropdown {
+
+                width:
+                    calc(100vw - 28px);
+
+                right:
+                    -2px;
+            }
+
+
+            .container {
+
+                padding-left:
+                    14px;
+
+                padding-right:
+                    14px;
+            }
+
+
+            .product-img {
+
+                height:
+                    210px;
+            }
+
+
+            .product-card .card-body {
+
+                min-height:
+                    auto;
+            }
+
+        }
+
+    </style>
+
 </head>
+
+
 <body>
-    <div class="d-flex justify-content-end mb-4 gap-2 flex-wrap">
-        <a href="{{ route('profile') }}" class="btn btn-outline-light rounded-pill px-4">
-            <i class="fa fa-user"></i> Profile
-        </a>
-        <a href="{{route('cart.index')}}" class="btn btn-dark rounded-pill px-4">
-            <i class="fa fa-shopping-cart"></i> Cart
-        </a>
-    </div>
-    <div class="container py-5">
-        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
-            <div>
-                <p class="text-primary fw-semibold mb-2">Smart Basket</p>
-                <h1 class="display-6 fw-bold mb-0">Featured Products</h1>
-                <p class="text-muted mb-0">Fresh items added by the seller, ready for customers.</p>
+
+
+<!-- =========================================================
+     CUSTOMER TOP MENU
+========================================================= -->
+
+<header class="sb-topbar">
+
+    <div class="sb-menu-wrapper">
+
+        <button
+            type="button"
+            class="sb-menu-button"
+            id="sbMenuButton"
+            aria-label="Open customer menu"
+            aria-expanded="false"
+        >
+            <i class="fa-solid fa-ellipsis-vertical"></i>
+        </button>
+
+
+        <div
+            class="sb-dropdown"
+            id="sbCustomerMenu"
+        >
+
+            <div class="sb-menu-title">
+
+                <i class="fa-solid fa-basket-shopping me-1"></i>
+
+                Smart Basket
+
             </div>
-            <div class="text-muted fw-semibold">{{ $pagedProducts->total() }} Products</div>
+
+
+            <a
+                href="{{ route('products.index') }}"
+                class="sb-menu-item"
+            >
+
+                <i class="fa-solid fa-house"></i>
+
+                <span>Home</span>
+
+                <i class="fa-solid fa-chevron-right menu-arrow"></i>
+
+            </a>
+
+
+            <a
+                href="{{ route('orders.index') }}"
+                class="sb-menu-item"
+            >
+
+                <i class="fa-solid fa-box"></i>
+
+                <span>My Orders</span>
+
+                <i class="fa-solid fa-chevron-right menu-arrow"></i>
+
+            </a>
+
+
+            <a
+                href="{{ route('profile') }}"
+                class="sb-menu-item"
+            >
+
+                <i class="fa-solid fa-user"></i>
+
+                <span>Profile</span>
+
+                <i class="fa-solid fa-chevron-right menu-arrow"></i>
+
+            </a>
+
+
+            @if(Route::has('settings'))
+
+                <a
+                    href="{{ route('settings') }}"
+                    class="sb-menu-item"
+                >
+
+                    <i class="fa-solid fa-gear"></i>
+
+                    <span>Settings</span>
+
+                    <i class="fa-solid fa-chevron-right menu-arrow"></i>
+
+                </a>
+
+            @endif
+
+
+            <a
+                href="{{ route('cart.index') }}"
+                class="sb-menu-item"
+            >
+
+                <i class="fa-solid fa-cart-shopping"></i>
+
+                <span>Cart</span>
+
+                <i class="fa-solid fa-chevron-right menu-arrow"></i>
+
+            </a>
+
+
+            <div class="sb-menu-divider"></div>
+
+
+            <a
+                href="{{ route('products.index') }}"
+                class="sb-menu-item"
+            >
+
+                <i class="fa-solid fa-store"></i>
+
+                <span>All Products</span>
+
+                <i class="fa-solid fa-chevron-right menu-arrow"></i>
+
+            </a>
+
         </div>
 
-        <form method="GET" action="{{ route('products.index') }}" class="row g-3 rounded-4 p-3 shadow-sm mb-4">
-            <div class="col-12 col-md-6">
-                <label class="form-label small text-muted">Search</label>
-                <input type="text" name="search" class="form-control" value="{{ $search }}" placeholder="Search products or category">
-            </div>
-            <div class="col-12 col-md-4">
-                <label class="form-label small text-muted">Category</label>
-                <select name="category" class="form-select">
-                    <option value="">All Categories</option>
-                    @foreach($categories as $categoryOption)
-                        <option value="{{ $categoryOption }}" {{ $category === $categoryOption ? 'selected' : '' }}>{{ $categoryOption }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-12 col-md-2 d-flex align-items-end">
-                <button class="btn btn-primary w-100 action-btn">Apply</button>
-            </div>
-        </form>
-
-        @php
-            $recentlyViewed = []; 
-            if (auth()->check()) {
-                $recentlyViewed = \App\Models\RecentlyViewedProduct::with('product')
-                    ->where('user_id', auth()->id())
-                    ->latest()
-                    ->limit(4)
-                    ->get();
-            }
-        @endphp
-
-        @if(auth()->check() && $recentlyViewed->isNotEmpty())
-            <div class="mb-4">
-                <h5 class="fw-semibold mb-3">Recently viewed</h5>
-                <div class="row g-3">
-                    @foreach($recentlyViewed as $view)
-                        @if($view->product)
-                            <div class="col-12 col-sm-6 col-lg-3">
-                                <div class="card border-0 shadow-sm rounded-4">
-                                    <div class="card-body">
-                                        <h6 class="fw-semibold mb-1">{{ $view->product->name }}</h6>
-                                        <p class="text-muted small mb-2">{{ $view->product->category }}</p>
-                                        <a href="{{ route('products.show', $view->product->id) }}" class="btn btn-outline-light btn-sm">View</a>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-                    @endforeach
-                </div>
-            </div>
-        @endif
-
-        @if($pagedProducts->count() > 0)
-            <div class="row g-4">
-                @foreach($pagedProducts as $product)
-                    <div class="col-12 col-sm-6 col-lg-3">
-                        <div class="card product-card h-100">
-                            <img src="{{ asset('products/' . $product->image) }}" class="product-img" alt="{{ $product->name }}">
-                            <div class="card-body d-flex flex-column">
-                                <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-                                    <div>
-                                        <h5 class="card-title mb-1">{{ $product->name }}</h5>
-                                        <p class="text-muted mb-0 small">{{ $product->category }}</p>
-                                    </div>
-                                    <span class="badge bg-primary-subtle text-primary pill">In Stock</span>
-                                </div>
-
-                                <div class="d-flex align-items-center text-warning mb-2">
-                                    <i class="fa-solid fa-star"></i>
-                                    <span class="ms-2 fw-semibold">{{ number_format($product->rating, 1) }}</span>
-                                    <span class="text-muted ms-2">• {{ $product->stock }} left</span>
-                                </div>
-
-                                <p class="text-muted small flex-grow-1">{{ $product->description ? \Illuminate\Support\Str::limit($product->description, 90) : 'Premium quality product from Smart Basket.' }}</p>
-
-                                <div class="mt-3">
-
-    <!-- Price Top -->
-    <div class="fw-bold fs-5 text-white mb-3">
-        ₹{{ number_format($product->price, 2) }}
     </div>
 
-    <!-- Buttons Bottom -->
-    <div class="d-flex gap-2">
+</header>
 
-        <a href="{{ route('products.show', $product->id) }}" class="btn btn-outline-dark btn-sm action-btn flex-fill">
-            View
-        </a>
 
-        <a href="{{ url('/buy-now/' . $product->id) }}" 
-           class="btn btn-outline-light btn-sm action-btn flex-fill">
-            Buy Now
-        </a>
+<!-- =========================================================
+     MAIN
+========================================================= -->
 
-        <form action="{{ route('cart.add', $product->id) }}" method="POST" class="flex-fill">
-            @csrf
-            <button type="submit" class="btn btn-primary btn-sm action-btn w-100">
-                Add to Cart
+<div class="container py-5">
+
+
+    <div
+        class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4"
+    >
+
+        <div>
+
+            <p class="text-primary fw-semibold mb-2">
+                Smart Basket
+            </p>
+
+            <h1 class="display-6 fw-bold mb-0">
+                Featured Products
+            </h1>
+
+            <p class="text-muted mb-0">
+                Fresh items added by the seller, ready for customers.
+            </p>
+
+        </div>
+
+
+        <div class="text-muted fw-semibold">
+
+            {{ $pagedProducts->total() }} Products
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         SEARCH FILTER
+    ===================================================== -->
+
+    <form
+        method="GET"
+        action="{{ route('products.index') }}"
+        class="row g-3 rounded-4 p-3 shadow-sm mb-4 sb-search-form"
+    >
+
+        <div class="col-12 col-md-6">
+
+            <label class="form-label small text-muted">
+                Search
+            </label>
+
+            <input
+                type="text"
+                name="search"
+                class="form-control"
+                value="{{ $search }}"
+                placeholder="Search products or category"
+            >
+
+        </div>
+
+
+        <div class="col-12 col-md-4">
+
+            <label class="form-label small text-muted">
+                Category
+            </label>
+
+            <select
+                name="category"
+                class="form-select"
+            >
+
+                <option value="">
+                    All Categories
+                </option>
+
+                @foreach($categories as $categoryOption)
+
+                    <option
+                        value="{{ $categoryOption }}"
+                        {{ $category === $categoryOption ? 'selected' : '' }}
+                    >
+
+                        {{ $categoryOption }}
+
+                    </option>
+
+                @endforeach
+
+            </select>
+
+        </div>
+
+
+        <div class="col-12 col-md-2 d-flex align-items-end">
+
+            <button
+                type="submit"
+                class="btn btn-primary w-100 action-btn"
+            >
+
+                Apply
+
             </button>
-        </form>
 
-    </div>
+        </div>
+
+    </form>
+
+
+    <!-- =====================================================
+         RECENTLY VIEWED
+    ===================================================== -->
+
+    @php
+
+        $recentlyViewed = [];
+
+        if (auth()->check()) {
+
+            $recentlyViewed =
+                \App\Models\RecentlyViewedProduct::with('product')
+                ->where('user_id', auth()->id())
+                ->latest()
+                ->limit(4)
+                ->get();
+
+        }
+
+    @endphp
+
+
+    @if(auth()->check() && $recentlyViewed->isNotEmpty())
+
+        <div class="mb-4">
+
+            <h5 class="fw-semibold mb-3">
+                Recently viewed
+            </h5>
+
+
+            <div class="row g-3">
+
+                @foreach($recentlyViewed as $view)
+
+                    @if($view->product)
+
+                        <div class="col-12 col-sm-6 col-lg-3">
+
+                            <div class="card recent-card border-0 shadow-sm rounded-4 h-100">
+
+                                <div class="card-body">
+
+                                    <h6 class="fw-semibold mb-1">
+
+                                        {{ $view->product->name }}
+
+                                    </h6>
+
+                                    <p class="text-muted small mb-2">
+
+                                        {{ $view->product->category }}
+
+                                    </p>
+
+                                    <a
+                                        href="{{ route('products.show', $view->product->id) }}"
+                                        class="btn btn-outline-light btn-sm"
+                                    >
+
+                                        View
+
+                                    </a>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    @endif
+
+                @endforeach
+
+            </div>
+
+        </div>
+
+    @endif
+
+
+    <!-- =====================================================
+         PRODUCTS
+    ===================================================== -->
+
+    @if($pagedProducts->count() > 0)
+
+        <div class="row g-4">
+
+            @foreach($pagedProducts as $product)
+
+                <div class="col-12 col-sm-6 col-lg-3">
+
+                    <div class="card product-card h-100">
+
+                        <a
+                            href="{{ route('products.show', $product->id) }}"
+                            class="text-decoration-none"
+                        >
+
+                            <img
+                                src="{{ asset('products/' . $product->image) }}"
+                                class="product-img"
+                                alt="{{ $product->name }}"
+                                onerror="this.onerror=null;this.src='{{ asset('products/index.php') }}';"
+                            >
+
+                        </a>
+
+
+                        <div class="card-body">
+
+                            <div
+                                class="d-flex justify-content-between align-items-start gap-2 mb-2"
+                            >
+
+                                <div class="min-w-0">
+
+                                    <h5 class="card-title mb-1">
+
+                                        {{ $product->name }}
+
+                                    </h5>
+
+                                    <p class="text-muted mb-0 small">
+
+                                        {{ $product->category }}
+
+                                    </p>
+
+                                </div>
+
+
+                                <span class="badge pill">
+
+                                    In Stock
+
+                                </span>
+
+                            </div>
+
+
+                            <div class="d-flex align-items-center text-warning mb-2">
+
+                                <i class="fa-solid fa-star"></i>
+
+                                <span class="ms-2 fw-semibold">
+
+                                    {{ number_format($product->rating, 1) }}
+
+                                </span>
+
+                                <span class="text-muted ms-2">
+
+                                    • {{ $product->stock }} left
+
+                                </span>
+
+                            </div>
+
+
+                            <p class="product-description small mb-2">
+
+                                {{
+                                    $product->description
+                                    ? \Illuminate\Support\Str::limit(
+                                        $product->description,
+                                        90
+                                    )
+                                    : 'Premium quality product from Smart Basket.'
+                                }}
+
+                            </p>
+
+
+                            <div class="mt-auto">
+
+                                <div class="product-price mb-3">
+
+                                    ₹{{ number_format($product->price, 2) }}
+
+                                </div>
+
+
+                                <div class="d-flex gap-2">
+
+                                    <a
+                                        href="{{ route('products.show', $product->id) }}"
+                                        class="btn btn-outline-light btn-sm action-btn flex-fill"
+                                    >
+
+                                        View
+
+                                    </a>
+
+
+                                    <a
+                                        href="{{ url('/buy-now/' . $product->id) }}"
+                                        class="btn btn-outline-light btn-sm action-btn flex-fill"
+                                    >
+
+                                        Buy Now
+
+                                    </a>
+
+
+                                    <form
+                                        action="{{ route('cart.add', $product->id) }}"
+                                        method="POST"
+                                        class="flex-fill"
+                                    >
+
+                                        @csrf
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-primary btn-sm action-btn w-100"
+                                        >
+
+                                            <i class="fa-solid fa-cart-plus"></i>
+
+                                            <span class="d-none d-xl-inline">
+                                                Cart
+                                            </span>
+
+                                        </button>
+
+                                    </form>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            @endforeach
+
+        </div>
+
+
+        <div class="d-flex justify-content-center mt-5">
+
+            {{ $pagedProducts->appends(request()->query())->links('pagination::bootstrap-5') }}
+
+        </div>
+
+
+    @else
+
+        <div class="alert sb-empty text-center py-5 rounded-4">
+
+            <h4 class="fw-semibold mb-2">
+                No products found
+            </h4>
+
+            <p class="text-muted mb-0">
+                Try adjusting your search or category filter.
+            </p>
+
+        </div>
+
+    @endif
 
 </div>
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
 
-            <div class="d-flex justify-content-center mt-5">
-                {{ $pagedProducts->appends(request()->query())->links('pagination::bootstrap-5') }}
-            </div>
-        @else
-            <div class="alert alert-light border text-center py-5 rounded-4">
-                <h4 class="fw-semibold mb-2">No products found</h4>
-                <p class="text-muted mb-0">Try adjusting your search or category filter.</p>
-            </div>
-        @endif
-    </div>
 
-<!-- ========================================================================== -->
-<!-- AI Camera Shopping Assistant Modal (new, isolated — no existing code moved) -->
-<!-- ========================================================================== -->
-<div class="modal fade" id="aiCameraModal" tabindex="-1" aria-labelledby="aiCameraModalLabel" aria-hidden="true">
+<!-- =========================================================
+     AI CAMERA MODAL
+========================================================= -->
+
+<div
+    class="modal fade"
+    id="aiCameraModal"
+    tabindex="-1"
+    aria-labelledby="aiCameraModalLabel"
+    aria-hidden="true"
+>
+
     <div class="modal-dialog modal-dialog-centered modal-lg">
+
         <div class="modal-content">
+
             <div class="modal-header">
-                <h5 class="modal-title" id="aiCameraModalLabel">
-                    <i class="fa-solid fa-camera-retro me-2"></i>AI Camera Shopping Assistant
+
+                <h5
+                    class="modal-title"
+                    id="aiCameraModalLabel"
+                >
+
+                    <i class="fa-solid fa-camera-retro me-2"></i>
+
+                    AI Camera Shopping Assistant
+
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"
+                ></button>
+
             </div>
+
+
             <div class="modal-body">
 
-                <!-- Privacy note -->
                 <div class="ai-privacy-note mb-3">
+
                     <i class="fa-solid fa-shield-halved me-1"></i>
-                    <strong>Privacy First:</strong> All AI processing happens locally in your browser.
-                    No camera images are uploaded or stored. Only anonymous body-proportion numbers are sent for recommendations.
+
+                    <strong>Privacy First:</strong>
+
+                    All AI processing happens locally in your browser.
+                    No camera images are uploaded or stored.
+                    Only anonymous body-proportion numbers are sent for recommendations.
+
                 </div>
 
+
                 <div class="row g-3">
-                    <!-- Camera stage -->
+
                     <div class="col-lg-5">
+
                         <div class="ai-camera-stage">
-                            <div class="ai-camera-placeholder" id="aiPlaceholder">
+
+                            <div
+                                class="ai-camera-placeholder"
+                                id="aiPlaceholder"
+                            >
+
                                 <i class="fa-solid fa-video"></i>
-                                <div>Click <strong>AI Camera Assistant</strong> to start</div>
+
+                                <div>
+                                    Click <strong>AI Camera Assistant</strong> to start
+                                </div>
+
                             </div>
-                            <video id="aiVideo" autoplay playsinline muted style="display:none;"></video>
-                            <canvas id="aiOverlay" class="ai-overlay"></canvas>
-                            <div class="ai-scan-line" id="aiScanLine"></div>
-                            <div class="ai-status-badge" id="aiStatusBadge"><span class="ai-pulse-dot"></span> Idle</div>
-                            <button class="ai-camera-flip" id="aiCameraFlip" title="Switch camera" type="button">
+
+
+                            <video
+                                id="aiVideo"
+                                autoplay
+                                playsinline
+                                muted
+                                style="display:none;"
+                            ></video>
+
+
+                            <canvas
+                                id="aiOverlay"
+                                class="ai-overlay"
+                            ></canvas>
+
+
+                            <div
+                                class="ai-scan-line"
+                                id="aiScanLine"
+                            ></div>
+
+
+                            <div
+                                class="ai-status-badge"
+                                id="aiStatusBadge"
+                            >
+
+                                <span class="ai-pulse-dot"></span>
+
+                                Idle
+
+                            </div>
+
+
+                            <button
+                                class="ai-camera-flip"
+                                id="aiCameraFlip"
+                                title="Switch camera"
+                                type="button"
+                            >
+
                                 <i class="fa-solid fa-camera-rotate"></i>
+
                             </button>
-                            <!-- Instructions overlay -->
-                            <div class="ai-instructions" id="aiInstructions">
+
+
+                            <div
+                                class="ai-instructions"
+                                id="aiInstructions"
+                            >
+
                                 <ul>
-                                    <li><i class="fa-solid fa-person-walking"></i> Stand 2-3 meters away from camera</li>
-                                    <li><i class="fa-solid fa-person"></i> Make sure your full body is visible</li>
-                                    <li><i class="fa-solid fa-mobile-screen"></i> Keep camera straight and steady</li>
-                                    <li><i class="fa-solid fa-lightbulb"></i> Ensure good lighting on your body</li>
+
+                                    <li>
+                                        <i class="fa-solid fa-person-walking"></i>
+                                        Stand 2-3 meters away from camera
+                                    </li>
+
+                                    <li>
+                                        <i class="fa-solid fa-person"></i>
+                                        Make sure your full body is visible
+                                    </li>
+
+                                    <li>
+                                        <i class="fa-solid fa-mobile-screen"></i>
+                                        Keep camera straight and steady
+                                    </li>
+
+                                    <li>
+                                        <i class="fa-solid fa-lightbulb"></i>
+                                        Ensure good lighting on your body
+                                    </li>
+
                                 </ul>
+
                             </div>
+
                         </div>
 
-                        <!-- Progress bar -->
-                        <div class="ai-progress-wrap" id="aiProgressWrap">
+
+                        <div
+                            class="ai-progress-wrap"
+                            id="aiProgressWrap"
+                        >
+
                             <div class="ai-progress-bar">
-                                <div class="ai-progress-fill" id="aiProgressFill"></div>
+
+                                <div
+                                    class="ai-progress-fill"
+                                    id="aiProgressFill"
+                                ></div>
+
                             </div>
+
+
                             <div class="ai-progress-label">
-                                <span id="aiProgressLabel">Scanning...</span>
-                                <span class="ai-progress-percent" id="aiProgressPercent">0%</span>
+
+                                <span id="aiProgressLabel">
+                                    Scanning...
+                                </span>
+
+                                <span
+                                    class="ai-progress-percent"
+                                    id="aiProgressPercent"
+                                >
+                                    0%
+                                </span>
+
                             </div>
+
                         </div>
 
-                        <!-- Success burst -->
-                        <div class="ai-success-burst" id="aiSuccessBurst">
-                            <div class="ai-success-icon"><i class="fa-solid fa-check"></i></div>
-                            <div class="ai-success-text" id="aiSuccessText">Body analysis completed</div>
-                            <div class="ai-success-sub" id="aiSuccessSub">Generating recommendations...</div>
+
+                        <div
+                            class="ai-success-burst"
+                            id="aiSuccessBurst"
+                        >
+
+                            <div class="ai-success-icon">
+
+                                <i class="fa-solid fa-check"></i>
+
+                            </div>
+
+
+                            <div
+                                class="ai-success-text"
+                                id="aiSuccessText"
+                            >
+                                Body analysis completed
+                            </div>
+
+
+                            <div
+                                class="ai-success-sub"
+                                id="aiSuccessSub"
+                            >
+                                Generating recommendations...
+                            </div>
+
                         </div>
 
-                        <!-- Preference chips -->
+
                         <div class="mt-3">
-                            <small class="text-muted fw-semibold d-block mb-2">Optional preferences:</small>
+
+                            <small class="text-muted fw-semibold d-block mb-2">
+                                Optional preferences:
+                            </small>
+
 
                             <div class="ai-pref-chips mb-2">
-                                <span class="ai-chip" data-group="fit" data-value="slim">Slim Fit</span>
-                                <span class="ai-chip" data-group="fit" data-value="regular">Regular</span>
-                                <span class="ai-chip" data-group="fit" data-value="relaxed">Relaxed</span>
-                                <span class="ai-chip" data-group="fit" data-value="oversized">Oversized</span>
+
+                                <span
+                                    class="ai-chip"
+                                    data-group="fit"
+                                    data-value="slim"
+                                >
+                                    Slim Fit
+                                </span>
+
+                                <span
+                                    class="ai-chip"
+                                    data-group="fit"
+                                    data-value="regular"
+                                >
+                                    Regular
+                                </span>
+
+                                <span
+                                    class="ai-chip"
+                                    data-group="fit"
+                                    data-value="relaxed"
+                                >
+                                    Relaxed
+                                </span>
+
+                                <span
+                                    class="ai-chip"
+                                    data-group="fit"
+                                    data-value="oversized"
+                                >
+                                    Oversized
+                                </span>
+
                             </div>
 
+
                             <div class="ai-pref-chips mb-2">
-                                <span class="ai-chip" data-group="style" data-value="casual">Casual</span>
-                                <span class="ai-chip" data-group="style" data-value="formal">Formal</span>
-                                <span class="ai-chip" data-group="style" data-value="sporty">Sporty</span>
-                                <span class="ai-chip" data-group="style" data-value="ethnic">Ethnic</span>
-                                <span class="ai-chip" data-group="style" data-value="party">Party</span>
+
+                                <span
+                                    class="ai-chip"
+                                    data-group="style"
+                                    data-value="casual"
+                                >
+                                    Casual
+                                </span>
+
+                                <span
+                                    class="ai-chip"
+                                    data-group="style"
+                                    data-value="formal"
+                                >
+                                    Formal
+                                </span>
+
+                                <span
+                                    class="ai-chip"
+                                    data-group="style"
+                                    data-value="sporty"
+                                >
+                                    Sporty
+                                </span>
+
+                                <span
+                                    class="ai-chip"
+                                    data-group="style"
+                                    data-value="ethnic"
+                                >
+                                    Ethnic
+                                </span>
+
+                                <span
+                                    class="ai-chip"
+                                    data-group="style"
+                                    data-value="party"
+                                >
+                                    Party
+                                </span>
+
                             </div>
+
 
                             <div class="ai-pref-chips">
-                                <span class="ai-chip" data-group="color" data-value="light">Light</span>
-                                <span class="ai-chip" data-group="color" data-value="dark">Dark</span>
-                                <span class="ai-chip" data-group="color" data-value="warm">Warm</span>
-                                <span class="ai-chip" data-group="color" data-value="cool">Cool</span>
-                                <span class="ai-chip" data-group="color" data-value="neutral">Neutral</span>
+
+                                <span
+                                    class="ai-chip"
+                                    data-group="color"
+                                    data-value="light"
+                                >
+                                    Light
+                                </span>
+
+                                <span
+                                    class="ai-chip"
+                                    data-group="color"
+                                    data-value="dark"
+                                >
+                                    Dark
+                                </span>
+
+                                <span
+                                    class="ai-chip"
+                                    data-group="color"
+                                    data-value="warm"
+                                >
+                                    Warm
+                                </span>
+
+                                <span
+                                    class="ai-chip"
+                                    data-group="color"
+                                    data-value="cool"
+                                >
+                                    Cool
+                                </span>
+
+                                <span
+                                    class="ai-chip"
+                                    data-group="color"
+                                    data-value="neutral"
+                                >
+                                    Neutral
+                                </span>
+
                             </div>
+
                         </div>
 
-                        <button id="aiAnalyzeBtn" class="btn btn-primary w-100 mt-3 rounded-pill fw-bold">
-                            <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Re-analyze / Get Recommendations
+
+                        <button
+                            id="aiAnalyzeBtn"
+                            class="btn btn-primary w-100 mt-3 rounded-pill fw-bold"
+                        >
+
+                            <i class="fa-solid fa-wand-magic-sparkles me-1"></i>
+
+                            Re-analyze / Get Recommendations
+
                         </button>
+
                     </div>
 
-                    <!-- Results panel -->
+
                     <div class="col-lg-7">
+
                         <div id="aiResults">
+
                             <div class="text-muted text-center py-5">
-                                <i class="fa-solid fa-camera-retro fs-2 d-block mb-2 text-primary"></i>
-                                <div class="fw-semibold">AI Camera Ready</div>
-                                <small>Allow camera access to start body analysis</small>
+
+                                <i
+                                    class="fa-solid fa-camera-retro fs-2 d-block mb-2 text-primary"
+                                ></i>
+
+                                <div class="fw-semibold">
+                                    AI Camera Ready
+                                </div>
+
+                                <small>
+                                    Allow camera access to start body analysis
+                                </small>
+
                             </div>
+
                         </div>
+
                     </div>
+
                 </div>
 
             </div>
+
         </div>
+
     </div>
+
 </div>
 
-<!-- Floating AI Camera Button (premium FAB) -->
-<button id="btnAiCamera" class="ai-fab" type="button">
+
+<!-- =========================================================
+     AI CAMERA BUTTON
+========================================================= -->
+
+<button
+    id="btnAiCamera"
+    class="ai-fab"
+    type="button"
+>
+
     <i class="fa-solid fa-camera-retro"></i>
-    <span class="ai-fab-label">AI Camera Assistant</span>
+
+    <span class="ai-fab-label">
+        AI Camera Assistant
+    </span>
+
 </button>
 
-<!-- CSRF token for AI API fetch call -->
-<meta name="ai-csrf-token" content="{{ csrf_token() }}">
-<script>window.aiCameraCsrfToken = "{{ csrf_token() }}";</script>
 
-<!-- Bootstrap JS (for modal) + AI Camera logic (additive only) -->
+<meta
+    name="ai-csrf-token"
+    content="{{ csrf_token() }}"
+>
+
+
+<script>
+    window.aiCameraCsrfToken = "{{ csrf_token() }}";
+</script>
+
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 <script src="{{ asset('js/ai-camera.js') }}"></script>
+
+
+<!-- =========================================================
+     CUSTOMER MENU JS
+========================================================= -->
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    const menuButton =
+        document.getElementById('sbMenuButton');
+
+    const menu =
+        document.getElementById('sbCustomerMenu');
+
+
+    if (!menuButton || !menu) {
+        return;
+    }
+
+
+    menuButton.addEventListener('click', function (event) {
+
+        event.stopPropagation();
+
+        const isOpen =
+            menu.classList.toggle('show');
+
+        menuButton.setAttribute(
+            'aria-expanded',
+            isOpen ? 'true' : 'false'
+        );
+
+    });
+
+
+    menu.addEventListener('click', function (event) {
+
+        event.stopPropagation();
+
+    });
+
+
+    document.addEventListener('click', function () {
+
+        menu.classList.remove('show');
+
+        menuButton.setAttribute(
+            'aria-expanded',
+            'false'
+        );
+
+    });
+
+
+    document.addEventListener('keydown', function (event) {
+
+        if (event.key === 'Escape') {
+
+            menu.classList.remove('show');
+
+            menuButton.setAttribute(
+                'aria-expanded',
+                'false'
+            );
+
+        }
+
+    });
+
+});
+
+</script>
+
+
+<!-- =========================================================
+     SMART BASKET GLOBAL THEME ENGINE
+========================================================= -->
+
+<script>
+
+(function () {
+
+    'use strict';
+
+
+    const html =
+        document.documentElement;
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Laravel saved theme
+    |--------------------------------------------------------------------------
+    */
+
+    const laravelTheme = @json(
+        auth()->check()
+            ? (auth()->user()->theme ?? null)
+            : null
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Read theme from every possible Smart Basket location
+    |--------------------------------------------------------------------------
+    */
+
+    function readTheme() {
+
+        const keys = [
+            'sb-theme',
+            'smartbasket-theme',
+            'theme',
+            'smart-basket-theme'
+        ];
+
+
+        for (const key of keys) {
+
+            try {
+
+                const value =
+                    localStorage.getItem(key);
+
+
+                if (
+                    value === 'light' ||
+                    value === 'dark'
+                ) {
+
+                    return value;
+
+                }
+
+            } catch (error) {}
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Laravel database theme has priority if available
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            laravelTheme === 'light' ||
+            laravelTheme === 'dark'
+        ) {
+
+            return laravelTheme;
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Existing HTML theme
+        |--------------------------------------------------------------------------
+        */
+
+        const htmlTheme =
+            html.getAttribute('data-theme');
+
+
+        if (
+            htmlTheme === 'light' ||
+            htmlTheme === 'dark'
+        ) {
+
+            return htmlTheme;
+
+        }
+
+
+        return 'dark';
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Apply theme
+    |--------------------------------------------------------------------------
+    */
+
+    function applyTheme(theme) {
+
+        if (
+            theme !== 'light' &&
+            theme !== 'dark'
+        ) {
+
+            theme = 'dark';
+
+        }
+
+
+        html.setAttribute(
+            'data-theme',
+            theme
+        );
+
+
+        html.style.colorScheme =
+            theme;
+
+
+        document.body?.setAttribute(
+            'data-theme',
+            theme
+        );
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Apply immediately
+    |--------------------------------------------------------------------------
+    */
+
+    applyTheme(
+        readTheme()
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Storage change
+    |--------------------------------------------------------------------------
+    */
+
+    window.addEventListener(
+        'storage',
+        function (event) {
+
+            const watchedKeys = [
+                'sb-theme',
+                'smartbasket-theme',
+                'theme',
+                'smart-basket-theme'
+            ];
+
+
+            if (
+                watchedKeys.includes(event.key)
+            ) {
+
+                if (
+                    event.newValue === 'light' ||
+                    event.newValue === 'dark'
+                ) {
+
+                    applyTheme(
+                        event.newValue
+                    );
+
+                }
+
+            }
+
+        }
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Smart Basket custom event
+    |--------------------------------------------------------------------------
+    */
+
+    window.addEventListener(
+        'sbThemeChanged',
+        function (event) {
+
+            if (
+                event.detail &&
+                (
+                    event.detail.theme === 'light' ||
+                    event.detail.theme === 'dark'
+                )
+            ) {
+
+                applyTheme(
+                    event.detail.theme
+                );
+
+            }
+
+        }
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | BroadcastChannel
+    |--------------------------------------------------------------------------
+    | This also allows Settings and Products pages/tabs
+    | to communicate instantly.
+    |--------------------------------------------------------------------------
+    */
+
+    try {
+
+        const channel =
+            new BroadcastChannel(
+                'smart-basket-theme'
+            );
+
+
+        channel.addEventListener(
+            'message',
+            function (event) {
+
+                if (
+                    event.data &&
+                    (
+                        event.data.theme === 'light' ||
+                        event.data.theme === 'dark'
+                    )
+                ) {
+
+                    applyTheme(
+                        event.data.theme
+                    );
+
+                }
+
+            }
+        );
+
+    } catch (error) {}
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Re-check theme after page load
+    |--------------------------------------------------------------------------
+    */
+
+    document.addEventListener(
+        'DOMContentLoaded',
+        function () {
+
+            applyTheme(
+                readTheme()
+            );
+
+        }
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Expose global function
+    |--------------------------------------------------------------------------
+    | Settings page can call:
+    |
+    | window.SmartBasketTheme.set('light')
+    | window.SmartBasketTheme.set('dark')
+    |--------------------------------------------------------------------------
+    */
+
+    window.SmartBasketTheme = {
+
+        get: function () {
+
+            return readTheme();
+
+        },
+
+
+        set: function (theme) {
+
+            if (
+                theme !== 'light' &&
+                theme !== 'dark'
+            ) {
+
+                return;
+
+            }
+
+
+            applyTheme(theme);
+
+
+            const keys = [
+                'sb-theme',
+                'smartbasket-theme',
+                'theme'
+            ];
+
+
+            keys.forEach(function (key) {
+
+                try {
+
+                    localStorage.setItem(
+                        key,
+                        theme
+                    );
+
+                } catch (error) {}
+
+            });
+
+
+            window.dispatchEvent(
+                new CustomEvent(
+                    'sbThemeChanged',
+                    {
+                        detail: {
+                            theme: theme
+                        }
+                    }
+                )
+            );
+
+
+            try {
+
+                const channel =
+                    new BroadcastChannel(
+                        'smart-basket-theme'
+                    );
+
+
+                channel.postMessage({
+                    theme: theme
+                });
+
+
+                channel.close();
+
+            } catch (error) {}
+
+        }
+
+    };
+
+
+})();
+
+</script>
+
+
 </body>
+
 </html>
+```
