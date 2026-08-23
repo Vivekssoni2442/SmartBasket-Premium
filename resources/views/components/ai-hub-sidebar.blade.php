@@ -2,7 +2,7 @@
 <button class="ai-hub-fab" type="button" data-ai-hub-open aria-label="Open AI HUB"><span>🤖</span><small>AI HUB</small></button>
 <div class="ai-hub-overlay" data-ai-hub-close></div>
 <aside class="ai-hub-drawer" aria-label="AI HUB navigation" aria-hidden="true">
-    <header class="ai-hub-drawer-header"><div><strong>🤖 AI HUB</strong><small>Smart Shopping Assistant</small></div><button type="button" data-ai-hub-close aria-label="Close AI HUB">×</button></header>
+    <header class="ai-hub-drawer-header"><div><strong>🤖 AI HUB</strong><small>Smart Shopping Assistant</small></div><button type="button" data-ai-hub-close aria-label="Close AI HUB"></button></header>
 <nav class="ai-hub-drawer-nav" aria-label="AI HUB features">
         <button type="button" data-ai-hub-feature="ai-camera-assistant" data-ai-hub-url="{{ route('ai-camera-assistant') }}">📷 <span>AI Camera Assistant</span></button>
         <button type="button" data-ai-hub-feature="budget-shopping" data-ai-hub-url="{{ route('budget-shopping') }}">💰 <span>Budget Shopping</span></button>

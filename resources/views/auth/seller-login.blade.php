@@ -8,501 +8,679 @@
 
 <title>SMART BASKET | Seller Login</title>
 
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
 
 *{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:'Poppins',sans-serif;
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
 }
 
+html,
+body{
+    width:100%;
+    height:100%;
+}
 
 body{
 
-height:100vh;
+    min-height:100vh;
 
-display:flex;
+    display:flex;
 
-justify-content:center;
+    justify-content:center;
 
-align-items:center;
+    align-items:center;
 
-background:
-linear-gradient(135deg,#020617,#000,#111827);
+    overflow:hidden;
 
-overflow:hidden;
+    position:relative;
 
+    background:
+        linear-gradient(
+            135deg,
+            #020617 0%,
+            #000000 50%,
+            #111827 100%
+        );
 }
 
 
-
-/* Background Glow */
+/* =========================================================
+   BACKGROUND GLOW
+========================================================= */
 
 body::before{
 
-content:"";
+    content:"";
 
-position:absolute;
+    position:absolute;
 
-width:500px;
-height:500px;
+    width:500px;
+    height:500px;
 
-background:#00ff99;
+    background:#00ff99;
 
-opacity:.15;
+    opacity:.15;
 
-filter:blur(150px);
+    filter:blur(150px);
 
-top:-150px;
+    top:-150px;
+    left:-150px;
 
-left:-150px;
-
+    pointer-events:none;
 }
-
 
 
 body::after{
 
-content:"";
+    content:"";
 
-position:absolute;
+    position:absolute;
 
-width:500px;
-height:500px;
+    width:500px;
+    height:500px;
 
-background:#FFD700;
+    background:#FFD700;
 
-opacity:.15;
+    opacity:.15;
 
-filter:blur(150px);
+    filter:blur(150px);
 
-right:-150px;
+    right:-150px;
+    bottom:-150px;
 
-bottom:-150px;
-
+    pointer-events:none;
 }
 
 
-
-/* Seller Card */
+/* =========================================================
+   SELLER LOGIN CARD
+   EXACT BACKGROUND = RGB(20, 21, 24)
+========================================================= */
 
 .card{
 
-width:420px;
+    width:420px;
 
-padding:40px;
+    padding:40px;
 
-border-radius:30px;
+    border-radius:30px;
 
-background:rgba(255,255,255,.08);
+    background:rgb(20, 21, 24) !important;
 
-backdrop-filter:blur(25px);
+    background-color:rgb(20, 21, 24) !important;
 
-border:1px solid rgba(0,255,153,.5);
+    background-image:none !important;
 
-box-shadow:0 0 50px rgba(0,255,153,.4);
+    backdrop-filter:none !important;
 
-position:relative;
+    -webkit-backdrop-filter:none !important;
 
-z-index:5;
+    border:1px solid rgba(0,255,153,.5);
 
-animation:show 1s ease;
+    box-shadow:
+        0 0 50px rgba(0,255,153,.4);
+
+    position:relative;
+
+    z-index:5;
+
+    animation:show 1s ease;
 
 }
 
 
+/* =========================================================
+   ANIMATION
+========================================================= */
 
 @keyframes show{
 
-from{
+    from{
 
-opacity:0;
+        opacity:0;
 
-transform:translateY(80px);
+        transform:translateY(60px) scale(.96);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0) scale(1);
+
+    }
 
 }
 
-to{
 
-opacity:1;
-
-transform:translateY(0);
-
-}
-
-}
-
-
-
-/* Logo */
+/* =========================================================
+   LOGO
+========================================================= */
 
 .logo{
 
-width:95px;
+    width:95px;
 
-height:95px;
+    height:95px;
 
-margin:auto;
+    margin:auto;
 
-border-radius:30px;
+    border-radius:30px;
 
-display:flex;
+    display:flex;
 
-justify-content:center;
+    justify-content:center;
 
-align-items:center;
+    align-items:center;
 
-font-size:45px;
+    font-size:45px;
 
-background:linear-gradient(135deg,#00ff99,#00cc77);
+    background:
+        linear-gradient(
+            135deg,
+            #00ff99,
+            #00cc77
+        );
 
-box-shadow:0 0 40px #00ff99;
+    box-shadow:
+        0 0 40px rgba(0,255,153,.45);
 
 }
 
 
+/* =========================================================
+   TITLE
+   SELLER = WHITE
+   LOGIN = YELLOW
+========================================================= */
 
 h1{
 
-text-align:center;
+    text-align:center;
 
-margin-top:25px;
+    margin-top:25px;
 
-color:white;
+    color:#ffffff;
 
-font-size:35px;
+    font-size:35px;
 
-letter-spacing:2px;
+    font-weight:800;
+
+    letter-spacing:2px;
 
 }
-
 
 
 h1 span{
 
-color:#00ff99;
+    color:#FFD700 !important;
 
 }
 
 
+/* =========================================================
+   SUBTITLE
+========================================================= */
 
 .subtitle{
 
-text-align:center;
+    text-align:center;
 
-color:#ccc;
+    color:#cccccc;
 
-font-size:13px;
+    font-size:13px;
 
-margin:10px 0 35px;
+    margin:10px 0 35px;
 
 }
 
 
+/* =========================================================
+   SESSION MESSAGE
+========================================================= */
 
-/* Input */
+.message-error{
 
+    background:rgba(255,0,0,.15);
+
+    color:#ff6b6b;
+
+    padding:12px;
+
+    border-radius:10px;
+
+    text-align:center;
+
+    margin-bottom:20px;
+
+    font-weight:600;
+
+}
+
+
+.message-success{
+
+    background:rgba(0,255,153,.15);
+
+    color:#00ff99;
+
+    padding:12px;
+
+    border-radius:10px;
+
+    text-align:center;
+
+    margin-bottom:20px;
+
+    font-weight:600;
+
+}
+
+
+/* =========================================================
+   INPUT
+========================================================= */
 
 .input-box{
 
-margin-bottom:20px;
+    margin-bottom:20px;
 
 }
-
 
 
 .input-box input{
 
+    width:100%;
 
-width:100%;
+    height:55px;
 
-height:55px;
+    padding:0 20px;
 
-padding:0 20px;
+    border:none;
 
-border:none;
+    outline:none;
 
-outline:none;
+    border-radius:18px;
 
-border-radius:18px;
+    background:rgba(255,255,255,.10);
 
-background:rgba(255,255,255,.12);
+    color:#ffffff;
 
-color:white;
-
-font-size:15px;
+    font-size:15px;
 
 }
 
+
+.input-box input:focus{
+
+    background:rgba(255,255,255,.12);
+
+    box-shadow:
+        0 0 0 1px rgba(0,255,153,.40);
+
+}
 
 
 .input-box input::placeholder{
 
-color:#aaa;
+    color:#aaaaaa;
 
 }
 
 
+/* =========================================================
+   OPTIONS
+========================================================= */
 
-/* Button */
+.options{
 
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    color:#ffffff;
+
+    font-size:13px;
+
+    margin-bottom:25px;
+
+}
+
+
+.options label{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:8px;
+
+    cursor:pointer;
+
+}
+
+
+.options input[type="checkbox"]{
+
+    width:16px;
+
+    height:16px;
+
+    cursor:pointer;
+
+    accent-color:#00ff99;
+
+}
+
+
+/* =========================================================
+   FORGOT PASSWORD
+========================================================= */
+
+.forgot-link{
+
+    color:#00ff99 !important;
+
+    text-decoration:none;
+
+    font-weight:600;
+
+    transition:.25s ease;
+
+}
+
+
+.forgot-link:hover{
+
+    color:#ffffff !important;
+
+    text-decoration:underline;
+
+}
+
+
+/* =========================================================
+   LOGIN BUTTON
+========================================================= */
 
 button{
 
+    width:100%;
 
-width:100%;
+    height:55px;
 
-height:55px;
+    border:none;
 
-border:none;
+    border-radius:20px;
 
-border-radius:20px;
+    background:
+        linear-gradient(
+            135deg,
+            #00ff99,
+            #00cc77
+        );
 
-background:linear-gradient(135deg,#00ff99,#00cc77);
+    color:#000000;
 
-font-size:18px;
+    font-size:18px;
 
-font-weight:700;
+    font-weight:700;
 
-cursor:pointer;
+    cursor:pointer;
 
-transition:.3s;
+    transition:.3s;
 
 }
-
 
 
 button:hover{
 
-transform:scale(1.05);
+    transform:scale(1.03);
 
-box-shadow:0 0 30px #00ff99;
+    box-shadow:
+        0 0 30px rgba(0,255,153,.50);
 
 }
 
 
-
-/* Back */
-
+/* =========================================================
+   CUSTOMER LOGIN
+   DEFAULT = WHITE
+   MOUSE/CURSOR = RGB(255, 173, 0)
+========================================================= */
 
 .back{
 
-display:block;
+    display:flex;
 
-text-align:center;
+    align-items:center;
 
-margin-top:25px;
+    justify-content:center;
 
-color:#FFD700;
+    width:100%;
 
-text-decoration:none;
+    min-height:50px;
 
-font-weight:600;
+    margin-top:25px;
 
-}
+    padding:10px 20px;
 
+    border-radius:18px;
 
+    background:rgb(20,21,24);
 
+    border:1px solid rgba(255,255,255,.10);
 
-/* Success Popup */
+    color:#ffffff !important;
 
+    text-decoration:none;
 
-.success-popup{
+    font-weight:600;
 
+    cursor:pointer;
 
-position:fixed;
-
-top:50%;
-
-left:50%;
-
-transform:translate(-50%,-50%);
-
-width:360px;
-
-padding:35px;
-
-border-radius:30px;
-
-background:rgba(255,255,255,.12);
-
-backdrop-filter:blur(25px);
-
-box-shadow:0 0 50px #00ff99;
-
-text-align:center;
-
-color:white;
-
-z-index:100;
-
-animation:popup .5s ease;
+    transition:
+        background .25s ease,
+        color .25s ease,
+        border-color .25s ease,
+        box-shadow .25s ease,
+        transform .25s ease;
 
 }
 
 
+/* MOUSE / CURSOR LANE PAR */
 
-.check{
+.back:hover{
 
-width:85px;
+    background:rgb(255,173,0) !important;
 
-height:85px;
+    color:#000000 !important;
 
-margin:auto;
+    border-color:rgb(255,173,0) !important;
 
-border-radius:50%;
+    box-shadow:
+        0 0 30px rgba(255,173,0,.45);
 
-background:#00ff99;
-
-color:black;
-
-font-size:55px;
-
-display:flex;
-
-align-items:center;
-
-justify-content:center;
-
-font-weight:bold;
+    transform:translateY(-1px);
 
 }
 
 
+/* =========================================================
+   MOBILE
+========================================================= */
 
-.success-popup h2{
+@media(max-width:500px){
 
-margin-top:20px;
+    .card{
 
-color:#00ff99;
+        width:calc(100% - 30px);
 
-}
+        padding:30px 25px;
 
+    }
 
+    h1{
 
-.success-popup p{
+        font-size:29px;
 
-color:#ddd;
+    }
 
-margin-top:10px;
+    .options{
 
-}
+        font-size:12px;
 
-
-
-@keyframes popup{
-
-from{
-
-opacity:0;
-
-transform:translate(-50%,-50%) scale(.5);
+    }
 
 }
-
-to{
-
-opacity:1;
-
-transform:translate(-50%,-50%) scale(1);
-
-}
-
-}
-
 
 </style>
 
-
-    <link rel="stylesheet" href="{{ asset('css/premium-dark-theme.css') }}">
 </head>
-
 
 
 <body>
 
 
-
 <div class="card">
 
 
+    <!-- LOGO -->
 
-<div class="logo">
-
-🏪
-
-</div>
-
-
-
-<h1>
-
-SELLER <span>LOGIN</span>
-
-</h1>
-
-
-
-<div class="subtitle">
-
-SMART BASKET SELLER PANEL
-
-</div>
-
-
-
-<form method="POST" action="{{ route('seller.login.submit') }}">
-
-    @csrf
-
-    <div class="input-box">
-        <input
-            type="email"
-            name="email"
-            placeholder="Enter Seller Email"
-            required
-        >
+    <div class="logo">
+        🏪
     </div>
 
-    <div class="input-box">
-        <input
-            type="password"
-            name="password"
-            placeholder="Enter Password"
-            required
-        >
+
+    <!-- TITLE -->
+
+    <h1>
+        SELLER <span>LOGIN</span>
+    </h1>
+
+
+    <div class="subtitle">
+        SMART BASKET SELLER PANEL
     </div>
 
-    <button type="submit">
-        LOGIN AS SELLER
-    </button>
 
-</form>
+    <!-- ERROR -->
 
-<a class="back" href="{{ route('seller.register') }}">
+    @if(session('error'))
 
-    Create Seller Account
+        <div class="message-error">
+            {{ session('error') }}
+        </div>
 
-</a>
-
+    @endif
 
 
-<a class="back" href="{{url('/login')}}">
+    <!-- SUCCESS -->
 
-← Customer Login
+    @if(session('success'))
 
-</a>
+        <div class="message-success">
+            {{ session('success') }}
+        </div>
 
+    @endif
+
+
+    <!-- LOGIN FORM -->
+
+    <form method="POST" action="{{ route('seller.login.submit') }}">
+
+        @csrf
+
+
+        <!-- EMAIL -->
+
+        <div class="input-box">
+
+            <input
+                type="email"
+                name="email"
+                placeholder="Enter Seller Email"
+                value="{{ old('email') }}"
+                autocomplete="email"
+                required
+            >
+
+        </div>
+
+
+        <!-- PASSWORD -->
+
+        <div class="input-box">
+
+            <input
+                type="password"
+                name="password"
+                placeholder="Enter Password"
+                autocomplete="current-password"
+                required
+            >
+
+        </div>
+
+
+        <!-- OPTIONS -->
+
+        <div class="options">
+
+            <label>
+
+                <input
+                    type="checkbox"
+                    name="remember"
+                    value="1"
+                >
+
+                Remember Me
+
+            </label>
+
+
+            <a
+                href="{{ url('/forgot-password') }}"
+                class="forgot-link"
+            >
+                Forgot Password?
+            </a>
+
+        </div>
+
+
+        <!-- LOGIN -->
+
+        <button type="submit">
+            LOGIN AS SELLER
+        </button>
+
+
+    </form>
+
+
+    <!-- CUSTOMER LOGIN -->
+
+    <a
+        class="back"
+        href="{{ url('/login') }}"
+    >
+        ← Customer Login
+    </a>
 
 
 </div>
-
-
-
-
-
 
 
 </body>
