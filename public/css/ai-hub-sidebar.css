@@ -1,1 +1,909 @@
-.ai-hub-fab{position:fixed;left:18px;top:50%;transform:translateY(-50%);z-index:1080;width:62px;height:72px;border:1px solid rgba(147,197,253,.5);border-radius:18px;background:linear-gradient(145deg,rgba(30,41,59,.96),rgba(15,23,42,.96));color:#fff;box-shadow:0 15px 35px rgba(0,0,0,.38),0 0 24px rgba(59,130,246,.22);display:grid;place-items:center;gap:0;padding:8px;cursor:pointer;transition:transform .25s ease,box-shadow .25s ease}.ai-hub-fab:hover{transform:translateY(-50%) scale(1.08);box-shadow:0 18px 40px rgba(0,0,0,.48),0 0 34px rgba(59,130,246,.48)}.ai-hub-fab span{font-size:1.65rem;line-height:1}.ai-hub-fab small{font-size:.58rem;font-weight:800;letter-spacing:.09em}.ai-hub-overlay{position:fixed;inset:0;z-index:1085;background:rgba(2,6,23,.45);opacity:0;pointer-events:none;transition:opacity .3s ease}.ai-hub-drawer{position:fixed;z-index:1090;left:0;top:0;bottom:0;width:min(390px,92vw);padding:20px;display:flex;flex-direction:column;background:rgba(15,23,42,.94);border-right:1px solid rgba(148,163,184,.32);box-shadow:24px 0 55px rgba(0,0,0,.38);backdrop-filter:blur(22px);transform:translateX(-102%);transition:transform .34s cubic-bezier(.2,.75,.2,1);color:#fff}.ai-hub-drawer.is-open{transform:translateX(0)}.ai-hub-overlay.is-open{opacity:1;pointer-events:auto}.ai-hub-drawer-header{display:flex;align-items:center;justify-content:space-between;padding:4px 4px 18px;border-bottom:1px solid #334155}.ai-hub-drawer-header strong{font-size:1.2rem;letter-spacing:.04em}.ai-hub-drawer-header small{display:block;color:#94A3B8;font-size:.76rem;margin-top:3px}.ai-hub-drawer-header button{width:34px;height:34px;border:1px solid #475569;border-radius:10px;background:#1E293B;color:#fff;font-size:1.5rem;line-height:1;cursor:pointer}.ai-hub-drawer-nav{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:18px 0}.ai-hub-drawer-nav button,.ai-hub-drawer-nav a{min-height:54px;text-align:left;display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #334155;border-radius:12px;background:rgba(30,41,59,.7);color:#CBD5E1;text-decoration:none;font-size:.8rem;cursor:pointer;transition:.2s}.ai-hub-drawer-nav button:hover,.ai-hub-drawer-nav button.is-active,.ai-hub-drawer-nav a:hover{background:rgba(59,130,246,.19);border-color:#3B82F6;color:#fff;transform:translateY(-1px)}.ai-hub-drawer-content{overflow-y:auto;flex:1;padding-right:2px}.ai-hub-drawer-empty{height:100%;min-height:180px;display:grid;place-content:center;text-align:center;color:#94A3B8;padding:20px}.ai-hub-drawer-empty span{font-size:2rem}.ai-hub-drawer-empty strong{color:#fff;margin-top:8px}.ai-hub-drawer-empty p{font-size:.82rem;margin:8px 0 0}.ai-hub-overview{display:flex;align-items:center;gap:9px;margin-top:15px;padding:13px 12px;border-radius:12px;background:linear-gradient(135deg,#3B82F6,#2563EB);color:#fff;text-decoration:none;font-weight:700}.ai-hub-overview i{margin-left:auto;font-style:normal}.ai-panel-fragment h2{font-size:1rem;margin:0 0 5px}.ai-panel-fragment>p{font-size:.8rem;color:#94A3B8;margin-bottom:14px}.ai-panel-fragment .form-control,.ai-panel-fragment .form-select{font-size:.83rem}.ai-drawer-products{display:grid;gap:7px;margin-top:14px}.ai-drawer-products a{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px;border:1px solid #334155;border-radius:9px;background:#111827;color:#CBD5E1;text-decoration:none;font-size:.78rem}.ai-drawer-products a:hover{border-color:#3B82F6;color:#fff}.ai-drawer-products small{display:block;color:#94A3B8;margin-top:2px}.ai-drawer-products b{color:#86EFAC;white-space:nowrap}.ai-quick-compare{display:grid;gap:3px;margin-top:14px;padding:12px;background:#111827;border:1px solid #334155;border-radius:10px;font-size:.78rem}.ai-quick-compare span{color:#94A3B8;margin-bottom:7px}@media(max-width:576px){.ai-hub-fab{left:10px;width:54px;height:62px}.ai-hub-fab small{display:none}.ai-hub-drawer{padding:16px}.ai-hub-drawer-nav{gap:6px}.ai-hub-drawer-nav button,.ai-hub-drawer-nav a{min-height:48px;padding:8px;font-size:.75rem}}
+/* =========================================================
+   SMART BASKET — GLOBAL AI HUB
+   ONE FLOATING BUTTON + ONE POPUP
+   PREMIUM RESPONSIVE DESIGN
+========================================================= */
+
+
+/* =========================================================
+   BODY LOCK
+========================================================= */
+
+body.ai-hub-open {
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   FLOATING AI HUB BUTTON
+========================================================= */
+
+.ai-hub-fab {
+    position: fixed;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+
+    z-index: 1080;
+
+    width: 62px;
+    height: 72px;
+
+    border: 1px solid rgba(147, 197, 253, .5);
+    border-radius: 18px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(30, 41, 59, .97),
+            rgba(15, 23, 42, .97)
+        );
+
+    color: #fff;
+
+    box-shadow:
+        0 15px 35px rgba(0, 0, 0, .38),
+        0 0 24px rgba(59, 130, 246, .22);
+
+    display: grid;
+    place-items: center;
+
+    gap: 0;
+    padding: 8px;
+
+    cursor: pointer;
+
+    transition:
+        transform .25s ease,
+        box-shadow .25s ease,
+        border-color .25s ease;
+}
+
+
+/* Hover */
+
+.ai-hub-fab:hover {
+    transform: translateY(-50%) scale(1.06);
+
+    border-color: rgba(96, 165, 250, .9);
+
+    box-shadow:
+        0 18px 40px rgba(0, 0, 0, .48),
+        0 0 34px rgba(59, 130, 246, .48);
+}
+
+
+/* Active */
+
+.ai-hub-fab:active {
+    transform: translateY(-50%) scale(.96);
+}
+
+
+/* Robot */
+
+.ai-hub-fab-icon {
+    font-size: 1.65rem;
+    line-height: 1;
+
+    display: block;
+}
+
+
+/* Text */
+
+.ai-hub-fab small {
+    font-size: .58rem;
+
+    font-weight: 800;
+
+    letter-spacing: .09em;
+
+    line-height: 1;
+
+    color: #e2e8f0;
+}
+
+
+/* =========================================================
+   OVERLAY
+========================================================= */
+
+.ai-hub-overlay {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 1085;
+
+    background:
+        rgba(2, 6, 23, .58);
+
+    opacity: 0;
+
+    visibility: hidden;
+
+    pointer-events: none;
+
+    transition:
+        opacity .3s ease,
+        visibility .3s ease;
+}
+
+
+/*
+   IMPORTANT:
+   JS uses .is-visible
+*/
+
+.ai-hub-overlay.is-visible {
+    opacity: 1;
+
+    visibility: visible;
+
+    pointer-events: auto;
+}
+
+
+/* Also support old class */
+
+.ai-hub-overlay.is-open {
+    opacity: 1;
+
+    visibility: visible;
+
+    pointer-events: auto;
+}
+
+
+/* =========================================================
+   DRAWER
+========================================================= */
+
+.ai-hub-drawer {
+    position: fixed;
+
+    z-index: 1090;
+
+    left: 0;
+    top: 0;
+    bottom: 0;
+
+    width: min(390px, 92vw);
+
+    padding: 20px;
+
+    display: flex;
+    flex-direction: column;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(15, 23, 42, .98),
+            rgba(2, 6, 23, .98)
+        );
+
+    border-right:
+        1px solid rgba(148, 163, 184, .32);
+
+    box-shadow:
+        24px 0 55px rgba(0, 0, 0, .38);
+
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+
+    transform: translateX(-102%);
+
+    transition:
+        transform .34s cubic-bezier(.2, .75, .2, 1);
+
+    color: #fff;
+
+    overflow: hidden;
+}
+
+
+/* Open */
+
+.ai-hub-drawer.is-open {
+    transform: translateX(0);
+}
+
+
+/* =========================================================
+   DRAWER HEADER
+========================================================= */
+
+.ai-hub-drawer-header {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    padding:
+        4px
+        4px
+        18px;
+
+    border-bottom:
+        1px solid rgba(51, 65, 85, .9);
+
+    flex-shrink: 0;
+}
+
+
+/* Title */
+
+.ai-hub-drawer-header strong {
+    font-size: 1.2rem;
+
+    letter-spacing: .04em;
+
+    color: #fff;
+}
+
+
+/* Subtitle */
+
+.ai-hub-drawer-header small {
+    display: block;
+
+    color: #94a3b8;
+
+    font-size: .76rem;
+
+    margin-top: 3px;
+}
+
+
+/* Close */
+
+.ai-hub-drawer-header button {
+    width: 36px;
+    height: 36px;
+
+    border:
+        1px solid #475569;
+
+    border-radius: 10px;
+
+    background:
+        rgba(30, 41, 59, .9);
+
+    color: #fff;
+
+    display: grid;
+    place-items: center;
+
+    cursor: pointer;
+
+    transition:
+        background .2s ease,
+        border-color .2s ease,
+        transform .2s ease;
+}
+
+
+.ai-hub-drawer-header button:hover {
+    background:
+        rgba(239, 68, 68, .18);
+
+    border-color:
+        rgba(248, 113, 113, .7);
+
+    transform: rotate(90deg);
+}
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+.ai-hub-drawer-nav {
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap: 8px;
+
+    padding:
+        18px 0;
+
+    overflow-y: auto;
+
+    flex-shrink: 0;
+}
+
+
+/* =========================================================
+   TOOL LINKS
+========================================================= */
+
+.ai-hub-drawer-nav a {
+    min-height: 68px;
+
+    text-align: left;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+    padding: 10px;
+
+    border:
+        1px solid #334155;
+
+    border-radius: 12px;
+
+    background:
+        rgba(30, 41, 59, .72);
+
+    color: #cbd5e1;
+
+    text-decoration: none;
+
+    font-size: .8rem;
+
+    cursor: pointer;
+
+    transition:
+        .2s ease;
+}
+
+
+/* Hover */
+
+.ai-hub-drawer-nav a:hover {
+    background:
+        rgba(59, 130, 246, .19);
+
+    border-color:
+        #3b82f6;
+
+    color: #fff;
+
+    transform:
+        translateY(-2px);
+
+    box-shadow:
+        0 8px 20px rgba(0, 0, 0, .2);
+}
+
+
+/* Active page */
+
+.ai-hub-drawer-nav a.active {
+    background:
+        linear-gradient(
+            135deg,
+            rgba(59, 130, 246, .25),
+            rgba(37, 99, 235, .15)
+        );
+
+    border-color:
+        rgba(96, 165, 250, .8);
+
+    color: #fff;
+
+    box-shadow:
+        0 0 18px rgba(59, 130, 246, .12);
+}
+
+
+/* =========================================================
+   TOOL ICON
+========================================================= */
+
+.ai-hub-tool-icon {
+    width: 34px;
+    height: 34px;
+
+    flex-shrink: 0;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 9px;
+
+    background:
+        rgba(15, 23, 42, .8);
+
+    font-size: 1.15rem;
+}
+
+
+/* =========================================================
+   TOOL TEXT
+========================================================= */
+
+.ai-hub-tool-text {
+    min-width: 0;
+
+    flex: 1;
+}
+
+
+.ai-hub-tool-text strong {
+    display: block;
+
+    color: #f8fafc;
+
+    font-size: .78rem;
+
+    line-height: 1.25;
+}
+
+
+.ai-hub-tool-text small {
+    display: block;
+
+    margin-top: 3px;
+
+    color: #94a3b8;
+
+    font-size: .66rem;
+
+    line-height: 1.25;
+}
+
+
+/* Arrow */
+
+.ai-hub-drawer-nav a > i {
+    flex-shrink: 0;
+
+    color: #64748b;
+
+    font-size: .65rem;
+
+    transition:
+        transform .2s ease,
+        color .2s ease;
+}
+
+
+.ai-hub-drawer-nav a:hover > i {
+    color: #60a5fa;
+
+    transform:
+        translateX(2px);
+}
+
+
+/* =========================================================
+   DIVIDER
+========================================================= */
+
+.ai-hub-divider {
+    grid-column: 1 / -1;
+
+    height: 1px;
+
+    margin: 4px 0;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            #334155,
+            transparent
+        );
+}
+
+
+/* =========================================================
+   OVERVIEW
+========================================================= */
+
+.ai-hub-overview {
+    display: flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+    margin-top: 15px;
+
+    padding:
+        13px 12px;
+
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #3b82f6,
+            #2563eb
+        );
+
+    color: #fff;
+
+    text-decoration: none;
+
+    font-weight: 700;
+
+    flex-shrink: 0;
+
+    box-shadow:
+        0 10px 25px rgba(37, 99, 235, .25);
+
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease;
+}
+
+
+.ai-hub-overview:hover {
+    color: #fff;
+
+    transform:
+        translateY(-2px);
+
+    box-shadow:
+        0 14px 30px rgba(37, 99, 235, .35);
+}
+
+
+.ai-hub-overview i {
+    margin-left: auto;
+
+    font-style: normal;
+}
+
+
+/* =========================================================
+   DRAWER CONTENT
+========================================================= */
+
+.ai-hub-drawer-content {
+    overflow-y: auto;
+
+    flex: 1;
+
+    padding-right: 2px;
+
+    min-height: 0;
+}
+
+
+/* Scrollbar */
+
+.ai-hub-drawer::-webkit-scrollbar,
+.ai-hub-drawer-nav::-webkit-scrollbar,
+.ai-hub-drawer-content::-webkit-scrollbar {
+    width: 5px;
+}
+
+
+.ai-hub-drawer::-webkit-scrollbar-thumb,
+.ai-hub-drawer-nav::-webkit-scrollbar-thumb,
+.ai-hub-drawer-content::-webkit-scrollbar-thumb {
+    background:
+        #334155;
+
+    border-radius: 10px;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+========================================================= */
+
+.ai-hub-drawer-empty {
+    min-height: 180px;
+
+    display: grid;
+
+    place-content: center;
+
+    text-align: center;
+
+    color: #94a3b8;
+
+    padding: 20px;
+}
+
+
+.ai-hub-drawer-empty span {
+    font-size: 2rem;
+}
+
+
+.ai-hub-drawer-empty strong {
+    color: #fff;
+
+    margin-top: 8px;
+}
+
+
+.ai-hub-drawer-empty p {
+    font-size: .82rem;
+
+    margin:
+        8px 0 0;
+}
+
+
+/* =========================================================
+   QUICK CONTENT
+========================================================= */
+
+.ai-panel-fragment h2 {
+    font-size: 1rem;
+
+    margin:
+        0 0 5px;
+}
+
+
+.ai-panel-fragment > p {
+    font-size: .8rem;
+
+    color: #94a3b8;
+
+    margin-bottom: 14px;
+}
+
+
+.ai-panel-fragment .form-control,
+.ai-panel-fragment .form-select {
+    font-size: .83rem;
+}
+
+
+/* =========================================================
+   DRAWER PRODUCTS
+========================================================= */
+
+.ai-drawer-products {
+    display: grid;
+
+    gap: 7px;
+
+    margin-top: 14px;
+}
+
+
+.ai-drawer-products a {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 8px;
+
+    padding: 9px;
+
+    border:
+        1px solid #334155;
+
+    border-radius: 9px;
+
+    background:
+        #111827;
+
+    color: #cbd5e1;
+
+    text-decoration: none;
+
+    font-size: .78rem;
+}
+
+
+.ai-drawer-products a:hover {
+    border-color:
+        #3b82f6;
+
+    color: #fff;
+}
+
+
+.ai-drawer-products small {
+    display: block;
+
+    color: #94a3b8;
+
+    margin-top: 2px;
+}
+
+
+.ai-drawer-products b {
+    color: #86efac;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   QUICK COMPARE
+========================================================= */
+
+.ai-quick-compare {
+    display: grid;
+
+    gap: 3px;
+
+    margin-top: 14px;
+
+    padding: 12px;
+
+    background:
+        #111827;
+
+    border:
+        1px solid #334155;
+
+    border-radius: 10px;
+
+    font-size: .78rem;
+}
+
+
+.ai-quick-compare span {
+    color: #94a3b8;
+
+    margin-bottom: 7px;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 576px) {
+
+    .ai-hub-fab {
+        left: 10px;
+        top: 50%;
+
+        width: 54px;
+
+        height: 62px;
+
+        border-radius: 15px;
+    }
+
+
+    .ai-hub-fab-icon {
+        font-size: 1.4rem;
+    }
+
+
+    .ai-hub-fab small {
+        display: none;
+    }
+
+
+    .ai-hub-drawer {
+        width: min(390px, 94vw);
+
+        padding: 16px;
+    }
+
+
+    .ai-hub-drawer-nav {
+        gap: 6px;
+    }
+
+
+    .ai-hub-drawer-nav a {
+        min-height: 62px;
+
+        padding: 8px;
+
+        font-size: .75rem;
+    }
+
+
+    .ai-hub-tool-icon {
+        width: 30px;
+        height: 30px;
+
+        font-size: 1rem;
+    }
+
+
+    .ai-hub-tool-text strong {
+        font-size: .72rem;
+    }
+
+
+    .ai-hub-tool-text small {
+        font-size: .6rem;
+    }
+
+}
+
+
+/* =========================================================
+   VERY SMALL MOBILE
+========================================================= */
+
+@media (max-width: 380px) {
+
+    .ai-hub-drawer-nav {
+        grid-template-columns: 1fr;
+    }
+
+
+    .ai-hub-drawer-nav a {
+        min-height: 56px;
+    }
+
+
+    .ai-hub-fab {
+        left: 7px;
+
+        width: 50px;
+
+        height: 56px;
+    }
+
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .ai-hub-fab,
+    .ai-hub-overlay,
+    .ai-hub-drawer,
+    .ai-hub-drawer-nav a,
+    .ai-hub-overview {
+        transition: none !important;
+    }
+
+}
+/* =========================================================
+   AI HUB — ALWAYS ABOVE PAGE CONTENT
+========================================================= */
+
+.ai-hub-fab {
+    z-index: 99990 !important;
+}
+
+.ai-hub-overlay {
+    z-index: 99991 !important;
+}
+
+.ai-hub-drawer {
+    z-index: 99992 !important;
+}
+
+body.ai-hub-open {
+    overflow: hidden !important;
+}
+
+/* Shared theme hooks: the same AI Hub remains readable on every customer page. */
+html[data-theme="light"] .ai-hub-fab,
+html[data-sb-theme="light"] .ai-hub-fab {
+    background: linear-gradient(145deg, #ffffff, #edf4ff);
+    color: #172554;
+    border-color: rgba(37, 99, 235, .28);
+    box-shadow: 0 16px 34px rgba(37, 99, 235, .20);
+}
+
+html[data-theme="light"] .ai-hub-fab small,
+html[data-sb-theme="light"] .ai-hub-fab small {
+    color: #1e3a8a;
+}
+
+html[data-theme="light"] .ai-hub-drawer,
+html[data-sb-theme="light"] .ai-hub-drawer {
+    background: linear-gradient(145deg, rgba(255,255,255,.98), rgba(241,245,249,.98));
+    color: #172554;
+    border-color: rgba(148, 163, 184, .38);
+    box-shadow: 24px 0 55px rgba(15, 23, 42, .16);
+}
+
+html[data-theme="light"] .ai-hub-drawer-header small,
+html[data-sb-theme="light"] .ai-hub-drawer-header small {
+    color: #64748b;
+}
