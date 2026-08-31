@@ -3,11 +3,41 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\Cart;
+use App\Models\Order;
+use App\Models\Wishlist;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
+    public function dashboard()
+    {
+        $user = Auth::user();
+        $products = Product::query()
+            ->with('seller')
+            ->where(fn ($query) => $query->whereNull('status')->orWhere('status', 'active'))
+            ->latest()
+            ->limit(8)
+            ->get();
+
+        $orders = Order::query()
+            ->where('user_id', $user->id)
+            ->latest()
+            ->limit(5)
+            ->get();
+
+        return view('customer.for-you', [
+            'user' => $user,
+            'products' => $products,
+            'orders' => $orders,
+            'cartCount' => Cart::where('user_id', $user->id)->sum('quantity'),
+            'wishlistCount' => Wishlist::where('user_id', $user->id)->count(),
+            'orderCount' => Order::where('user_id', $user->id)->count(),
+        ]);
+    }
+
     public function index(Request $request)
     {
         // Customer catalog remains global; seller ownership is enforced only in seller queries.
