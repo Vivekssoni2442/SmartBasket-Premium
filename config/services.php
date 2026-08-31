@@ -1,18 +1,11 @@
 <?php
 
 return [
-    
 
     /*
     |--------------------------------------------------------------------------
     | Third Party Services
     |--------------------------------------------------------------------------
-    |
-    | This file is for storing the credentials for third party services such
-    | as Mailgun, Postmark, AWS and more. This file provides the de facto
-    | location for this type of information, allowing packages to have
-    | a conventional file to locate the various service credentials.
-    |
     */
 
     'postmark' => [
@@ -35,47 +28,148 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
-'groq' => [
+
+    /*
+    |--------------------------------------------------------------------------
+    | Groq
+    |--------------------------------------------------------------------------
+    */
+
+    'groq' => [
         'key' => env('GROQ_API_KEY'),
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | AI Camera Assistant — Vision provider
+    | Smart Basket Customer AI
     |--------------------------------------------------------------------------
-    | provider: 'local' (offline, fully private) | 'groq' | 'openai' (future)
-    | Keys are read from .env, never hardcoded.
     */
+
+    'customer_ai' => [
+
+        'provider' => env('AI_PROVIDER', 'groq'),
+
+        'key' => env('AI_API_KEY') ?: env('GROQ_API_KEY'),
+
+        'base_url' => env(
+            'AI_BASE_URL',
+            'https://api.groq.com/openai/v1/chat/completions'
+        ),
+
+        'model' => env(
+            'AI_MODEL',
+            env('CUSTOMER_AI_MODEL', 'openai/gpt-oss-20b')
+        ),
+
+        'timeout' => (int) env('AI_TIMEOUT', 30),
+
+        'max_steps' => (int) env('AI_MAX_STEPS', 5),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Smart AI Web Search
+    |--------------------------------------------------------------------------
+    |
+    | This allows Smart AI to get fresh internet information.
+    | Tavily API key must be configured in .env.
+    |
+    */
+
+    'customer_ai_web' => [
+
+        'provider' => env('AI_WEB_PROVIDER', 'tavily'),
+
+        'key' => env('TAVILY_API_KEY'),
+
+        'url' => env(
+            'AI_WEB_SEARCH_URL',
+            'https://api.tavily.com/search'
+        ),
+
+        'timeout' => (int) env('AI_WEB_TIMEOUT', 15),
+
+        'results' => (int) env('AI_WEB_RESULTS', 5),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | AI Camera Assistant — Vision Provider
+    |--------------------------------------------------------------------------
+    */
+
     'ai_vision' => [
+
         'provider' => env('AI_VISION_PROVIDER', 'local'),
+
         'groq' => [
-            'key'   => env('GROQ_API_KEY'),
-            'url'   => 'https://api.groq.com/openai/v1/chat/completions',
-            'model' => 'llama-3.2-11b-vision-preview',
+            'key' => env('GROQ_API_KEY'),
+
+            'url' => 'https://api.groq.com/openai/v1/chat/completions',
+
+            'model' => env(
+                'AI_VISION_GROQ_MODEL',
+                'llama-3.2-11b-vision-preview'
+            ),
         ],
+
         'openai' => [
-            'key'   => env('OPENAI_API_KEY'),
-            'url'   => 'https://api.openai.com/v1/chat/completions',
-            'model' => 'gpt-4o-mini',
+            'key' => env('OPENAI_API_KEY'),
+
+            'url' => 'https://api.openai.com/v1/chat/completions',
+
+            'model' => env(
+                'AI_VISION_OPENAI_MODEL',
+                'gpt-4o-mini'
+            ),
         ],
     ],
 
-    // A separate capability from AI Camera Assistant vision analysis. Configure
-    // only with a provider/model that accepts two images and returns an edited image.
+    /*
+    |--------------------------------------------------------------------------
+    | Virtual Try-On
+    |--------------------------------------------------------------------------
+    */
+
     'virtual_tryon' => [
+
         'provider' => env('VIRTUAL_TRYON_PROVIDER'),
-        'timeout' => env('VIRTUAL_TRYON_TIMEOUT', 90),
+
+        'timeout' => (int) env('VIRTUAL_TRYON_TIMEOUT', 90),
+
         'openai' => [
             'key' => env('VIRTUAL_TRYON_API_KEY'),
-            'url' => env('VIRTUAL_TRYON_BASE_URL', 'https://api.openai.com/v1/images/edits'),
-            'model' => env('VIRTUAL_TRYON_MODEL', 'gpt-image-1'),
-            'size' => env('VIRTUAL_TRYON_SIZE', '1024x1024'),
+
+            'url' => env(
+                'VIRTUAL_TRYON_BASE_URL',
+                'https://api.openai.com/v1/images/edits'
+            ),
+
+            'model' => env(
+                'VIRTUAL_TRYON_MODEL',
+                'gpt-image-1'
+            ),
+
+            'size' => env(
+                'VIRTUAL_TRYON_SIZE',
+                '1024x1024'
+            ),
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Razorpay
+    |--------------------------------------------------------------------------
+    */
+
     'razorpay' => [
+
         'key' => env('RAZORPAY_KEY'),
+
         'secret' => env('RAZORPAY_SECRET'),
+
         'webhook_secret' => env('RAZORPAY_WEBHOOK_SECRET'),
     ],
+
 ];
