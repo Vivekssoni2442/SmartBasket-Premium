@@ -1,0 +1,124 @@
+/*
+|--------------------------------------------------------------------------
+| SMART BASKET — AI ROBOT DANCE
+|--------------------------------------------------------------------------
+*/
+
+#aiRobot {
+    position: relative;
+    transform-origin: center bottom;
+    will-change: transform;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| DANCE
+|--------------------------------------------------------------------------
+*/
+
+#aiRobot.robot-dancing {
+    animation:
+        robotDance
+        0.65s
+        ease-in-out
+        infinite;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| MAIN DANCE
+|--------------------------------------------------------------------------
+*/
+
+@keyframes robotDance {
+
+    0% {
+        transform:
+            translateY(0)
+            rotate(0deg)
+            scale(1);
+    }
+
+    20% {
+        transform:
+            translateY(-12px)
+            rotate(-8deg)
+            scale(1.03);
+    }
+
+    40% {
+        transform:
+            translateY(0)
+            rotate(8deg)
+            scale(1);
+    }
+
+    60% {
+        transform:
+            translateY(-16px)
+            rotate(-6deg)
+            scale(1.05);
+    }
+
+    80% {
+        transform:
+            translateY(-4px)
+            rotate(6deg)
+            scale(1.02);
+    }
+
+    100% {
+        transform:
+            translateY(0)
+            rotate(0deg)
+            scale(1);
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| LISTENING
+|--------------------------------------------------------------------------
+*/
+
+#robotVoiceBtn.listening {
+    animation:
+        voicePulse
+        1s
+        ease-in-out
+        infinite;
+}
+
+
+@keyframes voicePulse {
+
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.08);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| MOBILE
+|--------------------------------------------------------------------------
+*/
+
+@media (max-width: 768px) {
+
+    #aiRobot.robot-dancing {
+        animation-duration: 0.55s;
+    }
+
+}

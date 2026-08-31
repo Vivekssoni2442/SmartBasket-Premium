@@ -235,8 +235,9 @@ class AdminSellerVerificationController extends Controller
     */
 
     public function approve(
-        SellerProfile $application
+        SellerProfile $seller
     ) {
+        $application = $seller;
         abort_unless(
             $application->verification_status ===
             SellerProfile::STATUS_PENDING_REVIEW,
@@ -295,8 +296,9 @@ class AdminSellerVerificationController extends Controller
 
     public function reject(
         Request $request,
-        SellerProfile $application
+        SellerProfile $seller
     ) {
+        $application = $seller;
         $data = $request->validate([
             'reason' => [
                 'required',

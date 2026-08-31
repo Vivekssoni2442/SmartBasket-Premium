@@ -13,9 +13,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Register seller.auth middleware alias
+        // Resolve the authenticated customer preference (or a safe guest fallback)
+        // before any controller or Blade view is executed.
+        $middleware->appendToGroup('web', \App\Http\Middleware\SetUserLocale::class);
+
+        // Register seller auth and admin middleware aliases
         $middleware->alias([
             'seller.auth' => \App\Http\Middleware\SellerAuth::class,
+            'seller.admin' => \App\Http\Middleware\SellerAdmin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

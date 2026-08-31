@@ -12,9 +12,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->string('seller_name');
-            $table->string('shop_name');
+            $table->string('shop_name')->nullable();
             $table->string('email')->unique();
-            $table->string('mobile_number', 20);
+            $table->string('mobile_number', 20)->nullable();
             $table->text('shop_address')->nullable();
             $table->string('city')->nullable();
             $table->string('state')->nullable();

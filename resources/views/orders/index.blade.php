@@ -1547,7 +1547,7 @@
 
 </script>
 
-
+<x-ai-hub-sidebar />
 </body>
 
 </html>

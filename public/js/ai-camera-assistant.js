@@ -1,544 +1,1402 @@
-/* Smart Basket Premium — AI Camera Assistant
-   Handles camera permission, live preview, capture, upload, retake, AJAX analysis,
-   Virtual Try-On, Download, Share, Reset, and History.
-   Works on the full page and inside the AI HUB sidebar drawer. */
-(function () {
+/*
+|--------------------------------------------------------------------------
+| SMART BASKET — AI CAMERA ASSISTANT
+|--------------------------------------------------------------------------
+| Handles:
+| - Camera start / stop
+| - Capture
+| - Upload
+| - Preview
+| - AI analysis
+| - CSRF
+| - Recommendations
+| - History
+| - Share
+| - Download
+| - Reset
+|--------------------------------------------------------------------------
+*/
+
+document.addEventListener('DOMContentLoaded', function () {
+
     'use strict';
 
-    function initCameraAssistant(root) {
-        const vp       = root.querySelector('.ai-ca-viewport');
-        const video    = root.querySelector('#caVideo');
-        const canvas   = root.querySelector('#caCanvas');
-        const startBtn = root.querySelector('#caStartBtn');
-        const stopBtn  = root.querySelector('#caStopBtn');
-        const capBtn   = root.querySelector('#caCaptureBtn');
-        const upBtn    = root.querySelector('#caUploadBtn');
-        const file     = root.querySelector('#caFile');
-        const preview  = root.querySelector('#caUploadPreview');
-        const status   = root.querySelector('#caStatus');
-        const form     = root.querySelector('#caAnalyzeForm');
-        const query    = root.querySelector('#caQuery');
-        const analyzeBtn = root.querySelector('#caAnalyzeBtn');
-        const loading  = root.querySelector('#caLoading');
-        const results  = root.querySelector('#caResults');
-        const retakeBtn = root.querySelector('#caRetakeBtn');
-        const camLoading = root.querySelector('#caCamLoading');
+    /* =========================================================
+       ELEMENTS
+    ========================================================== */
 
-        // Action buttons
-        const vtoBtn     = root.querySelector('#caVirtualTryOnBtn');
-        const downloadBtn = root.querySelector('#caDownloadBtn');
-        const shareBtn   = root.querySelector('#caShareBtn');
-        const historyBtn = root.querySelector('#caHistoryBtn');
-        const resetBtn   = root.querySelector('#caResetBtn');
-        const historyPanel = root.querySelector('#caHistoryPanel');
-        const historyList  = root.querySelector('#caHistoryList');
-        const historyClose = root.querySelector('#caHistoryClose');
+    const video = document.getElementById('caVideo');
+    const canvas = document.getElementById('caCanvas');
 
-        if (!vp || !video || !form || !results) return;
+    const placeholder = document.getElementById('caPlaceholder');
+    const uploadPreview = document.getElementById('caUploadPreview');
 
-        let stream = null;
-        let currentImageDataUrl = null; // holds the active (captured/uploaded) image
-        let activeFile = null;          // holds the selected/uploaded File object
-        let currentResultImageUrl = null; // holds the latest generated try-on result URL
+    const fileInput = document.getElementById('caFile');
 
-        // Read the CSRF token from the meta tag.
-        const csrfToken = (() => {
-            const meta = document.querySelector('meta[name="csrf-token"]');
-            return meta ? meta.getAttribute('content') : '';
-        })();
+    const startBtn = document.getElementById('caStartBtn');
+    const captureBtn = document.getElementById('caCaptureBtn');
+    const retakeBtn = document.getElementById('caRetakeBtn');
+    const uploadBtn = document.getElementById('caUploadBtn');
+    const stopBtn = document.getElementById('caStopBtn');
 
-        const csrfHeaders = Object.assign(
-            { 'X-Requested-With': 'XMLHttpRequest' },
-            csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}
+    const statusBox = document.getElementById('caStatus');
+    const alerts = document.getElementById('caAlerts');
+
+    const analyzeForm = document.getElementById('caAnalyzeForm');
+    const analyzeBtn = document.getElementById('caAnalyzeBtn');
+    const queryInput = document.getElementById('caQuery');
+
+    const loading = document.getElementById('caLoading');
+    const results = document.getElementById('caResults');
+
+    const resetBtn = document.getElementById('caResetBtn');
+    const shareBtn = document.getElementById('caShareBtn');
+    const downloadBtn = document.getElementById('caDownloadBtn');
+
+    const historyBtn = document.getElementById('caHistoryBtn');
+    const historyPanel = document.getElementById('caHistoryPanel');
+    const historyClose = document.getElementById('caHistoryClose');
+    const historyList = document.getElementById('caHistoryList');
+
+    const virtualTryOnBtn =
+        document.getElementById('caVirtualTryOnBtn');
+
+
+    /* =========================================================
+       STATE
+    ========================================================== */
+
+    let stream = null;
+    let selectedImageBlob = null;
+    let selectedImageUrl = null;
+    let lastAnalysisHtml = null;
+
+
+    /* =========================================================
+       CSRF
+    ========================================================== */
+
+    function getCsrfToken() {
+
+        const meta = document.querySelector(
+            'meta[name="csrf-token"]'
         );
 
-        const setStatus = (msg, live) => {
-            if (!status) return;
-            status.textContent = msg;
-            status.classList.toggle('is-live', !!live);
-        };
+        return meta ? meta.getAttribute('content') : '';
+    }
 
-        const showAlert = (message, type) => {
-            type = type || 'danger';
-            const container = root.querySelector('.ai-ca-alerts');
-            if (!container) return;
-            const wrapper = document.createElement('div');
-            wrapper.className = 'alert alert-' + type + ' alert-dismissible fade show ai-ca-alert';
-            wrapper.setAttribute('role', 'alert');
-            wrapper.innerHTML = message +
-                '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
-            container.appendChild(wrapper);
-            setTimeout(() => {
-                if (wrapper.parentNode) wrapper.remove();
-            }, 6000);
-        };
 
-        const enableActionResultButtons = (enabled) => {
-            if (vtoBtn) vtoBtn.disabled = !enabled;
-            if (downloadBtn) downloadBtn.disabled = !enabled;
-            if (shareBtn) shareBtn.disabled = !enabled;
-        };
+    /* =========================================================
+       HELPERS
+    ========================================================== */
 
-        const setAnalyzeEnabled = (enabled) => {
-            if (analyzeBtn) analyzeBtn.disabled = !enabled;
-        };
+    function showAlert(message, type = 'danger') {
 
-        const dataURLToBlob = (dataUrl) => {
-            const parts = dataUrl.split(',');
-            const mime = parts[0].match(/:(.*?);/)[1];
-            const bstr = atob(parts[1]);
-            const n = bstr.length;
-            const u8arr = new Uint8Array(n);
-            for (let i = 0; i < n; i++) u8arr[i] = bstr.charCodeAt(i);
-            return new Blob([u8arr], { type: mime });
-        };
+        if (!alerts) {
+            return;
+        }
 
-        const stopCamera = () => {
+        alerts.innerHTML = `
+            <div class="alert alert-${type} d-flex align-items-center">
+                <i class="fa-solid ${
+                    type === 'success'
+                        ? 'fa-circle-check'
+                        : 'fa-circle-exclamation'
+                } me-2"></i>
+
+                <span>${escapeHtml(message)}</span>
+            </div>
+        `;
+
+        setTimeout(() => {
+
+            if (alerts) {
+                alerts.innerHTML = '';
+            }
+
+        }, 6000);
+    }
+
+
+    function escapeHtml(value) {
+
+        const div = document.createElement('div');
+
+        div.textContent = value ?? '';
+
+        return div.innerHTML;
+    }
+
+
+    function setStatus(message, type = '') {
+
+        if (!statusBox) {
+            return;
+        }
+
+        statusBox.textContent = message;
+
+        statusBox.classList.remove(
+            'success',
+            'error',
+            'active'
+        );
+
+        if (type) {
+            statusBox.classList.add(type);
+        }
+    }
+
+
+    function setLoading(show) {
+
+        if (!loading) {
+            return;
+        }
+
+        loading.classList.toggle(
+            'd-none',
+            !show
+        );
+
+        if (analyzeBtn) {
+            analyzeBtn.disabled = show;
+        }
+    }
+
+
+    function enableActionButtons(enabled) {
+
+        if (shareBtn) {
+            shareBtn.disabled = !enabled;
+        }
+
+        if (downloadBtn) {
+            downloadBtn.disabled = !enabled;
+        }
+
+        if (virtualTryOnBtn) {
+            virtualTryOnBtn.disabled = !enabled;
+        }
+    }
+
+
+    /* =========================================================
+       CAMERA
+    ========================================================== */
+
+    async function startCamera() {
+
+        if (!navigator.mediaDevices ||
+            !navigator.mediaDevices.getUserMedia) {
+
+            showAlert(
+                'Your browser does not support camera access.',
+                'danger'
+            );
+
+            return;
+        }
+
+        try {
+
+            setStatus('Requesting camera permission...');
+
             if (stream) {
-                stream.getTracks().forEach((t) => t.stop());
-                stream = null;
+                stopCamera(false);
             }
+
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: 'user',
+                    width: {
+                        ideal: 1280
+                    },
+                    height: {
+                        ideal: 720
+                    }
+                },
+                audio: false
+            });
+
+            video.srcObject = stream;
+
+            await video.play();
+
+            video.classList.add('active');
+
+            if (placeholder) {
+                placeholder.classList.add('d-none');
+            }
+
+            if (uploadPreview) {
+                uploadPreview.classList.remove('active');
+                uploadPreview.removeAttribute('src');
+            }
+
+            if (startBtn) {
+                startBtn.classList.add('d-none');
+            }
+
+            if (captureBtn) {
+                captureBtn.classList.remove('d-none');
+            }
+
+            if (stopBtn) {
+                stopBtn.classList.remove('d-none');
+            }
+
+            if (retakeBtn) {
+                retakeBtn.classList.add('d-none');
+            }
+
+            setStatus(
+                'Camera is active. Stand in front of the camera.',
+                'active'
+            );
+
+        } catch (error) {
+
+            console.error(
+                'Camera error:',
+                error
+            );
+
+            let message =
+                'Unable to access camera.';
+
+            if (error.name === 'NotAllowedError') {
+
+                message =
+                    'Camera permission was denied. Please allow camera access in your browser.';
+
+            } else if (error.name === 'NotFoundError') {
+
+                message =
+                    'No camera was found on this device.';
+
+            } else if (error.name === 'NotReadableError') {
+
+                message =
+                    'Camera is already being used by another application.';
+
+            } else if (error.name === 'SecurityError') {
+
+                message =
+                    'Camera access is blocked by browser security settings.';
+
+            }
+
+            showAlert(
+                message,
+                'danger'
+            );
+
+            setStatus(
+                'Camera could not be started.',
+                'error'
+            );
+        }
+    }
+
+
+    /* =========================================================
+       STOP CAMERA
+    ========================================================== */
+
+    function stopCamera(showMessage = true) {
+
+        if (stream) {
+
+            stream.getTracks().forEach(
+                track => track.stop()
+            );
+
+            stream = null;
+        }
+
+        if (video) {
+
             video.pause();
-            video.classList.remove('is-on');
-            if (startBtn) startBtn.classList.remove('d-none');
-            if (stopBtn) stopBtn.classList.add('d-none');
-            if (capBtn) capBtn.classList.add('d-none');
-            setStatus('Camera is off.', false);
-        };
 
-        const startCamera = async () => {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                setStatus('Camera not supported on this device or browser.', false);
-                showAlert('Camera is not supported on this device or browser. You can still upload a photo.', 'warning');
-                return;
-            }
-            if (camLoading) camLoading.classList.remove('d-none');
-            setStatus('Loading camera...', false);
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: { ideal: 'user' }, width: { ideal: 1280 }, height: { ideal: 1024 } },
-                    audio: false
-                });
-                video.srcObject = stream;
-                await video.play();
-                video.classList.add('is-on');
-                if (startBtn) startBtn.classList.add('d-none');
-                if (stopBtn) stopBtn.classList.remove('d-none');
-                if (capBtn) capBtn.classList.remove('d-none');
-                if (retakeBtn) retakeBtn.classList.add('d-none');
-                setStatus('Camera is live — show your face & full body.', true);
-            } catch (err) {
-                const denied =
-                    err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError' ||
-                    err.name === 'SecurityError';
-                const notFound =
-                    err.name === 'NotFoundError' || err.name === 'OverconstrainedError' ||
-                    err.name === 'NotReadableError';
-                if (denied) {
-                    setStatus('Camera permission denied. You can still upload a photo below.', false);
-                    showAlert('Camera permission was denied. Please allow camera access, or upload a photo instead.', 'danger');
-                } else if (notFound) {
-                    setStatus('No camera found. You can still upload a photo below.', false);
-                    showAlert('No camera was found on this device. Please connect a camera or upload a photo instead.', 'warning');
-                } else {
-                    setStatus('Unable to access camera. You can still upload a photo below.', false);
-                    showAlert('Unable to access the camera. Please try again or upload a photo instead.', 'warning');
+            video.srcObject = null;
+
+            video.classList.remove('active');
+        }
+
+        if (captureBtn) {
+            captureBtn.classList.add('d-none');
+        }
+
+        if (stopBtn) {
+            stopBtn.classList.add('d-none');
+        }
+
+        if (startBtn) {
+            startBtn.classList.remove('d-none');
+        }
+
+        if (showMessage) {
+
+            setStatus(
+                'Camera is off.',
+                ''
+            );
+        }
+    }
+
+
+    /* =========================================================
+       CAPTURE PHOTO
+    ========================================================== */
+
+    function capturePhoto() {
+
+        if (!video ||
+            !video.videoWidth ||
+            !video.videoHeight) {
+
+            showAlert(
+                'Camera is not ready yet.',
+                'danger'
+            );
+
+            return;
+        }
+
+        const width = video.videoWidth;
+        const height = video.videoHeight;
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const context =
+            canvas.getContext('2d');
+
+        /*
+         * Mirror the front-camera image so the
+         * captured photo looks natural.
+         */
+
+        context.save();
+
+        context.translate(
+            width,
+            0
+        );
+
+        context.scale(
+            -1,
+            1
+        );
+
+        context.drawImage(
+            video,
+            0,
+            0,
+            width,
+            height
+        );
+
+        context.restore();
+
+        canvas.toBlob(
+            function (blob) {
+
+                if (!blob) {
+
+                    showAlert(
+                        'Unable to capture image.',
+                        'danger'
+                    );
+
+                    return;
                 }
-            } finally {
-                if (camLoading) camLoading.classList.add('d-none');
-            }
-        };
 
-        const capture = () => {
-            if (!stream || !video.videoWidth) return;
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            canvas.getContext('2d').drawImage(video, 0, 0);
-            currentImageDataUrl = canvas.toDataURL('image/jpeg', 0.9);
-            activeFile = null;
-            if (preview) {
-                preview.src = currentImageDataUrl;
-                preview.classList.add('is-on');
-            }
-            stopCamera();
-            if (retakeBtn) retakeBtn.classList.remove('d-none');
-            setAnalyzeEnabled(true);
-            enableActionResultButtons(true);
-            setStatus('Photo captured — ready to analyze. Use Retake to try again.', false);
-        };
+                selectedImageBlob = blob;
 
-        const retake = () => {
-            currentImageDataUrl = null;
-            activeFile = null;
-            if (preview) {
-                preview.src = '';
-                preview.classList.remove('is-on');
+                showImagePreview(
+                    blob
+                );
+
+                stopCamera(false);
+
+                if (retakeBtn) {
+                    retakeBtn.classList.remove('d-none');
+                }
+
+                setStatus(
+                    'Photo captured successfully. You can now analyze it.',
+                    'success'
+                );
+
+                enableActionButtons(false);
+
+            },
+            'image/jpeg',
+            0.92
+        );
+    }
+
+
+    /* =========================================================
+       IMAGE PREVIEW
+    ========================================================== */
+
+    function showImagePreview(blob) {
+
+        if (!uploadPreview) {
+            return;
+        }
+
+        if (selectedImageUrl) {
+
+            URL.revokeObjectURL(
+                selectedImageUrl
+            );
+        }
+
+        selectedImageUrl =
+            URL.createObjectURL(blob);
+
+        uploadPreview.src =
+            selectedImageUrl;
+
+        uploadPreview.classList.add(
+            'active'
+        );
+
+        if (video) {
+            video.classList.remove(
+                'active'
+            );
+        }
+
+        if (placeholder) {
+            placeholder.classList.add(
+                'd-none'
+            );
+        }
+    }
+
+
+    /* =========================================================
+       UPLOAD
+    ========================================================== */
+
+    function openUpload() {
+
+        if (!fileInput) {
+            return;
+        }
+
+        fileInput.click();
+    }
+
+
+    function handleUpload(event) {
+
+        const file =
+            event.target.files?.[0];
+
+        if (!file) {
+            return;
+        }
+
+        const allowedTypes = [
+            'image/jpeg',
+            'image/png',
+            'image/webp'
+        ];
+
+        if (!allowedTypes.includes(file.type)) {
+
+            showAlert(
+                'Please select a JPG, PNG or WEBP image.',
+                'danger'
+            );
+
+            fileInput.value = '';
+
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+
+            showAlert(
+                'Image must be smaller than 5 MB.',
+                'danger'
+            );
+
+            fileInput.value = '';
+
+            return;
+        }
+
+        selectedImageBlob = file;
+
+        showImagePreview(
+            file
+        );
+
+        stopCamera(false);
+
+        if (retakeBtn) {
+            retakeBtn.classList.remove(
+                'd-none'
+            );
+        }
+
+        setStatus(
+            'Image uploaded successfully. Click Analyze My Style.',
+            'success'
+        );
+
+        enableActionButtons(false);
+    }
+
+
+    /* =========================================================
+       ANALYZE
+    ========================================================== */
+
+    async function analyzeImage(event) {
+
+        event.preventDefault();
+
+        if (!selectedImageBlob) {
+
+            showAlert(
+                'First capture or upload a photo.',
+                'danger'
+            );
+
+            return;
+        }
+
+        setLoading(true);
+
+        setStatus(
+            'AI is analyzing your image...'
+        );
+
+        try {
+
+            const formData =
+                new FormData();
+
+            /*
+             * Always send the image using the exact
+             * field expected by AICameraAssistantController.
+             */
+
+            formData.append(
+                'image',
+                selectedImageBlob,
+                'ai-camera.jpg'
+            );
+
+            formData.append(
+                'query',
+                queryInput
+                    ? queryInput.value
+                    : ''
+            );
+
+            const response =
+                await fetch(
+                    '/ai-camera-assistant',
+                    {
+                        method: 'POST',
+
+                        headers: {
+                            'X-CSRF-TOKEN':
+                                getCsrfToken(),
+
+                            'X-Requested-With':
+                                'XMLHttpRequest',
+
+                            'Accept':
+                                'text/html'
+                        },
+
+                        body: formData,
+
+                        credentials:
+                            'same-origin'
+                    }
+                );
+
+            if (!response.ok) {
+
+                let message =
+                    `Server error (${response.status})`;
+
+                try {
+
+                    const text =
+                        await response.text();
+
+                    console.error(
+                        'AI Camera server response:',
+                        text
+                    );
+
+                    if (
+                        response.status === 419
+                    ) {
+
+                        message =
+                            'Session expired. Please refresh the page and try again.';
+
+                    } else if (
+                        response.status === 422
+                    ) {
+
+                        message =
+                            'Image validation failed. Please use a JPG, PNG or WEBP image under 5 MB.';
+
+                    } else if (
+                        response.status === 500
+                    ) {
+
+                        message =
+                            'AI server error. Please check Laravel logs.';
+                    }
+
+                } catch (e) {
+                    console.error(e);
+                }
+
+                throw new Error(
+                    message
+                );
             }
-            if (file) file.value = '';
+
+            /*
+             * Controller currently returns the full Blade page.
+             * We extract only #caResults from that HTML.
+             */
+
+            const html =
+                await response.text();
+
+            const parser =
+                new DOMParser();
+
+            const documentHtml =
+                parser.parseFromString(
+                    html,
+                    'text/html'
+                );
+
+            const newResults =
+                documentHtml.querySelector(
+                    '#caResults'
+                );
+
+            if (!newResults) {
+
+                console.error(
+                    'AI response did not contain #caResults',
+                    html
+                );
+
+                throw new Error(
+                    'AI returned an unexpected response.'
+                );
+            }
+
             if (results) {
+
                 results.innerHTML =
-                    '<div class="ai-ca-empty"><i class="fa-solid fa-sparkles"></i>' +
-                    '<p>Capture or upload a photo to see your AI style analysis and product recommendations.</p></div>';
+                    newResults.innerHTML;
             }
-            setAnalyzeEnabled(false);
-            enableActionResultButtons(false);
-            startCamera();
-        };
 
-        const onFile = (e) => {
-            const f = e.target.files && e.target.files[0];
-            if (!f) return;
-            const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
-            if (!validTypes.includes(f.type)) {
-                setStatus('Invalid image type. Please upload JPG, PNG or WEBP.', false);
-                showAlert('Invalid image type. Please upload a JPG, PNG or WEBP image.', 'danger');
-                setAnalyzeEnabled(false);
-                return;
-            }
-            if (f.size > 5 * 1024 * 1024) {
-                setStatus('Image too large. Maximum size is 5 MB.', false);
-                showAlert('Image is too large. Maximum allowed size is 5 MB.', 'danger');
-                setAnalyzeEnabled(false);
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = () => {
-                currentImageDataUrl = reader.result;
-                activeFile = f;
-                if (preview) {
-                    preview.src = currentImageDataUrl;
-                    preview.classList.add('is-on');
-                }
-                stopCamera();
-                if (retakeBtn) retakeBtn.classList.remove('d-none');
-                setAnalyzeEnabled(true);
-                enableActionResultButtons(true);
-                setStatus('Photo selected — ready to analyze.', false);
-            };
-            reader.onerror = () => {
-                setStatus('Failed to read the selected image.', false);
-                showAlert('Failed to read the selected image. Please try again.', 'danger');
-                setAnalyzeEnabled(false);
-            };
-            reader.readAsDataURL(f);
-        };
+            lastAnalysisHtml =
+                newResults.innerHTML;
 
-        const submitAnalysis = async (formData) => {
-            if (loading) loading.classList.remove('d-none');
-            if (analyzeBtn) analyzeBtn.disabled = true;
-            try {
-                const res = await fetch('/ai-camera-assistant', {
-                    method: 'POST',
-                    body: formData,
-                    headers: csrfHeaders,
-                    credentials: 'same-origin'
-                });
-                if (res.redirected) {
-                    window.location.href = res.url;
-                    return;
-                }
-                if (!res.ok) throw new Error('Request failed');
-                const html = await res.text();
-                results.innerHTML = html;
-                enableActionResultButtons(true);
-                setAnalyzeEnabled(true);
-            } catch (err) {
-                results.innerHTML =
-                    '<div class="ai-ca-empty"><i class="fa-solid fa-triangle-exclamation"></i>' +
-                    '<p>Something went wrong while analyzing. Please try again.</p></div>';
-                enableActionResultButtons(false);
-                setAnalyzeEnabled(true);
-            } finally {
-                if (loading) loading.classList.add('d-none');
-                if (analyzeBtn) analyzeBtn.disabled = false;
-            }
-        };
+            enableActionButtons(
+                true
+            );
 
-        const buildFormData = () => {
-            const fd = new FormData();
-            fd.append('query', (query && query.value) || '');
-            if (activeFile) {
-                fd.append('image', activeFile, activeFile.name);
-            } else if (currentImageDataUrl) {
-                const blob = dataURLToBlob(currentImageDataUrl);
-                fd.append('image', blob, 'camera-capture.jpg');
-            }
-            return fd;
-        };
+            setStatus(
+                'AI analysis completed successfully.',
+                'success'
+            );
 
-        const resetAll = () => {
-            stopCamera();
-            if (file) file.value = '';
-            if (preview) {
-                preview.src = '';
-                preview.classList.remove('is-on');
-            }
+            showAlert(
+                'AI analysis complete! Recommendations are ready.',
+                'success'
+            );
+
+            /*
+             * Scroll result into view.
+             */
+
             if (results) {
-                results.innerHTML =
-                    '<div class="ai-ca-empty"><i class="fa-solid fa-sparkles"></i>' +
-                    '<p>Capture or upload a photo to see your AI style analysis and product recommendations.</p></div>';
-            }
-            if (query) query.value = '';
-            if (historyPanel) historyPanel.classList.add('d-none');
-            if (retakeBtn) retakeBtn.classList.add('d-none');
-            currentImageDataUrl = null;
-            activeFile = null;
-            currentResultImageUrl = null;
-            setAnalyzeEnabled(false);
-            enableActionResultButtons(false);
-            setStatus('Camera is off.', false);
-        };
 
-        // Virtual Try-On: send the current image to the backend, show a loading
-        // animation, and render the AI-generated result in the result area.
-        const openVirtualTryOn = async () => {
-            if (!currentImageDataUrl && !activeFile) {
-                setStatus('Please capture or upload a photo first.', false);
-                showAlert('Please capture or upload a photo first.', 'warning');
-                return;
-            }
-            if (loading) loading.classList.remove('d-none');
-            if (vtoBtn) vtoBtn.disabled = true;
-            setStatus('Processing virtual try-on...', false);
-            try {
-                const fd = new FormData();
-                if (activeFile) {
-                    fd.append('image', activeFile, activeFile.name);
-                } else if (currentImageDataUrl) {
-                    const blob = dataURLToBlob(currentImageDataUrl);
-                    fd.append('image', blob, 'camera-capture.jpg');
-                }
-                const res = await fetch('/ai-camera-assistant/virtual-try-on', {
-                    method: 'POST',
-                    body: fd,
-                    headers: csrfHeaders,
-                    credentials: 'same-origin'
-                });
-                if (!res.ok) throw new Error('Try-on failed');
-                const data = await res.json();
-                if (!data.success) throw new Error(data.message || 'Try-on failed');
+                setTimeout(() => {
 
-                currentResultImageUrl = data.result_image;
-                renderVirtualTryOnResult(data);
-                enableActionResultButtons(true);
-                setStatus(data.message || 'Virtual try-on complete.', false);
-            } catch (err) {
-                setStatus('Virtual try-on failed. Please try again.', false);
-                showAlert('Virtual try-on could not be processed. Please try again.', 'danger');
-            } finally {
-                if (loading) loading.classList.add('d-none');
-                if (vtoBtn) vtoBtn.disabled = false;
-            }
-        };
-
-        const renderVirtualTryOnResult = (data) => {
-            if (!results) return;
-            const img = data.result_image || '';
-            const meta = data.meta || {};
-            const processor = data.processor || 'offline-composite';
-            const garment = meta.garment || 'Selected outfit';
-            results.innerHTML =
-                '<div class="ai-ca-vto-result">' +
-                    '<div class="ai-ca-card-head">' +
-                        '<span class="ai-ca-card-icon ai-ca-icon-ai"><i class="fa-solid fa-wand-magic-sparkles"></i></span>' +
-                        '<div><h2>Virtual Try-On Result</h2><small>AI-generated preview · ' + processor + '</small></div>' +
-                    '</div>' +
-                    (img ? '<img src="' + img + '" class="ai-ca-vto-result-img" alt="Virtual Try-On result">' : '') +
-                    '<div class="ai-ca-vto-meta">' +
-                        '<span><i class="fa-solid fa-shirt me-1"></i>' + (garment ? garment : 'Selected outfit') + '</span>' +
-                        '<span><i class="fa-solid fa-layer-group me-1"></i>' + (meta.mode || 'offline-composite') + '</span>' +
-                    '</div>' +
-                    '<p class="ai-ca-summary">' + (data.message || 'Your virtual try-on preview is ready.') + '</p>' +
-                '</div>';
-        };
-
-        // Download the generated result image (or source photo) as PNG/JPG.
-        const downloadResult = async () => {
-            if (currentResultImageUrl) {
-                try {
-                    const res = await fetch(currentResultImageUrl, { credentials: 'same-origin' });
-                    if (!res.ok) throw new Error('Fetch failed');
-                    const blob = await res.blob();
-                    const ext = blob.type === 'image/png' ? 'png' : 'jpg';
-                    const a = document.createElement('a');
-                    a.href = URL.createObjectURL(blob);
-                    a.download = 'smart-basket-virtual-tryon.' + ext;
-                    document.body.appendChild(a);
-                    a.click();
-                    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 400);
-                    setStatus('Result image downloaded.', false);
-                    return;
-                } catch (err) {
-                    setStatus('Download failed. Try again.', false);
-                    showAlert('Download failed for the generated image. Please try again.', 'warning');
-                    return;
-                }
-            }
-
-            if (!currentImageDataUrl) {
-                setStatus('Please capture or upload a photo first.', false);
-                showAlert('Please capture or upload a photo first to download.', 'warning');
-                return;
-            }
-            const downloadSrc = await new Promise((resolve) => {
-                const img = new Image();
-                img.onload = () => {
-                    const c = document.createElement('canvas');
-                    c.width = img.naturalWidth;
-                    c.height = img.naturalHeight;
-                    c.getContext('2d').drawImage(img, 0, 0);
-                    resolve(c.toDataURL('image/png'));
-                };
-                img.onerror = () => resolve(currentImageDataUrl);
-                img.src = currentImageDataUrl;
-            });
-            const a = document.createElement('a');
-            a.href = downloadSrc;
-            a.download = 'smart-basket-camera-photo.png';
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            setStatus('Photo downloaded as PNG.', false);
-        };
-
-        // Share the generated image URL / file via the Web Share API (with fallback).
-        const shareResult = async () => {
-            const title = 'My Smart Basket AI Style Analysis';
-            const shareText = (results ? results.innerText.slice(0, 900) : 'Smart Basket AI Style Analysis');
-
-            if (currentResultImageUrl && navigator.share) {
-                try {
-                    await navigator.share({ title: title, text: shareText, url: currentResultImageUrl });
-                    setStatus('Shared successfully!', false);
-                    return;
-                } catch (e) { /* user cancelled or share failed */ }
-            }
-
-            const source = currentResultImageUrl || currentImageDataUrl;
-            if (!source) {
-                setStatus('Please capture or upload a photo first.', false);
-                showAlert('Please capture or upload a photo before sharing.', 'warning');
-                return;
-            }
-            try {
-                const blob = source.indexOf('data:') === 0
-                    ? dataURLToBlob(source)
-                    : await (await fetch(source, { credentials: 'same-origin' })).blob();
-                const file = new File([blob], 'smart-basket-ai-result.png', { type: blob.type });
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    await navigator.share({ title: title, text: shareText, files: [file] });
-                    setStatus('Shared successfully!', false);
-                    return;
-                }
-            } catch (e) { /* fall through to clipboard */ }
-
-            try {
-                const link = currentResultImageUrl || ('Smart Basket AI Style Analysis\n\n' + shareText);
-                await navigator.clipboard.writeText(link);
-                setStatus('Copied to clipboard! Paste to share.', false);
-            } catch (e) {
-                setStatus('Sharing not supported. Try downloading the result.', false);
-            }
-        };
-
-        // History: toggle the history panel and load history entries.
-        const toggleHistory = async () => {
-            if (!historyPanel || !historyList) return;
-            const isHidden = historyPanel.classList.contains('d-none');
-            historyPanel.classList.toggle('d-none', !isHidden);
-            if (!isHidden) return;
-            historyList.innerHTML = '<span class="ai-ca-empty">Loading history...</span>';
-            try {
-                const res = await fetch('/ai-camera-assistant/history?sidebar=' + (root.closest('[data-ai-hub-content]') ? '1' : '0'), {
-                    headers: csrfHeaders,
-                    credentials: 'same-origin'
-                });
-                if (!res.ok) throw new Error('Failed to load history');
-                const html = await res.text();
-                const temp = document.createElement('div');
-                temp.innerHTML = html;
-                const listEl = temp.querySelector('.ai-ca-history-list');
-                historyList.innerHTML = listEl ? listEl.innerHTML :
-                    '<div class="ai-ca-empty"><i class="fa-solid fa-clock-rotate-left"></i><p>No saved analyses yet.</p></div>';
-            } catch (err) {
-                historyList.innerHTML = '<div class="ai-ca-empty"><i class="fa-solid fa-triangle-exclamation"></i><p>Failed to load history.</p></div>';
-            }
-        };
-
-        if (startBtn) startBtn.addEventListener('click', startCamera);
-        if (stopBtn) stopBtn.addEventListener('click', stopCamera);
-        if (capBtn) capBtn.addEventListener('click', capture);
-        if (upBtn) upBtn.addEventListener('click', () => file && file.click());
-        if (file) file.addEventListener('change', onFile);
-        if (retakeBtn) retakeBtn.addEventListener('click', retake);
-        if (resetBtn) resetBtn.addEventListener('click', resetAll);
-        if (vtoBtn) vtoBtn.addEventListener('click', openVirtualTryOn);
-        if (downloadBtn) downloadBtn.addEventListener('click', downloadResult);
-        if (shareBtn) shareBtn.addEventListener('click', shareResult);
-        if (historyBtn) historyBtn.addEventListener('click', toggleHistory);
-        if (historyClose) historyClose.addEventListener('click', () => historyPanel.classList.add('d-none'));
-
-        // Delegate delete buttons inside history panel.
-        if (historyList) {
-            historyList.addEventListener('click', async (e) => {
-                const del = e.target.closest('.ca-history-delete');
-                if (!del) return;
-                e.preventDefault();
-                try {
-                    await fetch(del.href, {
-                        method: 'DELETE',
-                        headers: csrfHeaders,
-                        credentials: 'same-origin'
+                    results.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
                     });
-                    toggleHistory();
-                } catch (err) {
-                    setStatus('Failed to delete history entry.', false);
-                }
-            });
+
+                }, 150);
+            }
+
+        } catch (error) {
+
+            console.error(
+                'AI analysis error:',
+                error
+            );
+
+            showAlert(
+                error.message ||
+                'Something went wrong while analyzing your image.',
+                'danger'
+            );
+
+            setStatus(
+                'AI analysis failed.',
+                'error'
+            );
+
+        } finally {
+
+            setLoading(false);
+        }
+    }
+
+
+    /* =========================================================
+       HISTORY
+    ========================================================== */
+
+    async function openHistory(event) {
+
+        if (event) {
+            event.preventDefault();
         }
 
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            if (stream && video.videoWidth) {
-                capture();
-                return;
-            }
-            if (!currentImageDataUrl && !activeFile) {
-                results.innerHTML =
-                    '<div class="ai-ca-empty"><i class="fa-solid fa-camera"></i>' +
-                    '<p>Please start the camera and capture, or upload a photo first.</p></div>';
-                showAlert('Please capture or upload a photo before analyzing.', 'warning');
-                return;
-            }
-            const fd = buildFormData();
-            submitAnalysis(fd);
-        });
-
-        setAnalyzeEnabled(false);
-        window.addEventListener('beforeunload', stopCamera);
-    }
-
-    function initAll() {
-        document.querySelectorAll('.ai-ca-viewport').forEach((vp) => {
-            const root = vp.closest('.ai-ca-card, .ai-panel-fragment');
-            if (root && !root.dataset.caInitialized) {
-                root.dataset.caInitialized = '1';
-                initCameraAssistant(root);
-            }
-        });
-    }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initAll);
-    } else {
-        initAll();
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const content = document.querySelector('[data-ai-hub-content]');
-        if (content) {
-            const mo = new MutationObserver(() => initAll());
-            mo.observe(content, { childList: true, subtree: true });
+        if (!historyPanel) {
+            return;
         }
-    });
-})();
+
+        historyPanel.classList.remove(
+            'd-none'
+        );
+
+        if (historyList) {
+
+            historyList.innerHTML = `
+                <span class="ai-ca-empty">
+                    Loading history...
+                </span>
+            `;
+        }
+
+        try {
+
+            const response =
+                await fetch(
+                    '/ai-camera-assistant/history?sidebar=0',
+                    {
+                        headers: {
+                            'X-Requested-With':
+                                'XMLHttpRequest',
+
+                            'Accept':
+                                'text/html'
+                        },
+
+                        credentials:
+                            'same-origin'
+                    }
+                );
+
+            if (!response.ok) {
+
+                throw new Error(
+                    'Unable to load history.'
+                );
+            }
+
+            const html =
+                await response.text();
+
+            const doc =
+                new DOMParser()
+                    .parseFromString(
+                        html,
+                        'text/html'
+                    );
+
+            /*
+             * Try common history containers.
+             */
+
+            const historySource =
+                doc.querySelector(
+                    '#caHistoryList'
+                ) ||
+                doc.querySelector(
+                    '.ai-ca-history-list'
+                ) ||
+                doc.querySelector(
+                    '.history-list'
+                ) ||
+                doc.querySelector(
+                    'main'
+                );
+
+            if (historyList) {
+
+                historyList.innerHTML =
+                    historySource
+                        ? historySource.innerHTML
+                        : `
+                            <span class="ai-ca-empty">
+                                No analysis history found.
+                            </span>
+                        `;
+            }
+
+        } catch (error) {
+
+            console.error(
+                error
+            );
+
+            if (historyList) {
+
+                historyList.innerHTML = `
+                    <span class="ai-ca-empty">
+                        Unable to load history.
+                    </span>
+                `;
+            }
+        }
+    }
+
+
+    function closeHistory() {
+
+        if (historyPanel) {
+
+            historyPanel.classList.add(
+                'd-none'
+            );
+        }
+    }
+
+
+    /* =========================================================
+       DOWNLOAD
+    ========================================================== */
+
+    function downloadAnalysis() {
+
+        if (!lastAnalysisHtml) {
+
+            showAlert(
+                'Please analyze an image first.',
+                'danger'
+            );
+
+            return;
+        }
+
+        const printWindow =
+            window.open(
+                '',
+                '_blank'
+            );
+
+        if (!printWindow) {
+
+            showAlert(
+                'Please allow popups to download your analysis.',
+                'danger'
+            );
+
+            return;
+        }
+
+        printWindow.document.write(`
+            <!DOCTYPE html>
+
+            <html>
+
+            <head>
+
+                <title>
+                    Smart Basket AI Style Analysis
+                </title>
+
+                <meta charset="UTF-8">
+
+                <style>
+
+                    body {
+                        font-family:
+                            Arial,
+                            sans-serif;
+
+                        padding: 40px;
+
+                        color: #111827;
+                    }
+
+                    h1 {
+                        margin-bottom: 30px;
+                    }
+
+                    .ai-ca-detection-grid,
+                    .ai-ca-analysis-grid {
+                        display: grid;
+                        gap: 15px;
+                        margin-bottom: 25px;
+                    }
+
+                    .ai-ca-detection-grid {
+                        grid-template-columns:
+                            repeat(2, 1fr);
+                    }
+
+                    .ai-ca-analysis-grid {
+                        grid-template-columns:
+                            repeat(2, 1fr);
+                    }
+
+                    .ai-ca-detection-item,
+                    .ai-ca-analysis-item {
+                        padding: 18px;
+                        border: 1px solid #ddd;
+                        border-radius: 12px;
+                    }
+
+                    .ai-ca-detection-item > *,
+                    .ai-ca-analysis-item > * {
+                        display: block;
+                        margin-bottom: 6px;
+                    }
+
+                    .ai-ca-color-chips {
+                        display: flex;
+                        gap: 8px;
+                        flex-wrap: wrap;
+                    }
+
+                    .ai-ca-color-chip {
+                        border: 1px solid #ddd;
+                        padding: 7px 12px;
+                        border-radius: 30px;
+                    }
+
+                </style>
+
+            </head>
+
+            <body>
+
+                <h1>
+                    Smart Basket — AI Style Analysis
+                </h1>
+
+                ${lastAnalysisHtml}
+
+                <script>
+                    window.onload = function () {
+                        window.print();
+                    };
+                <\/script>
+
+            </body>
+
+            </html>
+        `);
+
+        printWindow.document.close();
+    }
+
+
+    /* =========================================================
+       SHARE
+    ========================================================== */
+
+    async function shareAnalysis() {
+
+        const text =
+            'My Smart Basket AI Style Analysis is ready!';
+
+        try {
+
+            if (
+                navigator.share
+            ) {
+
+                await navigator.share({
+                    title:
+                        'Smart Basket AI Style Analysis',
+
+                    text:
+                        text,
+
+                    url:
+                        window.location.href
+                });
+
+            } else {
+
+                await navigator.clipboard.writeText(
+                    window.location.href
+                );
+
+                showAlert(
+                    'Analysis link copied to clipboard.',
+                    'success'
+                );
+            }
+
+        } catch (error) {
+
+            /*
+             * User cancelled share.
+             * Do not show an error.
+             */
+
+            if (
+                error.name !==
+                'AbortError'
+            ) {
+
+                console.error(
+                    error
+                );
+            }
+        }
+    }
+
+
+    /* =========================================================
+       RESET
+    ========================================================== */
+
+    function resetAssistant() {
+
+        stopCamera(false);
+
+        selectedImageBlob = null;
+
+        if (selectedImageUrl) {
+
+            URL.revokeObjectURL(
+                selectedImageUrl
+            );
+
+            selectedImageUrl = null;
+        }
+
+        if (fileInput) {
+            fileInput.value = '';
+        }
+
+        if (uploadPreview) {
+
+            uploadPreview.removeAttribute(
+                'src'
+            );
+
+            uploadPreview.classList.remove(
+                'active'
+            );
+        }
+
+        if (placeholder) {
+
+            placeholder.classList.remove(
+                'd-none'
+            );
+        }
+
+        if (queryInput) {
+            queryInput.value = '';
+        }
+
+        if (results) {
+
+            results.innerHTML = `
+                <div class="ai-ca-empty">
+
+                    <i class="fa-solid fa-sparkles"></i>
+
+                    <p>
+                        Capture or upload a photo to see
+                        your AI style analysis and product
+                        recommendations.
+                    </p>
+
+                </div>
+            `;
+        }
+
+        if (loading) {
+
+            loading.classList.add(
+                'd-none'
+            );
+        }
+
+        if (retakeBtn) {
+
+            retakeBtn.classList.add(
+                'd-none'
+            );
+        }
+
+        if (startBtn) {
+
+            startBtn.classList.remove(
+                'd-none'
+            );
+        }
+
+        lastAnalysisHtml = null;
+
+        enableActionButtons(
+            false
+        );
+
+        setStatus(
+            'Camera is off.'
+        );
+
+        if (alerts) {
+            alerts.innerHTML = '';
+        }
+    }
+
+
+    /* =========================================================
+       RETAKE
+    ========================================================== */
+
+    function retakePhoto() {
+
+        selectedImageBlob = null;
+
+        if (uploadPreview) {
+
+            uploadPreview.removeAttribute(
+                'src'
+            );
+
+            uploadPreview.classList.remove(
+                'active'
+            );
+        }
+
+        if (retakeBtn) {
+
+            retakeBtn.classList.add(
+                'd-none'
+            );
+        }
+
+        enableActionButtons(
+            false
+        );
+
+        startCamera();
+    }
+
+
+    /* =========================================================
+       VIRTUAL TRY-ON
+    ========================================================== */
+
+    async function virtualTryOn() {
+
+        if (!selectedImageBlob) {
+
+            showAlert(
+                'Capture or upload an image first.',
+                'danger'
+            );
+
+            return;
+        }
+
+        /*
+         * Your current PHP controller intentionally returns
+         * HTTP 422 because real Virtual Try-On belongs to
+         * the product details workflow.
+         */
+
+        showAlert(
+            'Virtual Try-On is currently available from a product details page.',
+            'warning'
+        );
+    }
+
+
+    /* =========================================================
+       EVENT LISTENERS
+    ========================================================== */
+
+    if (startBtn) {
+
+        startBtn.addEventListener(
+            'click',
+            startCamera
+        );
+    }
+
+
+    if (captureBtn) {
+
+        captureBtn.addEventListener(
+            'click',
+            capturePhoto
+        );
+    }
+
+
+    if (stopBtn) {
+
+        stopBtn.addEventListener(
+            'click',
+            () => stopCamera(true)
+        );
+    }
+
+
+    if (uploadBtn) {
+
+        uploadBtn.addEventListener(
+            'click',
+            openUpload
+        );
+    }
+
+
+    if (fileInput) {
+
+        fileInput.addEventListener(
+            'change',
+            handleUpload
+        );
+    }
+
+
+    if (retakeBtn) {
+
+        retakeBtn.addEventListener(
+            'click',
+            retakePhoto
+        );
+    }
+
+
+    if (analyzeForm) {
+
+        analyzeForm.addEventListener(
+            'submit',
+            analyzeImage
+        );
+    }
+
+
+    if (resetBtn) {
+
+        resetBtn.addEventListener(
+            'click',
+            resetAssistant
+        );
+    }
+
+
+    if (shareBtn) {
+
+        shareBtn.addEventListener(
+            'click',
+            shareAnalysis
+        );
+    }
+
+
+    if (downloadBtn) {
+
+        downloadBtn.addEventListener(
+            'click',
+            downloadAnalysis
+        );
+    }
+
+
+    if (historyBtn) {
+
+        historyBtn.addEventListener(
+            'click',
+            openHistory
+        );
+    }
+
+
+    if (historyClose) {
+
+        historyClose.addEventListener(
+            'click',
+            closeHistory
+        );
+    }
+
+
+    if (virtualTryOnBtn) {
+
+        virtualTryOnBtn.addEventListener(
+            'click',
+            virtualTryOn
+        );
+    }
+
+
+    /* =========================================================
+       CLEANUP
+    ========================================================== */
+
+    window.addEventListener(
+        'beforeunload',
+        function () {
+
+            if (stream) {
+
+                stream.getTracks().forEach(
+                    track => track.stop()
+                );
+            }
+
+            if (selectedImageUrl) {
+
+                URL.revokeObjectURL(
+                    selectedImageUrl
+                );
+            }
+        }
+    );
+
+
+    /* =========================================================
+       INITIAL STATE
+    ========================================================== */
+
+    enableActionButtons(false);
+
+    setStatus(
+        'Camera is off.'
+    );
+
+});

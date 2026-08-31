@@ -47,6 +47,7 @@ color:#FFD700;
 
 
 <body>
+<x-site-menu />
 
 <div class="box">
 

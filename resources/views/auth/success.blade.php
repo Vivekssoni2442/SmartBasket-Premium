@@ -56,6 +56,7 @@ text-decoration:none;
 
 
 <body>
+<x-site-menu />
 
 
 <div class="box">

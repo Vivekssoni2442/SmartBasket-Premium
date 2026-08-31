@@ -1,491 +1,101 @@
 <!doctype html>
 <html lang="en" data-theme="light">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1"
-    >
-
-    <meta
-        name="csrf-token"
-        content="{{ csrf_token() }}"
-    >
-
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-    >
-
-    <link
-        rel="stylesheet"
-        href="{{ asset('css/premium-dark-theme.css') }}"
-    >
-
-    <title>For You | Smart Basket</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Dashboard | Smart Basket</title>
+    <script>
+        (() => {
+            const saved = localStorage.getItem('sb-theme') || @json($user->dark_mode ?? 'light');
+            const theme = saved === 'system' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : saved;
+            document.documentElement.dataset.theme = ['dark', 'light'].includes(theme) ? theme : 'light';
+            document.documentElement.dataset.sbTheme = document.documentElement.dataset.theme;
+        })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('css/premium-dark-theme.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/customer-premium.css') }}">
     <style>
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            background: var(--sb-bg) !important;
-            color: var(--sb-text) !important;
-            font-family: Poppins, Arial, sans-serif;
-            transition:
-                background .3s ease,
-                color .3s ease;
-        }
-
-        .customer-dashboard {
-            min-height: 100vh;
-            padding: 35px 20px 50px;
-            background:
-                radial-gradient(
-                    circle at 10% 0%,
-                    rgba(37,99,235,.10),
-                    transparent 28%
-                ),
-                radial-gradient(
-                    circle at 90% 100%,
-                    rgba(124,58,237,.08),
-                    transparent 30%
-                ),
-                var(--sb-bg);
-        }
-
-        .dashboard-container {
-            max-width: 1250px;
-            margin: auto;
-        }
-
-        /* HEADER */
-
-        .dashboard-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .dashboard-title {
-            margin: 0;
-            font-size: clamp(1.8rem, 4vw, 2.5rem);
-            font-weight: 800;
-            letter-spacing: -.5px;
-            color: var(--sb-text);
-        }
-
-        .dashboard-subtitle {
-            margin: 7px 0 0;
-            color: var(--sb-text-secondary);
-            font-size: .9rem;
-        }
-
-        .browse-btn {
-            border: 1px solid var(--sb-border);
-            color: var(--sb-text) !important;
-            background: var(--sb-card);
-            border-radius: 12px;
-            padding: 10px 17px;
-            font-weight: 600;
-            transition: .25s ease;
-        }
-
-        .browse-btn:hover {
-            background: var(--sb-primary);
-            border-color: var(--sb-primary);
-            color: #fff !important;
-            transform: translateY(-2px);
-        }
-
-        /* PRODUCT GRID */
-
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 20px;
-        }
-
-        /* PRODUCT CARD */
-
-        .customer-product-card {
-            overflow: hidden;
-            border-radius: 18px;
-            background: var(--sb-card);
-            border: 1px solid var(--sb-border);
-            box-shadow: var(--sb-shadow);
-            transition:
-                transform .25s ease,
-                box-shadow .25s ease,
-                border-color .25s ease;
-        }
-
-        .customer-product-card:hover {
-            transform: translateY(-6px);
-            border-color: var(--sb-primary);
-        }
-
-        .product-image-wrapper {
-            position: relative;
-            overflow: hidden;
-            background: var(--sb-card-hover);
-        }
-
-        .product-image {
-            width: 100%;
-            height: 190px;
-            display: block;
-            object-fit: cover;
-            transition: transform .35s ease;
-        }
-
-        .customer-product-card:hover .product-image {
-            transform: scale(1.04);
-        }
-
-        .product-content {
-            padding: 17px;
-        }
-
-        .product-name {
-            margin: 0 0 8px;
-            color: var(--sb-text);
-            font-size: 1rem;
-            font-weight: 700;
-        }
-
-        .product-rating {
-            margin-bottom: 15px;
-            color: var(--sb-warning);
-            font-size: .88rem;
-        }
-
-        .product-price {
-            color: var(--sb-primary);
-            font-size: 1.05rem;
-            font-weight: 800;
-        }
-
-        .product-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 15px;
-        }
-
-        .view-btn {
-            flex: 1;
-            border: 1px solid var(--sb-border);
-            background: transparent;
-            color: var(--sb-text) !important;
-            border-radius: 10px;
-            padding: 8px 10px;
-            font-size: .8rem;
-            font-weight: 600;
-        }
-
-        .view-btn:hover {
-            background: var(--sb-card-hover);
-        }
-
-        .cart-btn {
-            flex: 1;
-            border: 0;
-            background: var(--sb-primary);
-            color: #fff;
-            border-radius: 10px;
-            padding: 8px 10px;
-            font-size: .8rem;
-            font-weight: 700;
-        }
-
-        .cart-btn:hover {
-            background: var(--sb-primary-hover);
-        }
-
-        /* EMPTY */
-
-        .empty-box {
-            padding: 50px 20px;
-            text-align: center;
-            border-radius: 18px;
-            background: var(--sb-card);
-            border: 1px solid var(--sb-border);
-            color: var(--sb-text-secondary);
-        }
-
-        /* LIGHT MODE PREMIUM */
-
-        html[data-theme="light"] .customer-dashboard {
-            background:
-                radial-gradient(
-                    circle at 0% 0%,
-                    rgba(59,130,246,.13),
-                    transparent 30%
-                ),
-                radial-gradient(
-                    circle at 100% 100%,
-                    rgba(139,92,246,.10),
-                    transparent 30%
-                ),
-                #f4f7fb;
-        }
-
-        html[data-theme="light"] .customer-product-card {
-            background: rgba(255,255,255,.92);
-            box-shadow:
-                0 12px 35px rgba(15,23,42,.07);
-        }
-
-        html[data-theme="light"] .product-image-wrapper {
-            background: #eef3f8;
-        }
-
-        /* DARK MODE */
-
-        html[data-theme="dark"] .customer-dashboard {
-            background:
-                radial-gradient(
-                    circle at 0% 0%,
-                    rgba(59,130,246,.15),
-                    transparent 30%
-                ),
-                radial-gradient(
-                    circle at 100% 100%,
-                    rgba(124,58,237,.12),
-                    transparent 30%
-                ),
-                #020617;
-        }
-
-        /* MOBILE */
-
-        @media (max-width: 1000px) {
-
-            .product-grid {
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-            }
-
-        }
-
-        @media (max-width: 700px) {
-
-            .dashboard-header {
-                align-items: flex-start;
-                flex-direction: column;
-            }
-
-            .product-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 13px;
-            }
-
-            .product-image {
-                height: 150px;
-            }
-
-            .product-content {
-                padding: 13px;
-            }
-
-        }
-
-        @media (max-width: 450px) {
-
-            .customer-dashboard {
-                padding: 25px 12px 40px;
-            }
-
-            .product-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .product-image {
-                height: 135px;
-            }
-
-            .product-name {
-                font-size: .88rem;
-            }
-
-            .product-actions {
-                flex-direction: column;
-            }
-
-        }
-
+        body { font-family: 'Manrope', sans-serif; }
+        h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
+        .customer-page { min-height: 100vh; }
     </style>
-
 </head>
-
-
 <body>
+    @include('customer.partials.sidebar')
 
-<div class="customer-dashboard">
-
-    <main class="dashboard-container">
-
-        <header class="dashboard-header">
-
+    <main class="customer-page">
+        <header class="customer-topbar">
             <div>
-
-                <h1 class="dashboard-title">
-                    For You
-                </h1>
-
-                <p class="dashboard-subtitle">
-                    Discover products picked specially for you.
-                </p>
-
+                <span class="customer-eyebrow">SMART BASKET / HOME</span>
+                <h1>Good to see you, {{ $user->name }}.</h1>
+                <p>Your smarter shopping journey starts here.</p>
             </div>
-
-            <a
-                href="{{ route('products.index') }}"
-                class="browse-btn"
-            >
-                <i class="fa-solid fa-store me-1"></i>
-                Browse All
-            </a>
-
+            <a href="{{ route('products.index') }}" class="customer-action"><i class="fa-solid fa-magnifying-glass"></i> Explore Products</a>
         </header>
 
+        <section class="customer-hero">
+            <span class="customer-eyebrow">CURATED FOR YOUR EVERYDAY</span>
+            <h2>Find something <span>worth bringing home.</span></h2>
+            <p>Quality picks, useful intelligence, and better prices in one considered shopping experience.</p>
+            <div class="customer-hero-actions">
+                <a href="{{ route('products.index') }}"><i class="fa-solid fa-arrow-right"></i> Explore Products</a>
+                <a href="{{ route('ai-hub') }}"><i class="fa-solid fa-wand-magic-sparkles"></i> Open AI HUB</a>
+            </div>
+        </section>
 
-        @if($products->count())
+        <section class="customer-grid" aria-label="Shopping overview">
+            <div class="customer-stat"><i class="fa-solid fa-cart-shopping"></i><strong>{{ $cartCount }}</strong><span>Items in your cart</span></div>
+            <div class="customer-stat"><i class="fa-solid fa-heart"></i><strong>{{ $wishlistCount }}</strong><span>Saved favourites</span></div>
+            <div class="customer-stat"><i class="fa-solid fa-box"></i><strong>{{ $orderCount }}</strong><span>Orders placed</span></div>
+            <div class="customer-stat"><i class="fa-solid fa-shield-heart"></i><strong>Secure</strong><span>Shopping protected</span></div>
+        </section>
 
-            <div class="product-grid">
+        <section class="customer-section">
+            <div class="customer-ai-feature">
+                <div><span class="customer-eyebrow">SMART AI</span><h3>Meet your shopping assistant</h3><p>Find products, compare prices, discover deals and shop with a little more confidence.</p></div>
+                <div class="customer-hero-actions"><a href="{{ route('ai-hub') }}" class="customer-action"><i class="fa-solid fa-sparkles"></i> Open AI HUB</a><a href="{{ route('ai-camera-assistant') }}" class="customer-action" style="color:var(--customer-text)!important;background:transparent;border:1px solid var(--customer-border);"><i class="fa-solid fa-camera"></i> Try AI Camera</a></div>
+            </div>
+        </section>
 
-                @foreach($products as $product)
-
+        <section class="customer-section">
+            <div class="customer-section-head"><div><span class="customer-eyebrow">SELECTED FOR YOU</span><h3>Recommended products</h3></div><a href="{{ route('products.index') }}">View all <i class="fa-solid fa-arrow-right"></i></a></div>
+            <div class="customer-product-grid">
+                @forelse($products as $product)
+                    @php $price = $product->sellingPrice(); @endphp
                     <article class="customer-product-card">
-
-                        <div class="product-image-wrapper">
-
-                            <img
-                                src="{{ asset('products/'.$product->image) }}"
-                                class="product-image"
-                                alt="{{ $product->name }}"
-                            >
-
-                        </div>
-
-
-                        <div class="product-content">
-
-                            <h2 class="product-name">
-                                {{ $product->name }}
-                            </h2>
-
-
-                            <div class="product-rating">
-
-                                ★ {{ $product->rating }}
-
-                            </div>
-
-
-                            <div class="product-price">
-
-                                ₹{{ number_format($product->sellingPrice(), 2) }}
-
-                            </div>
-
-
-                            <div class="product-actions">
-
-                                <a
-                                    href="{{ route('product.show', $product) }}"
-                                    class="view-btn text-center"
-                                >
-                                    View
-                                </a>
-
-
-                                <form
-                                    method="POST"
-                                    action="{{ route('cart.add', $product) }}"
-                                    style="flex:1;"
-                                >
-
-                                    @csrf
-
-                                    <button
-                                        type="submit"
-                                        class="cart-btn w-100"
-                                    >
-                                        <i class="fa-solid fa-cart-plus"></i>
-                                        Cart
-                                    </button>
-
-                                </form>
-
-                            </div>
-
-                        </div>
-
+                        <a href="{{ route('products.show', $product) }}" class="media"><img src="{{ asset('products/' . $product->image) }}" alt="{{ $product->name }}" onerror="this.style.opacity='.2'"></a>
+                        <div class="body"><h4 title="{{ $product->name }}">{{ $product->name }}</h4><div class="meta">{{ $product->category ?: 'Smart Basket pick' }} · <span style="color:var(--customer-gold)">★</span> {{ number_format((float) ($product->rating ?? 0), 1) }}</div><div class="price">₹{{ number_format((float) $price, 2) }}</div><div class="actions"><a href="{{ route('products.show', $product) }}">Details</a><form method="POST" action="{{ route('cart.add', $product) }}">@csrf<button type="submit"><i class="fa-solid fa-cart-plus"></i> Cart</button></form></div></div>
                     </article>
-
-                @endforeach
-
+                @empty
+                    <div class="customer-empty"><i class="fa-solid fa-bag-shopping"></i>No products are available right now.</div>
+                @endforelse
             </div>
+        </section>
 
-        @else
-
-            <div class="empty-box">
-
-                <i class="fa-solid fa-box-open fa-2x mb-3"></i>
-
-                <div>
-                    Recommendations will appear as you browse and shop.
-                </div>
-
+        <section class="customer-section">
+            <div class="customer-section-head"><div><span class="customer-eyebrow">YOUR ACTIVITY</span><h3>Recent orders</h3></div><a href="{{ route('orders.index') }}">View orders <i class="fa-solid fa-arrow-right"></i></a></div>
+            <div class="customer-orders">
+                @forelse($orders as $order)
+                    @php $orderItems = is_array($order->items) ? $order->items : []; $firstItem = $orderItems[0] ?? []; @endphp
+                    <div class="customer-order-row"><strong>#{{ $order->id }}</strong><span>{{ $firstItem['name'] ?? 'Smart Basket order' }}</span><span>{{ optional($order->created_at)->format('d M Y') }}</span><strong>₹{{ number_format((float) ($order->total_amount ?? $order->total ?? $order->amount ?? 0), 2) }}</strong><a href="{{ route('orders.show', $order) }}">View</a></div>
+                @empty
+                    <div class="customer-empty"><i class="fa-solid fa-box-open"></i><strong>No orders yet</strong><div>Your next great purchase is waiting.</div><a href="{{ route('products.index') }}" class="customer-action" style="display:inline-flex;margin-top:15px;">Start Shopping</a></div>
+                @endforelse
             </div>
-
-        @endif
-
+        </section>
     </main>
 
-</div>
-
-
-<script>
-
-(function () {
-
-    /*
-     * Customer theme sync
-     *
-     * Settings page should save:
-     * localStorage.setItem('sb-theme', 'light')
-     * OR
-     * localStorage.setItem('sb-theme', 'dark')
-     */
-
-    const savedTheme = localStorage.getItem('sb-theme');
-
-    if (
-        savedTheme === 'light' ||
-        savedTheme === 'dark'
-    ) {
-
-        document.documentElement.setAttribute(
-            'data-theme',
-            savedTheme
-        );
-
-    }
-
-})();
-
-</script>
-
-
+    <script>
+        window.addEventListener('storage', event => {
+            if (event.key === 'sb-theme' && ['light', 'dark'].includes(event.newValue)) {
+                document.documentElement.dataset.theme = event.newValue;
+                document.documentElement.dataset.sbTheme = event.newValue;
+            }
+        });
+    </script>
 </body>
 </html>

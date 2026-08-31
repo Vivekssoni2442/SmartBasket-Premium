@@ -1,0 +1,11 @@
+/* Global, additive RTL support. Existing LTR presentation is unaffected. */
+html[dir="rtl"] body { direction: rtl; text-align: right; }
+html[dir="rtl"] input, html[dir="rtl"] textarea, html[dir="rtl"] select { text-align: right; }
+html[dir="rtl"] .text-start { text-align: right !important; }
+html[dir="rtl"] .text-end { text-align: left !important; }
+html[dir="rtl"] .ms-1, html[dir="rtl"] .ms-2, html[dir="rtl"] .ms-3 { margin-left: 0 !important; }
+html[dir="rtl"] .me-1, html[dir="rtl"] .me-2, html[dir="rtl"] .me-3 { margin-right: 0 !important; }
+html[dir="rtl"] .site-menu { left: 18px; right: auto; }
+html[dir="rtl"] .site-menu__panel { left: 0; right: auto; }
+html[dir="rtl"] .dropdown-menu { text-align: right; }
+@media (max-width: 576px) { html[dir="rtl"] .site-menu { left: 12px; right: auto; } }

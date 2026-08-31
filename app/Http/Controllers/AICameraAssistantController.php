@@ -51,38 +51,217 @@ class AICameraAssistantController extends Controller
      * Validates the image, analyzes it in memory, and returns product
      * recommendations from the existing Smart Basket products database.
      */
-    public function analyze(Request $request)
-    {
-        $validated = $request->validate([
-            'image'    => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
-            'query'    => 'nullable|string|max:255',
-        ]);
+   public function analyze(Request $request)
+{
+    $validated = $request->validate([
+        'image' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
+        'query' => 'nullable|string|max:255',
+    ]);
 
-        // Read raw bytes into memory. Never saved to public storage.
-        $imageBinary = file_get_contents($validated['image']->getRealPath());
-        $mime        = $validated['image']->getMimeType();
-        $userQuery   = $validated['query'] ?? '';
+    try {
 
-        // Analyze (in-memory, provider-swappable).
-        $result = $this->styleService->analyze($imageBinary, $mime, $userQuery);
-        $analysis = $result['analysis'];
+        /*
+        |--------------------------------------------------------------------------
+        | READ IMAGE INTO MEMORY
+        |--------------------------------------------------------------------------
+        */
 
-        // Derive recommendation keywords from the analysis so the existing
-        // product database is leveraged (category, style, color, season).
-        $style   = $analysis['style_preference']['suggested_style'] ?? 'casual';
-        $color   = $analysis['color_matching']['color_category'] ?? 'neutral';
-        $season  = $analysis['style_preference']['season'] ?? 'all';
-        $fit     = $analysis['style_preference']['fit'] ?? 'regular';
+        $imageBinary = file_get_contents(
+            $validated['image']->getRealPath()
+        );
 
-        $recommendations = $this->recommendProducts($style, $color, $season, $fit);
+        $mime = $validated['image']->getMimeType();
 
-        // Persist a history record for logged-in users (analysis JSON only).
-        $this->saveHistory($analysis, $userQuery);
+        $userQuery = $validated['query'] ?? '';
 
-        return $this->respondView($request, $analysis, $recommendations)
-            ->with('success', 'AI analysis complete. Your image was processed in memory and not saved.');
+
+        /*
+        |--------------------------------------------------------------------------
+        | AI ANALYSIS
+        |--------------------------------------------------------------------------
+        */
+
+        $result = $this->styleService->analyze(
+            $imageBinary,
+            $mime,
+            $userQuery
+        );
+
+
+        $analysis =
+            $result['analysis'] ?? [];
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | RECOMMENDATION DATA
+        |--------------------------------------------------------------------------
+        */
+
+        $style =
+            $analysis['style_preference']['suggested_style']
+            ?? 'casual';
+
+        $color =
+            $analysis['color_matching']['color_category']
+            ?? 'neutral';
+
+        $season =
+            $analysis['style_preference']['season']
+            ?? 'all';
+
+        $fit =
+            $analysis['style_preference']['fit']
+            ?? 'regular';
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | PRODUCT RECOMMENDATIONS
+        |--------------------------------------------------------------------------
+        */
+
+        $recommendations =
+            $this->recommendProducts(
+                $style,
+                $color,
+                $season,
+                $fit
+            );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | SAVE ANALYSIS HISTORY
+        |--------------------------------------------------------------------------
+        */
+
+        $this->saveHistory(
+            $analysis,
+            $userQuery
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | AJAX / JSON RESPONSE
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            $request->expectsJson() ||
+            $request->ajax()
+        ) {
+
+            return response()->json([
+
+                'success' => true,
+
+                'message' =>
+                    'AI analysis complete. Your image was processed in memory and was not saved.',
+
+                'analysis' =>
+                    $analysis,
+
+                'recommendations' =>
+                    $recommendations
+                        ->values()
+                        ->map(function ($item) {
+
+                            return [
+
+                                'product' => [
+                                    'id' =>
+                                        $item['product']->id,
+
+                                    'name' =>
+                                        $item['product']->name,
+
+                                    'image' =>
+                                        $item['product']->image,
+
+                                    'price' =>
+                                        $item['product']->price,
+
+                                    'rating' =>
+                                        $item['product']->rating,
+
+                                    'category' =>
+                                        $item['product']->category,
+
+                                    'brand' =>
+                                        $item['product']->brand,
+                                ],
+
+                                'score' =>
+                                    $item['score'],
+
+                                'reasons' =>
+                                    $item['reasons'],
+                            ];
+
+                        })
+                        ->values()
+                        ->all(),
+
+            ]);
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | NORMAL BROWSER REQUEST
+        |--------------------------------------------------------------------------
+        */
+
+        return $this->respondView(
+            $request,
+            $analysis,
+            $recommendations
+        )->with(
+            'success',
+            'AI analysis complete. Your image was processed in memory and not saved.'
+        );
+
+
+    } catch (\Throwable $e) {
+
+        /*
+        |--------------------------------------------------------------------------
+        | LOG ERROR
+        |--------------------------------------------------------------------------
+        */
+
+        report($e);
+
+
+        if (
+            $request->expectsJson() ||
+            $request->ajax()
+        ) {
+
+            return response()->json([
+
+                'success' => false,
+
+                'message' =>
+                    'AI analysis failed. Please try again.',
+
+                'error' =>
+                    config('app.debug')
+                        ? $e->getMessage()
+                        : null,
+
+            ], 500);
+        }
+
+
+        return back()->with(
+            'error',
+            'AI analysis failed. Please try again.'
+        );
     }
-
+}
     /**
      * GET /ai-camera-assistant/history
      * Lists the authenticated user's past analyses (full page or sidebar).

@@ -17,53 +17,62 @@
     >
 
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
         rel="stylesheet"
     >
 
     <style>
     /* =========================================================
-       SMART BASKET — SELLER PREMIUM GREEN THEME
-       Primary: rgb(0, 255, 153)
-    ========================================================= */
+       SMART BASKET
+       SELLER — EDIT PRODUCT
+       PREMIUM LIGHT THEME
+       ========================================================= */
 
     * {
         box-sizing: border-box;
     }
 
     :root {
-        --seller-primary: rgb(0, 255, 153);
-        --seller-primary-dark: rgb(0, 210, 125);
+        --primary: #00c878;
+        --primary-dark: #00a968;
+        --primary-soft: #ecfdf5;
+        --primary-soft-2: #f0fdf8;
 
-        --seller-bg: #050807;
-        --seller-bg-2: #08110d;
+        --page-bg: #f5f7fa;
+        --page-bg-2: #eef2f6;
 
-        --seller-card: rgba(10, 20, 16, 0.88);
-        --seller-card-solid: #0b1511;
+        --card: #ffffff;
+        --card-soft: #f8fafc;
 
-        --seller-border: rgba(0, 255, 153, 0.14);
-        --seller-border-hover: rgba(0, 255, 153, 0.35);
+        --border: #e2e8f0;
+        --border-soft: #edf1f5;
 
-        --seller-text: #f1fff8;
-        --seller-text-secondary: #b7c9c1;
-        --seller-muted: #71847b;
+        --text: #172033;
+        --text-dark: #0f172a;
+        --text-secondary: #475569;
+        --muted: #64748b;
+        --placeholder: #94a3b8;
 
-        --seller-input: rgba(4, 13, 9, 0.90);
+        --danger: #ef4444;
+        --danger-soft: #fef2f2;
 
-        --seller-shadow:
-            0 25px 70px rgba(0, 0, 0, 0.42);
+        --shadow-sm:
+            0 4px 15px rgba(15, 23, 42, .05);
 
-        --seller-glow:
-            0 0 30px rgba(0, 255, 153, 0.10);
+        --shadow:
+            0 15px 45px rgba(15, 23, 42, .08);
 
-        --seller-radius: 22px;
-        --seller-transition: .25s ease;
+        --shadow-lg:
+            0 25px 70px rgba(15, 23, 42, .10);
+
+        --radius: 20px;
+        --transition: .25s ease;
     }
 
 
     /* =========================================================
-       HTML / BODY
-    ========================================================= */
+       PAGE
+       ========================================================= */
 
     html,
     body {
@@ -77,55 +86,51 @@
 
         background:
             radial-gradient(
-                circle at 10% 5%,
-                rgba(0, 255, 153, 0.10),
+                circle at 8% 0%,
+                rgba(0, 200, 120, .07),
                 transparent 28%
             ),
             radial-gradient(
-                circle at 90% 15%,
-                rgba(0, 255, 153, 0.07),
-                transparent 30%
+                circle at 92% 8%,
+                rgba(59, 130, 246, .045),
+                transparent 25%
             ),
-            radial-gradient(
-                circle at 50% 100%,
-                rgba(0, 255, 153, 0.05),
-                transparent 35%
-            ),
-            var(--seller-bg);
+            linear-gradient(
+                135deg,
+                #f8fafc 0%,
+                #f4f7fa 50%,
+                #eef2f6 100%
+            );
 
-        color: var(--seller-text);
+        color: var(--text);
 
         min-height: 100vh;
 
         overflow-x: hidden;
-
-        transition:
-            background .25s ease,
-            color .25s ease;
     }
 
 
     /* =========================================================
-       BACKGROUND GLOW
-    ========================================================= */
+       DECORATIVE BACKGROUND
+       ========================================================= */
 
     body::before {
         content: "";
 
         position: fixed;
 
-        width: 430px;
-        height: 430px;
+        width: 420px;
+        height: 420px;
 
-        top: -200px;
-        left: -170px;
-
-        background:
-            rgba(0, 255, 153, 0.08);
-
-        filter: blur(100px);
+        top: -220px;
+        left: -180px;
 
         border-radius: 50%;
+
+        background:
+            rgba(0, 200, 120, .055);
+
+        filter: blur(90px);
 
         pointer-events: none;
 
@@ -137,18 +142,18 @@
 
         position: fixed;
 
-        width: 430px;
-        height: 430px;
+        width: 400px;
+        height: 400px;
 
         right: -190px;
         bottom: -190px;
 
-        background:
-            rgba(0, 255, 153, 0.06);
-
-        filter: blur(100px);
-
         border-radius: 50%;
+
+        background:
+            rgba(59, 130, 246, .035);
+
+        filter: blur(90px);
 
         pointer-events: none;
 
@@ -158,22 +163,21 @@
 
     /* =========================================================
        MAIN WRAPPER
-    ========================================================= */
+       ========================================================= */
 
     .page-wrapper {
-        width: 100%;
+        position: relative;
+        z-index: 1;
 
+        width: 100%;
         min-height: 100vh;
 
-        padding: 35px 22px 60px;
-
-        position: relative;
-
-        z-index: 1;
+        padding: 30px 22px 55px;
     }
 
     .main-container {
-        max-width: 1150px;
+        width: 100%;
+        max-width: 1180px;
 
         margin: 0 auto;
     }
@@ -181,307 +185,314 @@
 
     /* =========================================================
        TOP BAR
-    ========================================================= */
+       ========================================================= */
 
     .topbar {
         display: flex;
-
         align-items: center;
-
         justify-content: space-between;
 
         gap: 20px;
 
         margin-bottom: 28px;
 
-        padding: 18px 22px;
+        padding: 17px 20px;
 
         background:
-            linear-gradient(
-                145deg,
-                rgba(12, 28, 21, 0.94),
-                rgba(7, 16, 12, 0.90)
-            );
+            rgba(255,255,255,.88);
 
         border:
-            1px solid var(--seller-border);
+            1px solid rgba(226,232,240,.95);
 
-        border-radius: 20px;
+        border-radius: 18px;
 
         box-shadow:
-            var(--seller-shadow),
-            inset 0 1px 0 rgba(255,255,255,.025);
+            var(--shadow-sm);
 
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
 
         transition:
-            border-color var(--seller-transition),
-            box-shadow var(--seller-transition);
+            box-shadow var(--transition),
+            border-color var(--transition);
     }
 
     .topbar:hover {
         border-color:
-            var(--seller-border-hover);
+            rgba(0,200,120,.20);
 
         box-shadow:
-            var(--seller-shadow),
-            var(--seller-glow);
+            var(--shadow);
     }
 
 
     /* =========================================================
        BRAND
-    ========================================================= */
+       ========================================================= */
 
     .brand-area {
         display: flex;
-
         align-items: center;
 
-        gap: 14px;
+        gap: 13px;
     }
 
     .brand-icon {
         width: 46px;
         height: 46px;
 
-        border-radius: 14px;
+        flex-shrink: 0;
 
         display: flex;
-
         align-items: center;
         justify-content: center;
+
+        border-radius: 13px;
 
         background:
             linear-gradient(
                 135deg,
-                rgb(0, 255, 153),
-                rgb(0, 190, 120)
+                #00d986,
+                #00b96f
             );
 
-        color: #001b10;
+        color: #ffffff;
 
-        font-size: 20px;
+        font-size: 19px;
 
         box-shadow:
-            0 10px 35px rgba(0,255,153,.20);
+            0 9px 25px rgba(0,200,120,.20);
     }
 
     .brand-title {
         margin: 0;
 
-        font-size: 18px;
+        color: var(--text-dark);
 
-        font-weight: 800;
+        font-size: 17px;
 
-        letter-spacing: .3px;
+        font-weight: 900;
 
-        color: var(--seller-text);
+        letter-spacing: .2px;
     }
 
     .brand-subtitle {
         margin: 3px 0 0;
 
-        color: var(--seller-muted);
+        color: var(--muted);
 
-        font-size: 12px;
+        font-size: 11px;
+
+        font-weight: 500;
     }
 
 
     /* =========================================================
        DASHBOARD BUTTON
-    ========================================================= */
+       ========================================================= */
 
     .dashboard-btn {
         display: inline-flex;
-
         align-items: center;
+        justify-content: center;
 
         gap: 8px;
 
-        padding: 11px 17px;
+        min-height: 42px;
 
-        border-radius: 12px;
+        padding: 0 16px;
+
+        border-radius: 11px;
 
         border:
-            1px solid var(--seller-border);
+            1px solid #cdeee0;
 
         background:
-            rgba(0, 255, 153, 0.04);
+            #f0fdf7;
 
         color:
-            var(--seller-primary);
+            #009c62;
 
         text-decoration: none;
 
-        font-size: 13px;
+        font-size: 12px;
 
-        font-weight: 700;
+        font-weight: 800;
 
         transition:
-            all var(--seller-transition);
+            all var(--transition);
     }
 
     .dashboard-btn:hover {
-        color: #001b10;
+        color: #ffffff;
 
         background:
-            var(--seller-primary);
+            linear-gradient(
+                135deg,
+                #00d986,
+                #00b96f
+            );
 
         border-color:
-            var(--seller-primary);
+            #00c878;
 
         transform:
             translateY(-2px);
 
         box-shadow:
-            0 10px 30px rgba(0,255,153,.18);
+            0 10px 25px rgba(0,200,120,.18);
     }
 
 
     /* =========================================================
        PAGE HEADER
-    ========================================================= */
+       ========================================================= */
 
     .page-header {
-        margin-bottom: 24px;
+        margin-bottom: 22px;
     }
 
     .page-header h1 {
         margin: 0;
 
+        color: var(--text-dark);
+
         font-size: 30px;
 
-        font-weight: 800;
+        line-height: 1.2;
 
-        letter-spacing: -.5px;
+        font-weight: 900;
 
-        color: var(--seller-text);
+        letter-spacing: -.7px;
     }
 
     .page-header h1 i {
         color:
-            var(--seller-primary);
+            var(--primary);
     }
 
     .page-header p {
         margin: 7px 0 0;
 
         color:
-            var(--seller-text-secondary);
+            var(--text-secondary);
 
-        font-size: 14px;
+        font-size: 13px;
     }
 
 
     /* =========================================================
        PRODUCT ID
-    ========================================================= */
+       ========================================================= */
 
     .product-id {
         display: inline-flex;
-
         align-items: center;
 
         gap: 7px;
 
-        margin-top: 14px;
+        margin-top: 13px;
 
         padding: 7px 12px;
 
         border-radius: 999px;
 
         background:
-            rgba(0,255,153,.06);
+            var(--primary-soft);
 
         border:
-            1px solid rgba(0,255,153,.16);
+            1px solid #ccefe0;
 
         color:
-            var(--seller-primary);
+            #008b58;
 
-        font-size: 12px;
+        font-size: 11px;
 
-        font-weight: 700;
+        font-weight: 800;
     }
 
 
     /* =========================================================
        ALERTS
-    ========================================================= */
+       ========================================================= */
 
     .custom-alert {
-        border-radius: 15px;
+        display: block;
 
-        padding: 15px 17px;
+        border-radius: 14px;
 
-        margin-bottom: 20px;
+        padding: 14px 16px;
 
-        font-size: 13px;
+        margin-bottom: 18px;
+
+        font-size: 12px;
 
         font-weight: 600;
 
-        backdrop-filter: blur(15px);
+        box-shadow:
+            0 5px 18px rgba(15,23,42,.04);
     }
 
     .alert-error {
         background:
-            rgba(127,29,29,.22);
+            var(--danger-soft);
 
         border:
-            1px solid rgba(248,113,113,.25);
+            1px solid #fecaca;
 
         color:
-            #fca5a5;
+            #b91c1c;
     }
 
     .alert-success {
         background:
-            rgba(0,255,153,.07);
+            var(--primary-soft);
 
         border:
-            1px solid rgba(0,255,153,.20);
+            1px solid #b7ebd5;
 
         color:
-            var(--seller-primary);
+            #008b58;
     }
 
 
     /* =========================================================
        FORM CARD
-    ========================================================= */
+       ========================================================= */
 
     .form-card {
-        background:
-            linear-gradient(
-                145deg,
-                rgba(11,24,17,.94),
-                rgba(5,13,9,.92)
-            );
-
-        border:
-            1px solid var(--seller-border);
-
-        border-radius: 26px;
-
         padding: 30px;
 
-        box-shadow:
-            var(--seller-shadow),
-            inset 0 1px 0 rgba(255,255,255,.025);
+        background:
+            rgba(255,255,255,.96);
 
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
+        border:
+            1px solid rgba(226,232,240,.95);
+
+        border-radius:
+            24px;
+
+        box-shadow:
+            var(--shadow-lg);
+
+        backdrop-filter:
+            blur(18px);
+
+        -webkit-backdrop-filter:
+            blur(18px);
     }
 
 
     /* =========================================================
        FORM SECTION
-    ========================================================= */
+       ========================================================= */
 
     .form-section {
-        margin-bottom: 32px;
+        margin-bottom: 34px;
+    }
+
+    .form-section:last-of-type {
+        margin-bottom: 5px;
     }
 
     .section-heading {
@@ -493,80 +504,85 @@
 
         padding-bottom: 14px;
 
-        margin-bottom: 20px;
+        margin-bottom: 21px;
 
         border-bottom:
-            1px solid rgba(0,255,153,.10);
+            1px solid var(--border-soft);
     }
 
     .section-icon {
-        width: 38px;
-        height: 38px;
+        width: 39px;
+        height: 39px;
 
-        border-radius: 11px;
+        flex-shrink: 0;
 
         display: flex;
-
         align-items: center;
         justify-content: center;
 
+        border-radius: 11px;
+
         background:
-            rgba(0,255,153,.08);
+            var(--primary-soft);
 
         color:
-            var(--seller-primary);
+            var(--primary-dark);
 
         border:
-            1px solid rgba(0,255,153,.12);
+            1px solid #ccefe0;
 
-        font-size: 15px;
+        font-size: 14px;
     }
 
     .section-heading h2 {
         margin: 0;
 
-        font-size: 16px;
-
-        font-weight: 800;
-
         color:
-            var(--seller-text);
+            var(--text-dark);
+
+        font-size: 15px;
+
+        font-weight: 850;
     }
 
     .section-heading p {
         margin: 3px 0 0;
 
         color:
-            var(--seller-muted);
+            var(--muted);
 
-        font-size: 11px;
+        font-size: 10px;
+
+        font-weight: 500;
     }
 
 
     /* =========================================================
        LABELS
-    ========================================================= */
+       ========================================================= */
 
     .form-label {
+        display: block;
+
+        margin-bottom: 7px;
+
         color:
-            var(--seller-text-secondary);
+            var(--text-secondary);
 
-        font-size: 12px;
+        font-size: 11px;
 
-        font-weight: 700;
-
-        margin-bottom: 8px;
+        font-weight: 800;
     }
 
     .required {
         color:
-            #ff6b6b;
+            #ef4444;
     }
 
 
     /* =========================================================
        INPUTS
-    ========================================================= */
+       ========================================================= */
 
     .form-control,
     .form-select {
@@ -574,148 +590,160 @@
 
         min-height: 48px;
 
+        padding:
+            11px 14px;
+
         background:
-            var(--seller-input) !important;
+            #ffffff !important;
+
+        color:
+            var(--text-dark) !important;
 
         border:
-            1px solid rgba(0,255,153,.12) !important;
+            1px solid #dce3eb !important;
 
         border-radius:
-            13px !important;
-
-        color:
-            var(--seller-text) !important;
-
-        padding:
-            12px 14px;
+            12px !important;
 
         font-size:
-            13px;
+            12px;
+
+        font-weight:
+            500;
 
         box-shadow:
-            none !important;
+            0 2px 7px rgba(15,23,42,.025) !important;
 
         transition:
-            all .20s ease;
+            border-color .20s ease,
+            box-shadow .20s ease,
+            background .20s ease;
     }
 
-    textarea.form-control {
-        min-height: 120px;
-
-        resize: vertical;
-    }
-
-    .form-control::placeholder {
-        color:
-            #647970 !important;
+    .form-control:hover,
+    .form-select:hover {
+        border-color:
+            #c7d2de !important;
     }
 
     .form-control:focus,
     .form-select:focus {
-        border-color:
-            var(--seller-primary) !important;
-
         background:
-            rgba(5,20,13,.96) !important;
+            #ffffff !important;
 
         color:
-            var(--seller-text) !important;
+            var(--text-dark) !important;
+
+        border-color:
+            #00c878 !important;
 
         box-shadow:
-            0 0 0 3px rgba(0,255,153,.10) !important;
+            0 0 0 3px rgba(0,200,120,.10),
+            0 5px 15px rgba(15,23,42,.04) !important;
+
+        outline:
+            none !important;
+    }
+
+    .form-control::placeholder {
+        color:
+            var(--placeholder) !important;
+
+        opacity: 1;
     }
 
     .form-select option {
         background:
-            var(--seller-card-solid);
+            #ffffff;
 
         color:
-            var(--seller-text);
+            var(--text-dark);
+    }
+
+    textarea.form-control {
+        min-height: 125px;
+
+        resize: vertical;
+
+        line-height: 1.6;
     }
 
 
     /* =========================================================
        FILE INPUT
-    ========================================================= */
+       ========================================================= */
 
     input[type="file"].form-control {
-        padding-top: 10px;
+        padding-top: 9px;
+        padding-bottom: 9px;
     }
 
     input[type="file"]::file-selector-button {
-        background:
-            rgba(0,255,153,.10);
+        margin-right: 10px;
 
-        color:
-            var(--seller-primary);
+        padding: 7px 12px;
 
         border:
-            1px solid rgba(0,255,153,.18);
+            1px solid #bcebd7;
 
-        border-radius:
-            9px;
+        border-radius: 8px;
 
-        padding:
-            7px 12px;
+        background:
+            #ecfdf5;
 
-        margin-right:
-            10px;
+        color:
+            #008b58;
 
-        font-weight:
-            700;
+        font-size: 11px;
 
-        cursor:
-            pointer;
+        font-weight: 800;
+
+        cursor: pointer;
+
+        transition:
+            all .2s ease;
     }
 
     input[type="file"]::file-selector-button:hover {
         background:
-            rgba(0,255,153,.18);
+            #d9faec;
+
+        border-color:
+            #8fe0bd;
     }
 
 
     /* =========================================================
-       NUMBER INPUT
-    ========================================================= */
-
-    input[type="number"]::-webkit-inner-spin-button,
-    input[type="number"]::-webkit-outer-spin-button {
-        opacity: .5;
-    }
-
-
-    /* =========================================================
-       IMAGE AREA
-    ========================================================= */
+       IMAGE BOX
+       ========================================================= */
 
     .image-box {
+        padding: 18px;
+
         background:
-            rgba(3,12,8,.60);
+            #f8fafc;
 
         border:
-            1px solid rgba(0,255,153,.10);
+            1px solid var(--border);
 
         border-radius:
-            18px;
-
-        padding:
-            18px;
+            17px;
     }
 
     .image-title {
-        font-size: 12px;
-
-        font-weight: 800;
+        margin-bottom: 13px;
 
         color:
-            var(--seller-text);
+            var(--text-dark);
 
-        margin-bottom: 12px;
+        font-size: 11px;
+
+        font-weight: 850;
     }
 
     .image-title i {
         color:
-            var(--seller-primary);
+            var(--primary-dark);
     }
 
     .current-image {
@@ -729,28 +757,34 @@
 
         object-fit: contain;
 
-        background:
-            #020806;
+        padding: 8px;
 
-        border-radius:
-            15px;
+        background:
+            #ffffff;
 
         border:
-            1px solid rgba(0,255,153,.12);
+            1px solid #e2e8f0;
 
-        margin-bottom:
-            15px;
+        border-radius:
+            14px;
+
+        margin-bottom: 12px;
+
+        box-shadow:
+            0 8px 25px rgba(15,23,42,.06);
     }
 
     .image-note {
+        margin-top: 7px;
+
         color:
-            var(--seller-muted);
+            var(--muted);
 
         font-size:
-            11px;
+            10px;
 
-        margin-top:
-            7px;
+        line-height:
+            1.5;
     }
 
     .extra-images {
@@ -760,20 +794,24 @@
 
         gap: 10px;
 
-        margin-top: 15px;
+        margin-top: 14px;
     }
 
     .extra-image {
         width: 88px;
-
         height: 72px;
 
         object-fit: cover;
 
-        border-radius: 10px;
+        padding: 2px;
+
+        background: #ffffff;
 
         border:
-            1px solid rgba(0,255,153,.14);
+            1px solid #dce3eb;
+
+        border-radius:
+            10px;
 
         transition:
             all .20s ease;
@@ -784,16 +822,16 @@
             translateY(-3px);
 
         border-color:
-            var(--seller-primary);
+            var(--primary);
 
         box-shadow:
-            0 8px 25px rgba(0,255,153,.15);
+            0 9px 22px rgba(0,200,120,.15);
     }
 
 
     /* =========================================================
-       BUTTONS
-    ========================================================= */
+       BOTTOM ACTIONS
+       ========================================================= */
 
     .bottom-actions {
         display: flex;
@@ -802,17 +840,16 @@
 
         gap: 12px;
 
-        padding-top: 24px;
+        padding-top: 25px;
 
-        margin-top: 5px;
+        margin-top: 8px;
 
         border-top:
-            1px solid rgba(0,255,153,.10);
+            1px solid var(--border-soft);
     }
 
-    .btn-cancel {
-        flex: 1;
-
+    .btn-cancel,
+    .btn-update {
         min-height: 50px;
 
         display: flex;
@@ -822,36 +859,41 @@
 
         gap: 8px;
 
-        border-radius: 13px;
+        border-radius: 12px;
 
-        border:
-            1px solid rgba(0,255,153,.15);
+        font-size: 12px;
 
-        background:
-            rgba(0,255,153,.03);
-
-        color:
-            var(--seller-text-secondary);
-
-        text-decoration: none;
-
-        font-size: 13px;
-
-        font-weight: 800;
+        font-weight: 850;
 
         transition:
             all .25s ease;
     }
 
-    .btn-cancel:hover {
-        color:
-            var(--seller-primary);
+    .btn-cancel {
+        flex: 1;
 
         background:
-            rgba(0,255,153,.08);
+            #ffffff;
+
+        border:
+            1px solid #dce3eb;
+
+        color:
+            var(--text-secondary);
+
+        text-decoration:
+            none;
+    }
+
+    .btn-cancel:hover {
+        color:
+            #008b58;
+
+        background:
+            var(--primary-soft);
 
         border-color:
-            rgba(0,255,153,.30);
+            #bcebd7;
 
         transform:
             translateY(-2px);
@@ -860,142 +902,250 @@
     .btn-update {
         flex: 2;
 
-        min-height: 50px;
-
-        border: 0;
-
-        border-radius: 13px;
+        border:
+            0;
 
         background:
             linear-gradient(
                 135deg,
-                rgb(0,255,153),
-                rgb(0,205,125)
+                #00d986,
+                #00b96f
             );
 
         color:
-            #001b10;
-
-        font-size: 13px;
-
-        font-weight: 900;
-
-        letter-spacing: .2px;
+            #ffffff;
 
         box-shadow:
-            0 12px 30px rgba(0,255,153,.18);
+            0 10px 28px rgba(0,200,120,.18);
 
-        transition:
-            all .25s ease;
-
-        cursor: pointer;
+        cursor:
+            pointer;
     }
 
     .btn-update:hover {
+        color:
+            #ffffff;
+
         transform:
             translateY(-2px);
 
-        color:
-            #001b10;
-
         box-shadow:
-            0 18px 42px rgba(0,255,153,.28);
+            0 16px 38px rgba(0,200,120,.25);
+    }
+
+    .btn-update:active,
+    .btn-cancel:active,
+    .dashboard-btn:active {
+        transform:
+            translateY(0);
     }
 
 
     /* =========================================================
        FOOTER
-    ========================================================= */
+       ========================================================= */
 
     .page-footer {
+        margin-top: 24px;
+
         text-align: center;
 
         color:
-            #4f655b;
+            #94a3b8;
 
-        font-size: 11px;
+        font-size:
+            10px;
 
-        margin-top: 25px;
+        font-weight:
+            500;
     }
 
 
     /* =========================================================
-       TEXT SECONDARY OVERRIDE
-    ========================================================= */
+       SECONDARY TEXT
+       ========================================================= */
 
     .text-secondary {
         color:
-            var(--seller-muted) !important;
+            var(--muted) !important;
     }
 
 
     /* =========================================================
        MOBILE
-    ========================================================= */
+       ========================================================= */
 
     @media (max-width: 768px) {
 
         .page-wrapper {
             padding:
-                18px 12px 40px;
+                16px 11px 38px;
         }
 
         .topbar {
-            padding: 15px;
+            padding:
+                13px;
 
-            border-radius: 16px;
-        }
-
-        .brand-subtitle {
-            display: none;
-        }
-
-        .brand-title {
-            font-size: 15px;
+            border-radius:
+                15px;
         }
 
         .brand-icon {
-            width: 40px;
-            height: 40px;
+            width:
+                40px;
 
-            border-radius: 11px;
+            height:
+                40px;
+
+            border-radius:
+                11px;
         }
 
-        .dashboard-btn span {
-            display: none;
+        .brand-title {
+            font-size:
+                14px;
+        }
+
+        .brand-subtitle {
+            display:
+                none;
         }
 
         .dashboard-btn {
-            width: 42px;
-            height: 42px;
+            width:
+                42px;
 
-            padding: 0;
+            height:
+                42px;
 
-            justify-content: center;
+            padding:
+                0;
+        }
+
+        .dashboard-btn span {
+            display:
+                none;
         }
 
         .page-header h1 {
-            font-size: 24px;
+            font-size:
+                24px;
+        }
+
+        .page-header p {
+            font-size:
+                11px;
+
+            line-height:
+                1.6;
         }
 
         .form-card {
-            padding: 18px;
+            padding:
+                18px;
 
-            border-radius: 20px;
+            border-radius:
+                19px;
+        }
+
+        .section-heading {
+            margin-bottom:
+                18px;
         }
 
         .bottom-actions {
-            flex-direction: column-reverse;
+            flex-direction:
+                column-reverse;
         }
 
         .btn-cancel,
         .btn-update {
-            width: 100%;
+            width:
+                100%;
 
-            flex: none;
+            flex:
+                none;
+        }
+
+        .current-image {
+            max-width:
+                100%;
+
+            height:
+                210px;
         }
     }
-</style>
+
+
+    /* =========================================================
+       SMALL MOBILE
+       ========================================================= */
+
+    @media (max-width: 480px) {
+
+        .page-wrapper {
+            padding-left:
+                8px;
+
+            padding-right:
+                8px;
+        }
+
+        .form-card {
+            padding:
+                15px;
+        }
+
+        .topbar {
+            margin-bottom:
+                20px;
+        }
+
+        .page-header h1 {
+            font-size:
+                22px;
+        }
+
+        .product-id {
+            font-size:
+                10px;
+        }
+
+        .section-icon {
+            width:
+                36px;
+
+            height:
+                36px;
+        }
+
+        .section-heading h2 {
+            font-size:
+                14px;
+        }
+
+        .form-control,
+        .form-select {
+            min-height:
+                46px;
+        }
+    }
+
+
+    /* =========================================================
+       REDUCED MOTION
+       ========================================================= */
+
+    @media (prefers-reduced-motion: reduce) {
+
+        *,
+        *::before,
+        *::after {
+            transition:
+                none !important;
+        }
+    }
+    </style>
 </head>
 
 <body>
@@ -1004,9 +1154,10 @@
 
     <div class="main-container">
 
-        {{-- ============================
+
+        {{-- =====================================================
              TOP BAR
-        ============================= --}}
+        ====================================================== --}}
 
         <div class="topbar">
 
@@ -1017,6 +1168,7 @@
                 </div>
 
                 <div>
+
                     <h3 class="brand-title">
                         SMART BASKET
                     </h3>
@@ -1024,24 +1176,31 @@
                     <p class="brand-subtitle">
                         Seller Partner Panel
                     </p>
+
                 </div>
 
             </div>
+
 
             <a
                 href="{{ route('seller.dashboard') }}"
                 class="dashboard-btn"
             >
+
                 <i class="fa-solid fa-house"></i>
-                <span>Dashboard</span>
+
+                <span>
+                    Dashboard
+                </span>
+
             </a>
 
         </div>
 
 
-        {{-- ============================
+        {{-- =====================================================
              PAGE HEADER
-        ============================= --}}
+        ====================================================== --}}
 
         <div class="page-header">
 
@@ -1055,22 +1214,29 @@
             </p>
 
             <div class="product-id">
+
                 <i class="fa-solid fa-hashtag"></i>
-                Product ID: {{ $product->id }}
+
+                Product ID:
+                {{ $product->id }}
+
             </div>
 
         </div>
 
 
-        {{-- ============================
+        {{-- =====================================================
              ALERTS
-        ============================= --}}
+        ====================================================== --}}
 
         @if(session('success'))
 
             <div class="custom-alert alert-success">
+
                 <i class="fa-solid fa-circle-check me-2"></i>
+
                 {{ session('success') }}
+
             </div>
 
         @endif
@@ -1079,8 +1245,11 @@
         @if(session('error'))
 
             <div class="custom-alert alert-error">
+
                 <i class="fa-solid fa-circle-exclamation me-2"></i>
+
                 {{ session('error') }}
+
             </div>
 
         @endif
@@ -1093,8 +1262,11 @@
                 @foreach($errors->all() as $error)
 
                     <div class="mb-1">
+
                         <i class="fa-solid fa-triangle-exclamation me-2"></i>
+
                         {{ $error }}
+
                     </div>
 
                 @endforeach
@@ -1104,9 +1276,9 @@
         @endif
 
 
-        {{-- ============================
-             FORM
-        ============================= --}}
+        {{-- =====================================================
+             FORM CARD
+        ====================================================== --}}
 
         <div class="form-card">
 
@@ -1119,7 +1291,9 @@
                 @csrf
 
 
-                {{-- BASIC INFORMATION --}}
+                {{-- =================================================
+                     BASIC INFORMATION
+                ================================================== --}}
 
                 <div class="form-section">
 
@@ -1130,8 +1304,15 @@
                         </div>
 
                         <div>
-                            <h2>Basic Information</h2>
-                            <p>Enter the main product details</p>
+
+                            <h2>
+                                Basic Information
+                            </h2>
+
+                            <p>
+                                Enter the main product details
+                            </p>
+
                         </div>
 
                     </div>
@@ -1139,11 +1320,17 @@
 
                     <div class="row g-4">
 
+
                         <div class="col-md-6">
 
                             <label class="form-label">
+
                                 Product Name
-                                <span class="required">*</span>
+
+                                <span class="required">
+                                    *
+                                </span>
+
                             </label>
 
                             <input
@@ -1161,8 +1348,13 @@
                         <div class="col-md-6">
 
                             <label class="form-label">
+
                                 Category
-                                <span class="required">*</span>
+
+                                <span class="required">
+                                    *
+                                </span>
+
                             </label>
 
                             <input
@@ -1228,7 +1420,9 @@
                 </div>
 
 
-                {{-- PRICE & INVENTORY --}}
+                {{-- =================================================
+                     PRICE & INVENTORY
+                ================================================== --}}
 
                 <div class="form-section">
 
@@ -1239,8 +1433,15 @@
                         </div>
 
                         <div>
-                            <h2>Price & Inventory</h2>
-                            <p>Manage pricing and available stock</p>
+
+                            <h2>
+                                Price &amp; Inventory
+                            </h2>
+
+                            <p>
+                                Manage pricing and available stock
+                            </p>
+
                         </div>
 
                     </div>
@@ -1248,11 +1449,17 @@
 
                     <div class="row g-4">
 
+
                         <div class="col-md-4">
 
                             <label class="form-label">
+
                                 Price (₹)
-                                <span class="required">*</span>
+
+                                <span class="required">
+                                    *
+                                </span>
+
                             </label>
 
                             <input
@@ -1290,8 +1497,13 @@
                         <div class="col-md-4">
 
                             <label class="form-label">
+
                                 Stock Quantity
-                                <span class="required">*</span>
+
+                                <span class="required">
+                                    *
+                                </span>
+
                             </label>
 
                             <input
@@ -1310,7 +1522,9 @@
                 </div>
 
 
-                {{-- PRODUCT DETAILS --}}
+                {{-- =================================================
+                     PRODUCT DETAILS
+                ================================================== --}}
 
                 <div class="form-section">
 
@@ -1321,14 +1535,22 @@
                         </div>
 
                         <div>
-                            <h2>Product Details</h2>
-                            <p>Add size, color and product description</p>
+
+                            <h2>
+                                Product Details
+                            </h2>
+
+                            <p>
+                                Add size, color and product description
+                            </p>
+
                         </div>
 
                     </div>
 
 
                     <div class="row g-4">
+
 
                         <div class="col-md-6">
 
@@ -1384,7 +1606,9 @@
                 </div>
 
 
-                {{-- PRODUCT IMAGES --}}
+                {{-- =================================================
+                     PRODUCT IMAGES
+                ================================================== --}}
 
                 <div class="form-section">
 
@@ -1395,18 +1619,30 @@
                         </div>
 
                         <div>
-                            <h2>Product Images</h2>
-                            <p>Manage your main and additional product images</p>
+
+                            <h2>
+                                Product Images
+                            </h2>
+
+                            <p>
+                                Manage your main and additional product images
+                            </p>
+
                         </div>
 
                     </div>
 
 
+                    {{-- CURRENT IMAGE --}}
+
                     <div class="image-box mb-4">
 
                         <div class="image-title">
+
                             <i class="fa-solid fa-image me-2"></i>
+
                             Current Main Image
+
                         </div>
 
 
@@ -1419,14 +1655,19 @@
                             >
 
                             <div class="image-note">
+
                                 This is your current main product image.
+
                             </div>
 
                         @else
 
                             <div class="text-secondary py-4">
+
                                 <i class="fa-solid fa-image me-2"></i>
+
                                 No main image available.
+
                             </div>
 
                         @endif
@@ -1436,13 +1677,19 @@
 
                     <div class="row g-4">
 
+
+                        {{-- MAIN IMAGE --}}
+
                         <div class="col-12">
 
                             <label class="form-label">
+
                                 Change Main Image
+
                                 <span class="text-secondary">
                                     (Optional)
                                 </span>
+
                             </label>
 
                             <input
@@ -1453,19 +1700,27 @@
                             >
 
                             <div class="image-note">
-                                Supported formats: JPG, JPEG, PNG and WEBP.
+
+                                Supported formats:
+                                JPG, JPEG, PNG and WEBP.
+
                             </div>
 
                         </div>
 
 
+                        {{-- EXTRA IMAGES --}}
+
                         <div class="col-12">
 
                             <label class="form-label">
+
                                 Add More Product Images
+
                                 <span class="text-secondary">
                                     (Multiple allowed)
                                 </span>
+
                             </label>
 
                             <input
@@ -1477,7 +1732,9 @@
                             >
 
                             <div class="image-note">
+
                                 You can select multiple product images at once.
+
                             </div>
 
 
@@ -1506,7 +1763,9 @@
                 </div>
 
 
-                {{-- ACTION BUTTONS --}}
+                {{-- =================================================
+                     ACTION BUTTONS
+                ================================================== --}}
 
                 <div class="bottom-actions">
 
@@ -1514,8 +1773,11 @@
                         href="{{ route('seller.products.index') }}"
                         class="btn-cancel"
                     >
+
                         <i class="fa-solid fa-arrow-left"></i>
+
                         Cancel
+
                     </a>
 
 
@@ -1523,8 +1785,11 @@
                         type="submit"
                         class="btn-update"
                     >
-                        <i class="fa-solid fa-floppy-disk me-2"></i>
+
+                        <i class="fa-solid fa-floppy-disk"></i>
+
                         UPDATE PRODUCT
+
                     </button>
 
                 </div>
@@ -1534,8 +1799,16 @@
         </div>
 
 
+        {{-- =====================================================
+             FOOTER
+        ====================================================== --}}
+
         <div class="page-footer">
-            SMART BASKET • Seller Partner Panel
+
+            SMART BASKET
+            <span>•</span>
+            Seller Partner Panel
+
         </div>
 
     </div>
@@ -1543,4 +1816,6 @@
 </div>
 
 </body>
+
+    @include('seller.partials.seller-menu')
 </html>

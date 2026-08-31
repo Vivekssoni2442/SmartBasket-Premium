@@ -2,1116 +2,2217 @@
 <html lang="en">
 
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
+<title>Smart Basket — Products</title>
+
+<script>
+(() => {
+    const saved = localStorage.getItem('sb-theme');
+
+    const userTheme =
+        @auth @json(auth()->user()->dark_mode ?? auth()->user()->theme ?? 'dark') @else 'dark' @endauth;
+
+    const theme = ['light','dark'].includes(saved)
+        ? saved
+        : (['light','dark'].includes(userTheme) ? userTheme : 'dark');
+
+    document.documentElement.setAttribute('data-theme', theme);
+    window.SB_THEME = theme;
+})();
+</script>
+
+<link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet">
+
+<link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    rel="stylesheet">
+
+<style>
+
+:root {
+    --bg:#f5f7fb;
+    --surface:#ffffff;
+    --surface2:#f8fafc;
+    --text:#102033;
+    --muted:#718096;
+    --border:#e3eaf3;
+    --primary:#2563eb;
+    --primary2:#7c3aed;
+    --success:#16a34a;
+    --danger:#e05b72;
+
+    --rgb-cyan:#00f6ff;
+    --rgb-blue:#287bff;
+    --rgb-purple:#8b35ff;
+    --rgb-pink:#ff20c8;
+    --rgb-red:#ff405d;
+    --rgb-yellow:#ffe45c;
+
+    --shadow:0 18px 55px rgba(15,23,42,.09);
+    --menu-shadow:0 25px 70px rgba(15,23,42,.18);
+}
+
+html[data-theme="dark"] {
+    --bg:#040914;
+    --surface:#091322;
+    --surface2:#0d1b2d;
+    --text:#f5f9ff;
+    --muted:#9aacbf;
+    --border:#21364f;
+    --primary:#65a5ff;
+    --primary2:#9a7cff;
+    --success:#45cf8c;
+    --danger:#ef8095;
+    --shadow:0 22px 65px rgba(0,0,0,.42);
+    --menu-shadow:0 28px 80px rgba(0,0,0,.62);
+}
+
+* {
+    box-sizing:border-box;
+}
+
+html {
+    scroll-behavior:smooth;
+    background:var(--bg);
+}
+
+body {
+    margin:0;
+    min-height:100vh;
+    color:var(--text);
+    font-family:
+        Inter,
+        Poppins,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+    background:
+        radial-gradient(circle at 8% 0%,rgba(0,246,255,.07),transparent 24%),
+        radial-gradient(circle at 92% 0%,rgba(255,32,200,.07),transparent 24%),
+        var(--bg);
+
+    transition:background .25s ease,color .25s ease;
+}
+
+a {
+    text-decoration:none !important;
+}
+
+button,
+input,
+select {
+    font-family:inherit;
+}
+
+
+/* =========================================================
+   TOP BAR
+========================================================= */
+
+.sb-topbar {
+    position:sticky;
+    top:0;
+    z-index:3000;
+
+    min-height:76px;
+    width:100%;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    padding:12px 24px;
+
+    background:color-mix(
+        in srgb,
+        var(--surface) 91%,
+        transparent
+    );
+
+    border-bottom:1px solid var(--border);
+
+    backdrop-filter:blur(24px);
+
+    box-shadow:0 8px 30px var(--shadow);
+}
+
+.sb-brand {
+    display:flex;
+    align-items:center;
+    gap:12px;
+    color:var(--text);
+}
 
-    <meta charset="UTF-8">
+.sb-brand-icon {
+    width:46px;
+    height:46px;
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    display:grid;
+    place-items:center;
 
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    border-radius:15px;
+    color:#fff;
 
-    <title>Smart Basket Products</title>
+    background:
+        linear-gradient(
+            135deg,
+            var(--primary),
+            var(--primary2)
+        );
+
+    box-shadow:0 10px 28px rgba(37,99,235,.25);
+}
+
+.sb-brand-text strong {
+    display:block;
+    color:var(--primary);
+    font-size:14px;
+    letter-spacing:.14em;
+    font-weight:950;
+}
+
+.sb-brand-text small {
+    display:block;
+    color:var(--muted);
+    font-size:9px;
+    letter-spacing:.14em;
+    margin-top:3px;
+}
+
+
+/* =========================================================
+   PREMIUM RGB GREETING
+========================================================= */
+
+.sb-menu-wrap {
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.sb-greeting {
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:5px;
+
+    padding:10px 16px;
+
+    border-radius:15px;
+    border:1px solid transparent;
+
+    background:
+        linear-gradient(var(--surface),var(--surface)) padding-box,
+        linear-gradient(
+            90deg,
+            var(--rgb-cyan),
+            var(--rgb-blue),
+            var(--rgb-purple),
+            var(--rgb-pink),
+            var(--rgb-red),
+            var(--rgb-yellow),
+            var(--rgb-cyan)
+        ) border-box;
+
+    background-size:100% 100%,500% 100%;
+
+    animation:
+        greetingRGB 5s linear infinite,
+        greetingFloat 3s ease-in-out infinite;
+
+    color:var(--text);
+
+    font-size:12px;
+    font-weight:850;
+
+    white-space:nowrap;
+
+    box-shadow:
+        0 8px 28px rgba(0,0,0,.08);
+}
+
+.sb-greeting::before {
+    content:"";
+
+    width:7px;
+    height:7px;
+
+    flex-shrink:0;
+
+    border-radius:50%;
+
+    background:var(--rgb-cyan);
+
+    box-shadow:
+        0 0 7px var(--rgb-cyan),
+        0 0 16px var(--rgb-purple),
+        0 0 28px var(--rgb-pink);
+
+    animation:greetingPulse 1.5s ease-in-out infinite;
+}
+
+.sb-greeting strong {
+    font-weight:950;
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--rgb-cyan),
+            var(--rgb-blue),
+            var(--rgb-purple),
+            var(--rgb-pink),
+            var(--rgb-red),
+            var(--rgb-yellow),
+            var(--rgb-cyan)
+        );
+
+    background-size:500% 100%;
+
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
 
+    animation:rgbText 4s linear infinite;
+}
 
-    {{-- =========================================================
-         SMART BASKET THEME - BEFORE PAGE PAINT
-    ========================================================= --}}
-    <script>
-        (function () {
+@keyframes greetingRGB {
+    from {
+        background-position:0 0,0% 50%;
+    }
+    to {
+        background-position:0 0,500% 50%;
+    }
+}
+
+@keyframes greetingFloat {
+    0%,100% {transform:translateY(0);}
+    50% {transform:translateY(-2px);}
+}
+
+@keyframes greetingPulse {
+    0%,100% {
+        transform:scale(.75);
+        opacity:.55;
+    }
+    50% {
+        transform:scale(1.35);
+        opacity:1;
+    }
+}
+
+@keyframes rgbText {
+    from {background-position:0% 50%;}
+    to {background-position:500% 50%;}
+}
+
+
+/* =========================================================
+   THREE DOT MENU
+========================================================= */
+
+.sb-menu-button {
+    width:48px;
+    height:48px;
+
+    display:grid;
+    place-items:center;
+
+    border:1px solid var(--border);
+    border-radius:15px;
+
+    background:var(--surface2);
+    color:var(--text);
+
+    cursor:pointer;
+
+    font-size:20px;
+
+    transition:.25s ease;
+
+    box-shadow:0 8px 24px var(--shadow);
+}
+
+.sb-menu-button:hover,
+.sb-menu-button.active {
+    color:#fff;
+    border-color:transparent;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--primary),
+            var(--primary2)
+        );
+
+    transform:translateY(-2px);
+}
+
+
+/* =========================================================
+   MENU
+========================================================= */
+
+.sb-menu {
+    position:absolute;
+    top:calc(100% + 12px);
+    right:0;
+
+    width:285px;
+    padding:10px;
+
+    border:1px solid var(--border);
+    border-radius:20px;
+
+    background:var(--surface);
+    box-shadow:var(--menu-shadow);
+
+    backdrop-filter:blur(25px);
+
+    opacity:0;
+    visibility:hidden;
+
+    transform:translateY(-8px) scale(.97);
+    transform-origin:top right;
+
+    transition:
+        opacity .2s ease,
+        visibility .2s ease,
+        transform .2s ease;
+}
+
+.sb-menu.open {
+    opacity:1;
+    visibility:visible;
+    transform:translateY(0) scale(1);
+}
+
+.sb-menu-header {
+    padding:13px 14px;
+    margin-bottom:6px;
+
+    border-radius:15px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(0,246,255,.08),
+            rgba(139,53,255,.08),
+            rgba(255,32,200,.07)
+        );
+
+    border:1px solid var(--border);
+}
+
+.sb-menu-header strong {
+    display:block;
+    color:var(--text);
+    font-size:14px;
+    font-weight:900;
+}
+
+.sb-menu-header span {
+    display:block;
+    margin-top:3px;
+    color:var(--muted);
+    font-size:11px;
+}
+
+.sb-menu-item {
+    width:100%;
+
+    display:flex;
+    align-items:center;
+    gap:12px;
 
-            const html = document.documentElement;
+    padding:12px;
+    margin:3px 0;
 
-            let theme = null;
+    border:1px solid transparent;
+    border-radius:13px;
 
-            const themeKeys = [
-                'sb-theme',
-                'smartbasket-theme',
-                'theme'
-            ];
+    color:var(--text);
+    background:transparent;
 
-            for (const key of themeKeys) {
+    transition:.18s ease;
 
-                const value = localStorage.getItem(key);
+    font-size:12px;
+    font-weight:800;
+}
 
-                if (value === 'light' || value === 'dark') {
-                    theme = value;
-                    break;
-                }
-            }
+.sb-menu-item:hover {
+    color:var(--primary);
+    background:var(--surface2);
+    border-color:var(--border);
+    transform:translateX(3px);
+}
 
-            @auth
-                if (!theme) {
-                    theme = @json(auth()->user()->theme ?? null);
-                }
-            @endauth
+.sb-menu-icon {
+    width:35px;
+    height:35px;
 
-            if (theme !== 'light' && theme !== 'dark') {
-                theme = 'dark';
-            }
+    display:grid;
+    place-items:center;
+    flex-shrink:0;
 
-            html.setAttribute('data-theme', theme);
+    border-radius:11px;
 
-            window.SB_THEME = theme;
+    color:var(--primary);
+    background:rgba(37,99,235,.10);
+}
 
-        })();
-    </script>
+.sb-menu-item.logout {
+    color:var(--danger);
+}
 
+.sb-menu-item.logout .sb-menu-icon {
+    color:var(--danger);
+    background:rgba(224,91,114,.10);
+}
 
-    {{-- =========================================================
-         BOOTSTRAP
-    ========================================================= --}}
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-    >
+.sb-menu-divider {
+    height:1px;
+    margin:8px 4px;
+    background:var(--border);
+}
 
+.sb-menu-overlay {
+    position:fixed;
+    inset:0;
+    z-index:2500;
 
-    {{-- =========================================================
-         FONT AWESOME
-    ========================================================= --}}
-    <link
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-        rel="stylesheet"
-    >
+    background:rgba(2,6,23,.18);
+    backdrop-filter:blur(2px);
 
+    opacity:0;
+    visibility:hidden;
 
-    {{-- =========================================================
-         AI CAMERA CSS
-    ========================================================= --}}
-    <link
-        rel="stylesheet"
-        href="{{ asset('css/ai-camera.css') }}"
-    >
+    transition:.2s ease;
+}
 
+.sb-menu-overlay.open {
+    opacity:1;
+    visibility:visible;
+}
 
-    <style>
 
-        /* =========================================================
-           SMART BASKET GLOBAL VARIABLES
-        ========================================================= */
+/* =========================================================
+   MAIN
+========================================================= */
 
-        :root {
+.sb-wrap {
+    max-width:1420px;
+    margin:auto;
+    padding:26px 24px 70px;
+}
 
-            --sb-bg: #020617;
-            --sb-surface: #0f172a;
-            --sb-card: #111827;
-            --sb-card-2: #1e293b;
 
-            --sb-border: #334155;
+/* =========================================================
+   ULTRA PREMIUM FUTURISTIC HERO
+========================================================= */
 
-            --sb-text: #f8fafc;
-            --sb-text-secondary: #cbd5e1;
-            --sb-muted: #94a3b8;
+.hero {
+    position:relative;
+    isolation:isolate;
+    overflow:hidden;
 
-            --sb-primary: #3b82f6;
-            --sb-primary-hover: #60a5fa;
+    min-height:325px;
 
-            --sb-gold: #fbbf24;
+    margin-bottom:30px;
+    padding:42px 48px;
 
-            --sb-shadow: rgba(0, 0, 0, .35);
+    display:flex;
+    align-items:center;
 
-            --sb-overlay: rgba(2, 6, 23, .88);
-        }
+    border-radius:34px;
 
+    background:
+        linear-gradient(
+            135deg,
+            color-mix(in srgb,var(--surface) 96%,transparent),
+            color-mix(in srgb,var(--surface2) 91%,transparent)
+        );
 
-        /* =========================================================
-           LIGHT THEME
-        ========================================================= */
+    border:1px solid rgba(255,255,255,.12);
 
-        html[data-theme="light"] {
+    box-shadow:
+        0 30px 90px rgba(0,0,0,.14),
+        inset 0 1px 0 rgba(255,255,255,.10);
 
-            --sb-bg: #f7f9fc;
-            --sb-surface: #ffffff;
-            --sb-card: #ffffff;
-            --sb-card-2: #f8fafc;
+    animation:heroAppear .8s ease both;
+}
 
-            --sb-border: #dbe3ee;
 
-            --sb-text: #0f172a;
-            --sb-text-secondary: #475569;
-            --sb-muted: #64748b;
+/* animated RGB frame */
 
-            --sb-primary: #2563eb;
-            --sb-primary-hover: #1d4ed8;
+.hero::before {
+    content:"";
 
-            --sb-gold: #d97706;
+    position:absolute;
+    inset:-2px;
 
-            --sb-shadow: rgba(15, 23, 42, .10);
+    z-index:-4;
 
-            --sb-overlay: rgba(255, 255, 255, .94);
-        }
+    border-radius:36px;
 
+    background:
+        conic-gradient(
+            from 0deg,
+            var(--rgb-cyan),
+            var(--rgb-blue),
+            var(--rgb-purple),
+            var(--rgb-pink),
+            var(--rgb-red),
+            var(--rgb-yellow),
+            var(--rgb-cyan)
+        );
 
-        /* =========================================================
-           GLOBAL
-        ========================================================= */
+    filter:blur(2px);
 
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-        }
+    animation:heroFrame 8s linear infinite;
+}
 
+.hero::after {
+    content:"";
 
-        html,
-        body {
-            margin: 0;
-            padding: 0;
-            min-height: 100%;
-        }
+    position:absolute;
+    inset:2px;
 
+    z-index:-3;
 
-        html {
-            background: var(--sb-bg) !important;
-            color: var(--sb-text) !important;
-        }
+    border-radius:32px;
 
+    background:
+        linear-gradient(
+            135deg,
+            color-mix(in srgb,var(--surface) 98%,transparent),
+            color-mix(in srgb,var(--surface2) 94%,transparent)
+        );
+}
 
-        body {
 
-            min-height: 100vh;
+/* =========================================================
+   RGB LIGHT CLOUDS
+========================================================= */
 
-            overflow-x: hidden;
+.hero-glow {
+    position:absolute;
 
-            font-family:
-                'Poppins',
-                Arial,
-                sans-serif;
+    width:420px;
+    height:420px;
 
-            background:
-                var(--sb-bg) !important;
+    border-radius:50%;
 
-            color:
-                var(--sb-text) !important;
+    filter:blur(70px);
 
-            transition:
-                background-color .25s ease,
-                color .25s ease;
-        }
+    pointer-events:none;
 
+    opacity:.20;
 
-        /* =========================================================
-           TEXT
-        ========================================================= */
+    z-index:-2;
+}
 
-        h1,
-        h2,
-        h3,
-        h4,
-        h5,
-        h6,
-        label,
-        .form-label {
+.hero-glow.one {
+    right:-80px;
+    top:-180px;
 
-            color:
-                var(--sb-text) !important;
-        }
+    background:
+        conic-gradient(
+            var(--rgb-cyan),
+            var(--rgb-purple),
+            var(--rgb-pink),
+            var(--rgb-cyan)
+        );
 
+    animation:glowOne 9s ease-in-out infinite;
+}
 
-        p {
+.hero-glow.two {
+    left:-160px;
+    bottom:-250px;
 
-            color:
-                var(--sb-text-secondary) !important;
-        }
+    background:
+        radial-gradient(
+            circle,
+            var(--rgb-cyan),
+            var(--rgb-blue),
+            transparent 68%
+        );
 
+    animation:glowTwo 8s ease-in-out infinite;
+}
 
-        .text-muted {
+.hero-glow.three {
+    right:28%;
+    bottom:-300px;
 
-            color:
-                var(--sb-muted) !important;
-        }
+    width:300px;
+    height:300px;
 
+    background:
+        radial-gradient(
+            circle,
+            var(--rgb-pink),
+            var(--rgb-purple),
+            transparent 70%
+        );
 
-        .text-primary {
+    opacity:.11;
 
-            color:
-                var(--sb-primary) !important;
-        }
+    animation:glowThree 7s ease-in-out infinite;
+}
 
+@keyframes glowOne {
+    0%,100% {
+        transform:translate(0,0) scale(1);
+    }
+    50% {
+        transform:translate(-100px,90px) scale(1.25);
+    }
+}
 
-        /* =========================================================
-           BOOTSTRAP
-        ========================================================= */
+@keyframes glowTwo {
+    0%,100% {
+        transform:translate(0,0);
+    }
+    50% {
+        transform:translate(120px,-40px) scale(1.2);
+    }
+}
 
-        .container {
-            max-width: 1400px;
-        }
+@keyframes glowThree {
+    0%,100% {
+        transform:translateX(0);
+    }
+    50% {
+        transform:translateX(-80px) scale(1.2);
+    }
+}
 
 
-        .btn-primary {
+/* =========================================================
+   HERO GRID
+========================================================= */
 
-            background:
-                var(--sb-primary) !important;
+.hero-grid {
+    position:absolute;
+    inset:0;
 
-            border-color:
-                var(--sb-primary) !important;
+    z-index:-1;
 
-            color:
-                #ffffff !important;
-        }
+    opacity:.16;
 
+    background-image:
+        linear-gradient(
+            rgba(0,246,255,.10) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(139,53,255,.10) 1px,
+            transparent 1px
+        );
 
-        .btn-primary:hover {
+    background-size:38px 38px;
 
-            background:
-                var(--sb-primary-hover) !important;
+    mask-image:
+        radial-gradient(
+            circle at 75% 50%,
+            black,
+            transparent 70%
+        );
 
-            border-color:
-                var(--sb-primary-hover) !important;
+    animation:gridMove 16s linear infinite;
+}
 
-            color:
-                #ffffff !important;
-        }
+@keyframes gridMove {
+    from {
+        transform:translate(0,0);
+    }
+    to {
+        transform:translate(38px,38px);
+    }
+}
 
 
-        /* =========================================================
-           TOP BAR
-        ========================================================= */
+/* =========================================================
+   LIGHT SWEEP
+========================================================= */
 
-        .sb-topbar {
+.hero-light {
+    position:absolute;
 
-            width: 100%;
+    top:-100%;
+    left:-30%;
 
-            height: 70px;
+    width:24%;
+    height:300%;
 
-            display: flex;
+    z-index:1;
 
-            align-items: center;
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(255,255,255,.75),
+            transparent
+        );
+
+    filter:blur(12px);
+
+    opacity:.12;
+
+    transform:rotate(22deg);
+
+    animation:lightSweep 7s ease-in-out infinite;
+}
+
+@keyframes lightSweep {
+    0%,25% {
+        left:-35%;
+    }
+    70%,100% {
+        left:125%;
+    }
+}
+
+
+/* =========================================================
+   HERO CONTENT
+========================================================= */
+
+.hero-content {
+    position:relative;
+    z-index:10;
+
+    max-width:720px;
+}
+
+.eyebrow {
+    display:inline-flex;
+    align-items:center;
+    gap:9px;
+
+    padding:8px 14px;
+
+    border-radius:999px;
+
+    border:1px solid transparent;
+
+    background:
+        linear-gradient(var(--surface),var(--surface)) padding-box,
+        linear-gradient(
+            90deg,
+            var(--rgb-cyan),
+            var(--rgb-blue),
+            var(--rgb-purple),
+            var(--rgb-pink),
+            var(--rgb-yellow),
+            var(--rgb-cyan)
+        ) border-box;
+
+    background-size:100% 100%,500% 100%;
+
+    color:transparent;
+
+    font-size:9px;
+    font-weight:950;
+    letter-spacing:.16em;
+
+    -webkit-background-clip:padding-box;
+
+    animation:
+        eyebrowRGB 4s linear infinite,
+        heroEntry .7s ease both;
+}
+
+.eyebrow i {
+    background:
+        linear-gradient(
+            90deg,
+            var(--rgb-cyan),
+            var(--rgb-purple),
+            var(--rgb-pink),
+            var(--rgb-yellow)
+        );
+
+    background-size:300% 100%;
+
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+
+    animation:
+        rgbText 3s linear infinite,
+        magicPulse 2s ease-in-out infinite;
+}
+
+.eyebrow {
+    background:
+        linear-gradient(var(--surface),var(--surface)) padding-box,
+        linear-gradient(
+            90deg,
+            var(--rgb-cyan),
+            var(--rgb-blue),
+            var(--rgb-purple),
+            var(--rgb-pink),
+            var(--rgb-red),
+            var(--rgb-yellow),
+            var(--rgb-cyan)
+        ) border-box;
+
+    color:var(--text);
+}
+
+@keyframes eyebrowRGB {
+    from {
+        background-position:0 0,0% 50%;
+    }
+    to {
+        background-position:0 0,500% 50%;
+    }
+}
+
+@keyframes magicPulse {
+    0%,100% {
+        transform:scale(1) rotate(0);
+    }
+    50% {
+        transform:scale(1.22) rotate(12deg);
+    }
+}
+
+
+/* =========================================================
+   HERO TITLE — FULL RGB
+========================================================= */
+
+.hero h1 {
+    margin:18px 0 13px;
+
+    font-size:clamp(40px,5vw,68px);
+    line-height:.98;
+
+    letter-spacing:-.065em;
+    font-weight:950;
+
+    animation:heroEntry .8s ease .08s both;
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--rgb-cyan),
+            var(--rgb-blue),
+            var(--rgb-purple),
+            var(--rgb-pink),
+            var(--rgb-red),
+            var(--rgb-yellow),
+            var(--rgb-cyan)
+        );
+
+    background-size:600% 100%;
+
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+
+    animation:
+        heroEntry .8s ease .08s both,
+        rgbTitle 6s linear infinite;
+}
+
+.hero h1 .hero-gradient {
+    display:inline;
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--rgb-pink),
+            var(--rgb-purple),
+            var(--rgb-blue),
+            var(--rgb-cyan),
+            var(--rgb-yellow),
+            var(--rgb-pink)
+        );
+
+    background-size:600% 100%;
+
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+
+    animation:rgbTitle 5s linear infinite reverse;
+}
+
+@keyframes rgbTitle {
+    from {
+        background-position:0% 50%;
+    }
+    to {
+        background-position:600% 50%;
+    }
+}
+
+
+/* =========================================================
+   HERO SUBTITLE — RGB WORD HIGHLIGHT
+========================================================= */
+
+.hero-subtitle {
+    max-width:600px;
+
+    margin:0;
+
+    color:var(--muted);
+
+    font-size:13px;
+    line-height:1.75;
+
+    animation:heroEntry .8s ease .16s both;
+}
+
+.hero-subtitle strong {
+    font-weight:950;
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--rgb-cyan),
+            var(--rgb-blue),
+            var(--rgb-purple),
+            var(--rgb-pink),
+            var(--rgb-yellow),
+            var(--rgb-cyan)
+        );
+
+    background-size:500% 100%;
 
-            justify-content: flex-end;
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
 
-            padding: 12px 24px;
+    animation:rgbText 4s linear infinite;
+}
 
-            position: sticky;
 
-            top: 0;
+/* =========================================================
+   HERO BUTTONS
+========================================================= */
 
-            z-index: 5000;
+.hero-actions {
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
 
-            background:
-                var(--sb-overlay) !important;
+    margin-top:21px;
 
-            backdrop-filter:
-                blur(18px);
+    animation:heroEntry .8s ease .22s both;
+}
 
-            -webkit-backdrop-filter:
-                blur(18px);
+.hero-btn {
+    min-height:44px;
 
-            border-bottom:
-                1px solid var(--sb-border) !important;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
 
-            box-shadow:
-                0 8px 30px var(--sb-shadow);
-        }
+    padding:0 17px;
 
+    border-radius:13px;
 
-        /* =========================================================
-           MENU WRAPPER
-        ========================================================= */
+    font-size:10px;
+    font-weight:900;
 
-        .sb-menu-wrapper {
-            position: relative;
-        }
+    transition:.25s ease;
+}
 
+.hero-btn-primary {
+    color:#fff;
 
-        /* =========================================================
-           MENU BUTTON
-        ========================================================= */
+    background:
+        linear-gradient(
+            110deg,
+            var(--rgb-cyan),
+            var(--rgb-blue),
+            var(--rgb-purple),
+            var(--rgb-pink),
+            var(--rgb-red),
+            var(--rgb-yellow),
+            var(--rgb-cyan)
+        );
 
-        .sb-menu-button {
+    background-size:600% 100%;
 
-            width: 48px;
-            height: 48px;
+    box-shadow:
+        0 12px 35px rgba(75,80,255,.25);
 
-            border:
-                1px solid var(--sb-border) !important;
+    animation:buttonRGB 5s linear infinite;
+}
 
-            border-radius: 50%;
+.hero-btn-primary:hover {
+    color:#fff;
+    transform:translateY(-3px) scale(1.025);
 
-            background:
-                var(--sb-card) !important;
+    box-shadow:
+        0 18px 48px rgba(139,53,255,.35);
+}
 
-            color:
-                var(--sb-text) !important;
+.hero-btn-secondary {
+    color:var(--text);
 
-            display: flex;
+    border:1px solid var(--border);
 
-            align-items: center;
+    background:
+        color-mix(
+            in srgb,
+            var(--surface) 76%,
+            transparent
+        );
 
-            justify-content: center;
+    backdrop-filter:blur(15px);
+}
 
-            cursor: pointer;
+.hero-btn-secondary:hover {
+    color:var(--rgb-purple);
+    border-color:var(--rgb-purple);
 
-            box-shadow:
-                0 8px 25px var(--sb-shadow);
+    transform:translateY(-3px);
+}
 
-            transition:
-                all .25s ease;
-        }
+@keyframes buttonRGB {
+    from {background-position:0% 50%;}
+    to {background-position:600% 50%;}
+}
 
 
-        .sb-menu-button:hover {
+/* =========================================================
+   FUTURISTIC SHOPPING CORE
+========================================================= */
 
-            transform:
-                translateY(-2px);
+.hero-art {
+    position:absolute;
 
-            color:
-                var(--sb-gold) !important;
+    right:15px;
+    top:50%;
 
-            border-color:
-                var(--sb-gold) !important;
-        }
+    width:390px;
+    height:310px;
 
+    transform:translateY(-50%);
 
-        .sb-menu-button i {
-            font-size: 20px;
-        }
+    z-index:5;
 
+    pointer-events:none;
+}
 
-        /* =========================================================
-           DROPDOWN
-        ========================================================= */
 
-        .sb-dropdown {
+/* central energy sphere */
+
+.rgb-core {
+    position:absolute;
+
+    left:50%;
+    top:50%;
+
+    width:165px;
+    height:165px;
+
+    transform:translate(-50%,-50%);
+
+    border-radius:50%;
+
+    background:
+        radial-gradient(
+            circle at 30% 25%,
+            rgba(255,255,255,.95) 0 4%,
+            transparent 13%
+        ),
+        conic-gradient(
+            from 0deg,
+            var(--rgb-cyan),
+            var(--rgb-blue),
+            var(--rgb-purple),
+            var(--rgb-pink),
+            var(--rgb-red),
+            var(--rgb-yellow),
+            var(--rgb-cyan)
+        );
 
-            position: absolute;
+    box-shadow:
+        0 0 30px var(--rgb-cyan),
+        0 0 65px rgba(139,53,255,.7),
+        0 0 110px rgba(255,32,200,.38);
 
-            top:
-                calc(100% + 12px);
+    animation:
+        coreRotate 7s linear infinite,
+        corePulse 3s ease-in-out infinite;
+}
 
-            right: 0;
+.rgb-core::before {
+    content:"";
 
-            width: 270px;
+    position:absolute;
+    inset:12px;
 
-            max-height: calc(100vh - 100px);
+    border-radius:50%;
 
-            overflow-y: auto;
+    background:
+        radial-gradient(
+            circle at 30% 25%,
+            rgba(255,255,255,.20),
+            transparent 35%
+        ),
+        color-mix(
+            in srgb,
+            var(--surface) 88%,
+            transparent
+        );
 
-            padding: 10px;
+    backdrop-filter:blur(4px);
 
-            border-radius: 18px;
+    box-shadow:
+        inset 0 0 35px rgba(0,246,255,.16);
+}
 
-            background:
-                var(--sb-card) !important;
+.rgb-core::after {
+    content:"";
 
-            border:
-                1px solid var(--sb-border) !important;
+    position:absolute;
+    inset:-22px;
 
-            box-shadow:
-                0 25px 60px var(--sb-shadow);
+    border-radius:50%;
 
-            opacity: 0;
+    border:1px solid rgba(0,246,255,.30);
 
-            visibility: hidden;
+    box-shadow:
+        0 0 20px rgba(0,246,255,.20);
 
-            pointer-events: none;
+    animation:coreHalo 2.5s ease-in-out infinite;
+}
 
-            transform:
-                translateY(-8px)
-                scale(.97);
+@keyframes coreRotate {
+    from {
+        transform:translate(-50%,-50%) rotate(0deg);
+    }
+    to {
+        transform:translate(-50%,-50%) rotate(360deg);
+    }
+}
 
-            transform-origin:
-                top right;
+@keyframes corePulse {
+    0%,100% {
+        scale:.94;
+    }
+    50% {
+        scale:1.06;
+    }
+}
 
-            transition:
-                opacity .2s ease,
-                visibility .2s ease,
-                transform .2s ease;
-        }
+@keyframes coreHalo {
+    0%,100% {
+        transform:scale(.9);
+        opacity:.35;
+    }
+    50% {
+        transform:scale(1.18);
+        opacity:.8;
+    }
+}
 
 
-        .sb-dropdown.show {
+/* basket center */
 
-            opacity: 1;
+.hero-basket {
+    position:absolute;
 
-            visibility: visible;
+    left:50%;
+    top:50%;
 
-            pointer-events: auto;
+    z-index:15;
 
-            transform:
-                translateY(0)
-                scale(1);
-        }
+    width:78px;
+    height:78px;
 
+    display:grid;
+    place-items:center;
 
-        /* =========================================================
-           MENU TITLE
-        ========================================================= */
+    transform:translate(-50%,-50%);
 
-        .sb-menu-title {
+    border-radius:25px;
 
-            padding:
-                8px 12px 10px;
+    color:#fff;
 
-            font-size: 12px;
+    font-size:31px;
 
-            font-weight: 700;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(0,246,255,.96),
+            rgba(139,53,255,.96),
+            rgba(255,32,200,.96)
+        );
 
-            color:
-                var(--sb-muted) !important;
+    background-size:300% 300%;
 
-            text-transform:
-                uppercase;
+    box-shadow:
+        0 18px 40px rgba(0,0,0,.25),
+        0 0 30px rgba(0,246,255,.40);
 
-            letter-spacing:
-                .8px;
-        }
+    animation:
+        basketRGB 4s linear infinite,
+        basketFloat 3s ease-in-out infinite;
+}
 
+@keyframes basketRGB {
+    from {background-position:0% 50%;}
+    to {background-position:300% 50%;}
+}
 
-        /* =========================================================
-           MENU ITEM
-        ========================================================= */
+@keyframes basketFloat {
+    0%,100% {
+        transform:translate(-50%,-50%) rotate(-2deg);
+    }
+    50% {
+        transform:translate(-50%,-57%) rotate(2deg);
+    }
+}
 
-        .sb-menu-item {
 
-            width: 100%;
+/* =========================================================
+   ORBIT RINGS
+========================================================= */
 
-            display: flex;
+.core-ring {
+    position:absolute;
 
-            align-items: center;
+    left:50%;
+    top:50%;
 
-            gap: 12px;
+    border-radius:50%;
 
-            padding:
-                12px 13px;
+    transform:translate(-50%,-50%);
 
-            margin-bottom: 3px;
+    border:1px solid;
+}
 
-            border-radius: 12px;
+.core-ring.one {
+    width:215px;
+    height:215px;
 
-            color:
-                var(--sb-text) !important;
+    border-color:rgba(0,246,255,.42);
 
-            text-decoration: none !important;
+    animation:ringA 7s linear infinite;
+}
 
-            font-size: 14px;
+.core-ring.two {
+    width:285px;
+    height:150px;
 
-            font-weight: 600;
+    border-color:rgba(255,32,200,.42);
 
-            transition:
-                all .2s ease;
-        }
+    animation:ringB 10s linear infinite reverse;
+}
 
+.core-ring.three {
+    width:320px;
+    height:105px;
 
-        .sb-menu-item:hover {
+    border-color:rgba(255,228,92,.34);
 
-            background:
-                var(--sb-card-2) !important;
+    animation:ringC 13s linear infinite;
+}
 
-            color:
-                var(--sb-gold) !important;
+.core-ring.four {
+    width:250px;
+    height:275px;
 
-            transform:
-                translateX(3px);
-        }
+    border-color:rgba(139,53,255,.25);
 
+    animation:ringD 11s linear infinite reverse;
+}
 
-        .sb-menu-item i:first-child {
+@keyframes ringA {
+    to {
+        transform:translate(-50%,-50%) rotate(360deg);
+    }
+}
 
-            width: 20px;
+@keyframes ringB {
+    to {
+        transform:translate(-50%,-50%) rotate(-360deg);
+    }
+}
 
-            text-align: center;
+@keyframes ringC {
+    to {
+        transform:translate(-50%,-50%) rotate(360deg);
+    }
+}
 
-            flex-shrink: 0;
-        }
+@keyframes ringD {
+    to {
+        transform:translate(-50%,-50%) rotate(-360deg);
+    }
+}
 
 
-        .sb-menu-item .menu-arrow {
+/* =========================================================
+   FLOATING RGB PARTICLES
+========================================================= */
 
-            margin-left: auto;
+.core-particle {
+    position:absolute;
 
-            font-size: 11px;
+    width:7px;
+    height:7px;
 
-            color:
-                var(--sb-muted) !important;
-        }
+    border-radius:50%;
 
+    box-shadow:
+        0 0 9px currentColor,
+        0 0 22px currentColor,
+        0 0 40px currentColor;
+}
 
-        /* =========================================================
-           AI HUB SPECIAL MENU
-        ========================================================= */
+.core-particle.p1 {
+    top:25px;
+    right:100px;
+    color:var(--rgb-cyan);
+    animation:particleOne 4s ease-in-out infinite;
+}
 
-        .sb-ai-hub-item {
+.core-particle.p2 {
+    top:115px;
+    right:12px;
+    color:var(--rgb-pink);
+    animation:particleTwo 5s ease-in-out infinite;
+}
 
-            background:
-                linear-gradient(
-                    135deg,
-                    rgba(59,130,246,.12),
-                    rgba(139,92,246,.10)
-                ) !important;
+.core-particle.p3 {
+    bottom:30px;
+    right:100px;
+    color:var(--rgb-yellow);
+    animation:particleThree 4.5s ease-in-out infinite;
+}
 
-            border:
-                1px solid rgba(59,130,246,.20);
-        }
+.core-particle.p4 {
+    bottom:65px;
+    left:25px;
+    color:var(--rgb-purple);
+    animation:particleFour 5.5s ease-in-out infinite;
+}
 
+.core-particle.p5 {
+    top:70px;
+    left:25px;
+    color:var(--rgb-blue);
+    animation:particleFive 4.2s ease-in-out infinite;
+}
 
-        .sb-ai-hub-item:hover {
+@keyframes particleOne {
+    0%,100% {transform:translate(0,0) scale(.7);}
+    50% {transform:translate(-15px,18px) scale(1.3);}
+}
 
-            background:
-                linear-gradient(
-                    135deg,
-                    rgba(59,130,246,.20),
-                    rgba(139,92,246,.18)
-                ) !important;
+@keyframes particleTwo {
+    0%,100% {transform:translate(0,0);}
+    50% {transform:translate(-18px,-12px) scale(1.35);}
+}
 
-            color:
-                #60a5fa !important;
-        }
+@keyframes particleThree {
+    0%,100% {transform:translate(0,0) scale(.8);}
+    50% {transform:translate(15px,-20px) scale(1.3);}
+}
 
+@keyframes particleFour {
+    0%,100% {transform:translate(0,0);}
+    50% {transform:translate(25px,10px) scale(1.4);}
+}
 
-        .sb-ai-hub-icon {
+@keyframes particleFive {
+    0%,100% {transform:translate(0,0);}
+    50% {transform:translate(15px,-20px) scale(1.25);}
+}
 
-            color:
-                #8b5cf6 !important;
-        }
 
+/* =========================================================
+   GLASS INFO CARDS
+========================================================= */
 
-        /* =========================================================
-           DIVIDER
-        ========================================================= */
+.hero-float {
+    position:absolute;
 
-        .sb-menu-divider {
+    z-index:20;
+
+    display:flex;
+    align-items:center;
+    gap:8px;
+
+    padding:9px 12px;
+
+    border:1px solid rgba(255,255,255,.18);
+    border-radius:14px;
+
+    background:
+        color-mix(
+            in srgb,
+            var(--surface) 68%,
+            transparent
+        );
+
+    backdrop-filter:blur(18px);
+
+    box-shadow:
+        0 16px 38px rgba(0,0,0,.15);
+
+    animation:floatCard 4s ease-in-out infinite;
+}
+
+.hero-float.one {
+    top:18px;
+    right:20px;
+}
+
+.hero-float.two {
+    bottom:18px;
+    left:15px;
+
+    animation-delay:1.2s;
+}
+
+.hero-float-icon {
+    width:29px;
+    height:29px;
+
+    display:grid;
+    place-items:center;
+
+    border-radius:9px;
+
+    color:var(--rgb-cyan);
+
+    background:rgba(0,246,255,.09);
+
+    box-shadow:
+        inset 0 0 12px rgba(0,246,255,.08);
+}
+
+.hero-float strong {
+    display:block;
+    color:var(--text);
+    font-size:11px;
+    line-height:1;
+}
+
+.hero-float small {
+    display:block;
+    margin-top:3px;
+    color:var(--muted);
+    font-size:7px;
+    letter-spacing:.05em;
+}
+
+@keyframes floatCard {
+    0%,100% {
+        transform:translateY(0);
+    }
+    50% {
+        transform:translateY(-8px);
+    }
+}
+
+
+/* =========================================================
+   HERO ENTRY
+========================================================= */
+
+@keyframes heroEntry {
+    from {
+        opacity:0;
+        transform:translateY(20px);
+    }
+    to {
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+@keyframes heroAppear {
+    from {
+        opacity:0;
+        transform:translateY(18px) scale(.985);
+    }
+    to {
+        opacity:1;
+        transform:translateY(0) scale(1);
+    }
+}
+
+@keyframes heroFrame {
+    from {
+        transform:rotate(0deg);
+    }
+    to {
+        transform:rotate(360deg);
+    }
+}
+
+
+/* =========================================================
+   PRODUCTS / FILTERS
+========================================================= */
+
+.section-head {
+    display:flex;
+    align-items:end;
+    justify-content:space-between;
+    gap:15px;
+    margin:30px 0 14px;
+}
+
+.section-head h2 {
+    margin:0;
+    color:var(--text);
+    font-size:27px;
+    font-weight:950;
+    letter-spacing:-.03em;
+}
+
+.section-head p {
+    margin:5px 0 0;
+    color:var(--muted);
+    font-size:12px;
+}
+
+.count {
+    padding:8px 12px;
+    border:1px solid var(--border);
+    border-radius:999px;
+    background:var(--surface);
+    color:var(--muted);
+    font-size:11px;
+    font-weight:800;
+}
+
+.filters {
+    margin-bottom:25px;
+    padding:18px;
+
+    border:1px solid var(--border);
+    border-radius:20px;
+
+    background:var(--surface);
+
+    box-shadow:0 10px 35px var(--shadow);
+}
+
+.filters label {
+    display:block;
+    margin-bottom:6px;
+
+    color:var(--muted);
+
+    font-size:10px;
+    font-weight:900;
+
+    text-transform:uppercase;
+    letter-spacing:.08em;
+}
+
+.filters .form-control,
+.filters .form-select {
+    min-height:45px;
+
+    border:1px solid var(--border);
+    border-radius:12px;
+
+    background:var(--surface2);
+    color:var(--text);
+
+    font-size:13px;
+}
+
+.filters .form-control::placeholder {
+    color:var(--muted);
+}
+
+.filters .form-control:focus,
+.filters .form-select:focus {
+    border-color:var(--primary);
+    box-shadow:0 0 0 3px rgba(37,99,235,.10);
+}
+
+.apply {
+    height:45px;
+
+    border:0;
+    border-radius:12px;
+
+    color:#fff;
 
-            height: 1px;
+    background:
+        linear-gradient(
+            135deg,
+            var(--primary),
+            var(--primary2)
+        );
 
-            background:
-                var(--sb-border) !important;
+    font-weight:900;
+}
+
+
+/* =========================================================
+   PRODUCT CARDS
+========================================================= */
 
-            margin:
-                8px 4px;
-        }
+.product-card {
+    height:100%;
+    position:relative;
+    overflow:hidden;
 
+    display:flex;
+    flex-direction:column;
 
-        /* =========================================================
-           SEARCH
-        ========================================================= */
+    border:1px solid var(--border) !important;
+    border-radius:23px !important;
 
-        .sb-search-form {
+    background:var(--surface) !important;
 
-            background:
-                var(--sb-card) !important;
+    box-shadow:0 10px 35px var(--shadow) !important;
 
-            border:
-                1px solid var(--sb-border) !important;
+    transition:
+        transform .28s ease,
+        box-shadow .28s ease,
+        border-color .28s ease;
+}
 
-            box-shadow:
-                0 10px 30px var(--sb-shadow) !important;
-        }
+.product-card:hover {
+    transform:translateY(-7px);
 
+    border-color:
+        color-mix(
+            in srgb,
+            var(--primary) 55%,
+            var(--border)
+        ) !important;
 
-        .form-control,
-        .form-select {
+    box-shadow:0 22px 55px var(--shadow) !important;
+}
+
+.product-card--clickable {
+    cursor:pointer;
+}
+
+.media {
+    height:255px;
 
-            background:
-                var(--sb-card-2) !important;
+    position:relative;
 
-            color:
-                var(--sb-text) !important;
+    display:grid;
+    place-items:center;
 
-            border:
-                1px solid var(--sb-border) !important;
+    overflow:hidden;
 
-            min-height:
-                44px;
-        }
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(37,99,235,.08),
+            transparent 65%
+        ),
+        var(--surface2);
+}
 
+.media img {
+    width:100%;
+    height:100%;
 
-        .form-control::placeholder {
+    object-fit:contain;
+    padding:17px;
 
-            color:
-                var(--sb-muted) !important;
-        }
+    transition:.35s ease;
+}
 
+.product-card:hover .media img {
+    transform:scale(1.045);
+}
 
-        .form-control:focus,
-        .form-select:focus {
+.discount {
+    position:absolute;
+    left:12px;
+    top:12px;
 
-            background:
-                var(--sb-card-2) !important;
+    padding:7px 9px;
 
-            color:
-                var(--sb-text) !important;
+    border-radius:9px;
 
-            border-color:
-                var(--sb-primary) !important;
+    color:var(--success);
+    background:#eaf9ef;
 
-            box-shadow:
-                0 0 0 .2rem
-                rgba(37,99,235,.15) !important;
-        }
+    font-size:10px;
+    font-weight:950;
+}
 
+html[data-theme="dark"] .discount {
+    background:rgba(69,207,140,.12);
+}
 
-        .form-select option {
+.wishlist {
+    position:absolute;
+    right:12px;
+    top:12px;
 
-            background:
-                var(--sb-card) !important;
+    width:39px;
+    height:39px;
 
-            color:
-                var(--sb-text) !important;
-        }
+    display:grid;
+    place-items:center;
 
+    border:1px solid var(--border);
+    border-radius:50%;
 
-        /* =========================================================
-           PRODUCT CARD
-        ========================================================= */
+    background:var(--surface);
+    color:var(--danger);
 
-        .product-card {
+    box-shadow:0 8px 20px var(--shadow);
 
-            background:
-                var(--sb-card) !important;
+    transition:.2s ease;
+    cursor:pointer;
+}
 
-            border:
-                1px solid var(--sb-border) !important;
+.wishlist:hover {
+    transform:scale(1.08);
+    border-color:var(--danger);
+}
 
-            border-radius:
-                1.2rem;
+.body {
+    padding:17px;
 
-            overflow:
-                hidden;
+    display:flex;
+    flex-direction:column;
+    flex:1;
+}
 
-            transition:
-                transform .3s ease,
-                box-shadow .3s ease,
-                border-color .3s ease;
+.category {
+    color:var(--primary);
+    font-size:9px;
+    font-weight:900;
+    text-transform:uppercase;
+    letter-spacing:.1em;
+}
 
-            box-shadow:
-                0 10px 30px var(--sb-shadow);
+.title {
+    margin:5px 0;
 
-            height:
-                100%;
-        }
+    color:var(--text);
 
+    font-size:16px;
+    line-height:1.35;
+    font-weight:900;
 
-        .product-card:hover {
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+}
 
-            transform:
-                translateY(-5px);
+.rating {
+    display:flex;
+    align-items:center;
+    gap:5px;
 
-            border-color:
-                rgba(59,130,246,.55) !important;
+    margin:5px 0 8px;
 
-            box-shadow:
-                0 15px 35px
-                rgba(59,130,246,.18);
-        }
+    color:var(--muted);
+    font-size:11px;
+}
 
+.rating i {
+    color:#f5b82e;
+}
 
-        .product-img {
+.description {
+    min-height:51px;
 
-            height:
-                220px;
+    margin:0 0 10px;
 
-            object-fit:
-                cover;
+    color:var(--muted);
 
-            width:
-                100%;
+    font-size:11px;
+    line-height:1.55;
 
-            display:
-                block;
+    display:-webkit-box;
+    -webkit-line-clamp:3;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+}
 
-            background:
-                var(--sb-card-2) !important;
-        }
+.price {
+    color:var(--text);
+    font-size:22px;
+    font-weight:950;
+}
 
+.old {
+    margin-left:7px;
+    color:var(--muted);
+    font-size:11px;
+}
 
-        .product-card .card-body {
+.stock {
+    margin:3px 0 12px;
 
-            min-height:
-                255px;
+    color:var(--success);
 
-            display:
-                flex;
+    font-size:10px;
+    font-weight:800;
+}
 
-            flex-direction:
-                column;
+.stock.out {
+    color:var(--danger);
+}
 
-            padding:
-                18px;
-        }
+.actions {
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:7px;
+    margin-top:auto;
+}
 
+.action {
+    min-height:40px;
 
-        .product-card .card-title {
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:5px;
 
-            color:
-                var(--sb-text) !important;
+    padding:7px;
 
-            font-size:
-                17px;
+    border:1px solid var(--border);
+    border-radius:10px;
 
-            font-weight:
-                700;
+    background:var(--surface2);
+    color:var(--text);
 
-            line-height:
-                1.35;
+    font-size:10px;
+    font-weight:900;
 
-            display:
-                -webkit-box;
+    transition:.2s ease;
+}
 
-            -webkit-line-clamp:
-                2;
+.action:hover {
+    color:var(--primary);
+    border-color:var(--primary);
+    transform:translateY(-1px);
+}
 
-            -webkit-box-orient:
-                vertical;
+.action.primary {
+    color:#fff;
+    border-color:transparent;
 
-            overflow:
-                hidden;
+    background:
+        linear-gradient(
+            135deg,
+            var(--primary),
+            var(--primary2)
+        );
+}
 
-            min-height:
-                46px;
-        }
+.action.primary:hover {
+    color:#fff;
+}
 
+.action:disabled {
+    opacity:.5;
+    cursor:not-allowed;
+    transform:none !important;
+}
 
-        .product-card .product-description {
 
-            color:
-                var(--sb-text-secondary) !important;
+/* =========================================================
+   EMPTY / PAGINATION / FOOTER
+========================================================= */
 
-            line-height:
-                1.45;
+.empty {
+    padding:70px 20px;
 
-            display:
-                -webkit-box;
+    text-align:center;
 
-            -webkit-line-clamp:
-                3;
+    border:1px dashed var(--border);
+    border-radius:22px;
 
-            -webkit-box-orient:
-                vertical;
+    background:var(--surface);
+}
 
-            overflow:
-                hidden;
+.empty i {
+    margin-bottom:15px;
+    color:var(--primary);
+    font-size:35px;
+}
 
-            min-height:
-                63px;
-        }
+.empty h3 {
+    color:var(--text);
+    font-weight:900;
+}
 
+.empty p {
+    color:var(--muted);
+}
 
-        .product-card .product-price {
+.pagination {
+    gap:5px;
+    flex-wrap:wrap;
+}
 
-            color:
-                var(--sb-text) !important;
+.pagination .page-link {
+    border:1px solid var(--border);
+    border-radius:10px !important;
 
-            font-size:
-                20px;
+    background:var(--surface);
+    color:var(--text);
+}
+
+.pagination .active .page-link {
+    color:#fff;
+    border-color:var(--primary);
+    background:var(--primary);
+}
 
-            font-weight:
-                800;
+.footer {
+    padding:35px 0 55px;
 
-            white-space:
-                nowrap;
-        }
+    text-align:center;
+
+    color:var(--muted);
+    font-size:10px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width:1100px) {
 
+    .hero-art {
+        right:-65px;
+        opacity:.58;
+    }
+
+    .hero-content {
+        max-width:650px;
+    }
+}
 
-        /* =========================================================
-           STOCK PILL
-        ========================================================= */
+@media (max-width:900px) {
 
-        .pill {
+    .hero-art {
+        display:none;
+    }
 
-            font-size:
-                .75rem;
-
-            white-space:
-                nowrap;
-
-            background:
-                rgba(37,99,235,.12) !important;
-
-            color:
-                var(--sb-primary) !important;
-        }
-
-
-        /* =========================================================
-           BUTTONS
-        ========================================================= */
-
-        .action-btn {
-
-            border-radius:
-                999px;
-
-            font-weight:
-                600;
-
-            min-height:
-                38px;
-
-            white-space:
-                nowrap;
-        }
-
-
-        .btn-outline-light {
-
-            color:
-                var(--sb-text) !important;
-
-            border-color:
-                var(--sb-border) !important;
-
-            background:
-                transparent !important;
-        }
-
-
-        .btn-outline-light:hover {
-
-            color:
-                var(--sb-text) !important;
-
-            background:
-                var(--sb-card-2) !important;
-
-            border-color:
-                var(--sb-primary) !important;
-        }
-
-
-        /* =========================================================
-           RECENT CARD
-        ========================================================= */
-
-        .recent-card {
-
-            background:
-                var(--sb-card) !important;
-
-            border:
-                1px solid var(--sb-border) !important;
-
-            color:
-                var(--sb-text) !important;
-
-            box-shadow:
-                0 8px 25px var(--sb-shadow) !important;
-        }
-
-
-        .recent-card h6 {
-
-            color:
-                var(--sb-text) !important;
-        }
-
-
-        /* =========================================================
-           EMPTY
-        ========================================================= */
-
-        .sb-empty {
-
-            background:
-                var(--sb-card) !important;
-
-            border:
-                1px solid var(--sb-border) !important;
-
-            color:
-                var(--sb-text) !important;
-        }
-
-
-        /* =========================================================
-           PAGINATION
-        ========================================================= */
-
-        .pagination .page-link {
-
-            background:
-                var(--sb-card) !important;
-
-            color:
-                var(--sb-text-secondary) !important;
-
-            border-color:
-                var(--sb-border) !important;
-        }
-
-
-        .pagination .page-link:hover {
-
-            background:
-                var(--sb-card-2) !important;
-
-            color:
-                var(--sb-primary) !important;
-        }
-
-
-        .pagination .active .page-link {
-
-            background:
-                var(--sb-primary) !important;
-
-            color:
-                #ffffff !important;
-
-            border-color:
-                var(--sb-primary) !important;
-        }
-
-
-        /* =========================================================
-           MODAL
-        ========================================================= */
-
-        .modal-content {
-
-            background:
-                var(--sb-card) !important;
-
-            color:
-                var(--sb-text) !important;
-
-            border:
-                1px solid var(--sb-border) !important;
-        }
-
-
-        .modal-header {
-
-            border-bottom-color:
-                var(--sb-border) !important;
-        }
-
-
-        .modal-title {
-
-            color:
-                var(--sb-text) !important;
-        }
-
-
-        html[data-theme="dark"]
-        .modal-header
-        .btn-close {
-
-            filter:
-                invert(1);
-        }
-
-
-        html[data-theme="light"]
-        .modal-header
-        .btn-close {
-
-            filter:
-                none;
-        }
-
-
-        /* =========================================================
-           AI CAMERA
-        ========================================================= */
-
-        html[data-theme="light"] .ai-privacy-note,
-        html[data-theme="light"] .ai-camera-stage,
-        html[data-theme="light"] .ai-progress-wrap,
-        html[data-theme="light"] .ai-success-burst,
-        html[data-theme="light"] .ai-results {
-
-            color:
-                var(--sb-text);
-        }
-
-
-        /* =========================================================
-           THEME TRANSITION
-        ========================================================= */
-
-        html.sb-theme-transition,
-        html.sb-theme-transition * {
-
-            transition:
-                background-color .25s ease !important,
-                color .25s ease !important,
-                border-color .25s ease !important,
-                box-shadow .25s ease !important;
-        }
-
-
-        /* =========================================================
-           MOBILE
-        ========================================================= */
-
-        @media (max-width: 576px) {
-
-            .sb-topbar {
-
-                height:
-                    62px;
-
-                padding:
-                    8px 14px;
-            }
-
-
-            .sb-menu-button {
-
-                width:
-                    44px;
-
-                height:
-                    44px;
-            }
-
-
-            .sb-dropdown {
-
-                width:
-                    calc(100vw - 28px);
-
-                right:
-                    -2px;
-            }
-
-
-            .container {
-
-                padding-left:
-                    14px;
-
-                padding-right:
-                    14px;
-            }
-
-
-            .product-img {
-
-                height:
-                    210px;
-            }
-
-
-            .product-card .card-body {
-
-                min-height:
-                    auto;
-            }
-        }
-
-    </style>
-
+    .hero {
+        min-height:290px;
+        padding:36px 38px;
+    }
+
+    .hero-content {
+        max-width:100%;
+    }
+}
+
+@media (max-width:768px) {
+
+    .sb-topbar {
+        padding:10px 13px;
+        min-height:68px;
+    }
+
+    .sb-brand-text small {
+        display:none;
+    }
+
+    .sb-brand-icon {
+        width:42px;
+        height:42px;
+    }
+
+    .sb-menu-wrap {
+        gap:6px;
+    }
+
+    .sb-greeting {
+        padding:8px 10px;
+        font-size:11px;
+        border-radius:11px;
+    }
+
+    .sb-menu-button {
+        width:43px;
+        height:43px;
+    }
+
+    .sb-menu {
+        position:fixed;
+        top:72px;
+        right:12px;
+
+        width:min(
+            300px,
+            calc(100vw - 24px)
+        );
+    }
+
+    .sb-wrap {
+        padding:18px 13px 55px;
+    }
+
+    .hero {
+        min-height:270px;
+        padding:31px 23px;
+        border-radius:25px;
+    }
+
+    .hero h1 {
+        font-size:42px;
+    }
+
+    .hero-subtitle {
+        font-size:12px;
+    }
+
+    .hero-actions {
+        flex-direction:column;
+    }
+
+    .hero-btn {
+        width:100%;
+    }
+
+    .media {
+        height:220px;
+    }
+
+    .actions {
+        grid-template-columns:1fr 1fr;
+    }
+
+    .actions .cart-action {
+        grid-column:1 / -1;
+    }
+}
+
+@media (max-width:430px) {
+
+    .section-head {
+        align-items:flex-start;
+        flex-direction:column;
+    }
+
+    .hero {
+        padding:28px 19px;
+    }
+
+    .hero h1 {
+        font-size:37px;
+    }
+
+    .sb-greeting {
+        max-width:135px;
+        overflow:hidden;
+        text-overflow:ellipsis;
+    }
+
+    .media {
+        height:205px;
+    }
+}
+
+@media (prefers-reduced-motion:reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration:.01ms !important;
+        animation-iteration-count:1 !important;
+        transition-duration:.01ms !important;
+    }
+}
+
+</style>
 </head>
-
 
 <body>
 
 
-{{-- =========================================================
-     TOP MENU
-========================================================= --}}
+<!-- MENU OVERLAY -->
+
+<div
+    class="sb-menu-overlay"
+    id="sbMenuOverlay"
+    hidden
+></div>
+
+
+<!-- TOP BAR -->
 
 <header class="sb-topbar">
 
-    <div class="sb-menu-wrapper">
+    <a
+        href="{{ route('products.index') }}"
+        class="sb-brand"
+    >
+
+        <span class="sb-brand-icon">
+            <i class="fa-solid fa-basket-shopping"></i>
+        </span>
+
+        <span class="sb-brand-text">
+
+            <strong>SMART BASKET</strong>
+
+            <small>SMARTER WAY TO SHOP</small>
+
+        </span>
+
+    </a>
+
+
+    @auth
+        <x-smart-ai-robot />
+    @endauth
+
+
+    <div class="sb-menu-wrap">
+
+        @auth
+
+            <span class="sb-greeting">
+
+                Hi,
+
+                <strong>
+                    {{ auth()->user()->name ?? 'Customer' }}
+                </strong>
+
+            </span>
+
+        @endauth
+
 
         <button
             type="button"
             class="sb-menu-button"
             id="sbMenuButton"
-            aria-label="Open customer menu"
+            aria-label="Open menu"
             aria-expanded="false"
         >
 
@@ -1121,177 +2222,160 @@
 
 
         <div
-            class="sb-dropdown"
-            id="sbCustomerMenu"
+            class="sb-menu"
+            id="sbMenu"
         >
 
-            {{-- MENU TITLE --}}
+            <div class="sb-menu-header">
 
-            <div class="sb-menu-title">
+                @auth
 
-                <i class="fa-solid fa-basket-shopping me-1"></i>
+                    <strong>
+                        Hi, {{ auth()->user()->name ?? 'Customer' }}
+                    </strong>
 
-                Smart Basket
+                    <span>
+                        Manage your Smart Basket account
+                    </span>
+
+                @else
+
+                    <strong>SMART BASKET</strong>
+
+                    <span>
+                        Your smarter shopping menu
+                    </span>
+
+                @endauth
 
             </div>
 
-
-            {{-- HOME --}}
 
             <a
                 href="{{ route('products.index') }}"
                 class="sb-menu-item"
             >
 
-                <i class="fa-solid fa-house"></i>
+                <span class="sb-menu-icon">
+                    <i class="fa-solid fa-house"></i>
+                </span>
 
-                <span>Home</span>
-
-                <i class="fa-solid fa-chevron-right menu-arrow"></i>
-
-            </a>
-
-
-            {{-- MY ORDERS --}}
-
-            <a
-                href="{{ route('orders.index') }}"
-                class="sb-menu-item"
-            >
-
-                <i class="fa-solid fa-box"></i>
-
-                <span>My Orders</span>
-
-                <i class="fa-solid fa-chevron-right menu-arrow"></i>
+                <span>Home / Products</span>
 
             </a>
 
-
-            {{-- PROFILE --}}
-
-            <a
-                href="{{ route('profile') }}"
-                class="sb-menu-item"
-            >
-
-                <i class="fa-solid fa-user"></i>
-
-                <span>Profile</span>
-
-                <i class="fa-solid fa-chevron-right menu-arrow"></i>
-
-            </a>
-
-
-            {{-- SETTINGS --}}
-
-            @if(Route::has('settings'))
-
-                <a
-                    href="{{ route('settings') }}"
-                    class="sb-menu-item"
-                >
-
-                    <i class="fa-solid fa-gear"></i>
-
-                    <span>Settings</span>
-
-                    <i class="fa-solid fa-chevron-right menu-arrow"></i>
-
-                </a>
-
-            @endif
-
-
-            {{-- CART --}}
 
             <a
                 href="{{ route('cart.index') }}"
                 class="sb-menu-item"
             >
 
-                <i class="fa-solid fa-cart-shopping"></i>
+                <span class="sb-menu-icon">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                </span>
 
-                <span>Cart</span>
-
-                <i class="fa-solid fa-chevron-right menu-arrow"></i>
-
-            </a>
-
-
-            <div class="sb-menu-divider"></div>
-
-
-            {{-- =================================================
-                 AI HUB
-            ================================================= --}}
-
-            <a
-                href="{{ route('ai-hub') }}"
-                class="sb-menu-item sb-ai-hub-item"
-            >
-
-                <i
-                    class="fa-solid fa-wand-magic-sparkles sb-ai-hub-icon"
-                ></i>
-
-                <span>AI HUB</span>
-
-                <i class="fa-solid fa-chevron-right menu-arrow"></i>
+                <span>My Cart</span>
 
             </a>
 
 
-            {{-- AI CAMERA ASSISTANT --}}
+            @auth
 
-            <a
-                href="{{ route('ai-camera-assistant') }}"
-                class="sb-menu-item"
-            >
+                <a
+                    href="{{ route('wishlist') }}"
+                    class="sb-menu-item"
+                >
 
-                <i class="fa-solid fa-camera-retro"></i>
+                    <span class="sb-menu-icon">
+                        <i class="fa-regular fa-heart"></i>
+                    </span>
 
-                <span>AI Camera Assistant</span>
+                    <span>Wishlist</span>
 
-                <i class="fa-solid fa-chevron-right menu-arrow"></i>
-
-            </a>
-
-
-            {{-- WISHLIST --}}
-
-            <a
-                href="{{ route('wishlist') }}"
-                class="sb-menu-item"
-            >
-
-                <i class="fa-solid fa-heart"></i>
-
-                <span>Wishlist</span>
-
-                <i class="fa-solid fa-chevron-right menu-arrow"></i>
-
-            </a>
+                </a>
 
 
-            <div class="sb-menu-divider"></div>
+                @if(Route::has('profile'))
+
+                    <a
+                        href="{{ route('profile') }}"
+                        class="sb-menu-item"
+                    >
+
+                        <span class="sb-menu-icon">
+                            <i class="fa-solid fa-user"></i>
+                        </span>
+
+                        <span>My Profile</span>
+
+                    </a>
+
+                @endif
 
 
-            {{-- ALL PRODUCTS --}}
+                @if(Route::has('orders'))
 
-            <a
-                href="{{ route('products.index') }}"
-                class="sb-menu-item"
-            >
+                    <a
+                        href="{{ route('orders') }}"
+                        class="sb-menu-item"
+                    >
 
-                <i class="fa-solid fa-store"></i>
+                        <span class="sb-menu-icon">
+                            <i class="fa-solid fa-box"></i>
+                        </span>
 
-                <span>All Products</span>
+                        <span>My Orders</span>
 
-                <i class="fa-solid fa-chevron-right menu-arrow"></i>
+                    </a>
 
-            </a>
+                @endif
+
+
+                @if(Route::has('settings'))
+
+                    <a
+                        href="{{ route('settings') }}"
+                        class="sb-menu-item"
+                    >
+
+                        <span class="sb-menu-icon">
+                            <i class="fa-solid fa-gear"></i>
+                        </span>
+
+                        <span>Settings</span>
+
+                    </a>
+
+                @endif
+
+
+                <div class="sb-menu-divider"></div>
+
+
+                <form
+                    action="{{ route('logout') }}"
+                    method="POST"
+                    style="margin:0"
+                >
+
+                    @csrf
+
+                    <button
+                        type="submit"
+                        class="sb-menu-item logout"
+                    >
+
+                        <span class="sb-menu-icon">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </span>
+
+                        <span>Logout</span>
+
+                    </button>
+
+                </form>
+
+            @endauth
 
         </div>
 
@@ -1300,59 +2384,211 @@
 </header>
 
 
-{{-- =========================================================
-     MAIN CONTENT
-========================================================= --}}
-
-<div class="container py-5">
+<div class="sb-wrap">
 
 
-    {{-- PAGE HEADER --}}
+<!-- =========================================================
+     PREMIUM RGB HERO
+========================================================= -->
 
-    <div
-        class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4"
-    >
+<section class="hero">
 
-        <div>
+    <div class="hero-glow one"></div>
+    <div class="hero-glow two"></div>
+    <div class="hero-glow three"></div>
 
-            <p class="text-primary fw-semibold mb-2">
-                Smart Basket
-            </p>
+    <div class="hero-grid"></div>
 
-            <h1 class="display-6 fw-bold mb-0">
-                Featured Products
-            </h1>
-
-            <p class="text-muted mb-0">
-                Fresh items added by the seller, ready for customers.
-            </p>
-
-        </div>
+    <div class="hero-light"></div>
 
 
-        <div class="text-muted fw-semibold">
+    <div class="hero-content">
 
-            {{ $pagedProducts->total() }} Products
+        <span class="eyebrow">
+
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+
+            SMART SHOPPING EXPERIENCE
+
+        </span>
+
+
+        <h1>
+
+            Shop smarter.
+
+            <br>
+
+            <span class="hero-gradient">
+                Live better.
+            </span>
+
+        </h1>
+
+
+        <p class="hero-subtitle">
+
+            Discover
+            <strong>quality products</strong>
+            with a beautiful, fast and intelligent
+            shopping experience designed for you.
+
+        </p>
+
+
+        <div class="hero-actions">
+
+            <a
+                href="#products"
+                class="hero-btn hero-btn-primary"
+            >
+
+                <i class="fa-solid fa-bag-shopping"></i>
+
+                <span>
+                    Explore Products
+                </span>
+
+                <i class="fa-solid fa-arrow-right"></i>
+
+            </a>
+
+
+            <a
+                href="#products"
+                class="hero-btn hero-btn-secondary"
+            >
+
+                <i class="fa-solid fa-sparkles"></i>
+
+                <span>
+                    Start Shopping
+                </span>
+
+            </a>
 
         </div>
 
     </div>
 
 
-    {{-- =========================================================
-         SEARCH
-    ========================================================= --}}
+    <!-- FUTURISTIC RGB SHOPPING CORE -->
 
-    <form
-        method="GET"
-        action="{{ route('products.index') }}"
-        class="row g-3 rounded-4 p-3 shadow-sm mb-4 sb-search-form"
-    >
+    <div class="hero-art">
+
+        <div class="core-ring one"></div>
+        <div class="core-ring two"></div>
+        <div class="core-ring three"></div>
+        <div class="core-ring four"></div>
+
+
+        <span class="core-particle p1"></span>
+        <span class="core-particle p2"></span>
+        <span class="core-particle p3"></span>
+        <span class="core-particle p4"></span>
+        <span class="core-particle p5"></span>
+
+
+        <div class="rgb-core"></div>
+
+
+        <div class="hero-basket">
+
+            <i class="fa-solid fa-basket-shopping"></i>
+
+        </div>
+
+
+        <div class="hero-float one">
+
+            <span class="hero-float-icon">
+                <i class="fa-solid fa-box-open"></i>
+            </span>
+
+            <div>
+
+                <strong>
+                    {{ $pagedProducts->total() }}
+                </strong>
+
+                <small>
+                    PRODUCTS
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <div class="hero-float two">
+
+            <span class="hero-float-icon">
+                <i class="fa-solid fa-bolt"></i>
+            </span>
+
+            <div>
+
+                <strong>24/7</strong>
+
+                <small>
+                    SMART SHOPPING
+                </small>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- PRODUCTS -->
+
+<div
+    class="section-head"
+    id="products"
+>
+
+    <div>
+
+        <h2>
+            Find your next favorite
+        </h2>
+
+        <p>
+            Fresh products added by sellers,
+            ready for customers.
+        </p>
+
+    </div>
+
+
+    <span class="count">
+
+        {{ $pagedProducts->total() }}
+
+        Products
+
+    </span>
+
+</div>
+
+
+<!-- FILTERS -->
+
+<form
+    method="GET"
+    action="{{ route('products.index') }}"
+    class="filters"
+>
+
+    <div class="row g-3">
 
         <div class="col-12 col-md-6">
 
-            <label class="form-label small">
-                Search
+            <label>
+                Search products
             </label>
 
             <input
@@ -1360,7 +2596,7 @@
                 name="search"
                 class="form-control"
                 value="{{ $search }}"
-                placeholder="Search products or category"
+                placeholder="Search by product name..."
             >
 
         </div>
@@ -1368,7 +2604,7 @@
 
         <div class="col-12 col-md-4">
 
-            <label class="form-label small">
+            <label>
                 Category
             </label>
 
@@ -1387,9 +2623,7 @@
                         value="{{ $categoryOption }}"
                         {{ $category === $categoryOption ? 'selected' : '' }}
                     >
-
                         {{ $categoryOption }}
-
                     </option>
 
                 @endforeach
@@ -1402,8 +2636,8 @@
         <div class="col-12 col-md-2 d-flex align-items-end">
 
             <button
+                class="apply w-100"
                 type="submit"
-                class="btn btn-primary w-100 action-btn"
             >
 
                 <i class="fa-solid fa-magnifying-glass me-1"></i>
@@ -1414,1076 +2648,527 @@
 
         </div>
 
-    </form>
+    </div>
 
+</form>
 
-    {{-- =========================================================
-         RECENTLY VIEWED
-    ========================================================= --}}
 
-    @php
+<!-- FEATURED -->
 
-        $recentlyViewed = collect();
+<div class="section-head">
 
-        if (auth()->check()) {
+    <div>
 
-            $recentlyViewed =
-                \App\Models\RecentlyViewedProduct::with('product')
-                    ->where('user_id', auth()->id())
-                    ->latest()
-                    ->limit(4)
-                    ->get();
+        <h2>
+            Featured products
+        </h2>
 
-        }
-
-    @endphp
-
-
-    @if(auth()->check() && $recentlyViewed->isNotEmpty())
-
-        <div class="mb-4">
-
-            <h5 class="fw-semibold mb-3">
-                Recently viewed
-            </h5>
-
-
-            <div class="row g-3">
-
-                @foreach($recentlyViewed as $view)
-
-                    @if($view->product)
-
-                        <div class="col-12 col-sm-6 col-lg-3">
-
-                            <div class="card recent-card border-0 rounded-4 h-100">
-
-                                <div class="card-body">
-
-                                    <h6 class="fw-semibold mb-1">
-
-                                        {{ $view->product->name }}
-
-                                    </h6>
-
-                                    <p class="text-muted small mb-2">
-
-                                        {{ $view->product->category }}
-
-                                    </p>
-
-                                    <a
-                                        href="{{ route('products.show', $view->product->id) }}"
-                                        class="btn btn-outline-light btn-sm"
-                                    >
-
-                                        View
-
-                                    </a>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    @endif
-
-                @endforeach
-
-            </div>
-
-        </div>
-
-    @endif
-
-
-    {{-- =========================================================
-         PRODUCTS
-    ========================================================= --}}
-
-    @if($pagedProducts->count() > 0)
-
-        <div class="row g-4">
-
-            @foreach($pagedProducts as $product)
-
-                <div class="col-12 col-sm-6 col-lg-3">
-
-                    <div class="card product-card h-100">
-
-
-                        {{-- PRODUCT IMAGE --}}
-
-                        <a
-                            href="{{ route('products.show', $product->id) }}"
-                            class="text-decoration-none"
-                        >
-
-                            <img
-                                src="{{ asset('products/' . $product->image) }}"
-                                class="product-img"
-                                alt="{{ $product->name }}"
-                                onerror="this.onerror=null;this.src='{{ asset('products/index.php') }}';"
-                            >
-
-                        </a>
-
-
-                        {{-- PRODUCT BODY --}}
-
-                        <div class="card-body">
-
-
-                            <div
-                                class="d-flex justify-content-between align-items-start gap-2 mb-2"
-                            >
-
-                                <div class="min-w-0">
-
-                                    <h5 class="card-title mb-1">
-
-                                        {{ $product->name }}
-
-                                    </h5>
-
-                                    <p class="text-muted mb-0 small">
-
-                                        {{ $product->category }}
-
-                                    </p>
-
-                                </div>
-
-
-                                <span class="badge pill">
-
-                                    In Stock
-
-                                </span>
-
-                            </div>
-
-
-                            {{-- RATING --}}
-
-                            <div class="d-flex align-items-center text-warning mb-2">
-
-                                <i class="fa-solid fa-star"></i>
-
-                                <span class="ms-2 fw-semibold">
-
-                                    {{ number_format($product->rating, 1) }}
-
-                                </span>
-
-                                <span class="text-muted ms-2">
-
-                                    • {{ $product->stock }} left
-
-                                </span>
-
-                            </div>
-
-
-                            {{-- DESCRIPTION --}}
-
-                            <p class="product-description small mb-2">
-
-                                {{
-                                    $product->description
-                                    ? \Illuminate\Support\Str::limit(
-                                        $product->description,
-                                        90
-                                    )
-                                    : 'Premium quality product from Smart Basket.'
-                                }}
-
-                            </p>
-
-
-                            <div class="mt-auto">
-
-
-                                {{-- PRICE --}}
-
-                                <div class="product-price mb-3">
-
-                                    ₹{{ number_format($product->price, 2) }}
-
-                                </div>
-
-
-                                {{-- ACTION BUTTONS --}}
-
-                                <div class="d-flex gap-2">
-
-
-                                    <a
-                                        href="{{ route('products.show', $product->id) }}"
-                                        class="btn btn-outline-light btn-sm action-btn flex-fill"
-                                    >
-
-                                        View
-
-                                    </a>
-
-
-                                    <a
-                                        href="{{ url('/buy-now/' . $product->id) }}"
-                                        class="btn btn-outline-light btn-sm action-btn flex-fill"
-                                    >
-
-                                        Buy Now
-
-                                    </a>
-
-
-                                    <form
-                                        action="{{ route('cart.add', $product->id) }}"
-                                        method="POST"
-                                        class="flex-fill"
-                                    >
-
-                                        @csrf
-
-                                        <button
-                                            type="submit"
-                                            class="btn btn-primary btn-sm action-btn w-100"
-                                        >
-
-                                            <i class="fa-solid fa-cart-plus"></i>
-
-                                            <span class="d-none d-xl-inline">
-                                                Cart
-                                            </span>
-
-                                        </button>
-
-                                    </form>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            @endforeach
-
-        </div>
-
-
-        {{-- PAGINATION --}}
-
-        <div class="d-flex justify-content-center mt-5">
-
-            {{ $pagedProducts->appends(request()->query())->links('pagination::bootstrap-5') }}
-
-        </div>
-
-
-    @else
-
-        <div class="alert sb-empty text-center py-5 rounded-4">
-
-            <h4 class="fw-semibold mb-2">
-                No products found
-            </h4>
-
-            <p class="text-muted mb-0">
-                Try adjusting your search or category filter.
-            </p>
-
-        </div>
-
-    @endif
-
-</div>
-
-
-{{-- =========================================================
-     AI CAMERA MODAL
-========================================================= --}}
-
-<div
-    class="modal fade"
-    id="aiCameraModal"
-    tabindex="-1"
-    aria-labelledby="aiCameraModalLabel"
-    aria-hidden="true"
->
-
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-
-        <div class="modal-content">
-
-            <div class="modal-header">
-
-                <h5
-                    class="modal-title"
-                    id="aiCameraModalLabel"
-                >
-
-                    <i class="fa-solid fa-camera-retro me-2"></i>
-
-                    AI Camera Shopping Assistant
-
-                </h5>
-
-
-                <button
-                    type="button"
-                    class="btn-close"
-                    data-bs-dismiss="modal"
-                    aria-label="Close"
-                ></button>
-
-            </div>
-
-
-            <div class="modal-body">
-
-                <div class="ai-privacy-note mb-3">
-
-                    <i class="fa-solid fa-shield-halved me-1"></i>
-
-                    <strong>Privacy First:</strong>
-
-                    All AI processing happens locally in your browser.
-                    No camera images are uploaded or stored.
-                    Only anonymous body-proportion numbers are sent for recommendations.
-
-                </div>
-
-
-                <div class="row g-3">
-
-                    <div class="col-lg-5">
-
-                        <div class="ai-camera-stage">
-
-                            <div
-                                class="ai-camera-placeholder"
-                                id="aiPlaceholder"
-                            >
-
-                                <i class="fa-solid fa-video"></i>
-
-                                <div>
-                                    Click <strong>AI Camera Assistant</strong> to start
-                                </div>
-
-                            </div>
-
-
-                            <video
-                                id="aiVideo"
-                                autoplay
-                                playsinline
-                                muted
-                                style="display:none;"
-                            ></video>
-
-
-                            <canvas
-                                id="aiOverlay"
-                                class="ai-overlay"
-                            ></canvas>
-
-
-                            <div
-                                class="ai-scan-line"
-                                id="aiScanLine"
-                            ></div>
-
-
-                            <div
-                                class="ai-status-badge"
-                                id="aiStatusBadge"
-                            >
-
-                                <span class="ai-pulse-dot"></span>
-
-                                Idle
-
-                            </div>
-
-
-                            <button
-                                class="ai-camera-flip"
-                                id="aiCameraFlip"
-                                title="Switch camera"
-                                type="button"
-                            >
-
-                                <i class="fa-solid fa-camera-rotate"></i>
-
-                            </button>
-
-
-                            <div
-                                class="ai-instructions"
-                                id="aiInstructions"
-                            >
-
-                                <ul>
-
-                                    <li>
-                                        <i class="fa-solid fa-person-walking"></i>
-                                        Stand 2-3 meters away from camera
-                                    </li>
-
-                                    <li>
-                                        <i class="fa-solid fa-person"></i>
-                                        Make sure your full body is visible
-                                    </li>
-
-                                    <li>
-                                        <i class="fa-solid fa-mobile-screen"></i>
-                                        Keep camera straight and steady
-                                    </li>
-
-                                    <li>
-                                        <i class="fa-solid fa-lightbulb"></i>
-                                        Ensure good lighting on your body
-                                    </li>
-
-                                </ul>
-
-                            </div>
-
-                        </div>
-
-
-                        <div
-                            class="ai-progress-wrap"
-                            id="aiProgressWrap"
-                        >
-
-                            <div class="ai-progress-bar">
-
-                                <div
-                                    class="ai-progress-fill"
-                                    id="aiProgressFill"
-                                ></div>
-
-                            </div>
-
-
-                            <div class="ai-progress-label">
-
-                                <span id="aiProgressLabel">
-                                    Scanning...
-                                </span>
-
-                                <span
-                                    class="ai-progress-percent"
-                                    id="aiProgressPercent"
-                                >
-                                    0%
-                                </span>
-
-                            </div>
-
-                        </div>
-
-
-                        <div
-                            class="ai-success-burst"
-                            id="aiSuccessBurst"
-                        >
-
-                            <div class="ai-success-icon">
-
-                                <i class="fa-solid fa-check"></i>
-
-                            </div>
-
-
-                            <div
-                                class="ai-success-text"
-                                id="aiSuccessText"
-                            >
-                                Body analysis completed
-                            </div>
-
-
-                            <div
-                                class="ai-success-sub"
-                                id="aiSuccessSub"
-                            >
-                                Generating recommendations...
-                            </div>
-
-                        </div>
-
-
-                        {{-- AI PREFERENCES --}}
-
-                        <div class="mt-3">
-
-                            <small class="text-muted fw-semibold d-block mb-2">
-                                Optional preferences:
-                            </small>
-
-
-                            <div class="ai-pref-chips mb-2">
-
-                                <span
-                                    class="ai-chip"
-                                    data-group="fit"
-                                    data-value="slim"
-                                >
-                                    Slim Fit
-                                </span>
-
-                                <span
-                                    class="ai-chip"
-                                    data-group="fit"
-                                    data-value="regular"
-                                >
-                                    Regular
-                                </span>
-
-                                <span
-                                    class="ai-chip"
-                                    data-group="fit"
-                                    data-value="relaxed"
-                                >
-                                    Relaxed
-                                </span>
-
-                                <span
-                                    class="ai-chip"
-                                    data-group="fit"
-                                    data-value="oversized"
-                                >
-                                    Oversized
-                                </span>
-
-                            </div>
-
-
-                            <div class="ai-pref-chips mb-2">
-
-                                <span
-                                    class="ai-chip"
-                                    data-group="style"
-                                    data-value="casual"
-                                >
-                                    Casual
-                                </span>
-
-                                <span
-                                    class="ai-chip"
-                                    data-group="style"
-                                    data-value="formal"
-                                >
-                                    Formal
-                                </span>
-
-                                <span
-                                    class="ai-chip"
-                                    data-group="style"
-                                    data-value="sporty"
-                                >
-                                    Sporty
-                                </span>
-
-                                <span
-                                    class="ai-chip"
-                                    data-group="style"
-                                    data-value="ethnic"
-                                >
-                                    Ethnic
-                                </span>
-
-                                <span
-                                    class="ai-chip"
-                                    data-group="style"
-                                    data-value="party"
-                                >
-                                    Party
-                                </span>
-
-                            </div>
-
-
-                            <div class="ai-pref-chips">
-
-                                <span
-                                    class="ai-chip"
-                                    data-group="color"
-                                    data-value="light"
-                                >
-                                    Light
-                                </span>
-
-                                <span
-                                    class="ai-chip"
-                                    data-group="color"
-                                    data-value="dark"
-                                >
-                                    Dark
-                                </span>
-
-                                <span
-                                    class="ai-chip"
-                                    data-group="color"
-                                    data-value="warm"
-                                >
-                                    Warm
-                                </span>
-
-                                <span
-                                    class="ai-chip"
-                                    data-group="color"
-                                    data-value="cool"
-                                >
-                                    Cool
-                                </span>
-
-                                <span
-                                    class="ai-chip"
-                                    data-group="color"
-                                    data-value="neutral"
-                                >
-                                    Neutral
-                                </span>
-
-                            </div>
-
-                        </div>
-
-
-                        <button
-                            id="aiAnalyzeBtn"
-                            class="btn btn-primary w-100 mt-3 rounded-pill fw-bold"
-                            type="button"
-                        >
-
-                            <i class="fa-solid fa-wand-magic-sparkles me-1"></i>
-
-                            Re-analyze / Get Recommendations
-
-                        </button>
-
-                    </div>
-
-
-                    <div class="col-lg-7">
-
-                        <div id="aiResults">
-
-                            <div class="text-muted text-center py-5">
-
-                                <i
-                                    class="fa-solid fa-camera-retro fs-2 d-block mb-2 text-primary"
-                                ></i>
-
-                                <div class="fw-semibold">
-                                    AI Camera Ready
-                                </div>
-
-                                <small>
-                                    Allow camera access to start body analysis
-                                </small>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
+        <p>
+            Curated products selected for you.
+        </p>
 
     </div>
 
+
+    <span class="count">
+
+        Showing
+        {{ $pagedProducts->count() }}
+        of
+        {{ $pagedProducts->total() }}
+
+    </span>
+
 </div>
 
 
-{{-- =========================================================
-     AI CAMERA FLOATING BUTTON
-========================================================= --}}
+@if($pagedProducts->count() > 0)
 
-<button
-    id="btnAiCamera"
-    class="ai-fab"
-    type="button"
->
+    <div class="row g-4">
 
-    <i class="fa-solid fa-camera-retro"></i>
+        @foreach($pagedProducts as $product)
 
-    <span class="ai-fab-label">
-        AI Camera Assistant
-    </span>
+            @php
 
-</button>
+                $originalPrice =
+                    (float) $product->price;
+
+                $currentPrice =
+                    (float) (
+                        $product->discount_price
+                        ?: $product->price
+                    );
+
+                $hasDiscount =
+                    $currentPrice > 0 &&
+                    $originalPrice > $currentPrice;
+
+                $discountPercent =
+                    $hasDiscount
+                    ? round(
+                        (
+                            ($originalPrice - $currentPrice)
+                            / $originalPrice
+                        ) * 100
+                    )
+                    : 0;
+
+            @endphp
 
 
-<meta
-    name="ai-csrf-token"
-    content="{{ csrf_token() }}"
->
+            <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+
+                <article
+                    class="product-card product-card--clickable"
+                    data-smart-ai-product-id="{{ $product->id }}"
+                    data-product-url="{{ route('product.show', $product) }}"
+                    tabindex="0"
+                    role="link"
+                    aria-label="View {{ $product->name }}"
+                >
+
+                    <div class="media">
+
+                        <img
+                            src="{{ asset('products/' . $product->image) }}"
+                            alt="{{ $product->name }}"
+                            loading="lazy"
+                            onerror="this.style.display='none';this.nextElementSibling.hidden=false;"
+                        >
+
+                        <div
+                            hidden
+                            style="text-align:center;color:var(--muted)"
+                        >
+
+                            <i class="fa-solid fa-image fa-2x mb-2"></i>
+
+                            <div>
+                                No image
+                            </div>
+
+                        </div>
+
+
+                        @if($hasDiscount)
+
+                            <span class="discount">
+                                {{ $discountPercent }}% OFF
+                            </span>
+
+                        @endif
+
+
+                        @auth
+
+                            <form
+                                method="POST"
+                                action="{{ route('wishlist.add', $product->id) }}"
+                                class="product-card-action"
+                            >
+
+                                @csrf
+
+                                <button
+                                    type="submit"
+                                    class="wishlist"
+                                    title="Add to wishlist"
+                                >
+
+                                    <i class="fa-regular fa-heart"></i>
+
+                                </button>
+
+                            </form>
+
+                        @endauth
+
+                    </div>
+
+
+                    <div class="body">
+
+                        <div class="category">
+                            {{ $product->category ?: 'General' }}
+                        </div>
+
+
+                        <h3 class="title">
+                            {{ $product->name }}
+                        </h3>
+
+
+                        <div class="rating">
+
+                            <i class="fa-solid fa-star"></i>
+
+                            <strong>
+                                {{ number_format((float)$product->rating, 1) }}
+                            </strong>
+
+                            <span>•</span>
+
+                            <span>
+                                {{ $product->stock ?? 0 }} left
+                            </span>
+
+                        </div>
+
+
+                        <p class="description">
+
+                            {{
+                                $product->description
+                                ? \Illuminate\Support\Str::limit(
+                                    $product->description,
+                                    95
+                                )
+                                : 'Premium quality product from Smart Basket.'
+                            }}
+
+                        </p>
+
+
+                        <div class="price">
+
+                            ₹{{ number_format($currentPrice, 2) }}
+
+                            @if($hasDiscount)
+
+                                <del class="old">
+
+                                    ₹{{ number_format($originalPrice, 2) }}
+
+                                </del>
+
+                            @endif
+
+                        </div>
+
+
+                        <div
+                            class="stock {{ (int)$product->stock < 1 ? 'out' : '' }}"
+                        >
+
+                            <i
+                                class="fa-solid {{
+                                    (int)$product->stock > 0
+                                    ? 'fa-circle-check'
+                                    : 'fa-circle-xmark'
+                                }}"
+                            ></i>
+
+                            {{
+                                (int)$product->stock > 0
+                                ? 'In Stock'
+                                : 'Sold Out'
+                            }}
+
+                        </div>
+
+
+                        <div class="actions product-card-action">
+
+                            <a
+                                href="{{ route('product.show', $product) }}"
+                                class="action"
+                            >
+
+                                <i class="fa-regular fa-eye"></i>
+
+                                View Product
+
+                            </a>
+
+
+                            <a
+                                href="{{ url('/buy-now/' . $product->id) }}"
+                                class="action"
+                            >
+
+                                <i class="fa-solid fa-bolt"></i>
+
+                                Buy
+
+                            </a>
+
+
+                            <form
+                                action="{{ route('cart.add', $product->id) }}"
+                                method="POST"
+                                class="cart-action"
+                            >
+
+                                @csrf
+
+                                <button
+                                    type="submit"
+                                    class="action primary w-100"
+                                    {{ (int)$product->stock < 1 ? 'disabled' : '' }}
+                                >
+
+                                    <i class="fa-solid fa-cart-plus"></i>
+
+                                    Cart
+
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                </article>
+
+            </div>
+
+        @endforeach
+
+    </div>
+
+
+    <div class="d-flex justify-content-center mt-5">
+
+        {{
+            $pagedProducts
+                ->appends(request()->query())
+                ->links('pagination::bootstrap-5')
+        }}
+
+    </div>
+
+
+@else
+
+    <div class="empty">
+
+        <i class="fa-solid fa-box-open"></i>
+
+        <h3>
+            No products found
+        </h3>
+
+        <p>
+            Try adjusting your search or category filter.
+        </p>
+
+        <a
+            href="{{ route('products.index') }}"
+            class="action d-inline-flex mt-2 px-4"
+        >
+            Clear filters
+        </a>
+
+    </div>
+
+@endif
+
+
+<div class="footer">
+
+    © {{ date('Y') }}
+
+    SMART BASKET
+
+    · Quality products, smarter shopping.
+
+</div>
+
+</div>
+
+
+<x-site-menu />
+
+<x-ai-hub-sidebar :without-menu="true" />
 
 
 <script>
-    window.aiCameraCsrfToken = "{{ csrf_token() }}";
-</script>
 
-
-{{-- =========================================================
-     BOOTSTRAP JS
-========================================================= --}}
-
-<script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-></script>
-
-
-{{-- =========================================================
-     AI CAMERA JS
-========================================================= --}}
-
-<script src="{{ asset('js/ai-camera.js') }}"></script>
-
-
-{{-- =========================================================
-     CUSTOMER MENU JS
-========================================================= --}}
-
-<script>
-
-document.addEventListener('DOMContentLoaded', function () {
+(() => {
 
     const menuButton =
         document.getElementById('sbMenuButton');
 
     const menu =
-        document.getElementById('sbCustomerMenu');
+        document.getElementById('sbMenu');
+
+    const overlay =
+        document.getElementById('sbMenuOverlay');
 
 
-    if (!menuButton || !menu) {
-        return;
+    function openMenu() {
+
+        menu.classList.add('open');
+
+        overlay.classList.add('open');
+
+        overlay.hidden = false;
+
+        menuButton.classList.add('active');
+
+        menuButton.setAttribute(
+            'aria-expanded',
+            'true'
+        );
     }
 
 
-    /* OPEN / CLOSE */
+    function closeMenu() {
+
+        menu.classList.remove('open');
+
+        overlay.classList.remove('open');
+
+        menuButton.classList.remove('active');
+
+        menuButton.setAttribute(
+            'aria-expanded',
+            'false'
+        );
+
+        setTimeout(() => {
+
+            if (!overlay.classList.contains('open')) {
+                overlay.hidden = true;
+            }
+
+        }, 200);
+    }
+
 
     menuButton.addEventListener(
         'click',
-        function (event) {
+        event => {
 
             event.stopPropagation();
 
-            const isOpen =
-                menu.classList.toggle('show');
-
-            menuButton.setAttribute(
-                'aria-expanded',
-                isOpen ? 'true' : 'false'
-            );
+            if (menu.classList.contains('open')) {
+                closeMenu();
+            } else {
+                openMenu();
+            }
 
         }
     );
 
 
-    /* PREVENT CLOSE INSIDE */
-
-    menu.addEventListener(
+    overlay.addEventListener(
         'click',
-        function (event) {
-
-            event.stopPropagation();
-
-        }
+        closeMenu
     );
 
-
-    /* CLOSE OUTSIDE */
-
-    document.addEventListener(
-        'click',
-        function () {
-
-            menu.classList.remove('show');
-
-            menuButton.setAttribute(
-                'aria-expanded',
-                'false'
-            );
-
-        }
-    );
-
-
-    /* ESCAPE */
 
     document.addEventListener(
         'keydown',
-        function (event) {
+        event => {
 
             if (event.key === 'Escape') {
-
-                menu.classList.remove('show');
-
-                menuButton.setAttribute(
-                    'aria-expanded',
-                    'false'
-                );
-
-            }
-
-        }
-    );
-
-});
-
-</script>
-
-
-{{-- =========================================================
-     SMART BASKET THEME SYNC
-========================================================= --}}
-
-<script>
-
-(function () {
-
-    const html =
-        document.documentElement;
-
-
-    function getThemeFromStorage() {
-
-        const keys = [
-            'sb-theme',
-            'smartbasket-theme',
-            'theme'
-        ];
-
-
-        for (const key of keys) {
-
-            const value =
-                localStorage.getItem(key);
-
-            if (
-                value === 'light' ||
-                value === 'dark'
-            ) {
-
-                return value;
-
-            }
-
-        }
-
-
-        return null;
-    }
-
-
-    function normalizeTheme(theme) {
-
-        if (
-            theme === 'light' ||
-            theme === 'dark'
-        ) {
-
-            return theme;
-
-        }
-
-
-        if (
-            theme === 'auto' ||
-            theme === 'system'
-        ) {
-
-            return window.matchMedia(
-                '(prefers-color-scheme: dark)'
-            ).matches
-                ? 'dark'
-                : 'light';
-
-        }
-
-
-        return 'dark';
-    }
-
-
-    function applyTheme(theme) {
-
-        const finalTheme =
-            normalizeTheme(theme);
-
-
-        html.classList.add(
-            'sb-theme-transition'
-        );
-
-
-        html.setAttribute(
-            'data-theme',
-            finalTheme
-        );
-
-
-        window.SB_THEME =
-            finalTheme;
-
-
-        localStorage.setItem(
-            'sb-theme',
-            finalTheme
-        );
-
-
-        setTimeout(
-            function () {
-
-                html.classList.remove(
-                    'sb-theme-transition'
-                );
-
-            },
-            300
-        );
-
-    }
-
-
-    /* INITIAL */
-
-    let initialTheme =
-        getThemeFromStorage();
-
-
-    if (!initialTheme) {
-
-        @auth
-
-            initialTheme =
-                @json(auth()->user()->theme ?? 'dark');
-
-        @else
-
-            initialTheme =
-                'dark';
-
-        @endauth
-    }
-
-
-    applyTheme(initialTheme);
-
-
-    /* STORAGE */
-
-    window.addEventListener(
-        'storage',
-        function (event) {
-
-            if (
-                event.key === 'sb-theme' &&
-                event.newValue
-            ) {
-
-                applyTheme(
-                    event.newValue
-                );
-
+                closeMenu();
             }
 
         }
     );
 
 
-    /* CUSTOM EVENT */
+    document
+        .querySelectorAll('.sb-menu a')
+        .forEach(link => {
 
-    window.addEventListener(
-        'sbThemeChanged',
-        function (event) {
-
-            if (
-                event.detail &&
-                event.detail.theme
-            ) {
-
-                applyTheme(
-                    event.detail.theme
-                );
-
-            }
-
-        }
-    );
-
-
-    /* GLOBAL FUNCTION */
-
-    window.setSmartBasketTheme =
-        function (theme) {
-
-            const finalTheme =
-                normalizeTheme(theme);
-
-
-            applyTheme(finalTheme);
-
-
-            window.dispatchEvent(
-                new CustomEvent(
-                    'sbThemeChanged',
-                    {
-                        detail: {
-                            theme: finalTheme
-                        }
-                    }
-                )
+            link.addEventListener(
+                'click',
+                closeMenu
             );
 
-        };
+        });
 
 
-    /* FOCUS SYNC */
+    document
+        .querySelectorAll('.product-card-action')
+        .forEach(element => {
+
+            element.addEventListener(
+                'click',
+                event => {
+                    event.stopPropagation();
+                }
+            );
+
+        });
+
+
+    document
+        .querySelectorAll('.product-card--clickable')
+        .forEach(card => {
+
+            const visitProduct = event => {
+
+                if (
+                    event.target.closest(
+                        'a, button, form, input, select, textarea, label'
+                    )
+                ) {
+                    return;
+                }
+
+                window.location.href =
+                    card.dataset.productUrl;
+            };
+
+
+            card.addEventListener(
+                'click',
+                visitProduct
+            );
+
+
+            card.addEventListener(
+                'keydown',
+                event => {
+
+                    if (
+                        (
+                            event.key === 'Enter' ||
+                            event.key === ' '
+                        )
+                        &&
+                        !event.target.closest(
+                            'a, button, form, input, select, textarea, label'
+                        )
+                    ) {
+
+                        event.preventDefault();
+
+                        window.location.href =
+                            card.dataset.productUrl;
+                    }
+
+                }
+            );
+
+        });
+
 
     window.addEventListener(
-        'focus',
-        function () {
+        'sb-theme-changed',
+        event => {
 
-            const latestTheme =
-                getThemeFromStorage();
-
-
-            if (!latestTheme) {
-                return;
-            }
-
-
-            const currentTheme =
-                html.getAttribute(
-                    'data-theme'
-                );
-
+            const theme =
+                event.detail?.theme;
 
             if (
-                latestTheme !==
-                currentTheme
+                ['light','dark'].includes(theme)
             ) {
 
-                applyTheme(
-                    latestTheme
+                document.documentElement
+                    .setAttribute(
+                        'data-theme',
+                        theme
+                    );
+
+                localStorage.setItem(
+                    'sb-theme',
+                    theme
                 );
 
             }
@@ -2495,7 +3180,5 @@ document.addEventListener('DOMContentLoaded', function () {
 
 </script>
 
-
 </body>
-
 </html>

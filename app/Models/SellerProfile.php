@@ -2,49 +2,635 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class SellerProfile extends Model
 {
+    use HasFactory;
+
+    /*
+    |--------------------------------------------------------------------------
+    | TABLE
+    |--------------------------------------------------------------------------
+    */
+
+    protected $table = 'seller_profiles';
+
+    /*
+    |--------------------------------------------------------------------------
+    | VERIFICATION STATUS
+    |--------------------------------------------------------------------------
+    */
+
+    public const STATUS_DRAFT = 'draft';
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_SUBMITTED = 'submitted';
+    public const STATUS_UNDER_REVIEW = 'under_review';
+
+    public const STATUS_EMAIL_VERIFICATION = 'email_verification';
+    public const STATUS_DOCUMENTS_PENDING = 'documents_pending';
+    public const STATUS_AADHAAR_VERIFICATION = 'aadhaar_verification';
+    public const STATUS_BUSINESS_DETAILS = 'business_details';
+    public const STATUS_BANK_DETAILS = 'bank_details';
+
+    public const STATUS_PENDING_ADMIN_REVIEW = 'pending_admin_review';
+    public const STATUS_PENDING_REVIEW = self::STATUS_PENDING_ADMIN_REVIEW;
+
+    public const STATUS_APPROVED = 'approved';
+    public const STATUS_REJECTED = 'rejected';
+    public const STATUS_SUSPENDED = 'suspended';
+    public const STATUS_ACTIVE = 'active';
+
+    /*
+    |--------------------------------------------------------------------------
+    | LEGACY COMPATIBILITY CONSTANTS
+    |--------------------------------------------------------------------------
+    |
+    | These aliases are intentionally kept so existing controllers
+    | do not break.
+    |
+    */
+
+    public const STATUS_PENDING_EMAIL =
+        self::STATUS_EMAIL_VERIFICATION;
+
+    public const STATUS_EMAIL_VERIFIED =
+        self::STATUS_DOCUMENTS_PENDING;
+
+    public const STATUS_AADHAAR_PENDING =
+        self::STATUS_AADHAAR_VERIFICATION;
+
+    public const STATUS_AADHAAR_VERIFIED =
+        self::STATUS_BUSINESS_DETAILS;
+
+    /*
+    |--------------------------------------------------------------------------
+    | MASS ASSIGNMENT
+    |--------------------------------------------------------------------------
+    */
+
     protected $fillable = [
-        'user_id',
+
+        // Seller information
+        'name',
         'seller_name',
-        'shop_name',
         'email',
+        'phone',
         'password',
-        'mobile_number',
-        'shop_address',
+        'theme',
+        'notifications_enabled',
+        'online_payments_enabled',
+        'payment_qr',
+        'shop_logo',
+        'shop_banner',
+        'preferences',
+
+        // Business information
+        'business_name',
+        'business_type',
+        'business_address',
+        'business_city',
+        'business_state',
+        'business_pincode',
         'city',
         'state',
         'pincode',
         'gst_number',
-        'shop_logo',
-        'payment_qr',
-        'theme',
-        'notifications_enabled',
+        'pan_number',
+        'udyam_number',
+
+        // Aadhaar
+        'aadhaar_number',
+        'aadhaar_verified',
+        'aadhaar_verified_at',
+
+        // Documents
+        'business_certificate',
+        'business_certificate_path',
+        'business_certificate_uploaded_at',
+
+        'aadhaar_document',
+        'aadhaar_document_path',
+        'aadhaar_document_uploaded_at',
+
+        'pan_document_path',
+        'shop_proof_path',
+        'bank_proof_path',
+
+        // Bank details
+        'bank_name',
+        'bank_account_holder',
+        'bank_account_holder_name',
+        'bank_account_number',
+        'bank_ifsc',
+        'bank_branch',
+
+        // Legacy bank fields
+        'account_holder_name',
+        'account_number',
+        'ifsc_code',
+        'upi_id',
         'online_payments_enabled',
+
+        // Verification
+        'verification_status',
+        'email_verified_at',
+        'email_verification_code_hash',
+        'email_verification_expires_at',
+        'email_verification_attempts',
+        'verification_reference_id',
+        'onboarding_step',
+
+        // Application
+        'application_submitted_at',
+        'verification_submitted_at',
+
+        // Admin review
+        'admin_reviewed_at',
+        'admin_reviewed_by',
+
+        // Final status timestamps
+        'approved_at',
+        'rejected_at',
+        'suspended_at',
+
+        // Rejection
+        'rejection_reason',
+
+        // Admin notification
+        'admin_notification_status',
+        'admin_notification_sent_at',
+        'admin_notification_failed_at',
+
+        // Activation
+        'activation_code',
+        'activation_code_hash',
+        'activation_code_expires_at',
+        'activation_code_sent_at',
+        'activation_attempts',
+        'activation_verified_at',
+
+        // Email verification
+        'email_code_hash',
+        'email_code_expires_at',
+        'email_code_attempts',
+        'email_code_sent_at',
+
+        // Relations
+        'seller_id',
+        'user_id',
+
+        // General status
+        'status',
     ];
 
-    /**
-     * Seller passwords are only used for authentication and must never be
-     * exposed when this model is serialized.
-     */
-    protected $hidden = [
-        'password',
-    ];
+    /*
+    |--------------------------------------------------------------------------
+    | CASTS
+    |--------------------------------------------------------------------------
+    */
+
+    protected function casts(): array
+    {
+        return [
+
+            // Boolean
+            'aadhaar_verified' => 'boolean',
+            'notifications_enabled' => 'boolean',
+            'online_payments_enabled' => 'boolean',
+            'preferences' => 'array',
+
+            // Email verification
+            'email_verified_at' => 'datetime',
+            'email_verification_expires_at' => 'datetime',
+            'email_code_expires_at' => 'datetime',
+            'email_code_sent_at' => 'datetime',
+
+            // Aadhaar
+            'aadhaar_verified_at' => 'datetime',
+
+            // Documents
+            'business_certificate_uploaded_at' => 'datetime',
+            'aadhaar_document_uploaded_at' => 'datetime',
+
+            // Application
+            'application_submitted_at' => 'datetime',
+            'verification_submitted_at' => 'datetime',
+
+            // Admin
+            'admin_reviewed_at' => 'datetime',
+
+            // Final status
+            'approved_at' => 'datetime',
+            'rejected_at' => 'datetime',
+            'suspended_at' => 'datetime',
+
+            // Activation
+            'activation_code_expires_at' => 'datetime',
+            'activation_code_sent_at' => 'datetime',
+            'activation_verified_at' => 'datetime',
+        ];
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | RELATIONSHIPS
+    |--------------------------------------------------------------------------
+    */
+
+    public function seller()
+    {
+        return $this->belongsTo(
+            Seller::class,
+            'seller_id'
+        );
+    }
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(
+            User::class,
+            'user_id'
+        );
     }
 
-    public function products()
+    /*
+    |--------------------------------------------------------------------------
+    | EMAIL VERIFICATION
+    |--------------------------------------------------------------------------
+    */
+
+    public function isEmailVerified(): bool
     {
-        return $this->hasMany(Product::class, 'seller_id');
+        return !empty($this->email_verified_at);
     }
 
-    public function orders()
+    /*
+    |--------------------------------------------------------------------------
+    | DOCUMENT VERIFICATION
+    |--------------------------------------------------------------------------
+    */
+
+    public function hasRequiredDocuments(): bool
     {
-        return $this->hasMany(Order::class, 'seller_id');
+        return !empty($this->business_certificate_path)
+            && !empty($this->aadhaar_document_path)
+            && !empty($this->pan_document_path)
+            && !empty($this->shop_proof_path)
+            && !empty($this->bank_proof_path);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | AADHAAR VERIFICATION
+    |--------------------------------------------------------------------------
+    */
+
+    public function isAadhaarVerified(): bool
+    {
+        return !empty($this->aadhaar_verified_at)
+            || $this->aadhaar_verified === true;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | BUSINESS DETAILS
+    |--------------------------------------------------------------------------
+    */
+
+    public function hasBusinessDetails(): bool
+    {
+        return !empty($this->business_type)
+            && !empty($this->business_name)
+            && !empty($this->pan_number)
+            && !empty($this->udyam_number);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | BANK DETAILS
+    |--------------------------------------------------------------------------
+    */
+
+    public function hasBankDetails(): bool
+    {
+        return !empty($this->bank_account_holder_name ?: $this->bank_account_holder)
+            && !empty($this->bank_account_number)
+            && !empty($this->bank_ifsc)
+            && !empty($this->bank_name)
+            && !empty($this->bank_branch);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | APPLICATION COMPLETION
+    |--------------------------------------------------------------------------
+    */
+
+    public function isApplicationComplete(): bool
+    {
+        return $this->isEmailVerified()
+            && $this->hasRequiredDocuments()
+            && $this->isAadhaarVerified()
+            && $this->hasBusinessDetails()
+            && $this->hasBankDetails();
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | APPLICATION SUBMITTED
+    |--------------------------------------------------------------------------
+    */
+
+    public function isApplicationSubmitted(): bool
+    {
+        return in_array(
+            $this->verification_status,
+            [
+                self::STATUS_PENDING_ADMIN_REVIEW,
+                self::STATUS_SUBMITTED,
+                self::STATUS_UNDER_REVIEW,
+                self::STATUS_APPROVED,
+                self::STATUS_REJECTED,
+            ],
+            true
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN REVIEW
+    |--------------------------------------------------------------------------
+    */
+
+    public function isPendingAdminReview(): bool
+    {
+        return in_array(
+            $this->verification_status,
+            [
+                self::STATUS_PENDING_ADMIN_REVIEW,
+                self::STATUS_SUBMITTED,
+                self::STATUS_UNDER_REVIEW,
+            ],
+            true
+        )
+        || in_array(
+            $this->status,
+            [
+                self::STATUS_PENDING_ADMIN_REVIEW,
+                self::STATUS_SUBMITTED,
+                self::STATUS_UNDER_REVIEW,
+            ],
+            true
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | APPROVED
+    |--------------------------------------------------------------------------
+    */
+
+    public function isApproved(): bool
+    {
+        return $this->verification_status === self::STATUS_APPROVED
+            || $this->status === self::STATUS_APPROVED;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | REJECTED
+    |--------------------------------------------------------------------------
+    */
+
+    public function isRejected(): bool
+    {
+        return $this->verification_status === self::STATUS_REJECTED
+            || $this->status === self::STATUS_REJECTED;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | SUSPENDED
+    |--------------------------------------------------------------------------
+    */
+
+    public function isSuspended(): bool
+    {
+        return $this->verification_status === self::STATUS_SUSPENDED
+            || $this->status === self::STATUS_SUSPENDED;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | ACTIVE SELLER
+    |--------------------------------------------------------------------------
+    */
+
+    public function isActive(): bool
+    {
+        return $this->verification_status === self::STATUS_ACTIVE
+            || $this->status === self::STATUS_ACTIVE;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | CURRENT ONBOARDING STEP
+    |--------------------------------------------------------------------------
+    */
+
+    public function getCurrentStep(): int
+    {
+        $step = (int) ($this->onboarding_step ?? 1);
+
+        return max(1, min(6, $step));
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | STEP COMPLETION
+    |--------------------------------------------------------------------------
+    */
+
+    public function isStepCompleted(int $step): bool
+    {
+        return match ($step) {
+
+            1 => $this->isEmailVerified(),
+
+            2 => $this->hasRequiredDocuments(),
+
+            3 => $this->isAadhaarVerified(),
+
+            4 => $this->hasBusinessDetails(),
+
+            5 => $this->hasBankDetails(),
+
+            6 => $this->isApplicationComplete(),
+
+            default => false,
+        };
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | STEP STATUS
+    |--------------------------------------------------------------------------
+    */
+
+    public function getStepStatus(int $step): string
+    {
+        if ($this->isStepCompleted($step)) {
+            return 'completed';
+        }
+
+        if ($this->getCurrentStep() === $step) {
+            return 'current';
+        }
+
+        if ($step > $this->getCurrentStep()) {
+            return 'locked';
+        }
+
+        return 'pending';
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | APPLICATION STATUS LABEL
+    |--------------------------------------------------------------------------
+    */
+
+    public function getApplicationStatusLabel(): string
+    {
+        return match ($this->verification_status) {
+
+            self::STATUS_DRAFT
+                => 'Draft',
+
+            self::STATUS_EMAIL_VERIFICATION
+                => 'Email Verification',
+
+            self::STATUS_DOCUMENTS_PENDING
+                => 'Documents Pending',
+
+            self::STATUS_AADHAAR_VERIFICATION
+                => 'Aadhaar Verification',
+
+            self::STATUS_BUSINESS_DETAILS
+                => 'Business Details',
+
+            self::STATUS_BANK_DETAILS
+                => 'Bank Details',
+
+            self::STATUS_SUBMITTED
+                => 'Submitted',
+
+            self::STATUS_UNDER_REVIEW
+                => 'Under Review',
+
+            self::STATUS_PENDING_ADMIN_REVIEW
+                => 'Pending Admin Review',
+
+            self::STATUS_APPROVED
+                => 'Approved',
+
+            self::STATUS_REJECTED
+                => 'Rejected',
+
+            self::STATUS_SUSPENDED
+                => 'Suspended',
+
+            self::STATUS_ACTIVE
+                => 'Active',
+
+            default
+                => ucfirst(
+                    str_replace(
+                        '_',
+                        ' ',
+                        (string) $this->verification_status
+                    )
+                ),
+        };
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | APPLICATION STATUS CSS CLASS
+    |--------------------------------------------------------------------------
+    */
+
+    public function getApplicationStatusClass(): string
+    {
+        return match ($this->verification_status) {
+
+            self::STATUS_APPROVED,
+            self::STATUS_ACTIVE
+                => 'success',
+
+            self::STATUS_REJECTED,
+            self::STATUS_SUSPENDED
+                => 'danger',
+
+            self::STATUS_SUBMITTED,
+            self::STATUS_UNDER_REVIEW,
+            self::STATUS_PENDING_ADMIN_REVIEW
+                => 'warning',
+
+            default
+                => 'pending',
+        };
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | DOCUMENT HELPERS
+    |--------------------------------------------------------------------------
+    */
+
+    public function hasBusinessCertificate(): bool
+    {
+        return !empty($this->business_certificate_path);
+    }
+
+    public function hasAadhaarDocument(): bool
+    {
+        return !empty($this->aadhaar_document_path);
+    }
+
+    public function hasPanDocument(): bool
+    {
+        return !empty($this->pan_document_path);
+    }
+
+    public function hasShopProof(): bool
+    {
+        return !empty($this->shop_proof_path);
+    }
+
+    public function hasBankProof(): bool
+    {
+        return !empty($this->bank_proof_path);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | APPLICATION PROGRESS
+    |--------------------------------------------------------------------------
+    */
+
+    public function getCompletionPercentage(): int
+    {
+        $completed = 0;
+
+        for ($step = 1; $step <= 5; $step++) {
+            if ($this->isStepCompleted($step)) {
+                $completed++;
+            }
+        }
+
+        return (int) round(($completed / 5) * 100);
     }
 }

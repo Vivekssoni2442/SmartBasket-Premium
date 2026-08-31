@@ -586,7 +586,7 @@ class OrderController extends Controller
         );
 
 
-        return redirect()
+        return redirect() 
             ->route('orders.index')
             ->with(
                 'success',
