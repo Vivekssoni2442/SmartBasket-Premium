@@ -19,30 +19,79 @@
     <link rel="stylesheet" href="{{ asset('css/premium-dark-theme.css') }}">
 
     @php
+        /*
+        |--------------------------------------------------------------------------
+        | CURRENT THEME
+        |--------------------------------------------------------------------------
+        */
+
         $currentTheme = $user->dark_mode ?? session('customer_theme', 'system');
 
         if (!in_array($currentTheme, ['light', 'dark', 'system'], true)) {
             $currentTheme = 'system';
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | OTHER SETTINGS
+        |--------------------------------------------------------------------------
+        */
+
         $notifications = $user->notifications ?? 'enabled';
         $language = $user->language ?? 'english';
     @endphp
 
+
     <script>
+        /*
+        |--------------------------------------------------------------------------
+        | SMART BASKET THEME - INITIAL LOAD
+        |--------------------------------------------------------------------------
+        |
+        | Theme page load hone se pehle apply hoti hai.
+        | Isse page flash / white screen issue kam hota hai.
+        |
+        */
+
         (() => {
-            const saved = @json($currentTheme);
 
-            const systemDark = window.matchMedia &&
-                window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const serverTheme = @json($currentTheme);
 
-            const theme = saved === 'system'
-                ? (systemDark ? 'dark' : 'light')
-                : saved;
+            const savedTheme =
+                localStorage.getItem('sb-theme') ||
+                serverTheme ||
+                'system';
 
-            document.documentElement.dataset.sbTheme = theme;
+            const getSystemTheme = () => {
+
+                if (
+                    window.matchMedia &&
+                    window.matchMedia('(prefers-color-scheme: dark)').matches
+                ) {
+                    return 'dark';
+                }
+
+                return 'light';
+            };
+
+            const actualTheme =
+                savedTheme === 'system'
+                    ? getSystemTheme()
+                    : savedTheme;
+
+            document.documentElement.dataset.sbTheme = actualTheme;
+
+            /*
+            |--------------------------------------------------------------------------
+            | Keep selected theme available
+            |--------------------------------------------------------------------------
+            */
+
+            document.documentElement.dataset.sbSelectedTheme = savedTheme;
+
         })();
     </script>
+
 
     <style>
 
@@ -55,47 +104,68 @@
             --settings-transition: .28s ease;
         }
 
+
         /* =========================================================
            DARK THEME
         ========================================================= */
 
         html[data-sb-theme="dark"] {
+
             --sb-bg: #020617;
             --sb-bg-secondary: #07111f;
+
             --sb-card: rgba(15, 23, 42, .82);
             --sb-card-solid: #0f172a;
+
             --sb-surface: rgba(30, 41, 59, .65);
             --sb-input: #0b1220;
+
             --sb-border: rgba(148, 163, 184, .13);
+
             --sb-text: #f8fafc;
             --sb-text-secondary: #94a3b8;
             --sb-muted: #64748b;
+
             --sb-primary: #38bdf8;
             --sb-primary-2: #6366f1;
+
             --sb-primary-soft: rgba(56, 189, 248, .12);
-            --sb-shadow: 0 25px 70px rgba(0, 0, 0, .38);
+
+            --sb-shadow:
+                0 25px 70px rgba(0, 0, 0, .38);
         }
+
 
         /* =========================================================
            LIGHT THEME
         ========================================================= */
 
         html[data-sb-theme="light"] {
+
             --sb-bg: #f4f7fb;
             --sb-bg-secondary: #eaf0f8;
+
             --sb-card: rgba(255, 255, 255, .92);
             --sb-card-solid: #ffffff;
+
             --sb-surface: #f8fafc;
             --sb-input: #ffffff;
+
             --sb-border: rgba(15, 23, 42, .10);
+
             --sb-text: #0f172a;
             --sb-text-secondary: #64748b;
             --sb-muted: #94a3b8;
+
             --sb-primary: #2563eb;
             --sb-primary-2: #7c3aed;
+
             --sb-primary-soft: rgba(37, 99, 235, .10);
-            --sb-shadow: 0 20px 55px rgba(15, 23, 42, .10);
+
+            --sb-shadow:
+                0 20px 55px rgba(15, 23, 42, .10);
         }
+
 
         /* =========================================================
            BODY
@@ -106,8 +176,11 @@
             min-height: 100%;
         }
 
+
         body {
+
             margin: 0;
+
             color: var(--sb-text);
 
             background:
@@ -132,32 +205,48 @@
                 color var(--settings-transition);
         }
 
+
         /* =========================================================
            PAGE
         ========================================================= */
 
         .settings-page {
+
             min-height: 100vh;
-            padding: 35px 20px 90px;
+
+            padding:
+                35px
+                20px
+                90px;
         }
 
+
         .settings-wrapper {
-            width: min(1100px, 100%);
-            margin: auto;
+
+            width:
+                min(1100px, 100%);
+
+            margin:
+                auto;
         }
+
 
         /* =========================================================
            HEADER
         ========================================================= */
 
         .settings-header {
+
             position: relative;
             overflow: hidden;
 
             padding: 30px;
+
             margin-bottom: 25px;
 
-            border: 1px solid var(--sb-border);
+            border:
+                1px solid var(--sb-border);
+
             border-radius: 28px;
 
             background:
@@ -167,14 +256,20 @@
                     var(--sb-surface)
                 );
 
-            box-shadow: var(--sb-shadow);
-            backdrop-filter: blur(22px);
+            box-shadow:
+                var(--sb-shadow);
+
+            backdrop-filter:
+                blur(22px);
         }
 
+
         .settings-header::after {
+
             content: "";
 
             position: absolute;
+
             width: 180px;
             height: 180px;
 
@@ -183,82 +278,136 @@
 
             border-radius: 50%;
 
-            background: var(--sb-primary-soft);
-            filter: blur(5px);
+            background:
+                var(--sb-primary-soft);
+
+            filter:
+                blur(5px);
         }
+
 
         .brand-text {
-            color: var(--sb-primary);
-            font-size: 12px;
-            font-weight: 800;
-            letter-spacing: 3px;
+
+            color:
+                var(--sb-primary);
+
+            font-size:
+                12px;
+
+            font-weight:
+                800;
+
+            letter-spacing:
+                3px;
         }
+
 
         .settings-title {
+
             position: relative;
             z-index: 2;
 
-            margin: 8px 0 0;
+            margin:
+                8px 0 0;
 
-            font-size: clamp(30px, 5vw, 46px);
-            font-weight: 900;
-            letter-spacing: -1.5px;
+            font-size:
+                clamp(30px, 5vw, 46px);
 
-            color: var(--sb-text);
+            font-weight:
+                900;
+
+            letter-spacing:
+                -1.5px;
+
+            color:
+                var(--sb-text);
         }
+
 
         .settings-title span {
-            color: var(--sb-primary);
+
+            color:
+                var(--sb-primary);
         }
 
+
         .settings-subtitle {
+
             position: relative;
             z-index: 2;
 
-            margin: 8px 0 0;
+            margin:
+                8px 0 0;
 
-            color: var(--sb-text-secondary);
+            color:
+                var(--sb-text-secondary);
         }
+
 
         /* =========================================================
            BUTTONS
         ========================================================= */
 
         .premium-btn {
-            border-radius: 999px !important;
-            font-weight: 750;
-            transition: .25s ease;
+
+            border-radius:
+                999px !important;
+
+            font-weight:
+                750;
+
+            transition:
+                .25s ease;
         }
+
 
         .premium-btn:hover {
-            transform: translateY(-2px);
+
+            transform:
+                translateY(-2px);
         }
 
+
         .back-btn {
-            color: var(--sb-text) !important;
-            border-color: var(--sb-border) !important;
-            background: var(--sb-surface) !important;
+
+            color:
+                var(--sb-text) !important;
+
+            border-color:
+                var(--sb-border) !important;
+
+            background:
+                var(--sb-surface) !important;
         }
+
 
         /* =========================================================
            CARDS
         ========================================================= */
 
         .settings-card {
+
             position: relative;
             overflow: hidden;
 
             padding: 26px;
+
             margin-bottom: 20px;
 
-            border: 1px solid var(--sb-border);
-            border-radius: var(--settings-radius);
+            border:
+                1px solid var(--sb-border);
 
-            background: var(--sb-card);
+            border-radius:
+                var(--settings-radius);
 
-            box-shadow: var(--sb-shadow);
+            background:
+                var(--sb-card);
 
-            backdrop-filter: blur(22px);
+            box-shadow:
+                var(--sb-shadow);
+
+            backdrop-filter:
+                blur(22px);
 
             transition:
                 transform .25s ease,
@@ -266,153 +415,273 @@
                 background .25s ease;
         }
 
+
         .settings-card:hover {
-            transform: translateY(-2px);
-            border-color: var(--sb-primary-soft);
+
+            transform:
+                translateY(-2px);
+
+            border-color:
+                var(--sb-primary-soft);
         }
+
 
         .settings-card-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 23px;
+
+            display:
+                flex;
+
+            align-items:
+                center;
+
+            gap:
+                15px;
+
+            margin-bottom:
+                23px;
         }
 
+
         .settings-icon {
+
             width: 52px;
             height: 52px;
 
             flex-shrink: 0;
 
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display:
+                flex;
 
-            border-radius: 16px;
+            align-items:
+                center;
 
-            color: var(--sb-primary);
-            background: var(--sb-primary-soft);
+            justify-content:
+                center;
 
-            font-size: 20px;
+            border-radius:
+                16px;
+
+            color:
+                var(--sb-primary);
+
+            background:
+                var(--sb-primary-soft);
+
+            font-size:
+                20px;
 
             box-shadow:
-                0 10px 30px var(--sb-primary-soft);
+                0 10px 30px
+                var(--sb-primary-soft);
         }
+
 
         .settings-card-title {
-            margin: 0;
 
-            color: var(--sb-text);
+            margin:
+                0;
 
-            font-size: 20px;
-            font-weight: 850;
+            color:
+                var(--sb-text);
+
+            font-size:
+                20px;
+
+            font-weight:
+                850;
         }
+
 
         .settings-card-description {
-            margin: 4px 0 0;
 
-            color: var(--sb-text-secondary);
+            margin:
+                4px 0 0;
 
-            font-size: 12px;
+            color:
+                var(--sb-text-secondary);
+
+            font-size:
+                12px;
         }
+
 
         /* =========================================================
            THEME SELECTOR
         ========================================================= */
 
         .theme-options {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
+
+            display:
+                grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap:
+                15px;
         }
+
 
         .theme-option {
-            position: relative;
+
+            position:
+                relative;
         }
+
 
         .theme-option input {
-            position: absolute;
-            opacity: 0;
-            pointer-events: none;
+
+            position:
+                absolute;
+
+            opacity:
+                0;
+
+            pointer-events:
+                none;
         }
+
 
         .theme-label {
-            position: relative;
-            overflow: hidden;
 
-            min-height: 150px;
+            position:
+                relative;
 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            overflow:
+                hidden;
 
-            gap: 9px;
+            min-height:
+                150px;
 
-            padding: 20px;
+            display:
+                flex;
 
-            border-radius: 20px;
-            border: 1px solid var(--sb-border);
+            flex-direction:
+                column;
 
-            background: var(--sb-surface);
-            color: var(--sb-text);
+            align-items:
+                center;
 
-            cursor: pointer;
+            justify-content:
+                center;
 
-            transition: .28s ease;
+            gap:
+                9px;
+
+            padding:
+                20px;
+
+            border-radius:
+                20px;
+
+            border:
+                1px solid var(--sb-border);
+
+            background:
+                var(--sb-surface);
+
+            color:
+                var(--sb-text);
+
+            cursor:
+                pointer;
+
+            transition:
+                .28s ease;
         }
+
 
         .theme-label::before {
-            content: "";
 
-            position: absolute;
+            content:
+                "";
 
-            width: 100px;
-            height: 100px;
+            position:
+                absolute;
 
-            border-radius: 50%;
+            width:
+                100px;
 
-            background: var(--sb-primary-soft);
+            height:
+                100px;
 
-            filter: blur(18px);
+            border-radius:
+                50%;
 
-            opacity: 0;
+            background:
+                var(--sb-primary-soft);
 
-            transition: .28s ease;
+            filter:
+                blur(18px);
+
+            opacity:
+                0;
+
+            transition:
+                .28s ease;
         }
+
 
         .theme-label i,
         .theme-label span,
         .theme-label small {
-            position: relative;
-            z-index: 2;
+
+            position:
+                relative;
+
+            z-index:
+                2;
         }
+
 
         .theme-label i {
-            font-size: 29px;
-            color: var(--sb-primary);
+
+            font-size:
+                29px;
+
+            color:
+                var(--sb-primary);
         }
+
 
         .theme-label span {
-            font-size: 15px;
-            font-weight: 800;
+
+            font-size:
+                15px;
+
+            font-weight:
+                800;
         }
+
 
         .theme-label small {
-            color: var(--sb-text-secondary);
+
+            color:
+                var(--sb-text-secondary);
         }
+
 
         .theme-label:hover {
-            transform: translateY(-4px);
-            border-color: var(--sb-primary);
+
+            transform:
+                translateY(-4px);
+
+            border-color:
+                var(--sb-primary);
         }
+
 
         .theme-label:hover::before {
-            opacity: 1;
+
+            opacity:
+                1;
         }
 
+
         .theme-option input:checked + .theme-label {
-            border-color: var(--sb-primary);
+
+            border-color:
+                var(--sb-primary);
 
             background:
                 linear-gradient(
@@ -422,204 +691,348 @@
                 );
 
             box-shadow:
-                0 0 0 2px var(--sb-primary-soft),
-                0 20px 45px var(--sb-primary-soft);
+                0 0 0 2px
+                    var(--sb-primary-soft),
 
-            transform: translateY(-4px);
+                0 20px 45px
+                    var(--sb-primary-soft);
+
+            transform:
+                translateY(-4px);
         }
+
 
         /* =========================================================
            SETTING ROW
         ========================================================= */
 
         .setting-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
 
-            gap: 20px;
+            display:
+                flex;
 
-            padding: 18px 0;
+            align-items:
+                center;
 
-            border-bottom: 1px solid var(--sb-border);
+            justify-content:
+                space-between;
+
+            gap:
+                20px;
+
+            padding:
+                18px 0;
+
+            border-bottom:
+                1px solid var(--sb-border);
         }
+
 
         .setting-row:last-child {
-            border-bottom: 0;
+
+            border-bottom:
+                0;
         }
+
 
         .setting-info {
-            display: flex;
-            align-items: center;
-            gap: 14px;
+
+            display:
+                flex;
+
+            align-items:
+                center;
+
+            gap:
+                14px;
         }
 
+
         .setting-small-icon {
+
             width: 44px;
             height: 44px;
 
             flex-shrink: 0;
 
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display:
+                flex;
 
-            border-radius: 14px;
+            align-items:
+                center;
 
-            color: var(--sb-primary);
-            background: var(--sb-surface);
+            justify-content:
+                center;
 
-            border: 1px solid var(--sb-border);
+            border-radius:
+                14px;
+
+            color:
+                var(--sb-primary);
+
+            background:
+                var(--sb-surface);
+
+            border:
+                1px solid var(--sb-border);
         }
+
 
         .setting-name {
-            color: var(--sb-text);
-            font-weight: 750;
-            margin-bottom: 3px;
+
+            color:
+                var(--sb-text);
+
+            font-weight:
+                750;
+
+            margin-bottom:
+                3px;
         }
 
+
         .setting-description {
-            color: var(--sb-text-secondary);
-            font-size: 12px;
+
+            color:
+                var(--sb-text-secondary);
+
+            font-size:
+                12px;
         }
+
 
         /* =========================================================
            SELECT
         ========================================================= */
 
         .premium-select {
-            min-width: 210px;
 
-            border-radius: 14px !important;
+            min-width:
+                210px;
 
-            padding: 11px 14px !important;
+            border-radius:
+                14px !important;
 
-            background-color: var(--sb-input) !important;
-            color: var(--sb-text) !important;
+            padding:
+                11px 14px !important;
 
-            border: 1px solid var(--sb-border) !important;
+            background-color:
+                var(--sb-input) !important;
+
+            color:
+                var(--sb-text) !important;
+
+            border:
+                1px solid var(--sb-border) !important;
         }
+
 
         .premium-select:focus {
-            border-color: var(--sb-primary) !important;
+
+            border-color:
+                var(--sb-primary) !important;
 
             box-shadow:
-                0 0 0 4px var(--sb-primary-soft) !important;
+                0 0 0 4px
+                var(--sb-primary-soft) !important;
         }
 
+
         .premium-select option {
-            background: var(--sb-card-solid);
-            color: var(--sb-text);
+
+            background:
+                var(--sb-card-solid);
+
+            color:
+                var(--sb-text);
         }
+
 
         /* =========================================================
            SWITCH
         ========================================================= */
 
         .premium-switch .form-check-input {
-            width: 54px;
-            height: 29px;
 
-            cursor: pointer;
+            width:
+                54px;
 
-            background-color: var(--sb-muted);
+            height:
+                29px;
 
-            border: 0;
+            cursor:
+                pointer;
+
+            background-color:
+                var(--sb-muted);
+
+            border:
+                0;
         }
+
 
         .premium-switch .form-check-input:checked {
-            background-color: var(--sb-primary);
+
+            background-color:
+                var(--sb-primary);
         }
+
 
         /* =========================================================
            PREVIEW
         ========================================================= */
 
         .preview-box {
-            padding: 18px;
 
-            border-radius: 20px;
+            padding:
+                18px;
 
-            background: var(--sb-surface);
-            border: 1px solid var(--sb-border);
+            border-radius:
+                20px;
+
+            background:
+                var(--sb-surface);
+
+            border:
+                1px solid var(--sb-border);
         }
+
 
         .preview-top {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
 
-            margin-bottom: 15px;
+            display:
+                flex;
 
-            color: var(--sb-text);
+            align-items:
+                center;
+
+            justify-content:
+                space-between;
+
+            margin-bottom:
+                15px;
+
+            color:
+                var(--sb-text);
         }
+
 
         .preview-dot {
-            width: 10px;
-            height: 10px;
 
-            border-radius: 50%;
+            width:
+                10px;
 
-            background: #22c55e;
+            height:
+                10px;
 
-            box-shadow: 0 0 15px rgba(34,197,94,.65);
+            border-radius:
+                50%;
+
+            background:
+                #22c55e;
+
+            box-shadow:
+                0 0 15px
+                rgba(34,197,94,.65);
         }
+
 
         .preview-content {
-            padding: 18px;
 
-            border-radius: 16px;
+            padding:
+                18px;
 
-            background: var(--sb-card);
-            border: 1px solid var(--sb-border);
+            border-radius:
+                16px;
 
-            color: var(--sb-text);
+            background:
+                var(--sb-card);
+
+            border:
+                1px solid var(--sb-border);
+
+            color:
+                var(--sb-text);
         }
+
 
         /* =========================================================
            SAVE BAR
         ========================================================= */
 
         .save-area {
-            position: sticky;
-            bottom: 15px;
 
-            z-index: 50;
+            position:
+                sticky;
 
-            margin-top: 25px;
+            bottom:
+                15px;
+
+            z-index:
+                50;
+
+            margin-top:
+                25px;
         }
+
 
         .save-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
 
-            gap: 20px;
+            display:
+                flex;
 
-            padding: 16px 20px;
+            align-items:
+                center;
 
-            border-radius: 22px;
+            justify-content:
+                space-between;
 
-            background: var(--sb-card);
-            border: 1px solid var(--sb-border);
+            gap:
+                20px;
 
-            box-shadow: var(--sb-shadow);
+            padding:
+                16px 20px;
 
-            backdrop-filter: blur(25px);
+            border-radius:
+                22px;
+
+            background:
+                var(--sb-card);
+
+            border:
+                1px solid var(--sb-border);
+
+            box-shadow:
+                var(--sb-shadow);
+
+            backdrop-filter:
+                blur(25px);
         }
+
 
         .save-bar strong {
-            color: var(--sb-text);
+
+            color:
+                var(--sb-text);
         }
 
+
         .save-btn {
-            min-width: 190px;
-            height: 50px;
 
-            border: 0 !important;
-            border-radius: 999px !important;
+            min-width:
+                190px;
 
-            font-weight: 800;
+            height:
+                50px;
+
+            border:
+                0 !important;
+
+            border-radius:
+                999px !important;
+
+            font-weight:
+                800;
 
             background:
                 linear-gradient(
@@ -628,33 +1041,49 @@
                     var(--sb-primary-2)
                 ) !important;
 
-            color: white !important;
+            color:
+                white !important;
 
             box-shadow:
-                0 12px 30px var(--sb-primary-soft);
+                0 12px 30px
+                var(--sb-primary-soft);
         }
+
 
         .save-btn:hover {
-            transform: translateY(-3px);
+
+            transform:
+                translateY(-3px);
+
             box-shadow:
-                0 18px 40px var(--sb-primary-soft);
+                0 18px 40px
+                var(--sb-primary-soft);
         }
+
 
         /* =========================================================
            ALERT
         ========================================================= */
 
         .success-alert {
-            border-radius: 18px;
 
-            color: var(--sb-text);
+            border-radius:
+                18px;
 
-            border: 1px solid rgba(34,197,94,.25);
+            color:
+                var(--sb-text);
 
-            background: rgba(34,197,94,.10);
+            border:
+                1px solid
+                rgba(34,197,94,.25);
 
-            box-shadow: var(--sb-shadow);
+            background:
+                rgba(34,197,94,.10);
+
+            box-shadow:
+                var(--sb-shadow);
         }
+
 
         /* =========================================================
            MOBILE
@@ -663,54 +1092,101 @@
         @media(max-width: 768px) {
 
             .settings-page {
-                padding: 15px 10px 70px;
+
+                padding:
+                    15px
+                    10px
+                    70px;
             }
+
 
             .settings-header {
-                padding: 22px;
-                border-radius: 22px;
+
+                padding:
+                    22px;
+
+                border-radius:
+                    22px;
             }
+
 
             .settings-card {
-                padding: 19px;
-                border-radius: 20px;
+
+                padding:
+                    19px;
+
+                border-radius:
+                    20px;
             }
+
 
             .theme-options {
-                grid-template-columns: 1fr;
+
+                grid-template-columns:
+                    1fr;
             }
+
 
             .theme-label {
-                min-height: 95px;
-                flex-direction: row;
-                justify-content: flex-start;
+
+                min-height:
+                    95px;
+
+                flex-direction:
+                    row;
+
+                justify-content:
+                    flex-start;
             }
+
 
             .setting-row {
-                align-items: flex-start;
-                flex-direction: column;
+
+                align-items:
+                    flex-start;
+
+                flex-direction:
+                    column;
             }
+
 
             .setting-info {
-                width: 100%;
+
+                width:
+                    100%;
             }
+
 
             .premium-select {
-                width: 100%;
+
+                width:
+                    100%;
             }
+
 
             .premium-switch {
-                margin-left: 58px;
+
+                margin-left:
+                    58px;
             }
+
 
             .save-bar {
-                flex-direction: column;
-                align-items: stretch;
+
+                flex-direction:
+                    column;
+
+                align-items:
+                    stretch;
             }
 
+
             .save-btn {
-                width: 100%;
+
+                width:
+                    100%;
             }
+
         }
 
     </style>
@@ -722,6 +1198,7 @@
 <div class="settings-page">
 
     <div class="settings-wrapper">
+
 
         {{-- =====================================================
              HEADER
@@ -737,13 +1214,16 @@
                 Back to Products
             </a>
 
+
             <div class="brand-text">
                 SMART BASKET
             </div>
 
+
             <h1 class="settings-title">
                 Customer <span>Settings</span>
             </h1>
+
 
             <p class="settings-subtitle">
                 Personalize your shopping experience, appearance and preferences.
@@ -777,13 +1257,17 @@
 
             <div class="alert alert-danger rounded-4 mb-4">
 
-                <strong>Please fix the following:</strong>
+                <strong>
+                    Please fix the following:
+                </strong>
 
                 <ul class="mb-0 mt-2">
 
                     @foreach($errors->all() as $error)
 
-                        <li>{{ $error }}</li>
+                        <li>
+                            {{ $error }}
+                        </li>
 
                     @endforeach
 
@@ -801,6 +1285,7 @@
         >
 
             @csrf
+
             @method('PUT')
 
 
@@ -813,8 +1298,11 @@
                 <div class="settings-card-header">
 
                     <div class="settings-icon">
+
                         <i class="fa-solid fa-palette"></i>
+
                     </div>
+
 
                     <div>
 
@@ -832,6 +1320,7 @@
 
 
                 <div class="theme-options">
+
 
                     {{-- LIGHT --}}
 
@@ -852,9 +1341,13 @@
 
                             <i class="fa-solid fa-sun"></i>
 
-                            <span>Light Mode</span>
+                            <span>
+                                Light Mode
+                            </span>
 
-                            <small>Clean & bright</small>
+                            <small>
+                                Clean & bright
+                            </small>
 
                         </label>
 
@@ -880,9 +1373,13 @@
 
                             <i class="fa-solid fa-moon"></i>
 
-                            <span>Dark Mode</span>
+                            <span>
+                                Dark Mode
+                            </span>
 
-                            <small>Premium night UI</small>
+                            <small>
+                                Premium night UI
+                            </small>
 
                         </label>
 
@@ -908,9 +1405,13 @@
 
                             <i class="fa-solid fa-desktop"></i>
 
-                            <span>System</span>
+                            <span>
+                                System
+                            </span>
 
-                            <small>Follow device theme</small>
+                            <small>
+                                Follow device theme
+                            </small>
 
                         </label>
 
@@ -930,8 +1431,11 @@
                 <div class="settings-card-header">
 
                     <div class="settings-icon">
+
                         <i class="fa-solid fa-sliders"></i>
+
                     </div>
+
 
                     <div>
 
@@ -955,8 +1459,11 @@
                     <div class="setting-info">
 
                         <div class="setting-small-icon">
+
                             <i class="fa-solid fa-language"></i>
+
                         </div>
+
 
                         <div>
 
@@ -985,12 +1492,14 @@
                             English
                         </option>
 
+
                         <option
                             value="hindi"
                             {{ $language === 'hindi' ? 'selected' : '' }}
                         >
                             हिन्दी
                         </option>
+
 
                         <option
                             value="gujarati"
@@ -1011,8 +1520,11 @@
                     <div class="setting-info">
 
                         <div class="setting-small-icon">
+
                             <i class="fa-solid fa-bell"></i>
+
                         </div>
+
 
                         <div>
 
@@ -1038,6 +1550,7 @@
                             {{ $notifications === 'enabled' ? 'checked' : '' }}
                         >
 
+
                         <input
                             type="hidden"
                             name="notifications"
@@ -1061,8 +1574,11 @@
                 <div class="settings-card-header">
 
                     <div class="settings-icon">
+
                         <i class="fa-solid fa-eye"></i>
+
                     </div>
+
 
                     <div>
 
@@ -1084,9 +1600,13 @@
                     <div class="preview-top">
 
                         <strong>
+
                             <i class="fa-solid fa-basket-shopping me-2"></i>
+
                             Smart Basket
+
                         </strong>
+
 
                         <span class="preview-dot"></span>
 
@@ -1101,6 +1621,7 @@
                                 Premium Product
                             </span>
 
+
                             <span
                                 style="color:var(--sb-primary)"
                                 class="fw-bold"
@@ -1110,7 +1631,10 @@
 
                         </div>
 
-                        <small style="color:var(--sb-text-secondary)">
+
+                        <small
+                            style="color:var(--sb-text-secondary)"
+                        >
                             Your selected appearance is applied instantly.
                         </small>
 
@@ -1130,8 +1654,11 @@
                 <div class="settings-card-header">
 
                     <div class="settings-icon">
+
                         <i class="fa-solid fa-shield-halved"></i>
+
                     </div>
+
 
                     <div>
 
@@ -1153,8 +1680,11 @@
                     <div class="setting-info">
 
                         <div class="setting-small-icon">
+
                             <i class="fa-solid fa-lock"></i>
+
                         </div>
+
 
                         <div>
 
@@ -1175,8 +1705,11 @@
                         href="{{ route('security.verify.page') }}"
                         class="btn btn-outline-primary premium-btn px-4"
                     >
+
                         <i class="fa-solid fa-shield me-2"></i>
+
                         Manage
+
                     </a>
 
                 </div>
@@ -1195,9 +1728,13 @@
                     <div>
 
                         <strong>
+
                             <i class="fa-solid fa-gear me-2"></i>
+
                             Settings
+
                         </strong>
+
 
                         <div
                             class="small"
@@ -1212,6 +1749,7 @@
                     <button
                         type="submit"
                         class="btn save-btn"
+                        id="saveSettingsButton"
                     >
 
                         <i class="fa-solid fa-floppy-disk me-2"></i>
@@ -1234,109 +1772,272 @@
 <script>
 
     /* =========================================================
-       NOTIFICATION SWITCH
+       SMART BASKET CUSTOMER SETTINGS
     ========================================================= */
 
-    const notificationSwitch =
-        document.getElementById('notificationSwitch');
 
-    const notificationValue =
-        document.getElementById('notificationValue');
+    /*
+    |--------------------------------------------------------------------------
+    | THEME HELPERS
+    |--------------------------------------------------------------------------
+    */
 
-    if (notificationSwitch && notificationValue) {
+    function getSystemTheme() {
 
-        notificationSwitch.addEventListener('change', function () {
+        if (
+            window.matchMedia &&
+            window.matchMedia(
+                '(prefers-color-scheme: dark)'
+            ).matches
+        ) {
 
-            notificationValue.value =
-                this.checked
-                    ? 'enabled'
-                    : 'disabled';
+            return 'dark';
 
-        });
+        }
 
+        return 'light';
     }
 
 
-    /* =========================================================
-       THEME FUNCTION
-    ========================================================= */
+    /*
+    |--------------------------------------------------------------------------
+    | APPLY THEME
+    |--------------------------------------------------------------------------
+    */
 
-    function applyCustomerTheme(selectedTheme) {
+    function applyCustomerTheme(selectedTheme, saveLocal = true) {
 
         let actualTheme = selectedTheme;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | SYSTEM THEME
+        |--------------------------------------------------------------------------
+        */
 
         if (selectedTheme === 'system') {
 
             actualTheme =
-                window.matchMedia &&
-                window.matchMedia('(prefers-color-scheme: dark)').matches
-                    ? 'dark'
-                    : 'light';
+                getSystemTheme();
+
         }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDATE
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            !['light', 'dark'].includes(actualTheme)
+        ) {
+
+            actualTheme = 'light';
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | APPLY TO HTML
+        |--------------------------------------------------------------------------
+        */
 
         document.documentElement.dataset.sbTheme =
             actualTheme;
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | APPLY TO BODY
+        |--------------------------------------------------------------------------
+        */
+
         document.body.dataset.sbTheme =
             actualTheme;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | STORE SELECTED THEME
+        |--------------------------------------------------------------------------
+        */
+
+        document.documentElement.dataset.sbSelectedTheme =
+            selectedTheme;
+
+
+        if (saveLocal) {
+
+            localStorage.setItem(
+                'sb-theme',
+                selectedTheme
+            );
+
+        }
 
     }
 
 
-    /* =========================================================
-       INSTANT THEME PREVIEW
-    ========================================================= */
+    /*
+    |--------------------------------------------------------------------------
+    | FIND THEME RADIO BUTTONS
+    |--------------------------------------------------------------------------
+    */
 
-    document
-        .querySelectorAll('input[name="dark_mode"]')
-        .forEach(input => {
-
-            input.addEventListener('change', function () {
-
-                applyCustomerTheme(this.value);
-
-            });
-
-        });
+    const themeInputs =
+        document.querySelectorAll(
+            'input[name="dark_mode"]'
+        );
 
 
-    /* =========================================================
-       SYSTEM THEME CHANGE
-    ========================================================= */
+    /*
+    |--------------------------------------------------------------------------
+    | THEME SELECTION
+    |--------------------------------------------------------------------------
+    */
+
+    themeInputs.forEach(input => {
+
+        input.addEventListener(
+            'change',
+            function () {
+
+                if (!this.checked) {
+                    return;
+                }
+
+
+                applyCustomerTheme(
+                    this.value,
+                    true
+                );
+
+            }
+        );
+
+    });
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | LOAD SAVED THEME
+    |--------------------------------------------------------------------------
+    */
+
+    document.addEventListener(
+        'DOMContentLoaded',
+        function () {
+
+            const serverTheme =
+                @json($currentTheme);
+
+
+            const localTheme =
+                localStorage.getItem(
+                    'sb-theme'
+                );
+
+
+            const selectedTheme =
+                localTheme &&
+                ['light', 'dark', 'system'].includes(localTheme)
+                    ? localTheme
+                    : serverTheme;
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | CHECK CORRECT RADIO
+            |--------------------------------------------------------------------------
+            */
+
+            const selectedRadio =
+                document.querySelector(
+                    'input[name="dark_mode"][value="' +
+                    selectedTheme +
+                    '"]'
+                );
+
+
+            if (selectedRadio) {
+
+                selectedRadio.checked =
+                    true;
+
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | APPLY THEME
+            |--------------------------------------------------------------------------
+            */
+
+            applyCustomerTheme(
+                selectedTheme,
+                false
+            );
+
+        }
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | SYSTEM THEME CHANGE
+    |--------------------------------------------------------------------------
+    */
 
     if (window.matchMedia) {
 
-        const media =
+        const systemMedia =
             window.matchMedia(
                 '(prefers-color-scheme: dark)'
             );
 
+
         const updateSystemTheme = () => {
 
             const systemRadio =
-                document.getElementById('themeSystem');
+                document.getElementById(
+                    'themeSystem'
+                );
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Only update automatically when SYSTEM is selected
+            |--------------------------------------------------------------------------
+            */
 
             if (
                 systemRadio &&
                 systemRadio.checked
             ) {
 
-                applyCustomerTheme('system');
+                applyCustomerTheme(
+                    'system',
+                    false
+                );
 
             }
 
         };
 
-        if (media.addEventListener) {
 
-            media.addEventListener(
+        if (systemMedia.addEventListener) {
+
+            systemMedia.addEventListener(
                 'change',
                 updateSystemTheme
             );
 
         } else {
 
-            media.addListener(
+            systemMedia.addListener(
                 updateSystemTheme
             );
 
@@ -1345,30 +2046,108 @@
     }
 
 
-    /* =========================================================
-       SAVE BUTTON FEEDBACK
-    ========================================================= */
+    /*
+    |--------------------------------------------------------------------------
+    | NOTIFICATION SWITCH
+    |--------------------------------------------------------------------------
+    */
+
+    const notificationSwitch =
+        document.getElementById(
+            'notificationSwitch'
+        );
+
+
+    const notificationValue =
+        document.getElementById(
+            'notificationValue'
+        );
+
+
+    if (
+        notificationSwitch &&
+        notificationValue
+    ) {
+
+        notificationSwitch.addEventListener(
+            'change',
+            function () {
+
+                notificationValue.value =
+                    this.checked
+                        ? 'enabled'
+                        : 'disabled';
+
+            }
+        );
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | SAVE FORM
+    |--------------------------------------------------------------------------
+    */
 
     const form =
-        document.getElementById('customerSettingsForm');
+        document.getElementById(
+            'customerSettingsForm'
+        );
+
 
     if (form) {
 
-        form.addEventListener('submit', function () {
+        form.addEventListener(
+            'submit',
+            function () {
 
-            const button =
-                form.querySelector('.save-btn');
+                /*
+                |--------------------------------------------------------------------------
+                | Save selected theme locally before submitting
+                |--------------------------------------------------------------------------
+                */
 
-            if (button) {
+                const selectedTheme =
+                    document.querySelector(
+                        'input[name="dark_mode"]:checked'
+                    );
 
-                button.innerHTML =
-                    '<i class="fa-solid fa-spinner fa-spin me-2"></i> Saving...';
 
-                button.disabled = true;
+                if (selectedTheme) {
+
+                    localStorage.setItem(
+                        'sb-theme',
+                        selectedTheme.value
+                    );
+
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Button loading state
+                |--------------------------------------------------------------------------
+                */
+
+                const button =
+                    document.getElementById(
+                        'saveSettingsButton'
+                    );
+
+
+                if (button) {
+
+                    button.innerHTML =
+                        '<i class="fa-solid fa-spinner fa-spin me-2"></i> Saving...';
+
+                    button.disabled =
+                        true;
+
+                }
 
             }
-
-        });
+        );
 
     }
 
