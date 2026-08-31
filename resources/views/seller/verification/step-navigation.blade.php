@@ -26,11 +26,11 @@
         'seller.activation' => 6,
 
         // Compatibility routes
-        'seller.business-details' => 2,
-        'seller.business-details.edit' => 2,
+        'seller.verification.business-details' => 2,
+        'seller.verification.business-details.update' => 2,
 
-        'seller.bank-details' => 4,
-        'seller.bank-details.edit' => 4,
+        'seller.verification.bank-details' => 4,
+        'seller.verification.bank-details.update' => 4,
     ];
 
     /*
