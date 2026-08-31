@@ -1003,4 +1003,6 @@
 </script>
 
 </body>
+
+    @include('seller.partials.seller-menu')
 </html>
