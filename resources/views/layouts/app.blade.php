@@ -13,20 +13,43 @@
         @yield('title', 'SmartBasket Premium')
     </title>
 
+
     {{-- =====================================================
-         THEME CSS
+         SMART BASKET GLOBAL THEME
     ====================================================== --}}
 
-    <link rel="stylesheet"
-          href="{{ asset('css/premium-dark-theme.css') }}">
+    <link
+        rel="stylesheet"
+        href="{{ asset('css/premium-dark-theme.css') }}"
+    >
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    {{-- =====================================================
+         GLOBAL APP ASSETS
+    ====================================================== --}}
+
+    @vite([
+        'resources/css/app.css',
+        'resources/js/app.js'
+    ])
+
+
+    {{-- =====================================================
+         GLOBAL AI HUB CSS
+         ONLY ONE COPY
+    ====================================================== --}}
+
+    <link
+        rel="stylesheet"
+        href="{{ asset('css/ai-hub-sidebar.css') }}"
+    >
+
 
     @stack('styles')
 
+
     {{-- =====================================================
-         THEME APPLY BEFORE PAGE RENDER
-         Prevents white flash
+         THEME BEFORE PAGE PAINT
     ====================================================== --}}
 
     <script>
@@ -36,6 +59,7 @@
             const savedTheme =
                 localStorage.getItem('sb-theme');
 
+
             const databaseTheme =
                 @auth
                     @json(auth()->user()->dark_mode ?? 'system')
@@ -43,8 +67,11 @@
                     'system'
                 @endauth;
 
+
             const selectedTheme =
-                savedTheme || databaseTheme || 'system';
+                savedTheme ||
+                databaseTheme ||
+                'system';
 
 
             function getSystemTheme() {
@@ -68,7 +95,8 @@
                     theme !== 'light'
                 ) {
 
-                    finalTheme = getSystemTheme();
+                    finalTheme =
+                        getSystemTheme();
 
                 }
 
@@ -114,7 +142,9 @@
                     const current =
                         localStorage.getItem(
                             'sb-theme'
-                        ) || databaseTheme;
+                        ) ||
+                        databaseTheme;
+
 
                     if (
                         !current ||
@@ -142,7 +172,8 @@
                     ) {
 
                         applyTheme(
-                            event.newValue || 'system'
+                            event.newValue ||
+                            'system'
                         );
 
                     }
@@ -152,7 +183,7 @@
 
 
             /* =================================================
-               GLOBAL SMART BASKET THEME FUNCTION
+               GLOBAL SMART BASKET THEME API
             ================================================= */
 
             window.SmartBasketTheme = {
@@ -188,7 +219,9 @@
                     return (
                         localStorage.getItem(
                             'sb-theme'
-                        ) || databaseTheme || 'system'
+                        ) ||
+                        databaseTheme ||
+                        'system'
                     );
 
                 }
@@ -204,14 +237,42 @@
 
 <body>
 
+
+    {{-- =====================================================
+         GLOBAL CUSTOMER PAGE
+    ====================================================== --}}
+
     <div class="sb-page">
+
+        {{-- =================================================
+             GLOBAL AI HUB
+
+             IMPORTANT:
+             AI HUB YAHAN SIRF EK BAAR HOGA.
+             Kisi individual page me dobara include nahi karna.
+        ================================================== --}}
+
+        @include('ai-hub.partials.navigation')
+
+
+        {{-- =================================================
+             PAGE CONTENT
+        ================================================== --}}
 
         @yield('content')
 
     </div>
 
 
-    @stack('scripts')
+    {{-- =====================================================
+         GLOBAL AI HUB JAVASCRIPT
+         ONLY ONE COPY
+    ====================================================== --}}
+
+    <script
+        src="{{ asset('js/ai-hub-sidebar.js') }}"
+        defer>
+    </script>
 
 
     {{-- =====================================================
@@ -221,6 +282,9 @@
     <script
         src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
     </script>
+
+
+    @stack('scripts')
 
 
 </body>
