@@ -1,12 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>{{ $product->name }} | SMART BASKET</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta
+        name="csrf-token"
+        content="{{ csrf_token() }}"
+    >
+
+    <title>
+        {{ $product->name }} | SMART BASKET
+    </title>
+
+
+    <script>
+        (() => {
+
+            const saved =
+                localStorage.getItem('sb-theme');
+
+            const userTheme =
+                @auth
+                    @json(auth()->user()->theme ?? 'dark')
+                @else
+                    'dark'
+                @endauth;
+
+            const theme =
+                ['light','dark'].includes(saved)
+                    ? saved
+                    : (
+                        ['light','dark'].includes(userTheme)
+                            ? userTheme
+                            : 'dark'
+                    );
+
+            document.documentElement
+                .setAttribute(
+                    'data-theme',
+                    theme
+                );
+
+        })();
+    </script>
+
 
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
@@ -14,504 +57,1094 @@
     >
 
     <link
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
         rel="stylesheet"
-        href="{{ asset('css/premium-dark-theme.css') }}"
     >
 
+
     <style>
+
         :root {
-            --sb-bg: #f5f7fb;
-            --sb-card: #ffffff;
-            --sb-card-2: #f8fafc;
-            --sb-text: #111827;
-            --sb-muted: #64748b;
-            --sb-border: #e2e8f0;
-            --sb-primary: #4f46e5;
-            --sb-primary-hover: #4338ca;
-            --sb-success: #16a34a;
-            --sb-shadow: 0 20px 50px rgba(15, 23, 42, .08);
+
+            --bg:#f5f7fb;
+
+            --card:#ffffff;
+
+            --card2:#f8fafc;
+
+            --text:#102033;
+
+            --muted:#718096;
+
+            --border:#e2e8f0;
+
+            --primary:#2563eb;
+
+            --primary2:#7c3aed;
+
+            --success:#16a34a;
+
+            --danger:#e05b72;
+
+            --shadow:
+                0 20px 60px rgba(15,23,42,.09);
+
+            --menu-shadow:
+                0 25px 70px rgba(15,23,42,.18);
+
         }
 
-        body.sb-dark {
-            --sb-bg: #020617;
-            --sb-card: #0f172a;
-            --sb-card-2: #111827;
-            --sb-text: #f8fafc;
-            --sb-muted: #94a3b8;
-            --sb-border: rgba(148, 163, 184, .16);
-            --sb-primary: #6366f1;
-            --sb-primary-hover: #818cf8;
-            --sb-success: #22c55e;
-            --sb-shadow: 0 25px 70px rgba(0, 0, 0, .35);
+
+        html[data-theme="dark"] {
+
+            --bg:#07111f;
+
+            --card:#0e1b2d;
+
+            --card2:#14263d;
+
+            --text:#f4f8ff;
+
+            --muted:#9aacc1;
+
+            --border:#29405c;
+
+            --primary:#70a8ff;
+
+            --primary2:#8b7cff;
+
+            --success:#45cf8c;
+
+            --danger:#ef8095;
+
+            --shadow:
+                0 25px 70px rgba(0,0,0,.35);
+
+            --menu-shadow:
+                0 28px 80px rgba(0,0,0,.48);
+
         }
+
 
         * {
-            box-sizing: border-box;
+            box-sizing:border-box;
         }
+
 
         html {
-            scroll-behavior: smooth;
+            scroll-behavior:smooth;
+            background:var(--bg);
         }
 
-        body {
-            margin: 0;
-            background:
-                radial-gradient(
-                    circle at top left,
-                    rgba(99,102,241,.08),
-                    transparent 35%
-                ),
-                var(--sb-bg) !important;
 
-            color: var(--sb-text) !important;
+        body {
+
+            margin:0;
+
+            min-height:100vh;
+
+            color:var(--text);
 
             font-family:
                 Inter,
-                ui-sans-serif,
+                Poppins,
                 system-ui,
                 -apple-system,
                 BlinkMacSystemFont,
                 "Segoe UI",
                 sans-serif;
 
-            transition:
-                background .3s ease,
-                color .3s ease;
+            background:
+                radial-gradient(
+                    circle at 0 0,
+                    rgba(37,99,235,.12),
+                    transparent 32%
+                ),
+                radial-gradient(
+                    circle at 100% 5%,
+                    rgba(124,58,237,.10),
+                    transparent 28%
+                ),
+                var(--bg);
+
         }
+
 
         a {
-            color: inherit;
+            text-decoration:none !important;
         }
 
-        .sb-page {
-            min-height: 100vh;
-            padding: 35px 0 80px;
+
+        /* =====================================================
+           TOP
+        ====================================================== */
+
+        .wrap {
+
+            max-width:1320px;
+
+            margin:auto;
+
+            padding:
+                25px 20px 70px;
+
         }
 
-        .sb-container {
-            max-width: 1250px;
-            margin: auto;
-            padding: 0 18px;
+
+        .top {
+
+            position:sticky;
+
+            top:12px;
+
+            z-index:3000;
+
+            display:flex;
+
+            justify-content:space-between;
+
+            align-items:center;
+
+            gap:15px;
+
+            padding:
+                13px 17px;
+
+            margin-bottom:22px;
+
+            background:
+                color-mix(
+                    in srgb,
+                    var(--card) 93%,
+                    transparent
+                );
+
+            border:
+                1px solid var(--border);
+
+            border-radius:
+                20px;
+
+            box-shadow:
+                var(--shadow);
+
+            backdrop-filter:
+                blur(20px);
+
         }
 
-        /* ================================
-           TOP NAVIGATION
-        ================================= */
 
-        .sb-topbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 15px;
-            margin-bottom: 25px;
-            padding: 15px 20px;
+        .brand {
 
-            background: var(--sb-card);
-            border: 1px solid var(--sb-border);
-            border-radius: 22px;
+            display:flex;
 
-            box-shadow: var(--sb-shadow);
+            align-items:center;
+
+            gap:11px;
+
+            color:var(--text);
+
+            font-weight:950;
+
         }
 
-        .sb-brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
 
-            font-weight: 800;
-            font-size: 20px;
-            text-decoration: none;
-        }
+        .brand-icon {
 
-        .sb-brand-icon {
-            width: 42px;
-            height: 42px;
+            width:44px;
 
-            display: grid;
-            place-items: center;
+            height:44px;
 
-            border-radius: 14px;
+            display:grid;
+
+            place-items:center;
+
+            border-radius:14px;
+
+            color:#fff;
 
             background:
                 linear-gradient(
                     135deg,
-                    #6366f1,
-                    #8b5cf6
+                    var(--primary),
+                    var(--primary2)
                 );
 
-            color: white;
-            box-shadow: 0 10px 25px rgba(99,102,241,.3);
+            box-shadow:
+                0 12px 28px
+                rgba(37,99,235,.25);
+
         }
 
-        .sb-top-actions {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
+
+        .brand-text strong {
+
+            display:block;
+
+            color:var(--primary);
+
+            font-size:14px;
+
+            letter-spacing:.13em;
+
         }
 
-        .sb-nav-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
 
-            padding: 10px 14px;
+        .brand-text small {
 
-            border-radius: 12px;
+            display:block;
 
-            border: 1px solid var(--sb-border);
+            margin-top:3px;
 
-            background: var(--sb-card-2);
+            color:var(--muted);
 
-            color: var(--sb-text) !important;
+            font-size:9px;
 
-            text-decoration: none;
+            letter-spacing:.13em;
 
-            font-size: 14px;
-            font-weight: 600;
-
-            transition: .2s ease;
         }
 
-        .sb-nav-btn:hover {
-            transform: translateY(-2px);
-            border-color: var(--sb-primary);
-            color: var(--sb-primary) !important;
+
+        /* =====================================================
+           3 DOT MENU
+        ====================================================== */
+
+        .menu-wrap {
+
+            position:relative;
+
         }
 
-        /* ================================
-           PRODUCT MAIN CARD
-        ================================= */
+
+        .menu-button {
+
+            width:48px;
+
+            height:48px;
+
+            display:grid;
+
+            place-items:center;
+
+            border:
+                1px solid var(--border);
+
+            border-radius:15px;
+
+            background:
+                var(--card2);
+
+            color:
+                var(--text);
+
+            font-size:20px;
+
+            cursor:pointer;
+
+            transition:.2s ease;
+
+            box-shadow:
+                0 8px 24px var(--shadow);
+
+        }
+
+
+        .menu-button:hover,
+        .menu-button.active {
+
+            color:#fff;
+
+            border-color:transparent;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--primary),
+                    var(--primary2)
+                );
+
+            transform:
+                translateY(-2px);
+
+        }
+
+
+        .customer-menu {
+
+            position:absolute;
+
+            right:0;
+
+            top:
+                calc(100% + 12px);
+
+            width:285px;
+
+            padding:10px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius:20px;
+
+            background:
+                var(--card);
+
+            box-shadow:
+                var(--menu-shadow);
+
+            backdrop-filter:
+                blur(25px);
+
+            opacity:0;
+
+            visibility:hidden;
+
+            transform:
+                translateY(-8px)
+                scale(.97);
+
+            transform-origin:
+                top right;
+
+            transition:.2s ease;
+
+        }
+
+
+        .customer-menu.open {
+
+            opacity:1;
+
+            visibility:visible;
+
+            transform:
+                translateY(0)
+                scale(1);
+
+        }
+
+
+        .menu-header {
+
+            padding:
+                13px 14px;
+
+            margin-bottom:6px;
+
+            border-radius:15px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(37,99,235,.10),
+                    rgba(124,58,237,.07)
+                );
+
+            border:
+                1px solid var(--border);
+
+        }
+
+
+        .menu-header strong {
+
+            display:block;
+
+            color:var(--text);
+
+            font-size:14px;
+
+            font-weight:900;
+
+        }
+
+
+        .menu-header span {
+
+            display:block;
+
+            margin-top:3px;
+
+            color:var(--muted);
+
+            font-size:11px;
+
+        }
+
+
+        .menu-item {
+
+            width:100%;
+
+            display:flex;
+
+            align-items:center;
+
+            gap:12px;
+
+            padding:12px;
+
+            margin:3px 0;
+
+            border:
+                1px solid transparent;
+
+            border-radius:13px;
+
+            background:transparent;
+
+            color:var(--text);
+
+            font-size:12px;
+
+            font-weight:800;
+
+            transition:.18s ease;
+
+        }
+
+
+        .menu-item:hover {
+
+            color:var(--primary);
+
+            background:var(--card2);
+
+            border-color:var(--border);
+
+            transform:
+                translateX(3px);
+
+        }
+
+
+        .menu-icon {
+
+            width:35px;
+
+            height:35px;
+
+            display:grid;
+
+            place-items:center;
+
+            flex-shrink:0;
+
+            border-radius:11px;
+
+            color:var(--primary);
+
+            background:
+                rgba(37,99,235,.10);
+
+        }
+
+
+        .menu-divider {
+
+            height:1px;
+
+            margin:
+                8px 4px;
+
+            background:
+                var(--border);
+
+        }
+
+
+        .menu-item.logout {
+
+            color:
+                var(--danger);
+
+        }
+
+
+        .menu-item.logout
+        .menu-icon {
+
+            color:
+                var(--danger);
+
+            background:
+                rgba(224,91,114,.10);
+
+        }
+
+
+        .menu-overlay {
+
+            position:fixed;
+
+            inset:0;
+
+            z-index:2500;
+
+            background:
+                rgba(2,6,23,.18);
+
+            backdrop-filter:
+                blur(2px);
+
+            opacity:0;
+
+            visibility:hidden;
+
+            transition:.2s ease;
+
+        }
+
+
+        .menu-overlay.open {
+
+            opacity:1;
+
+            visibility:visible;
+
+        }
+
+
+        /* =====================================================
+           PRODUCT
+        ====================================================== */
 
         .product-shell {
-            background: var(--sb-card);
 
-            border: 1px solid var(--sb-border);
+            padding:
+                25px;
 
-            border-radius: 30px;
+            background:
+                var(--card);
 
-            padding: 25px;
+            border:
+                1px solid var(--border);
 
-            box-shadow: var(--sb-shadow);
+            border-radius:
+                28px;
 
-            transition:
-                background .3s ease,
-                border .3s ease;
+            box-shadow:
+                var(--shadow);
+
         }
 
-        /* ================================
-           IMAGE SECTION
-        ================================= */
 
-        .product-gallery {
-            position: relative;
-        }
+        /* =====================================================
+           GALLERY
+        ====================================================== */
 
-        .product-main-image-wrap {
-            min-height: 520px;
+        .gallery-box {
 
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            height:560px;
+
+            display:grid;
+
+            place-items:center;
+
+            overflow:hidden;
+
+            border:
+                1px solid var(--border);
+
+            border-radius:
+                24px;
 
             background:
                 radial-gradient(
-                    circle at center,
-                    rgba(99,102,241,.08),
-                    transparent 60%
+                    circle,
+                    rgba(37,99,235,.10),
+                    transparent 62%
                 ),
-                var(--sb-card-2);
+                var(--card2);
 
-            border: 1px solid var(--sb-border);
-
-            border-radius: 25px;
-
-            overflow: hidden;
         }
 
-        .product-main-image {
-            width: 100%;
-            height: min(62vw, 520px);
 
-            object-fit: contain;
+        .main-image {
 
-            padding: 25px;
+            width:100%;
 
-            transition:
-                transform .35s ease,
-                opacity .2s ease;
+            height:100%;
+
+            object-fit:contain;
+
+            padding:28px;
+
+            transition:.35s ease;
+
         }
 
-        .product-main-image:hover {
-            transform: scale(1.025);
+
+        .main-image:hover {
+
+            transform:
+                scale(1.025);
+
         }
 
-        .product-thumbnails {
-            display: flex;
-            gap: 10px;
 
-            flex-wrap: wrap;
+        .thumbs {
 
-            margin-top: 15px;
+            display:flex;
+
+            gap:9px;
+
+            flex-wrap:wrap;
+
+            margin-top:13px;
+
         }
 
-        .product-thumb {
-            width: 75px;
-            height: 75px;
 
-            padding: 4px;
+        .thumb {
 
-            border-radius: 15px;
+            width:72px;
 
-            background: var(--sb-card);
+            height:72px;
 
-            border: 2px solid var(--sb-border);
+            padding:3px;
 
-            overflow: hidden;
+            overflow:hidden;
 
-            transition: .2s ease;
+            border:
+                2px solid var(--border);
+
+            border-radius:14px;
+
+            background:
+                var(--card);
+
+            cursor:pointer;
+
+            transition:.2s ease;
+
         }
 
-        .product-thumb:hover,
-        .product-thumb.active {
-            border-color: var(--sb-primary);
 
-            transform: translateY(-2px);
+        .thumb:hover,
+        .thumb.active {
+
+            border-color:
+                var(--primary);
+
+            transform:
+                translateY(-2px);
 
             box-shadow:
-                0 8px 20px rgba(99,102,241,.18);
+                0 8px 20px var(--shadow);
+
         }
 
-        .product-thumb img {
-            width: 100%;
-            height: 100%;
 
-            object-fit: cover;
+        .thumb img {
 
-            border-radius: 10px;
+            width:100%;
+
+            height:100%;
+
+            object-fit:cover;
+
+            border-radius:9px;
+
         }
 
-        /* ================================
+
+        /* =====================================================
            PRODUCT INFO
-        ================================= */
+        ====================================================== */
 
-        .product-info {
-            height: 100%;
-            padding: 10px 5px;
+        .info {
+
+            padding:
+                8px 6px;
+
         }
 
-        .product-category {
-            display: inline-flex;
 
-            padding: 7px 12px;
+        .category {
 
-            border-radius: 999px;
+            display:inline-flex;
 
-            background: rgba(99,102,241,.1);
+            padding:
+                7px 11px;
 
-            color: var(--sb-primary);
+            border-radius:
+                999px;
 
-            font-size: 12px;
-            font-weight: 800;
+            color:
+                var(--primary);
 
-            text-transform: uppercase;
+            background:
+                rgba(37,99,235,.10);
 
-            letter-spacing: .5px;
+            font-size:
+                10px;
+
+            font-weight:
+                950;
+
+            text-transform:
+                uppercase;
+
+            letter-spacing:
+                .08em;
+
         }
 
-        .product-title {
-            margin-top: 15px;
 
-            font-size: clamp(28px, 4vw, 44px);
+        .title {
 
-            line-height: 1.08;
+            margin:
+                15px 0 10px;
 
-            font-weight: 850;
+            color:
+                var(--text);
 
-            letter-spacing: -.8px;
+            font-size:
+                clamp(
+                    30px,
+                    4vw,
+                    48px
+                );
 
-            color: var(--sb-text);
+            line-height:
+                1.04;
+
+            letter-spacing:
+                -.045em;
+
+            font-weight:
+                950;
+
         }
 
-        .product-description {
-            color: var(--sb-muted);
 
-            line-height: 1.8;
+        .desc {
 
-            margin-top: 15px;
+            margin:0;
+
+            color:
+                var(--muted);
+
+            line-height:
+                1.8;
+
+            font-size:
+                14px;
+
         }
 
-        .price-area {
-            display: flex;
-            align-items: center;
-            gap: 12px;
 
-            flex-wrap: wrap;
+        /* =====================================================
+           PRICE
+        ====================================================== */
 
-            margin: 22px 0;
+        .price-row {
+
+            display:flex;
+
+            align-items:center;
+
+            gap:11px;
+
+            flex-wrap:wrap;
+
+            margin:
+                21px 0;
+
         }
 
-        .current-price {
-            font-size: 34px;
-            font-weight: 850;
-            color: var(--sb-text);
+
+        .price {
+
+            color:
+                var(--text);
+
+            font-size:
+                35px;
+
+            font-weight:
+                950;
+
         }
 
-        .old-price {
-            color: var(--sb-muted);
-            text-decoration: line-through;
+
+        .old {
+
+            color:
+                var(--muted);
+
+            font-size:
+                13px;
+
+            text-decoration:
+                line-through;
+
         }
 
-        .discount-badge {
-            padding: 6px 10px;
 
-            border-radius: 9px;
+        .discount {
 
-            background: rgba(34,197,94,.12);
+            padding:
+                7px 10px;
 
-            color: var(--sb-success);
+            border-radius:
+                9px;
 
-            font-size: 13px;
-            font-weight: 800;
+            color:
+                var(--success);
+
+            background:
+                rgba(22,163,74,.11);
+
+            font-size:
+                11px;
+
+            font-weight:
+                900;
+
         }
 
-        /* ================================
-           PRODUCT DETAILS
-        ================================= */
 
-        .product-details-grid {
-            display: grid;
+        /* =====================================================
+           DETAILS
+        ====================================================== */
+
+        .details {
+
+            display:grid;
 
             grid-template-columns:
-                repeat(2, minmax(0,1fr));
+                repeat(2,1fr);
 
-            gap: 10px;
+            gap:9px;
 
-            margin-top: 20px;
+            margin-top:
+                18px;
+
         }
 
-        .detail-item {
-            padding: 13px;
 
-            border: 1px solid var(--sb-border);
+        .detail {
 
-            border-radius: 14px;
+            padding:
+                14px;
 
-            background: var(--sb-card-2);
+            border:
+                1px solid var(--border);
+
+            border-radius:
+                14px;
+
+            background:
+                var(--card2);
+
+            transition:.2s ease;
+
         }
 
-        .detail-label {
-            display: block;
 
-            color: var(--sb-muted);
+        .detail:hover {
 
-            font-size: 12px;
+            border-color:
+                var(--primary);
 
-            margin-bottom: 3px;
+            transform:
+                translateY(-2px);
+
         }
 
-        .detail-value {
-            color: var(--sb-text);
 
-            font-size: 14px;
+        .label {
 
-            font-weight: 700;
+            display:block;
+
+            margin-bottom:
+                4px;
+
+            color:
+                var(--muted);
+
+            font-size:
+                10px;
+
         }
 
-        /* ================================
+
+        .value {
+
+            color:
+                var(--text);
+
+            font-size:
+                13px;
+
+            font-weight:
+                850;
+
+        }
+
+
+        /* =====================================================
            SELLER
-        ================================= */
+        ====================================================== */
 
-        .seller-card {
-            margin-top: 20px;
+        .seller {
 
-            padding: 17px;
+            margin-top:
+                18px;
 
-            border-radius: 18px;
+            padding:
+                16px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius:
+                17px;
 
             background:
                 linear-gradient(
                     135deg,
-                    rgba(99,102,241,.10),
-                    rgba(139,92,246,.04)
+                    rgba(37,99,235,.10),
+                    rgba(124,58,237,.05)
                 );
 
-            border: 1px solid var(--sb-border);
         }
 
-        .seller-title {
-            font-size: 12px;
 
-            color: var(--sb-muted);
+        .seller strong {
 
-            text-transform: uppercase;
+            display:block;
 
-            letter-spacing: .6px;
+            margin:
+                5px 0 2px;
+
+            color:
+                var(--text);
+
+            font-size:
+                16px;
+
         }
 
-        .seller-name {
-            margin-top: 5px;
 
-            font-size: 17px;
+        .seller span {
 
-            font-weight: 800;
+            color:
+                var(--muted);
+
+            font-size:
+                11px;
+
         }
 
-        .seller-meta {
-            color: var(--sb-muted);
 
-            font-size: 13px;
-        }
-
-        /* ================================
+        /* =====================================================
            BUTTONS
-        ================================= */
+        ====================================================== */
 
-        .sb-btn {
-            display: inline-flex;
+        .actions {
 
-            align-items: center;
-            justify-content: center;
+            display:flex;
 
-            gap: 8px;
+            flex-wrap:wrap;
 
-            min-height: 48px;
+            gap:9px;
 
-            padding: 11px 18px;
+            margin-top:
+                19px;
 
-            border-radius: 14px;
-
-            border: 1px solid var(--sb-border);
-
-            font-weight: 750;
-
-            text-decoration: none;
-
-            cursor: pointer;
-
-            transition: .2s ease;
         }
 
-        .sb-btn:hover {
-            transform: translateY(-2px);
+
+        .btnx {
+
+            min-height:
+                46px;
+
+            display:inline-flex;
+
+            align-items:center;
+
+            justify-content:center;
+
+            gap:7px;
+
+            padding:
+                10px 16px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius:
+                12px;
+
+            background:
+                var(--card2);
+
+            color:
+                var(--text);
+
+            font-size:
+                12px;
+
+            font-weight:
+                850;
+
+            cursor:pointer;
+
+            transition:.2s ease;
+
         }
 
-        .sb-btn-primary {
+
+        .btnx:hover {
+
+            transform:
+                translateY(-2px);
+
+            border-color:
+                var(--primary);
+
+            color:
+                var(--primary);
+
+        }
+
+
+        .primary {
+
+            color:#fff !important;
+
+            border-color:
+                transparent;
+
             background:
                 linear-gradient(
                     135deg,
-                    #6366f1,
-                    #7c3aed
+                    var(--primary),
+                    var(--primary2)
                 );
 
-            border-color: transparent;
-
-            color: white !important;
-
-            box-shadow:
-                0 10px 25px rgba(99,102,241,.25);
         }
 
-        .sb-btn-success {
+
+        .primary:hover {
+
+            color:#fff !important;
+
+        }
+
+
+        .success {
+
+            color:#fff !important;
+
+            border-color:
+                transparent;
+
             background:
                 linear-gradient(
                     135deg,
@@ -519,332 +1152,729 @@
                     #22c55e
                 );
 
-            border-color: transparent;
-
-            color: white !important;
         }
 
-        .sb-btn-outline {
-            background: var(--sb-card);
 
-            color: var(--sb-text) !important;
+        .success:hover {
+
+            color:#fff !important;
+
         }
 
-        .sb-btn-outline:hover {
-            border-color: var(--sb-primary);
 
-            color: var(--sb-primary) !important;
-        }
-
-        .action-row {
-            display: flex;
-
-            flex-wrap: wrap;
-
-            gap: 10px;
-
-            margin-top: 22px;
-        }
-
-        /* ================================
+        /* =====================================================
            QUANTITY
-        ================================= */
+        ====================================================== */
 
-        .quantity-box {
-            display: inline-flex;
+        .qty {
 
-            overflow: hidden;
+            height:46px;
 
-            border-radius: 14px;
+            display:inline-flex;
 
-            border: 1px solid var(--sb-border);
+            overflow:hidden;
 
-            background: var(--sb-card);
+            border:
+                1px solid var(--border);
+
+            border-radius:
+                12px;
+
+            background:
+                var(--card);
+
         }
 
-        .quantity-box button {
-            width: 44px;
 
-            border: 0;
+        .qty button {
 
-            background: var(--sb-card-2);
+            width:43px;
 
-            color: var(--sb-text);
+            border:0;
 
-            font-size: 20px;
+            background:
+                var(--card2);
 
-            cursor: pointer;
+            color:
+                var(--text);
+
+            font-size:
+                19px;
+
+            cursor:pointer;
+
         }
 
-        .quantity-box input {
-            width: 60px;
 
-            border: 0;
+        .qty input {
 
-            border-left: 1px solid var(--sb-border);
-            border-right: 1px solid var(--sb-border);
+            width:56px;
 
-            text-align: center;
+            border:0;
 
-            background: var(--sb-card);
+            border-left:
+                1px solid var(--border);
 
-            color: var(--sb-text);
+            border-right:
+                1px solid var(--border);
 
-            outline: none;
+            outline:0;
+
+            text-align:center;
+
+            background:
+                var(--card);
+
+            color:
+                var(--text);
+
         }
 
-        /* ================================
+
+        /* =====================================================
            AI TRY ON
-        ================================= */
+        ====================================================== */
 
-        .ai-card {
-            margin-top: 25px;
+        .ai {
 
-            padding: 22px;
+            margin-top:
+                24px;
 
-            border-radius: 22px;
+            padding:
+                21px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius:
+                21px;
 
             background:
                 linear-gradient(
                     135deg,
-                    rgba(99,102,241,.12),
-                    rgba(139,92,246,.06)
+                    rgba(37,99,235,.10),
+                    rgba(124,58,237,.06)
                 );
 
-            border: 1px solid var(--sb-border);
         }
 
-        .ai-card h2 {
-            font-weight: 850;
+
+        .ai h2 {
+
+            margin-bottom:
+                7px;
+
+            color:
+                var(--text);
+
+            font-size:
+                20px;
+
+            font-weight:
+                950;
+
         }
 
-        .ai-card p {
-            color: var(--sb-muted);
+
+        .ai p {
+
+            color:
+                var(--muted);
+
+            font-size:
+                12px;
+
         }
 
-        .ai-card .form-control {
-            background: var(--sb-card);
 
-            border-color: var(--sb-border);
+        .ai .form-control {
 
-            color: var(--sb-text);
+            background:
+                var(--card);
+
+            border-color:
+                var(--border);
+
+            color:
+                var(--text);
+
         }
 
-        .ai-card .form-control::file-selector-button {
-            background: var(--sb-card-2);
-
-            color: var(--sb-text);
-
-            border: 0;
-        }
 
         #tryOnPreview,
         #tryOnResult {
-            border-radius: 18px;
 
-            border: 1px solid var(--sb-border);
+            width:100%;
 
-            box-shadow: var(--sb-shadow);
+            max-height:
+                520px;
+
+            object-fit:
+                contain;
+
+            border:
+                1px solid var(--border);
+
+            border-radius:
+                17px;
+
+            box-shadow:
+                var(--shadow);
+
         }
 
-        /* ================================
-           RELATED PRODUCTS
-        ================================= */
 
-        .related-section {
-            margin-top: 35px;
+        /* =====================================================
+           RELATED
+        ====================================================== */
+
+        .related {
+
+            margin-top:
+                34px;
+
         }
 
-        .section-heading {
-            display: flex;
 
-            align-items: center;
-            justify-content: space-between;
+        .related-head {
 
-            margin-bottom: 18px;
+            display:flex;
+
+            align-items:center;
+
+            justify-content:space-between;
+
+            gap:15px;
+
+            margin-bottom:
+                15px;
+
         }
 
-        .section-heading h2 {
-            font-size: 25px;
 
-            font-weight: 850;
+        .related-head h2 {
 
-            margin: 0;
+            margin:0;
+
+            color:
+                var(--text);
+
+            font-size:
+                26px;
+
+            font-weight:
+                950;
+
         }
+
+
+        .view-all {
+
+            display:inline-flex;
+
+            align-items:center;
+
+            gap:7px;
+
+            padding:
+                10px 13px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius:
+                11px;
+
+            background:
+                var(--card);
+
+            color:
+                var(--text);
+
+            font-size:
+                11px;
+
+            font-weight:
+                850;
+
+        }
+
+
+        .view-all:hover {
+
+            color:
+                var(--primary);
+
+            border-color:
+                var(--primary);
+
+        }
+
 
         .related-card {
-            display: block;
 
-            height: 100%;
+            height:100%;
 
-            overflow: hidden;
+            display:block;
 
-            background: var(--sb-card);
+            overflow:hidden;
 
-            border: 1px solid var(--sb-border);
+            border:
+                1px solid var(--border);
 
-            border-radius: 20px;
+            border-radius:
+                19px;
 
-            text-decoration: none;
+            background:
+                var(--card);
 
             box-shadow:
-                0 10px 30px rgba(15,23,42,.05);
+                0 10px 35px var(--shadow);
 
-            transition: .25s ease;
+            transition:.25s ease;
+
         }
+
 
         .related-card:hover {
-            transform: translateY(-6px);
 
-            border-color: rgba(99,102,241,.5);
+            transform:
+                translateY(-6px);
 
-            box-shadow:
-                0 20px 45px rgba(15,23,42,.12);
+            border-color:
+                var(--primary);
+
         }
 
-        .related-image {
-            width: 100%;
+        .related-card--clickable { cursor:pointer; }
 
-            height: 190px;
-
-            object-fit: cover;
-
-            background: var(--sb-card-2);
+        .related-view-product {
+            display:inline-flex;
+            align-items:center;
+            margin:0 12px 13px;
+            padding:7px 10px;
+            border-radius:9px;
+            background:var(--primary);
+            color:#fff;
+            font-size:12px;
+            font-weight:800;
+            text-decoration:none;
         }
+
+        .related-view-product:hover { color:#fff; filter:brightness(1.06); }
+
+
+        .related-img {
+
+            width:100%;
+
+            height:195px;
+
+            object-fit:contain;
+
+            padding:10px;
+
+            background:
+                var(--card2);
+
+        }
+
 
         .related-body {
-            padding: 15px;
+
+            padding:
+                14px;
+
         }
+
 
         .related-title {
-            color: var(--sb-text);
 
-            font-size: 15px;
+            color:
+                var(--text);
 
-            font-weight: 750;
+            font-size:
+                13px;
 
-            margin-bottom: 8px;
+            font-weight:
+                850;
+
         }
+
 
         .related-price {
-            color: var(--sb-primary);
 
-            font-weight: 850;
+            margin-top:
+                5px;
+
+            color:
+                var(--primary);
+
+            font-size:
+                15px;
+
+            font-weight:
+                950;
+
         }
 
-        /* ================================
+
+        /* =====================================================
            RESPONSIVE
-        ================================= */
+        ====================================================== */
 
-        @media (max-width: 991px) {
+        @media(max-width:991px) {
 
-            .product-main-image-wrap {
-                min-height: 400px;
-            }
-
-            .product-main-image {
-                height: 400px;
+            .gallery-box {
+                height:430px;
             }
 
         }
 
-        @media (max-width: 575px) {
 
-            .sb-page {
-                padding-top: 15px;
+        @media(max-width:575px) {
+
+            .wrap {
+                padding:
+                    12px 12px 50px;
+            }
+
+            .top {
+                top:8px;
+
+                border-radius:
+                    16px;
+            }
+
+            .brand-text small {
+                display:none;
+            }
+
+            .menu-button {
+                width:43px;
+                height:43px;
+            }
+
+            .customer-menu {
+
+                position:fixed;
+
+                top:70px;
+
+                right:12px;
+
+                width:
+                    min(
+                        300px,
+                        calc(100vw - 24px)
+                    );
+
             }
 
             .product-shell {
-                padding: 14px;
 
-                border-radius: 20px;
+                padding:
+                    13px;
+
+                border-radius:
+                    20px;
+
             }
 
-            .product-main-image-wrap {
-                min-height: 330px;
+            .gallery-box {
 
-                border-radius: 18px;
+                height:
+                    330px;
+
+                border-radius:
+                    18px;
+
             }
 
-            .product-main-image {
-                height: 330px;
-
-                padding: 15px;
+            .main-image {
+                padding:
+                    15px;
             }
 
-            .product-details-grid {
-                grid-template-columns: 1fr;
+            .details {
+                grid-template-columns:
+                    1fr;
             }
 
-            .action-row > * {
-                width: 100%;
+            .actions > * {
+                width:
+                    100%;
             }
 
-            .sb-btn {
-                width: 100%;
+            .btnx {
+                width:
+                    100%;
             }
 
-            .sb-topbar {
-                border-radius: 17px;
+            .related-head {
+                align-items:
+                    flex-start;
+
+                flex-direction:
+                    column;
             }
+
         }
+
     </style>
+
 </head>
 
-<body
-    data-sb-theme="{{ auth()->check() ? (auth()->user()->dark_mode ?? 'system') : 'system' }}"
->
 
-<div class="sb-page">
+<body>
 
-    <div class="sb-container">
 
-        <!-- TOP BAR -->
-        <div class="sb-topbar">
+<!-- MENU OVERLAY -->
 
-            <a href="{{ route('products.index') }}" class="sb-brand">
+<div
+    class="menu-overlay"
+    id="menuOverlay"
+    hidden
+></div>
 
-                <span class="sb-brand-icon">
-                    🛒
-                </span>
 
-                <span>
+<div class="wrap">
+
+
+    <!-- =====================================================
+         TOP BAR
+    ====================================================== -->
+
+    <div class="top">
+
+        <a
+            href="{{ route('products.index') }}"
+            class="brand"
+        >
+
+            <span class="brand-icon">
+
+                <i class="fa-solid fa-basket-shopping"></i>
+
+            </span>
+
+            <span class="brand-text">
+
+                <strong>
                     SMART BASKET
-                </span>
+                </strong>
 
-            </a>
+                <small>
+                    PRODUCT DETAILS
+                </small>
 
-            <div class="sb-top-actions">
+            </span>
+
+        </a>
+
+
+        <!-- 3 DOTS -->
+
+        <div class="menu-wrap" hidden aria-hidden="true" style="display:none!important">
+
+            <button
+                type="button"
+                class="menu-button"
+                id="menuButton"
+                aria-label="Open customer menu"
+                aria-expanded="false"
+            >
+
+                <i class="fa-solid fa-ellipsis-vertical"></i>
+
+            </button>
+
+
+            <div
+                class="customer-menu"
+                id="customerMenu"
+            >
+
+                <div class="menu-header">
+
+                    @auth
+
+                        <strong>
+                            Hi, {{ auth()->user()->name ?? 'Customer' }}
+                        </strong>
+
+                        <span>
+                            Manage your Smart Basket account
+                        </span>
+
+                    @else
+
+                        <strong>
+                            SMART BASKET
+                        </strong>
+
+                        <span>
+                            Your smarter shopping menu
+                        </span>
+
+                    @endauth
+
+                </div>
+
 
                 <a
                     href="{{ route('products.index') }}"
-                    class="sb-nav-btn"
+                    class="menu-item"
                 >
-                    🛍 Products
+
+                    <span class="menu-icon">
+                        <i class="fa-solid fa-house"></i>
+                    </span>
+
+                    <span>
+                        Home / Products
+                    </span>
+
                 </a>
+
+
+                <a
+                    href="{{ route('products.index') }}"
+                    class="menu-item"
+                >
+
+                    <span class="menu-icon">
+                        <i class="fa-solid fa-store"></i>
+                    </span>
+
+                    <span>
+                        All Products
+                    </span>
+
+                </a>
+
 
                 <a
                     href="{{ route('cart.index') }}"
-                    class="sb-nav-btn"
+                    class="menu-item"
                 >
-                    🛒 Cart
+
+                    <span class="menu-icon">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                    </span>
+
+                    <span>
+                        My Cart
+                    </span>
+
                 </a>
+
 
                 @auth
 
                     <a
                         href="{{ route('wishlist') }}"
-                        class="sb-nav-btn"
+                        class="menu-item"
                     >
-                        ❤️ Wishlist
+
+                        <span class="menu-icon">
+                            <i class="fa-regular fa-heart"></i>
+                        </span>
+
+                        <span>
+                            Wishlist
+                        </span>
+
                     </a>
 
-                    <a
-                        href="{{ route('settings') }}"
-                        class="sb-nav-btn"
+
+                    @if(Route::has('profile'))
+
+                        <a
+                            href="{{ route('profile') }}"
+                            class="menu-item"
+                        >
+
+                            <span class="menu-icon">
+                                <i class="fa-solid fa-user"></i>
+                            </span>
+
+                            <span>
+                                My Profile
+                            </span>
+
+                        </a>
+
+                    @endif
+
+
+                    @if(Route::has('orders'))
+
+                        <a
+                            href="{{ route('orders') }}"
+                            class="menu-item"
+                        >
+
+                            <span class="menu-icon">
+                                <i class="fa-solid fa-box"></i>
+                            </span>
+
+                            <span>
+                                My Orders
+                            </span>
+
+                        </a>
+
+                    @endif
+
+
+                    @if(Route::has('settings'))
+
+                        <a
+                            href="{{ route('settings') }}"
+                            class="menu-item"
+                        >
+
+                            <span class="menu-icon">
+                                <i class="fa-solid fa-gear"></i>
+                            </span>
+
+                            <span>
+                                Settings
+                            </span>
+
+                        </a>
+
+                    @endif
+
+
+                    <div class="menu-divider"></div>
+
+
+                    <form
+                        action="{{ route('logout') }}"
+                        method="POST"
+                        style="margin:0"
                     >
-                        ⚙️ Settings
-                    </a>
+
+                        @csrf
+
+                        <button
+                            type="submit"
+                            class="menu-item logout"
+                        >
+
+                            <span class="menu-icon">
+                                <i class="fa-solid fa-right-from-bracket"></i>
+                            </span>
+
+                            <span>
+                                Logout
+                            </span>
+
+                        </button>
+
+                    </form>
 
                 @endauth
 
@@ -852,78 +1882,282 @@
 
         </div>
 
+    </div>
 
-        <!-- PRODUCT -->
-        <div class="product-shell">
 
-            <div class="row g-4">
+    <!-- =====================================================
+         PRODUCT
+    ====================================================== -->
 
-                <!-- GALLERY -->
-                <div class="col-lg-6">
+    <div class="product-shell">
 
-                    <div class="product-gallery">
+        <div class="row g-4">
 
-                        @php
 
-                            $gallery = collect([
-                                [
-                                    'url' => asset(
-                                        'products/' . $product->image
+            <!-- GALLERY -->
+
+            <div class="col-lg-6">
+
+                @php
+
+                    $gallery = collect([
+                        [
+                            'url' =>
+                                asset(
+                                    'products/' .
+                                    $product->image
+                                ),
+
+                            'label' => 'Main',
+
+                            'image_id' => null
+                        ]
+                    ])->merge(
+
+                        $product->images->map(
+                            fn($image) => [
+                                'url' =>
+                                    asset(
+                                        'storage/' .
+                                        $image->path
                                     ),
-                                    'label' => 'Main',
-                                    'image_id' => null
-                                ]
-                            ])->merge(
 
-                                $product->images->map(
-                                    fn ($image) => [
-                                        'url' => asset(
-                                            'storage/' . $image->path
-                                        ),
-                                        'label' => 'Product view',
-                                        'image_id' => $image->id
-                                    ]
-                                )
+                                'label' =>
+                                    'Product view',
 
-                            );
+                                'image_id' =>
+                                    $image->id
+                            ]
+                        )
 
-                        @endphp
+                    );
+
+                @endphp
 
 
-                        <div class="product-main-image-wrap">
+                <div class="gallery-box">
 
-                            <img
-                                id="mainProductImage"
-                                src="{{ $gallery->first()['url'] }}"
-                                class="product-main-image"
-                                alt="{{ $product->name }}"
-                                onerror="this.style.opacity='.25';"
+                    <img
+                        id="mainProductImage"
+                        src="{{ $gallery->first()['url'] }}"
+                        class="main-image"
+                        alt="{{ $product->name }}"
+                        onerror="this.style.opacity='.25'"
+                    >
+
+                </div>
+
+
+                @if($gallery->count() > 1)
+
+                    <div class="thumbs">
+
+                        @foreach($gallery as $index => $image)
+
+                            <button
+                                type="button"
+                                class="thumb {{ $index === 0 ? 'active' : '' }}"
+                                data-image="{{ $image['url'] }}"
+                                data-product-image-id="{{ $image['image_id'] }}"
                             >
 
-                        </div>
+                                <img
+                                    src="{{ $image['url'] }}"
+                                    alt="{{ $image['label'] }}"
+                                >
+
+                            </button>
+
+                        @endforeach
+
+                    </div>
+
+                @endif
+
+            </div>
 
 
-                        @if($gallery->count() > 1)
+            <!-- INFO -->
 
-                            <div class="product-thumbnails">
+            <div class="col-lg-6">
 
-                                @foreach($gallery as $index => $image)
+                <div class="info">
 
-                                    <button
-                                        type="button"
-                                        class="product-thumb {{ $index === 0 ? 'active' : '' }}"
-                                        data-image="{{ $image['url'] }}"
-                                        data-product-image-id="{{ $image['image_id'] }}"
-                                    >
 
-                                        <img
-                                            src="{{ $image['url'] }}"
-                                            alt="{{ $image['label'] }}"
-                                        >
+                    @if($product->category)
 
-                                    </button>
+                        <span class="category">
+                            {{ $product->category }}
+                        </span>
 
-                                @endforeach
+                    @endif
+
+
+                    <h1 class="title">
+                        {{ $product->name }}
+                    </h1>
+
+
+                    @php
+
+                        $hasDiscount =
+                            $product->discount_price !== null &&
+                            (float)$product->discount_price <
+                            (float)$product->price;
+
+                        $finalPrice =
+                            $hasDiscount
+                            ? (float)$product->discount_price
+                            : (float)$product->price;
+
+                        $discountPercent =
+                            $hasDiscount &&
+                            (float)$product->price > 0
+                            ? round(
+                                (
+                                    1 -
+                                    (
+                                        $finalPrice /
+                                        (float)$product->price
+                                    )
+                                ) * 100
+                            )
+                            : 0;
+
+                    @endphp
+
+
+                    <div class="price-row">
+
+                        <span class="price">
+                            ₹{{ number_format($finalPrice,2) }}
+                        </span>
+
+                        @if($hasDiscount)
+
+                            <span class="old">
+                                ₹{{ number_format((float)$product->price,2) }}
+                            </span>
+
+                            <span class="discount">
+                                {{ $discountPercent }}% OFF
+                            </span>
+
+                        @endif
+
+                    </div>
+
+
+                    @if($product->description)
+
+                        <p class="desc">
+                            {{ $product->description }}
+                        </p>
+
+                    @endif
+
+
+                    <!-- DETAILS -->
+
+                    <div class="details">
+
+                        @if($product->brand)
+
+                            <div class="detail">
+
+                                <span class="label">
+                                    Brand
+                                </span>
+
+                                <span class="value">
+                                    {{ $product->brand }}
+                                </span>
+
+                            </div>
+
+                        @endif
+
+
+                        @if($product->rating !== null)
+
+                            <div class="detail">
+
+                                <span class="label">
+                                    Rating
+                                </span>
+
+                                <span class="value">
+                                    ⭐
+                                    {{ number_format((float)$product->rating,1) }}
+                                </span>
+
+                            </div>
+
+                        @endif
+
+
+                        @if($product->stock !== null)
+
+                            <div class="detail">
+
+                                <span class="label">
+                                    Available Stock
+                                </span>
+
+                                <span class="value">
+                                    {{ $product->stock }}
+                                </span>
+
+                            </div>
+
+                        @endif
+
+
+                        @if($product->size)
+
+                            <div class="detail">
+
+                                <span class="label">
+                                    Size
+                                </span>
+
+                                <span class="value">
+                                    {{ $product->size }}
+                                </span>
+
+                            </div>
+
+                        @endif
+
+
+                        @if($product->color)
+
+                            <div class="detail">
+
+                                <span class="label">
+                                    Color
+                                </span>
+
+                                <span class="value">
+                                    {{ $product->color }}
+                                </span>
+
+                            </div>
+
+                        @endif
+
+
+                        @if($product->status)
+
+                            <div class="detail">
+
+                                <span class="label">
+                                    Status
+                                </span>
+
+                                <span class="value">
+                                    {{ ucfirst($product->status) }}
+                                </span>
 
                             </div>
 
@@ -931,486 +2165,321 @@
 
                     </div>
 
-                </div>
 
+                    <!-- SELLER -->
 
-                <!-- INFORMATION -->
-                <div class="col-lg-6">
+                    @if($product->seller)
 
-                    <div class="product-info">
+                        <div class="seller">
 
-                        @if($product->category)
-
-                            <span class="product-category">
-                                {{ $product->category }}
+                            <span>
+                                Sold by
                             </span>
 
-                        @endif
+                            <strong>
+                                {{
+                                    $product->seller->shop_name
+                                    ?: $product->seller->seller_name
+                                }}
+                            </strong>
 
+                            <span>
 
-                        <h1 class="product-title">
-                            {{ $product->name }}
-                        </h1>
+                                {{ $product->seller->seller_name }}
 
+                                @if($product->seller->city)
 
-                        @php
+                                    ·
+                                    {{ $product->seller->city }}
 
-                            $hasDiscount =
-                                $product->discount_price !== null &&
-                                (float) $product->discount_price <
-                                (float) $product->price;
+                                @endif
 
-                            $finalPrice =
-                                $hasDiscount
-                                ? (float) $product->discount_price
-                                : (float) $product->price;
-
-                        @endphp
-
-
-                        <div class="price-area">
-
-                            <span class="current-price">
-                                ₹{{ number_format($finalPrice, 2) }}
                             </span>
-
-                            @if($hasDiscount)
-
-                                <span class="old-price">
-                                    ₹{{ number_format((float) $product->price, 2) }}
-                                </span>
-
-                                <span class="discount-badge">
-
-                                    {{ round(
-                                        (
-                                            1 -
-                                            (
-                                                $finalPrice /
-                                                (float) $product->price
-                                            )
-                                        ) * 100
-                                    ) }}% OFF
-
-                                </span>
-
-                            @endif
 
                         </div>
 
-
-                        @if($product->description)
-
-                            <p class="product-description">
-                                {{ $product->description }}
-                            </p>
-
-                        @endif
+                    @endif
 
 
-                        <!-- DETAILS -->
+                    <!-- WISHLIST -->
 
-                        <div class="product-details-grid">
+                    <div class="actions">
 
-                            @if($product->brand)
+                        <a
+                            href="{{ route('products.index') }}"
+                            class="btnx"
+                        >
 
-                                <div class="detail-item">
+                            <i class="fa-solid fa-arrow-left"></i>
 
-                                    <span class="detail-label">
-                                        Brand
-                                    </span>
+                            Back
 
-                                    <span class="detail-value">
-                                        {{ $product->brand }}
-                                    </span>
-
-                                </div>
-
-                            @endif
+                        </a>
 
 
-                            @if($product->rating !== null)
+                        @auth
 
-                                <div class="detail-item">
+                            <form
+                                action="{{ route('wishlist.add',$product->id) }}"
+                                method="POST"
+                            >
 
-                                    <span class="detail-label">
-                                        Rating
-                                    </span>
+                                @csrf
 
-                                    <span class="detail-value">
-                                        ⭐ {{ number_format((float) $product->rating, 1) }}
-                                    </span>
+                                <button
+                                    class="btnx"
+                                    type="submit"
+                                >
 
-                                </div>
+                                    <i class="fa-regular fa-heart"></i>
 
-                            @endif
+                                    Wishlist
 
+                                </button>
 
-                            @if($product->stock !== null)
+                            </form>
 
-                                <div class="detail-item">
+                        @endauth
 
-                                    <span class="detail-label">
-                                        Available Stock
-                                    </span>
-
-                                    <span class="detail-value">
-                                        {{ $product->stock }}
-                                    </span>
-
-                                </div>
-
-                            @endif
+                    </div>
 
 
-                            @if($product->size)
+                    <!-- CART -->
 
-                                <div class="detail-item">
+                    <form
+                        action="{{ route('cart.add',$product) }}"
+                        method="POST"
+                        class="actions"
+                    >
 
-                                    <span class="detail-label">
-                                        Size
-                                    </span>
-
-                                    <span class="detail-value">
-                                        {{ $product->size }}
-                                    </span>
-
-                                </div>
-
-                            @endif
+                        @csrf
 
 
-                            @if($product->color)
+                        <div>
 
-                                <div class="detail-item">
-
-                                    <span class="detail-label">
-                                        Color
-                                    </span>
-
-                                    <span class="detail-value">
-                                        {{ $product->color }}
-                                    </span>
-
-                                </div>
-
-                            @endif
+                            <span class="label mb-1">
+                                Quantity
+                            </span>
 
 
-                            @if($product->status)
+                            <div class="qty">
 
-                                <div class="detail-item">
-
-                                    <span class="detail-label">
-                                        Status
-                                    </span>
-
-                                    <span class="detail-value">
-                                        {{ ucfirst($product->status) }}
-                                    </span>
-
-                                </div>
-
-                            @endif
-
-                        </div>
+                                <button
+                                    type="button"
+                                    id="quantityMinus"
+                                >
+                                    −
+                                </button>
 
 
-                        <!-- SELLER -->
-
-                        @if($product->seller)
-
-                            <div class="seller-card">
-
-                                <div class="seller-title">
-                                    Sold by
-                                </div>
-
-                                <div class="seller-name">
-
-                                    {{ $product->seller->shop_name
-                                        ?: $product->seller->seller_name }}
-
-                                </div>
-
-                                <div class="seller-meta">
-
-                                    {{ $product->seller->seller_name }}
-
-                                    @if($product->seller->city)
-
-                                        · {{ $product->seller->city }}
-
+                                <input
+                                    id="quantity"
+                                    name="quantity"
+                                    value="1"
+                                    min="1"
+                                    @if($product->stock!==null)
+                                        max="{{ max(1,(int)$product->stock) }}"
                                     @endif
+                                    type="number"
+                                >
 
-                                </div>
+
+                                <button
+                                    type="button"
+                                    id="quantityPlus"
+                                >
+                                    +
+                                </button>
 
                             </div>
 
-                        @endif
+                        </div>
 
 
-                        <!-- MAIN ACTIONS -->
+                        <button
+                            type="submit"
+                            class="btnx primary"
+                            {{ $product->stock!==null && (int)$product->stock<1 ? 'disabled' : '' }}
+                        >
 
-                        <div class="action-row">
+                            <i class="fa-solid fa-cart-plus"></i>
 
-                            <a
-                                href="{{ route('products.index') }}"
-                                class="sb-btn sb-btn-outline"
+                            Add to Cart
+
+                        </button>
+
+
+                        <a
+                            class="btnx success"
+                            href="{{ url('/buy-now/'.$product->id) }}"
+                        >
+
+                            <i class="fa-solid fa-bolt"></i>
+
+                            Buy Now
+
+                        </a>
+
+                    </form>
+
+
+                    <!-- AI TRY ON -->
+
+                    <section
+                        class="ai"
+                        id="virtualTryOn"
+                    >
+
+                        <h2>
+                            ✨ AI Virtual Try-On
+                        </h2>
+
+                        <p>
+                            Upload your photo or use your camera
+                            to create an AI visual preview.
+                        </p>
+
+
+                        <div
+                            id="tryOnMessage"
+                            class="alert d-none"
+                            role="alert"
+                        ></div>
+
+
+                        <form
+                            id="tryOnForm"
+                            action="{{ route('products.virtual-try-on.generate',$product) }}"
+                            method="POST"
+                            enctype="multipart/form-data"
+                        >
+
+                            @csrf
+
+
+                            <input
+                                type="hidden"
+                                id="tryOnProductImageId"
+                                name="product_image_id"
                             >
-                                ← Back
-                            </a>
 
 
-                            @auth
+                            <input
+                                class="form-control"
+                                id="tryOnPhoto"
+                                name="photo"
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp"
+                                capture="user"
+                                required
+                            >
+
+
+                            <div class="actions">
+
+                                <button
+                                    class="btnx primary"
+                                    type="submit"
+                                    id="tryOnSubmit"
+                                >
+                                    ✨ Try Product On Me
+                                </button>
+
+
+                                <button
+                                    class="btnx d-none"
+                                    type="button"
+                                    id="tryOnRemove"
+                                >
+                                    Remove Photo
+                                </button>
+
+                            </div>
+
+                        </form>
+
+
+                        <img
+                            id="tryOnPreview"
+                            class="img-fluid d-none mt-3"
+                            alt="Customer photo preview"
+                        >
+
+
+                        <div
+                            class="mt-4 d-none"
+                            id="tryOnResultWrap"
+                        >
+
+                            <h3 class="h6 fw-bold">
+                                AI Virtual Try-On Result
+                            </h3>
+
+
+                            <img
+                                id="tryOnResult"
+                                class="img-fluid"
+                                alt="AI-generated virtual try-on preview"
+                            >
+
+
+                            <div class="actions">
+
+                                <button
+                                    class="btnx"
+                                    type="button"
+                                    id="tryOnAgain"
+                                >
+                                    🔄 Try Again
+                                </button>
+
+
+                                <label
+                                    class="btnx"
+                                    for="tryOnPhoto"
+                                >
+                                    📷 Change Photo
+                                </label>
+
+
+                                <button
+                                    class="btnx"
+                                    type="button"
+                                    id="tryOnProductImage"
+                                >
+                                    🖼 Change Product Image
+                                </button>
+
 
                                 <form
-                                    action="{{ route('wishlist.add', $product->id) }}"
+                                    action="{{ route('cart.add',$product) }}"
                                     method="POST"
                                 >
 
                                     @csrf
 
                                     <button
+                                        class="btnx primary"
                                         type="submit"
-                                        class="sb-btn sb-btn-outline"
                                     >
-                                        ❤️ Wishlist
+                                        🛒 Add to Cart
                                     </button>
 
                                 </form>
 
-                            @endauth
+
+                                <a
+                                    class="btnx success"
+                                    href="{{ url('/buy-now/'.$product->id) }}"
+                                >
+                                    ⚡ Buy Now
+                                </a>
+
+                            </div>
 
                         </div>
 
-
-                        <!-- CART -->
-
-                        <form
-                            action="{{ route('cart.add', $product) }}"
-                            method="POST"
-                            class="action-row"
-                        >
-
-                            @csrf
-
-                            <div>
-
-                                <label
-                                    for="quantity"
-                                    class="detail-label mb-2"
-                                >
-                                    Quantity
-                                </label>
-
-                                <div class="quantity-box">
-
-                                    <button
-                                        type="button"
-                                        id="quantityMinus"
-                                    >
-                                        −
-                                    </button>
-
-                                    <input
-                                        id="quantity"
-                                        name="quantity"
-                                        value="1"
-                                        min="1"
-                                        @if($product->stock !== null)
-                                            max="{{ max(1, (int) $product->stock) }}"
-                                        @endif
-                                        type="number"
-                                    >
-
-                                    <button
-                                        type="button"
-                                        id="quantityPlus"
-                                    >
-                                        +
-                                    </button>
-
-                                </div>
-
-                            </div>
-
-
-                            <button
-                                type="submit"
-                                class="sb-btn sb-btn-primary"
-                                {{ $product->stock !== null && (int) $product->stock < 1 ? 'disabled' : '' }}
-                            >
-                                🛒 Add to Cart
-                            </button>
-
-
-                            <a
-                                class="sb-btn sb-btn-success"
-                                href="{{ url('/buy-now/' . $product->id) }}"
-                            >
-                                ⚡ Buy Now
-                            </a>
-
-                        </form>
-
-
-                        <!-- AI TRY ON -->
-
-                        <section class="ai-card" id="virtualTryOn">
-
-                            <h2 class="h4">
-                                ✨ AI Virtual Try-On
-                            </h2>
-
-                            <p>
-                                Upload your photo or use your camera
-                                to create an AI visual preview.
-                            </p>
-
-                            <div
-                                id="tryOnMessage"
-                                class="alert d-none"
-                                role="alert"
-                            ></div>
-
-
-                            <form
-                                id="tryOnForm"
-                                action="{{ route('products.virtual-try-on.generate', $product) }}"
-                                method="POST"
-                                enctype="multipart/form-data"
-                            >
-
-                                @csrf
-
-                                <input
-                                    type="hidden"
-                                    id="tryOnProductImageId"
-                                    name="product_image_id"
-                                >
-
-
-                                <input
-                                    class="form-control"
-                                    id="tryOnPhoto"
-                                    name="photo"
-                                    type="file"
-                                    accept="image/jpeg,image/png,image/webp"
-                                    capture="user"
-                                    required
-                                >
-
-
-                                <div class="action-row">
-
-                                    <button
-                                        class="sb-btn sb-btn-primary"
-                                        type="submit"
-                                        id="tryOnSubmit"
-                                    >
-                                        ✨ Try Product On Me
-                                    </button>
-
-
-                                    <button
-                                        class="sb-btn sb-btn-outline d-none"
-                                        type="button"
-                                        id="tryOnRemove"
-                                    >
-                                        Remove Photo
-                                    </button>
-
-                                </div>
-
-                            </form>
-
-
-                            <img
-                                id="tryOnPreview"
-                                class="img-fluid d-none mt-3"
-                                alt="Customer photo preview"
-                                style="max-height:320px"
-                            >
-
-
-                            <div
-                                class="mt-4 d-none"
-                                id="tryOnResultWrap"
-                            >
-
-                                <h3 class="h5">
-                                    AI Virtual Try-On Result
-                                </h3>
-
-
-                                <img
-                                    id="tryOnResult"
-                                    class="img-fluid"
-                                    alt="AI-generated virtual try-on preview"
-                                    style="max-height:520px"
-                                >
-
-
-                                <div class="action-row">
-
-                                    <button
-                                        class="sb-btn sb-btn-outline"
-                                        type="button"
-                                        id="tryOnAgain"
-                                    >
-                                        🔄 Try Again
-                                    </button>
-
-
-                                    <label
-                                        class="sb-btn sb-btn-outline"
-                                        for="tryOnPhoto"
-                                    >
-                                        📷 Change Photo
-                                    </label>
-
-
-                                    <button
-                                        class="sb-btn sb-btn-outline"
-                                        type="button"
-                                        id="tryOnProductImage"
-                                    >
-                                        🖼 Change Product Image
-                                    </button>
-
-
-                                    <form
-                                        action="{{ route('cart.add', $product) }}"
-                                        method="POST"
-                                    >
-
-                                        @csrf
-
-                                        <button
-                                            class="sb-btn sb-btn-primary"
-                                            type="submit"
-                                        >
-                                            🛒 Add to Cart
-                                        </button>
-
-                                    </form>
-
-
-                                    <a
-                                        class="sb-btn sb-btn-success"
-                                        href="{{ url('/buy-now/' . $product->id) }}"
-                                    >
-                                        ⚡ Buy Now
-                                    </a>
-
-                                </div>
-
-                            </div>
-
-                        </section>
-
-                    </div>
+                    </section>
 
                 </div>
 
@@ -1418,87 +2487,100 @@
 
         </div>
 
-
-        <!-- RELATED PRODUCTS -->
-
-        @if($relatedProducts->isNotEmpty())
-
-            <section class="related-section">
-
-                <div class="section-heading">
-
-                    <h2>
-                        🛍 Related Products
-                    </h2>
-
-                    <a
-                        href="{{ route('products.index') }}"
-                        class="sb-nav-btn"
-                    >
-                        View All →
-                    </a>
-
-                </div>
+    </div>
 
 
-                <div class="row g-3">
+    <!-- =====================================================
+         RELATED PRODUCTS
+    ====================================================== -->
 
-                    @foreach($relatedProducts as $related)
+    @if($relatedProducts->isNotEmpty())
 
-                        <div class="col-6 col-md-3">
+        <section class="related">
 
-                            <a
-                                href="{{ route('product.show', $related) }}"
-                                class="related-card"
+            <div class="related-head">
+
+                <h2>
+                    Related Products
+                </h2>
+
+
+                <a
+                    href="{{ route('products.index') }}"
+                    class="view-all"
+                >
+
+                    View All
+
+                    <i class="fa-solid fa-arrow-right"></i>
+
+                </a>
+
+            </div>
+
+
+            <div class="row g-3">
+
+                @foreach($relatedProducts as $related)
+
+                    @php
+
+                        $relatedPrice =
+                            (float)(
+                                $related->discount_price &&
+                                $related->discount_price <
+                                $related->price
+
+                                    ? $related->discount_price
+
+                                    : $related->price
+                            );
+
+                    @endphp
+
+
+                    <div class="col-6 col-md-3">
+
+                        <article
+                            class="related-card related-card--clickable"
+                            data-product-url="{{ route('product.show', $related) }}"
+                            tabindex="0"
+                            role="link"
+                            aria-label="View {{ $related->name }}"
+                        >
+
+                            <img
+                                class="related-img"
+                                src="{{ asset('products/'.$related->image) }}"
+                                alt="{{ $related->name }}"
+                                onerror="this.style.opacity='.25'"
                             >
 
-                                <img
-                                    class="related-image"
-                                    src="{{ asset('products/' . $related->image) }}"
-                                    alt="{{ $related->name }}"
-                                    onerror="this.style.opacity='.25';"
-                                >
 
+                            <div class="related-body">
 
-                                <div class="related-body">
-
-                                    <div class="related-title">
-
-                                        {{ $related->name }}
-
-                                    </div>
-
-
-                                    <div class="related-price">
-
-                                        ₹{{ number_format(
-                                            (float)
-                                            (
-                                                $related->discount_price &&
-                                                $related->discount_price < $related->price
-                                                    ? $related->discount_price
-                                                    : $related->price
-                                            ),
-                                            2
-                                        ) }}
-
-                                    </div>
-
+                                <div class="related-title">
+                                    {{ $related->name }}
                                 </div>
 
-                            </a>
+                                <div class="related-price">
+                                    ₹{{ number_format($relatedPrice,2) }}
+                                </div>
 
-                        </div>
+                            </div>
 
-                    @endforeach
+                            <a href="{{ route('product.show', $related) }}" class="related-view-product">View Product</a>
+                        </article>
 
-                </div>
+                    </div>
 
-            </section>
+                @endforeach
 
-        @endif
+            </div>
 
-    </div>
+        </section>
+
+    @endif
 
 </div>
 
@@ -1507,63 +2589,134 @@
 
 
 <script>
-(function () {
 
-    /*
-    |--------------------------------------------------------------------------
-    | CUSTOMER THEME
-    |--------------------------------------------------------------------------
-    */
+(() => {
 
-    function applyCustomerTheme() {
 
-        const savedTheme =
-            "{{ auth()->check() ? (auth()->user()->dark_mode ?? 'system') : 'system' }}";
+    /* =====================================================
+       THREE DOT MENU
+    ====================================================== */
 
-        let theme = savedTheme;
+    const menuButton =
+        document.getElementById('menuButton');
 
-        if (theme === 'system') {
+    const menu =
+        document.getElementById('customerMenu');
 
-            theme =
-                window.matchMedia(
-                    '(prefers-color-scheme: dark)'
-                ).matches
-                    ? 'dark'
-                    : 'light';
-        }
+    const overlay =
+        document.getElementById('menuOverlay');
 
-        document.body.classList.toggle(
-            'sb-dark',
-            theme === 'dark'
+
+    function openMenu() {
+
+        menu.classList.add('open');
+
+        overlay.classList.add('open');
+
+        menuButton.classList.add('active');
+
+        menuButton.setAttribute(
+            'aria-expanded',
+            'true'
         );
 
-        document.body.dataset.sbTheme = theme;
     }
 
 
-    applyCustomerTheme();
+    function closeMenu() {
+
+        menu.classList.remove('open');
+
+        overlay.classList.remove('open');
+
+        menuButton.classList.remove('active');
+
+        menuButton.setAttribute(
+            'aria-expanded',
+            'false'
+        );
+
+    }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | LISTEN FOR THEME CHANGE
-    |--------------------------------------------------------------------------
-    */
+    menuButton.addEventListener(
+        'click',
+        event => {
 
-    window.addEventListener(
-        'sb-theme-changed',
-        applyCustomerTheme
+            event.stopPropagation();
+
+            if (
+                menu.classList.contains('open')
+            ) {
+
+                closeMenu();
+
+            } else {
+
+                openMenu();
+
+            }
+
+        }
     );
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | PRODUCT IMAGE GALLERY
-    |--------------------------------------------------------------------------
-    */
+    overlay.addEventListener(
+        'click',
+        closeMenu
+    );
+
+
+    document.addEventListener(
+        'keydown',
+        event => {
+
+            if (
+                event.key === 'Escape'
+            ) {
+
+                closeMenu();
+
+            }
+
+        }
+    );
+
+
+    document.querySelectorAll(
+        '.customer-menu a'
+    ).forEach(link => {
+
+        link.addEventListener(
+            'click',
+            closeMenu
+        );
+
+    });
+
+
+    document.querySelectorAll('.related-card--clickable').forEach(card => {
+        const visitProduct = event => {
+            if (event.target.closest('a, button, form, input, select, textarea, label')) return;
+            window.location.href = card.dataset.productUrl;
+        };
+
+        card.addEventListener('click', visitProduct);
+        card.addEventListener('keydown', event => {
+            if ((event.key === 'Enter' || event.key === ' ') && !event.target.closest('a, button, form, input, select, textarea, label')) {
+                event.preventDefault();
+                window.location.href = card.dataset.productUrl;
+            }
+        });
+    });
+
+
+    /* =====================================================
+       PRODUCT IMAGE GALLERY
+    ====================================================== */
 
     document
-        .querySelectorAll('.product-thumb')
+        .querySelectorAll('.thumb')
         .forEach(button => {
 
             button.addEventListener(
@@ -1571,123 +2724,166 @@
                 () => {
 
                     document
-                        .getElementById('mainProductImage')
+                        .getElementById(
+                            'mainProductImage'
+                        )
                         .src =
                         button.dataset.image;
 
 
                     document
-                        .getElementById('tryOnProductImageId')
+                        .getElementById(
+                            'tryOnProductImageId'
+                        )
                         .value =
-                        button.dataset.productImageId || '';
+                        button.dataset.productImageId
+                        || '';
 
 
                     document
-                        .querySelectorAll('.product-thumb')
-                        .forEach(item =>
-                            item.classList.remove('active')
+                        .querySelectorAll('.thumb')
+                        .forEach(
+                            item =>
+                                item.classList.remove(
+                                    'active'
+                                )
                         );
 
 
-                    button.classList.add('active');
+                    button.classList.add(
+                        'active'
+                    );
+
                 }
             );
 
         });
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | QUANTITY
-    |--------------------------------------------------------------------------
-    */
+    /* =====================================================
+       QUANTITY
+    ====================================================== */
 
     const quantity =
-        document.getElementById('quantity');
+        document.getElementById(
+            'quantity'
+        );
+
 
     if (quantity) {
 
-        const minus =
-            document.getElementById('quantityMinus');
-
-        const plus =
-            document.getElementById('quantityPlus');
-
-
-        const getLimit = () =>
-            Number(quantity.max) || Infinity;
+        const limit =
+            () =>
+                Number(quantity.max)
+                || Infinity;
 
 
-        minus.onclick = () => {
+        document
+            .getElementById(
+                'quantityMinus'
+            )
+            .onclick =
+            () => {
 
-            quantity.value =
-                Math.max(
-                    1,
-                    Number(quantity.value || 1) - 1
-                );
+                quantity.value =
+                    Math.max(
+                        1,
+                        Number(
+                            quantity.value || 1
+                        ) - 1
+                    );
 
-        };
-
-
-        plus.onclick = () => {
-
-            quantity.value =
-                Math.min(
-                    getLimit(),
-                    Number(quantity.value || 1) + 1
-                );
-
-        };
+            };
 
 
-        quantity.onchange = () => {
+        document
+            .getElementById(
+                'quantityPlus'
+            )
+            .onclick =
+            () => {
 
-            quantity.value =
-                Math.max(
-                    1,
+                quantity.value =
                     Math.min(
-                        getLimit(),
-                        Number(quantity.value || 1)
-                    )
-                );
+                        limit(),
+                        Number(
+                            quantity.value || 1
+                        ) + 1
+                    );
 
-        };
+            };
+
+
+        quantity.onchange =
+            () => {
+
+                quantity.value =
+                    Math.max(
+                        1,
+                        Math.min(
+                            limit(),
+                            Number(
+                                quantity.value || 1
+                            )
+                        )
+                    );
+
+            };
 
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | AI VIRTUAL TRY-ON
-    |--------------------------------------------------------------------------
-    */
+    /* =====================================================
+       AI VIRTUAL TRY-ON
+    ====================================================== */
 
     const form =
-        document.getElementById('tryOnForm');
+        document.getElementById(
+            'tryOnForm'
+        );
 
-    if (!form) return;
+
+    if (!form) {
+
+        return;
+
+    }
 
 
     const input =
-        document.getElementById('tryOnPhoto');
+        document.getElementById(
+            'tryOnPhoto'
+        );
 
     const preview =
-        document.getElementById('tryOnPreview');
+        document.getElementById(
+            'tryOnPreview'
+        );
 
     const message =
-        document.getElementById('tryOnMessage');
+        document.getElementById(
+            'tryOnMessage'
+        );
 
     const submit =
-        document.getElementById('tryOnSubmit');
+        document.getElementById(
+            'tryOnSubmit'
+        );
 
     const remove =
-        document.getElementById('tryOnRemove');
+        document.getElementById(
+            'tryOnRemove'
+        );
 
     const resultWrap =
-        document.getElementById('tryOnResultWrap');
+        document.getElementById(
+            'tryOnResultWrap'
+        );
 
     const result =
-        document.getElementById('tryOnResult');
+        document.getElementById(
+            'tryOnResult'
+        );
 
 
     function showMessage(
@@ -1695,7 +2891,8 @@
         success = false
     ) {
 
-        message.textContent = text;
+        message.textContent =
+            text;
 
         message.className =
             success
@@ -1712,11 +2909,18 @@
             const file =
                 input.files[0];
 
-            if (!file) return;
+
+            if (!file) {
+
+                return;
+
+            }
 
 
             preview.src =
-                URL.createObjectURL(file);
+                URL.createObjectURL(
+                    file
+                );
 
 
             preview.classList.remove(
@@ -1755,7 +2959,9 @@
 
 
     document
-        .getElementById('tryOnAgain')
+        .getElementById(
+            'tryOnAgain'
+        )
         ?.addEventListener(
             'click',
             () => {
@@ -1765,7 +2971,8 @@
                 );
 
                 form.scrollIntoView({
-                    behavior: 'smooth'
+                    behavior:
+                        'smooth'
                 });
 
             }
@@ -1773,14 +2980,12 @@
 
 
     document
-        .getElementById('tryOnProductImage')
+        .getElementById(
+            'tryOnProductImage'
+        )
         ?.addEventListener(
             'click',
             () => {
-
-                document
-                    .querySelector('.product-thumb')
-                    ?.focus();
 
                 showMessage(
                     'Select a product image thumbnail above.',
@@ -1797,7 +3002,9 @@
 
             event.preventDefault();
 
-            submit.disabled = true;
+
+            submit.disabled =
+                true;
 
 
             showMessage(
@@ -1812,9 +3019,11 @@
                     await fetch(
                         form.action,
                         {
-                            method: 'POST',
+                            method:
+                                'POST',
 
                             headers: {
+
                                 'Accept':
                                     'application/json',
 
@@ -1822,10 +3031,14 @@
                                     form.querySelector(
                                         '[name="_token"]'
                                     ).value
+
                             },
 
                             body:
-                                new FormData(form)
+                                new FormData(
+                                    form
+                                )
+
                         }
                     );
 
@@ -1871,15 +3084,54 @@
 
             } finally {
 
-                submit.disabled = false;
+                submit.disabled =
+                    false;
 
             }
 
         }
     );
 
+
+    /* =====================================================
+       THEME
+    ====================================================== */
+
+    window.addEventListener(
+        'sb-theme-changed',
+        event => {
+
+            const theme =
+                event.detail?.theme;
+
+
+            if (
+                ['light','dark']
+                    .includes(theme)
+            ) {
+
+                document.documentElement
+                    .setAttribute(
+                        'data-theme',
+                        theme
+                    );
+
+
+                localStorage.setItem(
+                    'sb-theme',
+                    theme
+                );
+
+            }
+
+        }
+    );
+
+
 })();
+
 </script>
+
 
 </body>
 </html>
