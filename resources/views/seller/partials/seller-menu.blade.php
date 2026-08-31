@@ -158,7 +158,7 @@
 
         <a
             href="{{ route('seller.products.index') }}"
-            class="{{ request()->routeIs('seller.products.index') ? 'sb-menu-active' : '' }}"
+            class="{{ request()->routeIs('seller.products.*', 'seller.products', 'seller.product.edit') ? 'sb-menu-active' : '' }}"
         >
             <span class="sb-common-menu-icon">
                 <i class="fa-solid fa-box"></i>
