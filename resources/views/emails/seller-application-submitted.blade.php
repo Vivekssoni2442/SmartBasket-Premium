@@ -123,7 +123,7 @@
                                         Name
                                     </td>
                                     <td style="font-weight:bold;color:#111827;">
-                                        {{ $seller->name ?? 'N/A' }}
+                                        {{ $seller->seller_name ?? 'N/A' }}
                                     </td>
                                 </tr>
 
@@ -141,7 +141,7 @@
                                         Phone
                                     </td>
                                     <td style="color:#111827;">
-                                        {{ $seller->phone ?? $seller->mobile ?? 'N/A' }}
+                                        {{ $seller->mobile_number ?? 'N/A' }}
                                     </td>
                                 </tr>
 
@@ -168,7 +168,7 @@
                                         Submitted At
                                     </td>
                                     <td style="color:#111827;">
-                                        {{ optional($seller->verification_submitted_at)->format('d M Y, h:i A') ?? now()->format('d M Y, h:i A') }}
+                                        {{ optional($seller->application_submitted_at)->format('d M Y, h:i A') ?? 'N/A' }}
                                     </td>
                                 </tr>
 
@@ -224,7 +224,7 @@
                                         Aadhaar Number
                                     </td>
                                     <td style="color:#111827;">
-                                        {{ $seller->aadhaar_number ?? 'N/A' }}
+                                        {{ $maskedAadhaar }}
                                     </td>
                                 </tr>
 
@@ -233,7 +233,7 @@
                                         Address
                                     </td>
                                     <td style="color:#111827;">
-                                        {{ $seller->address ?? 'N/A' }}
+                                        {{ $seller->business_address ?? 'N/A' }}
                                     </td>
                                 </tr>
 
@@ -242,7 +242,7 @@
                                         City
                                     </td>
                                     <td style="color:#111827;">
-                                        {{ $seller->city ?? 'N/A' }}
+                                        {{ $seller->business_city ?? $seller->city ?? 'N/A' }}
                                     </td>
                                 </tr>
 
@@ -251,7 +251,7 @@
                                         State
                                     </td>
                                     <td style="color:#111827;">
-                                        {{ $seller->state ?? 'N/A' }}
+                                        {{ $seller->business_state ?? $seller->state ?? 'N/A' }}
                                     </td>
                                 </tr>
 
@@ -260,7 +260,7 @@
                                         Pincode
                                     </td>
                                     <td style="color:#111827;">
-                                        {{ $seller->pincode ?? 'N/A' }}
+                                        {{ $seller->business_pincode ?? $seller->pincode ?? 'N/A' }}
                                     </td>
                                 </tr>
 
@@ -298,7 +298,7 @@
                                         Account Holder
                                     </td>
                                     <td style="color:#111827;">
-                                        {{ $seller->bank_account_name ?? 'N/A' }}
+                                        {{ $seller->bank_account_holder_name ?? $seller->bank_account_holder ?? 'N/A' }}
                                     </td>
                                 </tr>
 
@@ -307,7 +307,7 @@
                                         Account Number
                                     </td>
                                     <td style="color:#111827;">
-                                        {{ $seller->bank_account_number ?? 'N/A' }}
+                                        {{ $maskedBankAccount }}
                                     </td>
                                 </tr>
 
@@ -327,6 +327,11 @@
                                     <td style="color:#111827;">
                                         {{ $seller->bank_name ?? 'N/A' }}
                                     </td>
+                                </tr>
+
+                                <tr>
+                                    <td style="color:#64748b;">Branch</td>
+                                    <td style="color:#111827;">{{ $seller->bank_branch ?? 'N/A' }}</td>
                                 </tr>
 
                             </table>
@@ -426,7 +431,7 @@
 
 
                             <a
-                                href="{{ $acceptUrl }}"
+                                href="{{ $approveUrl }}"
                                 style="
                                     display:inline-block;
                                     background:#16a34a;
@@ -438,7 +443,7 @@
                                     margin:5px;
                                 "
                             >
-                                ✓ ACCEPT SELLER
+                                APPROVE APPLICATION
                             </a>
 
 
@@ -455,7 +460,14 @@
                                     margin:5px;
                                 "
                             >
-                                ✕ REJECT SELLER
+                                REJECT APPLICATION
+                            </a>
+
+                            <a
+                                href="{{ $viewUrl }}"
+                                style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;padding:15px 35px;border-radius:10px;font-weight:bold;margin:5px;"
+                            >
+                                VIEW APPLICATION
                             </a>
 
                         </div>
