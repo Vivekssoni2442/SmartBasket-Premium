@@ -17,6 +17,7 @@ h1{text-align:center;margin-top:25px;color:white;font-size:30px;letter-spacing:2
 <link rel="stylesheet" href="{{ asset('css/premium-dark-theme.css') }}">
 </head>
 <body>
+<x-site-menu />
 <div class="card">
 <div class="logo">🏪</div>
 <h1>CREATE <span>SELLER</span></h1>
