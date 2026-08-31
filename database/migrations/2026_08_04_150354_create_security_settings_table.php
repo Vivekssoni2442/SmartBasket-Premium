@@ -10,41 +10,37 @@ return new class extends Migration
 
 public function up(): void
 {
+    if (Schema::hasTable('security_settings')) {
+        return;
+    }
 
-Schema::create('security_settings', function (Blueprint $table) {
+    Schema::create('security_settings', function (Blueprint $table) {
 
-    $table->id();
+        $table->id();
 
-    $table->foreignId('user_id')
-    ->constrained()
-    ->cascadeOnDelete();
+        $table->foreignId('user_id')
+            ->constrained()
+            ->cascadeOnDelete();
 
+        $table->string('email');
 
-    $table->string('email');
+        $table->string('pin_hash');
 
+        $table->boolean('security_enabled')
+            ->default(true);
 
-    $table->string('pin_hash');
+        $table->timestamp('last_attempt_time')
+            ->nullable();
 
+        $table->integer('failed_attempt_count')
+            ->default(0);
 
-    $table->boolean('security_enabled')
-    ->default(true);
+        $table->string('last_security_status')
+            ->default('Safe');
 
+        $table->timestamps();
 
-    $table->timestamp('last_attempt_time')
-    ->nullable();
-
-
-    $table->integer('failed_attempt_count')
-    ->default(0);
-
-
-    $table->string('last_security_status')
-    ->default('Safe');
-
-
-    $table->timestamps();
-
-});
+    });
 
 }
 
