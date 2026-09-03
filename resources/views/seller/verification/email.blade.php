@@ -89,10 +89,20 @@
                 var(--page);
 
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
 
-            padding: 45px 20px;
+            padding: 0 20px 45px;
+        }
+
+        /* =========================================================
+           COMMON SELLER TOPBAR SPACE
+        ========================================================= */
+
+        .seller-page-content {
+            width: 100%;
+            display: flex;
+            justify-content: center;
         }
 
         /* =========================================================
@@ -102,6 +112,7 @@
         .container {
             width: 100%;
             max-width: 650px;
+            margin-top: 45px;
         }
 
         /* =========================================================
@@ -707,12 +718,12 @@
         @media (max-width: 650px) {
 
             body {
-                padding: 25px 14px;
-                align-items: flex-start;
+                padding: 0 14px 25px;
+                align-items: center;
             }
 
             .container {
-                margin-top: 15px;
+                margin-top: 25px;
             }
 
             .card {
@@ -791,328 +802,342 @@
 
 <body>
 
+    {{-- =========================================================
+         COMMON SELLER TOP TASKBAR
+         Same taskbar on all Seller pages
+    ========================================================== --}}
+
+    @include('seller.partials.topbar')
+
+
+    {{-- Existing Seller menu preserved --}}
     @include('seller.partials.seller-menu')
 
-    <div class="container">
 
-        <div class="card">
+    <div class="seller-page-content">
 
-            <!-- =================================================
-                 BRAND
-            ================================================== -->
+        <div class="container">
 
-            <div class="brand">
+            <div class="card">
 
-                <div class="brand-icon">
-                    <i class="fa-solid fa-shield-halved"></i>
-                </div>
+                <!-- =================================================
+                     BRAND
+                ================================================== -->
 
-                <h1>
-                    SMART BASKET PREMIUM
-                </h1>
+                <div class="brand">
 
-                <p>
-                    Seller Partner Program
-                </p>
-
-            </div>
-
-
-            <!-- =================================================
-                 STEPS
-            ================================================== -->
-
-            <div class="steps">
-
-                <div class="step active">
-
-                    <div class="circle">
-                        1
+                    <div class="brand-icon">
+                        <i class="fa-solid fa-shield-halved"></i>
                     </div>
 
-                    <div class="step-title">
-                        EMAIL
-                    </div>
+                    <h1>
+                        SMART BASKET PREMIUM
+                    </h1>
+
+                    <p>
+                        Seller Partner Program
+                    </p>
 
                 </div>
 
 
-                <div class="step">
+                <!-- =================================================
+                     STEPS
+                ================================================== -->
 
-                    <div class="circle">
-                        2
-                    </div>
+                <div class="steps">
 
-                    <div class="step-title">
-                        DOCUMENTS
-                    </div>
+                    <div class="step active">
 
-                </div>
-
-
-                <div class="step">
-
-                    <div class="circle">
-                        3
-                    </div>
-
-                    <div class="step-title">
-                        AADHAAR
-                    </div>
-
-                </div>
-
-
-                <div class="step">
-
-                    <div class="circle">
-                        4
-                    </div>
-
-                    <div class="step-title">
-                        BUSINESS
-                    </div>
-
-                </div>
-
-
-                <div class="step">
-
-                    <div class="circle">
-                        5
-                    </div>
-
-                    <div class="step-title">
-                        BANK
-                    </div>
-
-                </div>
-
-
-                <div class="step">
-
-                    <div class="circle">
-                        6
-                    </div>
-
-                    <div class="step-title">
-                        REVIEW
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- =================================================
-                 MESSAGES
-            ================================================== -->
-
-            @if(session('success'))
-
-                <div class="alert success">
-                    <i class="fa-solid fa-circle-check"></i>
-                    &nbsp;
-                    {{ session('success') }}
-                </div>
-
-            @endif
-
-
-            @if(session('error'))
-
-                <div class="alert error">
-                    <i class="fa-solid fa-circle-exclamation"></i>
-                    &nbsp;
-                    {{ session('error') }}
-                </div>
-
-            @endif
-
-
-            @if(session('info'))
-
-                <div class="alert info">
-                    <i class="fa-solid fa-circle-info"></i>
-                    &nbsp;
-                    {{ session('info') }}
-                </div>
-
-            @endif
-
-
-            <!-- =================================================
-                 TITLE
-            ================================================== -->
-
-            <h2>
-                Verify Your Email
-            </h2>
-
-            <div class="description">
-
-                Before continuing with your Seller Partner
-                application, please verify your registered
-                email address.
-
-            </div>
-
-
-            <!-- =================================================
-                 SELLER EMAIL
-            ================================================== -->
-
-            <div class="email-box">
-
-                <div class="email-row">
-
-                    <div class="email-icon">
-                        <i class="fa-solid fa-envelope"></i>
-                    </div>
-
-                    <div class="email-content">
-
-                        <div class="email-label">
-                            REGISTERED EMAIL
+                        <div class="circle">
+                            1
                         </div>
 
-                        <div class="email">
-                            {{ $seller->email }}
+                        <div class="step-title">
+                            EMAIL
+                        </div>
+
+                    </div>
+
+
+                    <div class="step">
+
+                        <div class="circle">
+                            2
+                        </div>
+
+                        <div class="step-title">
+                            DOCUMENTS
+                        </div>
+
+                    </div>
+
+
+                    <div class="step">
+
+                        <div class="circle">
+                            3
+                        </div>
+
+                        <div class="step-title">
+                            AADHAAR
+                        </div>
+
+                    </div>
+
+
+                    <div class="step">
+
+                        <div class="circle">
+                            4
+                        </div>
+
+                        <div class="step-title">
+                            BUSINESS
+                        </div>
+
+                    </div>
+
+
+                    <div class="step">
+
+                        <div class="circle">
+                            5
+                        </div>
+
+                        <div class="step-title">
+                            BANK
+                        </div>
+
+                    </div>
+
+
+                    <div class="step">
+
+                        <div class="circle">
+                            6
+                        </div>
+
+                        <div class="step-title">
+                            REVIEW
                         </div>
 
                     </div>
 
                 </div>
 
-            </div>
+
+                <!-- =================================================
+                     MESSAGES
+                ================================================== -->
+
+                @if(session('success'))
+
+                    <div class="alert success">
+                        <i class="fa-solid fa-circle-check"></i>
+                        &nbsp;
+                        {{ session('success') }}
+                    </div>
+
+                @endif
 
 
-            <!-- =================================================
-                 SEND VERIFICATION CODE
-            ================================================== -->
+                @if(session('error'))
 
-            <form
-                method="POST"
-                action="{{ route('seller.verification.email.send') }}"
-            >
-
-                @csrf
-
-                <button type="submit">
-
-                    <i class="fa-solid fa-paper-plane"></i>
-
-                    SEND VERIFICATION CODE
-
-                </button>
-
-            </form>
-
-
-            <!-- =================================================
-                 DIVIDER
-            ================================================== -->
-
-            <div class="divider">
-
-                <span>
-                    VERIFICATION
-                </span>
-
-            </div>
-
-
-            <!-- =================================================
-                 VERIFY CODE
-            ================================================== -->
-
-            <form
-                method="POST"
-                action="{{ route('seller.verification.email.verify') }}"
-            >
-
-                @csrf
-
-                <label for="code">
-                    Enter 16-digit verification code
-                </label>
-
-                <div class="input-wrapper">
-
-                    <i class="fa-solid fa-key input-icon"></i>
-
-                    <input
-                        type="text"
-                        id="code"
-                        name="code"
-                        maxlength="16"
-                        minlength="16"
-                        pattern="[0-9]{16}"
-                        inputmode="numeric"
-                        autocomplete="one-time-code"
-                        placeholder="••••••••••••••••"
-                        value="{{ old('code') }}"
-                        required
-                    >
-
-                </div>
-
-
-                @error('code')
-
-                    <div
-                        class="alert error"
-                        style="margin-top:12px; margin-bottom:0;"
-                    >
+                    <div class="alert error">
                         <i class="fa-solid fa-circle-exclamation"></i>
                         &nbsp;
-                        {{ $message }}
+                        {{ session('error') }}
                     </div>
 
-                @enderror
+                @endif
 
 
-                <button type="submit">
+                @if(session('info'))
 
-                    <i class="fa-solid fa-circle-check"></i>
+                    <div class="alert info">
+                        <i class="fa-solid fa-circle-info"></i>
+                        &nbsp;
+                        {{ session('info') }}
+                    </div>
 
-                    VERIFY EMAIL & CONTINUE
-
-                </button>
-
-            </form>
-
-
-            <!-- =================================================
-                 HINT
-            ================================================== -->
-
-            <div class="hint">
-
-                <i class="fa-solid fa-clock"></i>
-
-                <span>
-                    A 16-digit verification code will be sent to your
-                    registered email address. The code is valid for
-                    10 minutes.
-                </span>
-
-            </div>
+                @endif
 
 
-            <!-- =================================================
-                 SECURITY NOTE
-            ================================================== -->
+                <!-- =================================================
+                     TITLE
+                ================================================== -->
 
-            <div class="security-note">
+                <h2>
+                    Verify Your Email
+                </h2>
 
-                <i class="fa-solid fa-lock"></i>
+                <div class="description">
 
-                <span>
-                    Your verification information is securely processed
-                    by SmartBasket Premium and is used only for seller
-                    partner verification.
-                </span>
+                    Before continuing with your Seller Partner
+                    application, please verify your registered
+                    email address.
+
+                </div>
+
+
+                <!-- =================================================
+                     SELLER EMAIL
+                ================================================== -->
+
+                <div class="email-box">
+
+                    <div class="email-row">
+
+                        <div class="email-icon">
+                            <i class="fa-solid fa-envelope"></i>
+                        </div>
+
+                        <div class="email-content">
+
+                            <div class="email-label">
+                                REGISTERED EMAIL
+                            </div>
+
+                            <div class="email">
+                                {{ $seller->email }}
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     SEND VERIFICATION CODE
+                ================================================== -->
+
+                <form
+                    method="POST"
+                    action="{{ route('seller.verification.email.send') }}"
+                >
+
+                    @csrf
+
+                    <button type="submit">
+
+                        <i class="fa-solid fa-paper-plane"></i>
+
+                        SEND VERIFICATION CODE
+
+                    </button>
+
+                </form>
+
+
+                <!-- =================================================
+                     DIVIDER
+                ================================================== -->
+
+                <div class="divider">
+
+                    <span>
+                        VERIFICATION
+                    </span>
+
+                </div>
+
+
+                <!-- =================================================
+                     VERIFY CODE
+                ================================================== -->
+
+                <form
+                    method="POST"
+                    action="{{ route('seller.verification.email.verify') }}"
+                >
+
+                    @csrf
+
+                    <label for="code">
+                        Enter 16-digit verification code
+                    </label>
+
+                    <div class="input-wrapper">
+
+                        <i class="fa-solid fa-key input-icon"></i>
+
+                        <input
+                            type="text"
+                            id="code"
+                            name="code"
+                            maxlength="16"
+                            minlength="16"
+                            pattern="[0-9]{16}"
+                            inputmode="numeric"
+                            autocomplete="one-time-code"
+                            placeholder="••••••••••••••••"
+                            value="{{ old('code') }}"
+                            required
+                        >
+
+                    </div>
+
+
+                    @error('code')
+
+                        <div
+                            class="alert error"
+                            style="margin-top:12px; margin-bottom:0;"
+                        >
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            &nbsp;
+                            {{ $message }}
+                        </div>
+
+                    @enderror
+
+
+                    <button type="submit">
+
+                        <i class="fa-solid fa-circle-check"></i>
+
+                        VERIFY EMAIL & CONTINUE
+
+                    </button>
+
+                </form>
+
+
+                <!-- =================================================
+                     HINT
+                ================================================== -->
+
+                <div class="hint">
+
+                    <i class="fa-solid fa-clock"></i>
+
+                    <span>
+                        A 16-digit verification code will be sent to your
+                        registered email address. The code is valid for
+                        10 minutes.
+                    </span>
+
+                </div>
+
+
+                <!-- =================================================
+                     SECURITY NOTE
+                ================================================== -->
+
+                <div class="security-note">
+
+                    <i class="fa-solid fa-lock"></i>
+
+                    <span>
+                        Your verification information is securely processed
+                        by SmartBasket Premium and is used only for seller
+                        partner verification.
+                    </span>
+
+                </div>
 
             </div>
 

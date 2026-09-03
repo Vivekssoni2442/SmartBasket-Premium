@@ -318,6 +318,7 @@
 
         $statusText = match($status) {
             \App\Models\SellerProfile::STATUS_APPROVED => 'Approved',
+            \App\Models\SellerProfile::STATUS_ACTIVE => 'Approved & Active',
             \App\Models\SellerProfile::STATUS_REJECTED => 'Rejected',
             \App\Models\SellerProfile::STATUS_SUSPENDED => 'Suspended',
             \App\Models\SellerProfile::STATUS_PENDING_ADMIN_REVIEW => 'Under Admin Review',
@@ -330,6 +331,7 @@
 
         $badgeClass = match($status) {
             \App\Models\SellerProfile::STATUS_APPROVED => 'approved',
+            \App\Models\SellerProfile::STATUS_ACTIVE => 'approved',
             \App\Models\SellerProfile::STATUS_REJECTED => 'rejected',
             \App\Models\SellerProfile::STATUS_SUSPENDED => 'suspended',
             default => 'pending',
@@ -491,6 +493,13 @@
                 </p>
             </div>
 
+            <div class="actions">
+                <form method="POST" action="{{ route('seller.verification.restart') }}" onsubmit="return confirm('Restart verification? Your current application details will be cleared.')">
+                    @csrf
+                    <button type="submit" class="btn primary">Correct & Resubmit Application</button>
+                </form>
+            </div>
+
         @elseif($seller->verification_status === \App\Models\SellerProfile::STATUS_SUSPENDED)
 
             <div class="danger-box">
@@ -510,7 +519,7 @@
                 The SmartBasket administrator will review your application.
             </div>
 
-        @elseif($seller->verification_status === \App\Models\SellerProfile::STATUS_APPROVED)
+        @elseif($seller->isApproved() || $seller->isActive())
 
             <div class="alert success" style="margin-top:25px; margin-bottom:0;">
                 <strong>Congratulations!</strong><br>
@@ -550,13 +559,13 @@
                     Complete Aadhaar Verification
                 </a>
 
-            @elseif($seller->verification_status === \App\Models\SellerProfile::STATUS_APPROVED)
+            @elseif($seller->isApproved() || $seller->isActive())
 
                 <a
-                    href="{{ route('seller.activation') }}"
+                    href="{{ route('seller.dashboard') }}"
                     class="btn primary"
                 >
-                    Activate Seller Account
+                    Open Seller Dashboard
                 </a>
 
             @elseif($seller->verification_status === \App\Models\SellerProfile::STATUS_PENDING_ADMIN_REVIEW)

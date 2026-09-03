@@ -1,37 +1,6 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Seller verification requests · SmartBasket Premium</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-    <main class="container py-5">
-        <h1 class="h3 mb-4">Seller verification requests</h1>
-        @if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
-        <div class="card shadow-sm">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead><tr><th>Application</th><th>Seller</th><th>Shop</th><th>Status</th><th>Submitted</th><th></th></tr></thead>
-                    <tbody>
-                    @forelse($applications as $application)
-                        <tr>
-                            <td>#{{ $application->id }}</td>
-                            <td>{{ $application->seller_name }}<br><small class="text-muted">{{ $application->email }}</small></td>
-                            <td>{{ $application->shop_name }}</td>
-                            <td><span class="badge text-bg-secondary">{{ str_replace('_', ' ', $application->verification_status) }}</span></td>
-                            <td>{{ $application->verification_submitted_at?->format('d M Y, H:i') ?? '—' }}</td>
-                            <td><a class="btn btn-sm btn-primary" href="{{ route('admin.seller-verifications.show', $application) }}">Review</a></td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="6" class="text-center text-muted py-4">No seller verification requests yet.</td></tr>
-                    @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <div class="mt-3">{{ $applications->links() }}</div>
-    </main>
-</body>
-</html>
+@extends('layouts.admin')
+@section('title','KYC Verification')
+@section('content')
+<div class="admin-page-header"><div><h1 class="admin-page-title"><i class="fas fa-user-shield"></i>KYC Verification</h1><p class="admin-page-description">Submitted seller applications awaiting or completing an administrator review.</p></div></div>
+<div class="admin-card"><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Application</th><th>Seller</th><th>Business</th><th>Status</th><th>Submitted</th><th>Documents</th><th>Action</th></tr></thead><tbody>@forelse($applications as $application)<tr><td>#{{ $application->id }}</td><td>{{ $application->seller_name }}<br><small>{{ $application->email }}</small></td><td>{{ $application->business_name ?: $application->shop_name ?: 'Not provided' }}</td><td><span class="admin-badge admin-badge-{{ $application->getApplicationStatusClass()==='success'?'success':($application->getApplicationStatusClass()==='danger'?'danger':'warning') }}">{{ $application->getApplicationStatusLabel() }}</span></td><td>{{ ($application->verification_submitted_at ?? $application->application_submitted_at ?? $application->created_at)?->format('d M Y, h:i A') }}</td><td><span class="admin-badge admin-badge-{{ $application->hasRequiredDocuments() ? 'success':'warning' }}">{{ $application->hasRequiredDocuments() ? 'Complete':'Review needed' }}</span></td><td><a class="admin-btn admin-btn-primary" href="{{ route('admin.seller-verifications.show',$application) }}"><i class="fas fa-eye"></i>Review</a></td></tr>@empty<tr><td colspan="7"><div class="admin-empty"><i class="fas fa-clipboard-check"></i>No submitted seller applications are currently available.</div></td></tr>@endforelse</tbody></table></div><div class="admin-pagination">{{ $applications->links() }}</div></div>
+@endsection

@@ -1,1693 +1,3167 @@
-@extends('seller.partials.premium-layout')
-
-@section('title', 'Seller Dashboard')
+<!DOCTYPE html>
+<html lang="en">
 
-@section('content')
-
-<style>
-/* =========================================================
-   SMART BASKET — SELLER DASHBOARD
-   PREMIUM LIGHT SELLER CENTER
-========================================================= */
+<head>
 
-.seller-dashboard {
-    min-height: 100vh;
-    padding: 32px;
-    color: #172033;
+    <meta charset="UTF-8">
 
-    background:
-        radial-gradient(
-            circle at 5% 0%,
-            rgba(0, 255, 153, .08),
-            transparent 25%
-        ),
-        radial-gradient(
-            circle at 95% 5%,
-            rgba(59, 130, 246, .06),
-            transparent 25%
-        ),
-        linear-gradient(
-            135deg,
-            #f8fafc 0%,
-            #f4f7fb 50%,
-            #eef3f8 100%
-        );
-}
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-.seller-dashboard *,
-.seller-dashboard *::before,
-.seller-dashboard *::after {
-    box-sizing: border-box;
-}
+    <title>Seller Dashboard | SmartBasket</title>
 
+    {{-- Bootstrap --}}
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
 
-/* =========================================================
-   HEADER
-========================================================= */
+    {{-- Font Awesome --}}
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
 
-.sd-top {
-    position: relative;
+    <style>
 
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+        /* =========================================================
+           SMARTBASKET SELLER DASHBOARD
+           PREMIUM FULL-WIDTH DESIGN
+           COMMON TASKBAR IS UNTOUCHED
+           ========================================================= */
 
-    gap: 24px;
-    margin-bottom: 30px;
-}
+        :root {
 
-.sd-title h1 {
-    margin: 0;
+            --sb-primary: #4f46e5;
+            --sb-primary-dark: #3730a3;
+            --sb-purple: #7c3aed;
+            --sb-blue: #2563eb;
 
-    color: #111827;
+            --sb-success: #16a34a;
+            --sb-warning: #d97706;
+            --sb-danger: #dc2626;
 
-    font-size: 32px;
-    line-height: 1.15;
-    font-weight: 850;
+            --sb-bg: #f4f7fb;
+            --sb-card: #ffffff;
+            --sb-card-soft: #f8fafc;
 
-    letter-spacing: -.8px;
-}
+            --sb-border: rgba(15, 23, 42, .08);
 
-.sd-title h1 span {
-    color: #00a968;
+            --sb-text: #101828;
+            --sb-muted: #667085;
+            --sb-soft: #98a2b3;
 
-    text-shadow:
-        0 0 22px rgba(0, 169, 104, .12);
-}
+            --sb-shadow:
+                0 10px 35px rgba(15, 23, 42, .055);
 
-.sd-subtitle {
-    margin-top: 8px;
+            --sb-shadow-hover:
+                0 22px 55px rgba(15, 23, 42, .11);
 
-    color: #64748b;
+        }
 
-    font-size: 13px;
-    line-height: 1.5;
-}
 
+        /* =========================================================
+           PAGE
+           ========================================================= */
 
-/* =========================================================
-   HEADER RIGHT
-========================================================= */
+        .sb-dashboard-page {
 
-.sd-header-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
+            width: 100%;
 
+            min-height: calc(100vh - 1px);
 
-/* =========================================================
-   ACCOUNT STATUS
-========================================================= */
+            margin: 0;
 
-.sd-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 9px;
+            padding: 0;
 
-    min-height: 46px;
+            overflow-x: hidden;
 
-    padding: 0 16px;
+            background:
+                radial-gradient(
+                    circle at 8% 0%,
+                    rgba(79,70,229,.055),
+                    transparent 28%
+                ),
+                radial-gradient(
+                    circle at 95% 15%,
+                    rgba(124,58,237,.045),
+                    transparent 25%
+                ),
+                var(--sb-bg);
 
-    border: 1px solid rgba(0, 169, 104, .16);
-    border-radius: 14px;
+            color: var(--sb-text);
 
-    background:
-        rgba(255, 255, 255, .82);
+        }
 
-    color: #087a4c;
 
-    font-size: 11px;
-    font-weight: 750;
+        .sb-dashboard-page *,
+        .sb-dashboard-page *::before,
+        .sb-dashboard-page *::after {
 
-    white-space: nowrap;
+            box-sizing: border-box;
 
-    box-shadow:
-        0 8px 24px rgba(15, 23, 42, .06),
-        inset 0 1px 0 rgba(255, 255, 255, .9);
-}
+        }
 
-.sd-status-dot {
-    width: 8px;
-    height: 8px;
 
-    flex-shrink: 0;
+        .sb-dashboard {
 
-    border-radius: 50%;
+            width: 100%;
 
-    background: #00c978;
+            max-width: none;
 
-    box-shadow:
-        0 0 0 4px rgba(0, 201, 120, .10),
-        0 0 12px rgba(0, 201, 120, .30);
-}
+            margin: 0;
 
+            padding:
+                22px
+                clamp(18px, 2.3vw, 42px)
+                55px;
 
-/* =========================================================
-   SELLER CENTER
-========================================================= */
+        }
 
-.seller-center-wrap {
-    position: relative;
-}
 
-.seller-center-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
+        /* =========================================================
+           COMMAND BAR
+           ========================================================= */
 
-    min-height: 46px;
+        .sb-commandbar {
 
-    padding: 0 17px;
+            position: relative;
 
-    border: 1px solid #dce4ec;
-    border-radius: 14px;
+            width: 100%;
 
-    background:
-        linear-gradient(
-            145deg,
-            #ffffff,
-            #f8fafc
-        );
+            min-height: 78px;
 
-    color: #172033;
+            display: flex;
 
-    font-size: 12px;
-    font-weight: 800;
+            align-items: center;
 
-    cursor: pointer;
+            justify-content: space-between;
 
-    box-shadow:
-        0 10px 25px rgba(15, 23, 42, .07),
-        inset 0 1px 0 #ffffff;
+            gap: 20px;
 
-    transition:
-        transform .25s ease,
-        border-color .25s ease,
-        box-shadow .25s ease,
-        background .25s ease;
-}
+            margin-bottom: 18px;
 
-.seller-center-btn:hover {
-    transform: translateY(-2px);
+            padding:
+                14px 18px;
 
-    border-color: rgba(0, 169, 104, .28);
+            border:
+                1px solid
+                rgba(15,23,42,.075);
 
-    background: #ffffff;
+            border-radius: 20px;
 
-    box-shadow:
-        0 15px 35px rgba(15, 23, 42, .10),
-        0 0 22px rgba(0, 169, 104, .05);
-}
+            background:
+                rgba(255,255,255,.92);
 
-.seller-center-btn > i:first-child {
-    color: #00a968;
+            backdrop-filter:
+                blur(18px);
 
-    font-size: 15px;
-}
+            -webkit-backdrop-filter:
+                blur(18px);
 
-.seller-center-arrow {
-    margin-left: 2px;
+            box-shadow:
+                var(--sb-shadow);
 
-    color: #94a3b8;
+        }
 
-    font-size: 9px;
 
-    transition:
-        transform .25s ease;
-}
+        .sb-commandbar::after {
 
-.seller-center-wrap.active
-.seller-center-arrow {
-    transform: rotate(180deg);
-}
+            content: "";
 
+            position: absolute;
 
-/* =========================================================
-   SELLER CENTER MENU
-========================================================= */
+            inset: 0;
 
-.seller-center-menu {
-    position: absolute;
+            pointer-events: none;
 
-    top: calc(100% + 12px);
-    right: 0;
+            border-radius: inherit;
 
-    z-index: 99999;
+            background:
+                linear-gradient(
+                    110deg,
+                    rgba(79,70,229,.025),
+                    transparent 40%,
+                    rgba(124,58,237,.025)
+                );
 
-    width: 310px;
+        }
 
-    padding: 10px;
 
-    border: 1px solid #e2e8f0;
-    border-radius: 20px;
+        .sb-command-left {
 
-    background:
-        rgba(255, 255, 255, .98);
+            position: relative;
 
-    backdrop-filter: blur(22px);
+            z-index: 1;
 
-    box-shadow:
-        0 25px 65px rgba(15, 23, 42, .16),
-        0 4px 15px rgba(15, 23, 42, .05);
+            min-width: 0;
 
-    opacity: 0;
-    visibility: hidden;
+            display: flex;
 
-    transform:
-        translateY(-8px)
-        scale(.97);
+            align-items: center;
 
-    transform-origin: top right;
+            gap: 13px;
 
-    transition:
-        opacity .22s ease,
-        visibility .22s ease,
-        transform .22s ease;
-}
+        }
 
-.seller-center-wrap.active
-.seller-center-menu {
-    opacity: 1;
-    visibility: visible;
 
-    transform:
-        translateY(0)
-        scale(1);
-}
+        .sb-brand-mark {
 
+            width: 50px;
 
-/* =========================================================
-   SELLER CENTER HEADER
-========================================================= */
+            height: 50px;
 
-.seller-center-header {
-    padding: 14px 13px 13px;
+            min-width: 50px;
 
-    margin-bottom: 7px;
+            display: flex;
 
-    border-bottom:
-        1px solid #edf1f5;
-}
+            align-items: center;
 
-.seller-center-header-title {
-    color: #172033;
+            justify-content: center;
 
-    font-size: 14px;
-    font-weight: 850;
-}
+            border-radius: 15px;
 
-.seller-center-header-title i {
-    margin-right: 7px;
+            color: #fff;
 
-    color: #00a968;
-}
+            background:
+                linear-gradient(
+                    135deg,
+                    #4338ca,
+                    #7c3aed
+                );
 
-.seller-center-header-text {
-    margin-top: 5px;
+            box-shadow:
+                0 12px 28px
+                rgba(79,70,229,.25);
 
-    color: #94a3b8;
+            font-size: 17px;
 
-    font-size: 10px;
-}
+        }
 
 
-/* =========================================================
-   SELLER CENTER ITEM
-========================================================= */
+        .sb-command-copy {
 
-.seller-center-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+            min-width: 0;
 
-    width: 100%;
-    min-height: 58px;
+        }
 
-    padding: 8px 11px;
 
-    border-radius: 13px;
+        .sb-eyebrow {
 
-    color: #475569;
+            display: flex;
 
-    text-decoration: none;
+            align-items: center;
 
-    transition:
-        background .2s ease,
-        color .2s ease,
-        transform .2s ease;
-}
+            gap: 6px;
 
-.seller-center-item:hover {
-    background:
-        rgba(0, 169, 104, .055);
+            margin-bottom: 2px;
 
-    color: #172033;
+            color: var(--sb-primary);
 
-    transform: translateX(3px);
-}
+            font-size: 9px;
 
-.seller-center-item-icon {
-    width: 38px;
-    height: 38px;
+            font-weight: 900;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+            letter-spacing: .12em;
 
-    flex-shrink: 0;
+            text-transform: uppercase;
 
-    border:
-        1px solid rgba(0, 169, 104, .13);
+        }
 
-    border-radius: 11px;
 
-    background:
-        rgba(0, 169, 104, .055);
+        .sb-command-title {
 
-    color: #00a968;
+            max-width: 550px;
 
-    font-size: 13px;
-}
+            margin: 0;
 
-.seller-center-item-content {
-    flex: 1;
+            overflow: hidden;
 
-    min-width: 0;
-}
+            color: var(--sb-text);
 
-.seller-center-item-title {
-    color: #1e293b;
+            font-size: clamp(19px, 1.55vw, 24px);
 
-    font-size: 11px;
-    font-weight: 800;
-}
+            line-height: 1.15;
 
-.seller-center-item-text {
-    margin-top: 3px;
+            font-weight: 950;
 
-    color: #94a3b8;
+            letter-spacing: -.025em;
 
-    font-size: 9px;
-}
+            white-space: nowrap;
 
-.seller-center-item-arrow {
-    color: #cbd5e1;
+            text-overflow: ellipsis;
 
-    font-size: 9px;
+        }
 
-    transition: .2s ease;
-}
 
-.seller-center-item:hover
-.seller-center-item-arrow {
-    color: #00a968;
-}
+        .sb-command-subtitle {
 
+            margin: 3px 0 0;
 
-/* =========================================================
-   KYC CARD
-========================================================= */
+            color: var(--sb-muted);
 
-.sd-kyc-card {
-    position: relative;
+            font-size: 10px;
 
-    overflow: hidden;
+            font-weight: 550;
 
-    margin: 0 0 28px;
-    padding: 22px 24px;
+        }
 
-    border: 1px solid #dfe7ee;
-    border-radius: 21px;
 
-    background:
-        linear-gradient(
-            135deg,
-            rgba(255,255,255,.98),
-            rgba(248,250,252,.95)
-        );
+        .sb-command-right {
 
-    box-shadow:
-        0 16px 38px rgba(15, 23, 42, .07),
-        inset 0 1px 0 #ffffff;
-}
+            position: relative;
 
-.sd-kyc-card::after {
-    content: "";
+            z-index: 1;
 
-    position: absolute;
+            display: flex;
 
-    right: -70px;
-    top: -70px;
+            align-items: center;
 
-    width: 180px;
-    height: 180px;
+            justify-content: flex-end;
 
-    border-radius: 50%;
+            gap: 9px;
 
-    background: #00c978;
+        }
 
-    opacity: .045;
 
-    filter: blur(25px);
+        .sb-account-status {
 
-    pointer-events: none;
-}
+            min-height: 38px;
 
-.sd-kyc-header {
-    position: relative;
-    z-index: 1;
+            display: inline-flex;
 
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+            align-items: center;
 
-    gap: 16px;
+            justify-content: center;
 
-    margin-bottom: 16px;
-}
+            gap: 8px;
 
-.sd-kyc-title-wrap {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
+            padding:
+                0 13px;
 
-.sd-kyc-badge {
-    width: 44px;
-    height: 44px;
+            border:
+                1px solid
+                var(--sb-border);
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+            border-radius: 11px;
 
-    border-radius: 13px;
+            color: var(--sb-muted);
 
-    background:
-        rgba(0, 169, 104, .07);
+            background:
+                rgba(248,250,252,.9);
 
-    border:
-        1px solid rgba(0, 169, 104, .15);
+            font-size: 9px;
 
-    color: #00a968;
+            font-weight: 850;
 
-    box-shadow:
-        0 8px 20px rgba(0, 169, 104, .07);
-}
+            white-space: nowrap;
 
-.sd-kyc-title {
-    color: #172033;
+        }
 
-    font-size: 18px;
-    font-weight: 850;
 
-    letter-spacing: -.4px;
-}
+        .sb-account-dot {
 
-.sd-kyc-subtitle {
-    color: #94a3b8;
+            width: 7px;
 
-    font-size: 12px;
+            height: 7px;
 
-    margin-top: 2px;
-}
+            border-radius: 50%;
 
-.sd-kyc-status {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+            background: var(--sb-warning);
 
-    padding: 8px 12px;
+            box-shadow:
+                0 0 0 4px
+                rgba(217,119,6,.09);
 
-    border-radius: 999px;
+        }
 
-    background:
-        rgba(59, 130, 246, .08);
 
-    border:
-        1px solid rgba(59, 130, 246, .16);
+        .sb-account-status.active {
 
-    color: #2563eb;
+            color: var(--sb-success);
 
-    font-size: 10px;
-    font-weight: 800;
+            border-color:
+                rgba(22,163,74,.15);
 
-    text-transform: uppercase;
+            background:
+                rgba(22,163,74,.055);
 
-    letter-spacing: .08em;
-}
+        }
 
-.sd-kyc-body {
-    position: relative;
-    z-index: 1;
 
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+        .sb-account-status.active .sb-account-dot {
 
-    gap: 12px;
+            background: var(--sb-success);
 
-    margin-bottom: 16px;
-    padding-top: 14px;
+            box-shadow:
+                0 0 0 4px
+                rgba(22,163,74,.09);
 
-    border-top:
-        1px solid #edf1f5;
-}
+        }
 
-.sd-kyc-label {
-    color: #94a3b8;
 
-    font-size: 11px;
+        .sb-account-status.danger {
 
-    text-transform: uppercase;
+            color: var(--sb-danger);
 
-    letter-spacing: .08em;
-}
+            border-color:
+                rgba(220,38,38,.15);
 
-.sd-kyc-progress {
-    color: #172033;
+            background:
+                rgba(220,38,38,.055);
 
-    font-size: 15px;
-    font-weight: 800;
-}
+        }
 
-.sd-kyc-button {
-    position: relative;
-    z-index: 1;
 
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+        .sb-account-status.danger .sb-account-dot {
 
-    min-height: 44px;
+            background: var(--sb-danger);
 
-    padding: 0 18px;
+            box-shadow:
+                0 0 0 4px
+                rgba(220,38,38,.09);
 
-    border-radius: 12px;
+        }
 
-    background:
-        linear-gradient(
-            135deg,
-            #00b875,
-            #00d98a
-        );
 
-    color: #ffffff !important;
+        .sb-account-status.review {
 
-    font-size: 12px;
-    font-weight: 850;
+            color: var(--sb-primary);
 
-    text-decoration: none;
+            border-color:
+                rgba(79,70,229,.15);
 
-    box-shadow:
-        0 10px 25px rgba(0, 201, 120, .18);
+            background:
+                rgba(79,70,229,.055);
 
-    transition:
-        transform .22s ease,
-        box-shadow .22s ease,
-        filter .22s ease;
-}
+        }
 
-.sd-kyc-button:hover {
-    transform: translateY(-2px);
 
-    filter: brightness(1.03);
+        .sb-account-status.review .sb-account-dot {
 
-    color: #ffffff !important;
+            background: var(--sb-primary);
 
-    box-shadow:
-        0 15px 30px rgba(0, 201, 120, .24);
-}
+            box-shadow:
+                0 0 0 4px
+                rgba(79,70,229,.09);
 
+        }
 
-/* =========================================================
-   QUICK ACTIONS
-========================================================= */
 
-.sd-actions {
-    display: grid;
+        /* =========================================================
+           HERO
+           ========================================================= */
 
-    grid-template-columns:
-        repeat(4, minmax(0, 1fr));
+        .sb-hero {
 
-    gap: 16px;
+            position: relative;
 
-    margin-bottom: 24px;
-}
+            width: 100%;
 
-.sd-action {
-    position: relative;
+            min-height: 265px;
 
-    overflow: hidden;
+            display: flex;
 
-    min-height: 145px;
+            align-items: center;
 
-    padding: 20px;
+            justify-content: space-between;
 
-    border:
-        1px solid #e1e8ef;
+            gap: 35px;
 
-    border-radius: 20px;
+            margin-bottom: 24px;
 
-    background:
-        linear-gradient(
-            145deg,
-            #ffffff,
-            #f8fafc
-        );
+            padding:
+                clamp(28px, 4vw, 48px);
 
-    color: #172033;
+            overflow: hidden;
 
-    text-decoration: none;
+            border-radius: 27px;
 
-    box-shadow:
-        0 14px 32px rgba(15, 23, 42, .06),
-        inset 0 1px 0 #ffffff;
+            color: #fff;
 
-    transition:
-        transform .25s ease,
-        border-color .25s ease,
-        box-shadow .25s ease;
-}
+            background:
+                linear-gradient(
+                    115deg,
+                    #1e1b4b 0%,
+                    #3730a3 28%,
+                    #4f46e5 58%,
+                    #7c3aed 100%
+                );
 
-.sd-action::before {
-    content: "";
+            box-shadow:
+                0 25px 65px
+                rgba(79,70,229,.20);
 
-    position: absolute;
+        }
 
-    top: -50px;
-    right: -45px;
 
-    width: 120px;
-    height: 120px;
+        .sb-hero::before {
 
-    border-radius: 50%;
+            content: "";
 
-    background: #00c978;
+            position: absolute;
 
-    opacity: .055;
+            width: 480px;
 
-    filter: blur(25px);
+            height: 480px;
 
-    pointer-events: none;
-}
+            top: -300px;
 
-.sd-action:hover {
-    transform: translateY(-5px);
+            right: 5%;
 
-    border-color:
-        rgba(0, 169, 104, .25);
+            border-radius: 50%;
 
-    color: #172033;
+            background:
+                rgba(255,255,255,.075);
 
-    box-shadow:
-        0 22px 45px rgba(15, 23, 42, .10),
-        0 0 25px rgba(0, 169, 104, .04);
-}
+        }
 
-.sd-action-icon {
-    width: 46px;
-    height: 46px;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+        .sb-hero::after {
 
-    margin-bottom: 16px;
+            content: "";
 
-    border:
-        1px solid rgba(0, 169, 104, .14);
+            position: absolute;
 
-    border-radius: 14px;
+            width: 330px;
 
-    background:
-        rgba(0, 169, 104, .06);
+            height: 330px;
 
-    color: #00a968;
+            right: -130px;
 
-    font-size: 17px;
-}
+            bottom: -170px;
 
-.sd-action-title {
-    color: #172033;
+            border-radius: 50%;
 
-    font-size: 14px;
-    font-weight: 800;
-}
+            background:
+                rgba(255,255,255,.07);
 
-.sd-action-text {
-    margin-top: 5px;
+        }
 
-    color: #94a3b8;
 
-    font-size: 11px;
-}
+        .sb-hero-copy {
 
+            position: relative;
 
-/* =========================================================
-   STATISTICS
-========================================================= */
+            z-index: 2;
 
-.sd-stats {
-    display: grid;
+            max-width: 760px;
 
-    grid-template-columns:
-        repeat(4, minmax(0, 1fr));
+        }
 
-    gap: 18px;
-}
 
-.sd-stat {
-    position: relative;
+        .sb-hero-label {
 
-    overflow: hidden;
+            display: inline-flex;
 
-    min-height: 165px;
+            align-items: center;
 
-    padding: 22px;
+            gap: 7px;
 
-    border:
-        1px solid #e1e8ef;
+            margin-bottom: 14px;
 
-    border-radius: 22px;
+            padding:
+                7px 11px;
 
-    background:
-        linear-gradient(
-            145deg,
-            #ffffff,
-            #f8fafc
-        );
+            border:
+                1px solid
+                rgba(255,255,255,.16);
 
-    box-shadow:
-        0 16px 36px rgba(15, 23, 42, .06),
-        inset 0 1px 0 #ffffff;
+            border-radius: 999px;
 
-    transition:
-        transform .28s ease,
-        border-color .28s ease,
-        box-shadow .28s ease;
-}
+            color:
+                rgba(255,255,255,.92);
 
-.sd-stat:hover {
-    transform: translateY(-5px);
+            background:
+                rgba(255,255,255,.09);
 
-    border-color:
-        rgba(0, 169, 104, .22);
+            backdrop-filter:
+                blur(10px);
 
-    box-shadow:
-        0 24px 48px rgba(15, 23, 42, .10),
-        0 0 28px rgba(0, 169, 104, .04);
-}
+            font-size: 9px;
 
-.sd-stat::after {
-    content: "";
+            font-weight: 850;
 
-    position: absolute;
+            letter-spacing: .03em;
 
-    right: -50px;
-    bottom: -50px;
+        }
 
-    width: 140px;
-    height: 140px;
 
-    border-radius: 50%;
+        .sb-hero-title {
 
-    background: #00c978;
+            margin: 0;
 
-    opacity: .045;
+            font-size:
+                clamp(31px, 4vw, 50px);
 
-    filter: blur(25px);
+            line-height: 1.03;
 
-    pointer-events: none;
-}
+            font-weight: 950;
 
-.sd-stat-icon {
-    width: 47px;
-    height: 47px;
+            letter-spacing: -.045em;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+        }
 
-    margin-bottom: 18px;
 
-    border:
-        1px solid rgba(0, 169, 104, .14);
+        .sb-hero-text {
 
-    border-radius: 14px;
+            max-width: 670px;
 
-    background:
-        rgba(0, 169, 104, .06);
+            margin:
+                15px 0 0;
 
-    color: #00a968;
+            color:
+                rgba(255,255,255,.74);
 
-    font-size: 18px;
-}
+            font-size: 12px;
 
-.sd-stat-number {
-    position: relative;
-    z-index: 1;
+            line-height: 1.7;
 
-    color: #111827;
+        }
 
-    font-size: 28px;
-    line-height: 1;
 
-    font-weight: 850;
+        .sb-hero-actions {
 
-    letter-spacing: -.5px;
-}
+            position: relative;
 
-.sd-stat-label {
-    position: relative;
-    z-index: 1;
+            z-index: 2;
 
-    margin-top: 9px;
+            display: flex;
 
-    color: #94a3b8;
+            align-items: center;
 
-    font-size: 11px;
-    font-weight: 650;
-}
+            justify-content: flex-end;
 
+            gap: 9px;
 
-/* =========================================================
-   PRODUCTS
-========================================================= */
+            flex-wrap: wrap;
 
-.sd-products {
-    margin-top: 38px;
-}
+        }
 
-.sd-section-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
 
-    gap: 15px;
+        .sb-primary-btn,
+        .sb-secondary-btn {
 
-    margin-bottom: 20px;
-}
+            min-height: 44px;
 
-.sd-section-title {
-    color: #111827;
+            display: inline-flex;
 
-    font-size: 21px;
-    font-weight: 850;
+            align-items: center;
 
-    letter-spacing: -.3px;
-}
+            justify-content: center;
 
-.sd-section-subtitle {
-    margin-top: 5px;
+            gap: 8px;
 
-    color: #94a3b8;
+            padding:
+                0 16px;
 
-    font-size: 11px;
-}
+            border-radius: 12px;
 
-.sd-add {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+            text-decoration: none;
 
-    gap: 8px;
+            font-size: 9px;
 
-    padding: 12px 18px;
+            font-weight: 900;
 
-    border: 0;
-    border-radius: 13px;
+            transition:
+                transform .2s ease,
+                box-shadow .2s ease,
+                background .2s ease;
 
-    background:
-        linear-gradient(
-            135deg,
-            #00b875,
-            #00d98a
-        );
+        }
 
-    color: #ffffff !important;
 
-    font-size: 12px;
-    font-weight: 850;
+        .sb-primary-btn {
 
-    text-decoration: none;
+            color: #312e81;
 
-    box-shadow:
-        0 10px 25px rgba(0, 201, 120, .14);
+            background: #fff;
 
-    transition:
-        transform .25s ease,
-        box-shadow .25s ease,
-        filter .25s ease;
-}
+            box-shadow:
+                0 12px 28px
+                rgba(0,0,0,.16);
 
-.sd-add:hover {
-    transform: translateY(-2px);
+        }
 
-    color: #ffffff !important;
 
-    filter: brightness(1.03);
+        .sb-secondary-btn {
 
-    box-shadow:
-        0 15px 35px rgba(0, 201, 120, .22);
-}
+            color: #fff;
 
+            border:
+                1px solid
+                rgba(255,255,255,.18);
 
-/* =========================================================
-   PRODUCT GRID
-========================================================= */
+            background:
+                rgba(255,255,255,.10);
 
-.sd-product-grid {
-    display: grid;
+            backdrop-filter:
+                blur(12px);
 
-    grid-template-columns:
-        repeat(4, minmax(0, 1fr));
+        }
 
-    gap: 18px;
-}
 
-.sd-product {
-    overflow: hidden;
+        .sb-primary-btn:hover {
 
-    min-width: 0;
+            color: #312e81;
 
-    border:
-        1px solid #e1e8ef;
+            transform:
+                translateY(-2px);
 
-    border-radius: 20px;
+            box-shadow:
+                0 15px 32px
+                rgba(0,0,0,.20);
 
-    background:
-        linear-gradient(
-            145deg,
-            #ffffff,
-            #f8fafc
-        );
+        }
 
-    box-shadow:
-        0 15px 35px rgba(15, 23, 42, .06),
-        inset 0 1px 0 #ffffff;
 
-    transition:
-        transform .3s ease,
-        border-color .3s ease,
-        box-shadow .3s ease;
-}
+        .sb-secondary-btn:hover {
 
-.sd-product:hover {
-    transform: translateY(-6px);
+            color: #fff;
 
-    border-color:
-        rgba(0, 169, 104, .22);
+            transform:
+                translateY(-2px);
 
-    box-shadow:
-        0 25px 50px rgba(15, 23, 42, .10),
-        0 0 25px rgba(0, 169, 104, .04);
-}
+            background:
+                rgba(255,255,255,.16);
 
-.sd-product-image {
-    position: relative;
+        }
 
-    height: 195px;
 
-    overflow: hidden;
+        /* =========================================================
+           SECTION HEADINGS
+           ========================================================= */
 
-    background:
-        linear-gradient(
-            135deg,
-            #f1f5f9,
-            #e9eef4
-        );
-}
+        .sb-section-heading {
 
-.sd-product-image::after {
-    content: "";
+            display: flex;
 
-    position: absolute;
+            align-items: flex-end;
 
-    inset: 0;
+            justify-content: space-between;
 
-    background:
-        linear-gradient(
-            to bottom,
-            transparent 60%,
-            rgba(15, 23, 42, .10)
-        );
+            gap: 15px;
 
-    pointer-events: none;
-}
+            margin-bottom: 13px;
 
-.sd-product-image img {
-    width: 100%;
-    height: 100%;
+        }
 
-    display: block;
 
-    object-fit: cover;
+        .sb-section-kicker {
 
-    transition:
-        transform .45s ease;
-}
+            margin-bottom: 4px;
 
-.sd-product:hover
-.sd-product-image img {
-    transform: scale(1.06);
-}
+            color: var(--sb-primary);
 
-.sd-product-body {
-    padding: 17px;
-}
+            font-size: 8px;
 
-.sd-product-name {
-    overflow: hidden;
+            font-weight: 950;
 
-    color: #172033;
+            letter-spacing: .13em;
 
-    font-size: 14px;
-    font-weight: 800;
+            text-transform: uppercase;
 
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
+        }
 
-.sd-product-category {
-    margin-top: 5px;
 
-    overflow: hidden;
+        .sb-section-title {
 
-    color: #94a3b8;
+            margin: 0;
 
-    font-size: 10px;
+            color: var(--sb-text);
 
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
+            font-size: 17px;
 
-.sd-product-price {
-    margin-top: 12px;
+            line-height: 1.2;
 
-    color: #00a968;
+            font-weight: 950;
 
-    font-size: 19px;
-    font-weight: 850;
-}
+            letter-spacing: -.02em;
 
-.sd-product-stock {
-    margin-top: 6px;
+        }
 
-    color: #64748b;
 
-    font-size: 10px;
-}
+        .sb-section-description {
 
-.sd-product-stock i {
-    margin-right: 3px;
+            margin:
+                5px 0 0;
 
-    color: #00b875;
-}
+            color: var(--sb-muted);
 
-.sd-product-actions {
-    display: flex;
+            font-size: 9px;
 
-    gap: 8px;
+            line-height: 1.5;
 
-    margin-top: 15px;
-}
+        }
 
-.sd-edit,
-.sd-delete {
-    flex: 1;
 
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+        /* =========================================================
+           STATS
+           ========================================================= */
 
-    gap: 5px;
+        .sb-stats {
 
-    min-height: 37px;
+            display: grid;
 
-    padding: 8px 10px;
+            grid-template-columns:
+                repeat(4, minmax(0, 1fr));
 
-    border-radius: 10px;
+            gap: 13px;
 
-    font-size: 10px;
-    font-weight: 750;
+            margin-bottom: 24px;
 
-    text-decoration: none;
+        }
 
-    cursor: pointer;
 
-    transition: .22s ease;
-}
+        .sb-stat {
 
-.sd-edit {
-    border:
-        1px solid rgba(245, 158, 11, .20);
+            position: relative;
 
-    background:
-        rgba(245, 158, 11, .07);
+            min-width: 0;
 
-    color: #d97706;
-}
+            overflow: hidden;
 
-.sd-edit:hover {
-    background:
-        rgba(245, 158, 11, .13);
+            padding: 18px;
 
-    border-color:
-        rgba(245, 158, 11, .35);
+            border:
+                1px solid
+                rgba(15,23,42,.07);
 
-    color: #b45309;
-}
+            border-radius: 17px;
 
-.sd-delete {
-    width: 100%;
+            background:
+                rgba(255,255,255,.94);
 
-    border:
-        1px solid rgba(239, 68, 68, .18);
+            box-shadow:
+                var(--sb-shadow);
 
-    background:
-        rgba(239, 68, 68, .06);
+            transition:
+                transform .22s ease,
+                box-shadow .22s ease;
 
-    color: #dc2626;
-}
+        }
 
-.sd-delete:hover {
-    background:
-        rgba(239, 68, 68, .12);
 
-    border-color:
-        rgba(239, 68, 68, .32);
+        .sb-stat::after {
 
-    color: #b91c1c;
-}
+            content: "";
 
+            position: absolute;
 
-/* =========================================================
-   EMPTY STATE
-========================================================= */
+            width: 90px;
 
-.sd-empty {
-    grid-column: 1 / -1;
+            height: 90px;
 
-    padding: 75px 25px;
+            right: -35px;
 
-    text-align: center;
+            bottom: -45px;
 
-    border:
-        1px dashed #cbd5e1;
+            border-radius: 50%;
 
-    border-radius: 23px;
+            background:
+                rgba(79,70,229,.035);
 
-    background:
-        rgba(255, 255, 255, .70);
-}
+        }
 
-.sd-empty i {
-    color: #94a3b8;
 
-    font-size: 42px;
-}
+        .sb-stat:hover {
 
-.sd-empty h3 {
-    margin: 16px 0 0;
+            transform:
+                translateY(-4px);
 
-    color: #172033;
+            box-shadow:
+                var(--sb-shadow-hover);
 
-    font-size: 18px;
-    font-weight: 800;
-}
+        }
 
-.sd-empty p {
-    margin: 8px 0 22px;
 
-    color: #94a3b8;
+        .sb-stat-top {
 
-    font-size: 11px;
-}
+            position: relative;
 
+            z-index: 1;
 
-/* =========================================================
-   RESPONSIVE
-========================================================= */
+            display: flex;
 
-@media (max-width: 1200px) {
+            align-items: center;
 
-    .sd-product-grid {
-        grid-template-columns:
-            repeat(3, minmax(0, 1fr));
-    }
+            justify-content: space-between;
 
-}
+            gap: 8px;
 
-@media (max-width: 1050px) {
+        }
 
-    .sd-actions,
-    .sd-stats {
-        grid-template-columns:
-            repeat(2, minmax(0, 1fr));
-    }
 
-}
+        .sb-stat-icon {
 
-@media (max-width: 768px) {
+            width: 41px;
 
-    .seller-dashboard {
-        padding: 22px 15px;
-    }
+            height: 41px;
 
-    .sd-top {
-        align-items: flex-start;
-    }
+            display: flex;
 
-    .sd-title h1 {
-        font-size: 25px;
-    }
+            align-items: center;
 
-    .sd-subtitle {
-        font-size: 11px;
-    }
+            justify-content: center;
 
-    .sd-header-right {
-        align-items: flex-end;
-    }
+            border-radius: 12px;
 
-    .sd-status {
-        display: none;
-    }
+            color: var(--sb-primary);
 
-    .seller-center-btn {
-        min-height: 42px;
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(79,70,229,.11),
+                    rgba(124,58,237,.07)
+                );
 
-        padding: 0 13px;
-    }
+            font-size: 14px;
 
-    .seller-center-btn span {
-        display: none;
-    }
+        }
 
-    .seller-center-menu {
-        right: 0;
 
-        width: 280px;
-    }
+        .sb-stat-live {
 
-    .sd-product-grid {
-        grid-template-columns:
-            repeat(2, minmax(0, 1fr));
+            padding:
+                5px 7px;
 
-        gap: 12px;
-    }
+            border-radius: 7px;
 
-    .sd-product-image {
-        height: 170px;
-    }
+            color: var(--sb-success);
 
-}
+            background:
+                rgba(22,163,74,.06);
 
-@media (max-width: 560px) {
+            font-size: 7px;
 
-    .sd-top {
-        gap: 10px;
-    }
+            font-weight: 900;
 
-    .sd-actions,
-    .sd-stats {
-        grid-template-columns:
-            repeat(2, minmax(0, 1fr));
+        }
 
-        gap: 10px;
-    }
 
-    .sd-action {
-        min-height: 130px;
+        .sb-stat-number {
 
-        padding: 15px;
-    }
+            position: relative;
 
-    .sd-action-icon {
-        width: 40px;
-        height: 40px;
+            z-index: 1;
 
-        margin-bottom: 12px;
-    }
+            margin-top: 17px;
 
-    .sd-action-title {
-        font-size: 12px;
-    }
+            color: var(--sb-text);
 
-    .sd-action-text {
-        font-size: 9px;
-    }
+            font-size:
+                clamp(22px, 2vw, 28px);
 
-    .sd-stat {
-        min-height: 135px;
+            line-height: 1;
 
-        padding: 16px;
-    }
+            font-weight: 950;
 
-    .sd-stat-icon {
-        width: 40px;
-        height: 40px;
+            letter-spacing: -.035em;
 
-        margin-bottom: 14px;
-    }
+        }
 
-    .sd-stat-number {
-        font-size: 21px;
-    }
 
-    .sd-stat-label {
-        font-size: 9px;
-    }
+        .sb-stat-label {
 
-    .sd-section-head {
-        align-items: flex-start;
+            position: relative;
 
-        flex-direction: column;
-    }
+            z-index: 1;
 
-    .sd-add {
-        width: 100%;
-    }
+            margin-top: 7px;
 
-    .sd-product-grid {
-        grid-template-columns: 1fr;
-    }
+            color: var(--sb-muted);
 
-    .sd-product-image {
-        height: 210px;
-    }
+            font-size: 9px;
 
-    .seller-center-menu {
-        width: calc(100vw - 30px);
+            font-weight: 650;
 
-        max-width: 300px;
-    }
+        }
 
-    .sd-kyc-card {
-        padding: 18px;
-    }
 
-    .sd-kyc-header,
-    .sd-kyc-body {
-        flex-direction: column;
+        /* =========================================================
+           MAIN GRID
+           ========================================================= */
 
-        align-items: flex-start;
-    }
+        .sb-main-grid {
 
-    .sd-kyc-status {
-        align-self: flex-start;
-    }
+            display: grid;
 
-    .sd-kyc-button {
-        width: 100%;
-    }
+            grid-template-columns:
+                minmax(0, 1.22fr)
+                minmax(340px, .78fr);
 
-}
+            gap: 15px;
 
+            margin-bottom: 18px;
 
-/* =========================================================
-   REDUCED MOTION
-========================================================= */
+        }
 
-@media (prefers-reduced-motion: reduce) {
 
-    .sd-action,
-    .sd-stat,
-    .sd-product,
-    .sd-product-image img,
-    .sd-add,
-    .sd-edit,
-    .sd-delete,
-    .seller-center-btn,
-    .seller-center-menu,
-    .seller-center-item,
-    .sd-kyc-button {
-        transition: none !important;
-    }
+        .sb-panel {
 
-}
-</style>
+            min-width: 0;
 
+            padding: 20px;
 
-<div class="seller-dashboard">
+            border:
+                1px solid
+                rgba(15,23,42,.07);
 
+            border-radius: 18px;
 
-    {{-- =====================================================
-         HEADER
-    ====================================================== --}}
+            background:
+                rgba(255,255,255,.94);
 
-    <div class="sd-top">
+            box-shadow:
+                var(--sb-shadow);
 
-        <div class="sd-title">
+        }
 
-            <h1>
-                Seller <span>Dashboard</span>
-            </h1>
 
-            <div class="sd-subtitle">
-                Welcome back. Manage your SMART BASKET store from one place.
-            </div>
+        /* =========================================================
+           QUICK ACTIONS
+           ========================================================= */
 
-        </div>
+        .sb-actions {
 
+            display: grid;
 
-        <div class="sd-header-right">
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
 
+            gap: 10px;
 
-            {{-- =================================================
-                 SELLER CENTER
-                 ONLY PROFILE + KYC
-            ================================================== --}}
+        }
 
-            <div
-                class="seller-center-wrap"
-                id="sellerCenterWrap"
-            >
 
-                <button
-                    type="button"
-                    class="seller-center-btn"
-                    id="sellerCenterButton"
-                    aria-expanded="false"
-                    aria-haspopup="true"
-                >
+        .sb-action {
 
-                    <i class="fa-solid fa-store"></i>
+            min-width: 0;
 
-                    <span>
-                        Seller Center
-                    </span>
+            min-height: 76px;
 
-                    <i
-                        class="fa-solid fa-chevron-down seller-center-arrow"
-                    ></i>
+            display: flex;
 
-                </button>
+            align-items: center;
 
+            gap: 11px;
 
-                <div
-                    class="seller-center-menu"
-                    id="sellerCenterMenu"
-                >
+            padding: 11px;
 
+            border:
+                1px solid
+                rgba(15,23,42,.07);
 
-                    {{-- =================================================
-                         SELLER CENTER HEADER
-                    ================================================== --}}
+            border-radius: 13px;
 
-                    <div class="seller-center-header">
+            color: var(--sb-text);
 
-                        <div class="seller-center-header-title">
+            background:
+                linear-gradient(
+                    145deg,
+                    #fbfcfe,
+                    #f7f9fc
+                );
 
-                            <i class="fa-solid fa-store"></i>
+            text-decoration: none;
 
-                            Seller Center
+            transition:
+                transform .2s ease,
+                border-color .2s ease,
+                background .2s ease,
+                box-shadow .2s ease;
 
-                        </div>
+        }
 
-                        <div class="seller-center-header-text">
 
-                            Manage your seller profile and verification
+        .sb-action:hover {
 
-                        </div>
+            color: var(--sb-text);
 
-                    </div>
+            border-color:
+                rgba(79,70,229,.18);
 
+            background: #fff;
 
-                    {{-- =================================================
-                         MY PROFILE
-                    ================================================== --}}
+            transform:
+                translateY(-2px);
 
-                    <a
-                        href="{{ route('seller.profile') }}"
-                        class="seller-center-item"
-                    >
+            box-shadow:
+                0 10px 25px
+                rgba(15,23,42,.06);
 
-                        <div class="seller-center-item-icon">
+        }
 
-                            <i class="fa-solid fa-user"></i>
 
-                        </div>
+        .sb-action-icon {
 
-                        <div class="seller-center-item-content">
+            width: 39px;
 
-                            <div class="seller-center-item-title">
-                                My Profile
-                            </div>
+            height: 39px;
 
-                            <div class="seller-center-item-text">
-                                Manage your personal details
-                            </div>
+            min-width: 39px;
 
-                        </div>
+            display: flex;
 
-                        <i
-                            class="fa-solid fa-chevron-right seller-center-item-arrow"
-                        ></i>
+            align-items: center;
 
-                    </a>
+            justify-content: center;
 
+            border-radius: 11px;
 
-                    {{-- =================================================
-                         VERIFICATION & KYC
-                    ================================================== --}}
+            color: var(--sb-primary);
 
-                    <a
-                        href="{{ route('seller.verification.index') }}"
-                        class="seller-center-item"
-                    >
+            background:
+                rgba(79,70,229,.08);
 
-                        <div class="seller-center-item-icon">
+            font-size: 12px;
 
-                            <i class="fa-solid fa-shield-halved"></i>
+        }
 
-                        </div>
 
-                        <div class="seller-center-item-content">
+        .sb-action-content {
 
-                            <div class="seller-center-item-title">
-                                Verification &amp; KYC
-                            </div>
+            min-width: 0;
 
-                            <div class="seller-center-item-text">
-                                Complete seller verification and review status
-                            </div>
+            flex: 1;
 
-                        </div>
+        }
 
-                        <i
-                            class="fa-solid fa-chevron-right seller-center-item-arrow"
-                        ></i>
 
-                    </a>
+        .sb-action-title {
 
+            display: block;
 
-                </div>
+            overflow: hidden;
 
-            </div>
+            color: var(--sb-text);
 
+            font-size: 9px;
 
-            {{-- =================================================
-                 ACCOUNT STATUS
-            ================================================== --}}
+            font-weight: 900;
 
-            @php
+            white-space: nowrap;
 
-                $sellerDashboardStatus = match (
-                    $seller->verification_status ?? null
-                ) {
+            text-overflow: ellipsis;
 
-                    \App\Models\SellerProfile::STATUS_APPROVED,
-                    \App\Models\SellerProfile::STATUS_ACTIVE
-                        => 'Seller account active',
+        }
 
-                    \App\Models\SellerProfile::STATUS_PENDING_ADMIN_REVIEW,
-                    \App\Models\SellerProfile::STATUS_PENDING_REVIEW
-                        => 'Application under review',
 
-                    \App\Models\SellerProfile::STATUS_REJECTED
-                        => 'Application rejected',
+        .sb-action-text {
 
-                    \App\Models\SellerProfile::STATUS_EMAIL_VERIFICATION,
-                    \App\Models\SellerProfile::STATUS_PENDING_EMAIL,
-                    \App\Models\SellerProfile::STATUS_PENDING,
-                    \App\Models\SellerProfile::STATUS_DRAFT
-                        => 'Verification pending',
+            display: block;
 
-                    default
-                        => 'Verification in progress',
-                };
+            margin-top: 3px;
 
-            @endphp
+            color: var(--sb-muted);
 
+            font-size: 7.5px;
 
-            <div class="sd-status">
+            line-height: 1.45;
 
-                <span class="sd-status-dot"></span>
+        }
 
-                {{ $sellerDashboardStatus }}
 
-            </div>
+        .sb-action-arrow {
 
+            color: var(--sb-soft);
 
-        </div>
+            font-size: 8px;
 
-    </div>
+        }
 
 
-    {{-- =====================================================
-         KYC STATUS CALCULATION
-    ====================================================== --}}
+        /* =========================================================
+           STORE HEALTH
+           ========================================================= */
+
+        .sb-health-list {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 6px;
+
+        }
+
+
+        .sb-health-row {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 10px;
+
+            min-height: 51px;
+
+            padding:
+                7px 9px;
+
+            border:
+                1px solid
+                rgba(15,23,42,.045);
+
+            border-radius: 11px;
+
+            background:
+                #f8fafc;
+
+        }
+
+
+        .sb-health-left {
+
+            min-width: 0;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 9px;
+
+        }
+
+
+        .sb-health-icon {
+
+            width: 32px;
+
+            height: 32px;
+
+            min-width: 32px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            border-radius: 9px;
+
+            color: var(--sb-primary);
+
+            background:
+                rgba(79,70,229,.075);
+
+            font-size: 10px;
+
+        }
+
+
+        .sb-health-name {
+
+            overflow: hidden;
+
+            color: var(--sb-text);
+
+            font-size: 8.5px;
+
+            font-weight: 900;
+
+            white-space: nowrap;
+
+            text-overflow: ellipsis;
+
+        }
+
+
+        .sb-health-desc {
+
+            margin-top: 2px;
+
+            color: var(--sb-muted);
+
+            font-size: 7.5px;
+
+        }
+
+
+        .sb-health-value {
+
+            font-size: 11px;
+
+            font-weight: 950;
+
+        }
+
+
+        .sb-health-value.success {
+
+            color: var(--sb-success);
+
+        }
+
+
+        .sb-health-value.warning {
+
+            color: var(--sb-warning);
+
+        }
+
+
+        .sb-health-value.danger {
+
+            color: var(--sb-danger);
+
+        }
+
+
+        /* =========================================================
+           VERIFICATION / ALERT
+           ========================================================= */
+
+        .sb-verification {
+
+            width: 100%;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 15px;
+
+            margin-bottom: 18px;
+
+            padding:
+                14px 17px;
+
+            border:
+                1px solid
+                rgba(79,70,229,.11);
+
+            border-radius: 15px;
+
+            background:
+                rgba(255,255,255,.95);
+
+            box-shadow:
+                var(--sb-shadow);
+
+        }
+
+
+        .sb-verification-main {
+
+            min-width: 0;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 11px;
+
+        }
+
+
+        .sb-verification-icon {
+
+            width: 39px;
+
+            height: 39px;
+
+            min-width: 39px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            border-radius: 11px;
+
+            color: var(--sb-primary);
+
+            background:
+                rgba(79,70,229,.08);
+
+            font-size: 13px;
+
+        }
+
+
+        .sb-verification-title {
+
+            margin: 0;
+
+            color: var(--sb-text);
+
+            font-size: 10px;
+
+            font-weight: 950;
+
+        }
+
+
+        .sb-verification-text {
+
+            max-width: 700px;
+
+            margin:
+                4px 0 0;
+
+            color: var(--sb-muted);
+
+            font-size: 8px;
+
+            line-height: 1.55;
+
+        }
+
+
+        .sb-verification-controls {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: flex-end;
+
+            gap: 7px;
+
+            flex-wrap: wrap;
+
+        }
+
+
+        .sb-verification-status {
+
+            min-height: 30px;
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 6px;
+
+            padding:
+                0 9px;
+
+            border-radius: 8px;
+
+            font-size: 8px;
+
+            font-weight: 900;
+
+            white-space: nowrap;
+
+        }
+
+
+        .sb-verification-status.active {
+
+            color: var(--sb-success);
+
+            background:
+                rgba(22,163,74,.07);
+
+        }
+
+
+        .sb-verification-status.danger {
+
+            color: var(--sb-danger);
+
+            background:
+                rgba(220,38,38,.07);
+
+        }
+
+
+        .sb-verification-status.review {
+
+            color: var(--sb-primary);
+
+            background:
+                rgba(79,70,229,.07);
+
+        }
+
+
+        .sb-verification-status.pending {
+
+            color: var(--sb-warning);
+
+            background:
+                rgba(217,119,6,.07);
+
+        }
+
+
+        .sb-verification-action {
+
+            min-height: 30px;
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 6px;
+
+            padding:
+                0 10px;
+
+            border: 0;
+
+            border-radius: 8px;
+
+            color: var(--sb-primary);
+
+            background:
+                rgba(79,70,229,.075);
+
+            text-decoration: none;
+
+            font-size: 8px;
+
+            font-weight: 900;
+
+            white-space: nowrap;
+
+            transition:
+                background .2s ease,
+                transform .2s ease;
+
+        }
+
+
+        .sb-verification-action:hover {
+
+            color: var(--sb-primary);
+
+            background:
+                rgba(79,70,229,.13);
+
+            transform:
+                translateY(-1px);
+
+        }
+
+
+        /* =========================================================
+           PRODUCTS
+           ========================================================= */
+
+        .sb-products-wrap {
+
+            width: 100%;
+
+            margin-bottom: 18px;
+
+            padding: 20px;
+
+            border:
+                1px solid
+                rgba(15,23,42,.07);
+
+            border-radius: 18px;
+
+            background:
+                rgba(255,255,255,.95);
+
+            box-shadow:
+                var(--sb-shadow);
+
+        }
+
+
+        .sb-products-head {
+
+            display: flex;
+
+            align-items: flex-end;
+
+            justify-content: space-between;
+
+            gap: 15px;
+
+            margin-bottom: 15px;
+
+        }
+
+
+        .sb-products-head-right {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: flex-end;
+
+            gap: 7px;
+
+            flex-wrap: wrap;
+
+        }
+
+
+        .sb-view-all,
+        .sb-add-product {
+
+            min-height: 33px;
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 6px;
+
+            padding:
+                0 10px;
+
+            border-radius: 9px;
+
+            text-decoration: none;
+
+            font-size: 8px;
+
+            font-weight: 900;
+
+            transition:
+                transform .2s ease,
+                box-shadow .2s ease;
+
+        }
+
+
+        .sb-view-all {
+
+            color: var(--sb-muted);
+
+            border:
+                1px solid
+                rgba(15,23,42,.07);
+
+            background:
+                #f8fafc;
+
+        }
+
+
+        .sb-view-all:hover {
+
+            color: var(--sb-primary);
+
+            transform:
+                translateY(-1px);
+
+        }
+
+
+        .sb-add-product {
+
+            color: #fff;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #4f46e5,
+                    #7c3aed
+                );
+
+            box-shadow:
+                0 8px 20px
+                rgba(79,70,229,.16);
+
+        }
+
+
+        .sb-add-product:hover {
+
+            color: #fff;
+
+            transform:
+                translateY(-1px);
+
+            box-shadow:
+                0 11px 24px
+                rgba(79,70,229,.22);
+
+        }
+
+
+        .sb-product-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, minmax(0, 1fr));
+
+            gap: 13px;
+
+        }
+
+
+        .sb-product {
+
+            min-width: 0;
+
+            overflow: hidden;
+
+            border:
+                1px solid
+                rgba(15,23,42,.07);
+
+            border-radius: 14px;
+
+            background: #fff;
+
+            transition:
+                transform .22s ease,
+                box-shadow .22s ease,
+                border-color .22s ease;
+
+        }
+
+
+        .sb-product:hover {
+
+            transform:
+                translateY(-4px);
+
+            border-color:
+                rgba(79,70,229,.13);
+
+            box-shadow:
+                var(--sb-shadow-hover);
+
+        }
+
+
+        .sb-product-image {
+
+            position: relative;
+
+            height:
+                clamp(165px, 13vw, 210px);
+
+            overflow: hidden;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #f8fafc,
+                    #eef2f7
+                );
+
+        }
+
+
+        .sb-product-image::after {
+
+            content: "";
+
+            position: absolute;
+
+            inset: 0;
+
+            pointer-events: none;
+
+            background:
+                linear-gradient(
+                    180deg,
+                    rgba(0,0,0,.025),
+                    transparent 50%,
+                    rgba(0,0,0,.035)
+                );
+
+        }
+
+
+        .sb-product-image img {
+
+            width: 100%;
+
+            height: 100%;
+
+            display: block;
+
+            object-fit: cover;
+
+            transition:
+                transform .4s ease;
+
+        }
+
+
+        .sb-product:hover
+        .sb-product-image img {
+
+            transform:
+                scale(1.045);
+
+        }
+
+
+        .sb-product-stock-badge {
+
+            position: absolute;
+
+            z-index: 2;
+
+            top: 9px;
+
+            left: 9px;
+
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 5px;
+
+            padding:
+                5px 7px;
+
+            border-radius: 7px;
+
+            color: var(--sb-success);
+
+            background:
+                rgba(255,255,255,.94);
+
+            backdrop-filter:
+                blur(10px);
+
+            box-shadow:
+                0 5px 15px
+                rgba(15,23,42,.09);
+
+            font-size: 7px;
+
+            font-weight: 950;
+
+        }
+
+
+        .sb-product-stock-badge i {
+
+            font-size: 5px;
+
+        }
+
+
+        .sb-product-stock-badge.low {
+
+            color: var(--sb-warning);
+
+        }
+
+
+        .sb-product-stock-badge.out {
+
+            color: var(--sb-danger);
+
+        }
+
+
+        .sb-product-body {
+
+            padding: 13px;
+
+        }
+
+
+        .sb-product-name {
+
+            min-height: 28px;
+
+            margin: 0;
+
+            overflow: hidden;
+
+            color: var(--sb-text);
+
+            font-size: 9px;
+
+            line-height: 1.45;
+
+            font-weight: 900;
+
+            display:
+                -webkit-box;
+
+            -webkit-line-clamp: 2;
+
+            -webkit-box-orient: vertical;
+
+        }
+
+
+        .sb-product-category {
+
+            margin-top: 4px;
+
+            overflow: hidden;
+
+            color: var(--sb-soft);
+
+            font-size: 7.5px;
+
+            white-space: nowrap;
+
+            text-overflow: ellipsis;
+
+        }
+
+
+        .sb-product-info {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 8px;
+
+            margin-top: 10px;
+
+        }
+
+
+        .sb-product-price {
+
+            color: var(--sb-text);
+
+            font-size: 14px;
+
+            font-weight: 950;
+
+            letter-spacing: -.02em;
+
+        }
+
+
+        .sb-product-stock {
+
+            color: var(--sb-muted);
+
+            font-size: 7.5px;
+
+            font-weight: 750;
+
+        }
+
+
+        .sb-product-actions {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 6px;
+
+            margin-top: 11px;
+
+        }
+
+
+        .sb-edit,
+        .sb-delete {
+
+            min-height: 29px;
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 5px;
+
+            padding:
+                0 8px;
+
+            border: 0;
+
+            border-radius: 8px;
+
+            text-decoration: none;
+
+            font-size: 7.5px;
+
+            font-weight: 900;
+
+            transition:
+                transform .18s ease,
+                background .18s ease;
+
+        }
+
+
+        .sb-edit {
+
+            flex: 1;
+
+            color: var(--sb-primary);
+
+            background:
+                rgba(79,70,229,.075);
+
+        }
+
+
+        .sb-edit:hover {
+
+            color: var(--sb-primary);
+
+            background:
+                rgba(79,70,229,.13);
+
+            transform:
+                translateY(-1px);
+
+        }
+
+
+        .sb-delete {
+
+            color: var(--sb-danger);
+
+            background:
+                rgba(220,38,38,.065);
+
+        }
+
+
+        .sb-delete:hover {
+
+            color: var(--sb-danger);
+
+            background:
+                rgba(220,38,38,.12);
+
+            transform:
+                translateY(-1px);
+
+        }
+
+
+        /* =========================================================
+           EMPTY
+           ========================================================= */
+
+        .sb-empty {
+
+            grid-column:
+                1 / -1;
+
+            padding:
+                60px 20px;
+
+            text-align: center;
+
+            border:
+                1px dashed
+                rgba(15,23,42,.12);
+
+            border-radius: 15px;
+
+            background:
+                #f8fafc;
+
+        }
+
+
+        .sb-empty-icon {
+
+            width: 58px;
+
+            height: 58px;
+
+            margin:
+                0 auto 13px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            border-radius: 17px;
+
+            color: var(--sb-primary);
+
+            background:
+                rgba(79,70,229,.08);
+
+            font-size: 19px;
+
+        }
+
+
+        .sb-empty-title {
+
+            margin: 0;
+
+            color: var(--sb-text);
+
+            font-size: 14px;
+
+            font-weight: 950;
+
+        }
+
+
+        .sb-empty-text {
+
+            max-width: 440px;
+
+            margin:
+                6px auto 15px;
+
+            color: var(--sb-muted);
+
+            font-size: 8.5px;
+
+            line-height: 1.6;
+
+        }
+
+
+        .sb-empty-action {
+
+            min-height: 35px;
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 6px;
+
+            padding:
+                0 13px;
+
+            border-radius: 9px;
+
+            color: #fff;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--sb-primary),
+                    var(--sb-purple)
+                );
+
+            text-decoration: none;
+
+            font-size: 8px;
+
+            font-weight: 900;
+
+        }
+
+
+        .sb-empty-action:hover {
+
+            color: #fff;
+
+        }
+
+
+        /* =========================================================
+           BOTTOM
+           ========================================================= */
+
+        .sb-bottom-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                minmax(0, 1.28fr)
+                minmax(310px, .72fr);
+
+            gap: 15px;
+
+        }
+
+
+        .sb-tip-card,
+        .sb-account-card {
+
+            min-width: 0;
+
+            padding: 20px;
+
+            border:
+                1px solid
+                rgba(15,23,42,.07);
+
+            border-radius: 18px;
+
+            background:
+                rgba(255,255,255,.95);
+
+            box-shadow:
+                var(--sb-shadow);
+
+        }
+
+
+        .sb-tip-list {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, minmax(0, 1fr));
+
+            gap: 9px;
+
+            margin-top: 15px;
+
+        }
+
+
+        .sb-tip {
+
+            min-width: 0;
+
+            padding: 13px;
+
+            border:
+                1px solid
+                rgba(15,23,42,.045);
+
+            border-radius: 12px;
+
+            background:
+                #f8fafc;
+
+        }
+
+
+        .sb-tip-icon {
+
+            width: 31px;
+
+            height: 31px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            margin-bottom: 9px;
+
+            border-radius: 9px;
+
+            color: var(--sb-primary);
+
+            background:
+                rgba(79,70,229,.08);
+
+            font-size: 10px;
+
+        }
+
+
+        .sb-tip-title {
+
+            color: var(--sb-text);
+
+            font-size: 9px;
+
+            font-weight: 900;
+
+        }
+
+
+        .sb-tip-text {
+
+            margin:
+                4px 0 0;
+
+            color: var(--sb-muted);
+
+            font-size: 8px;
+
+            line-height: 1.6;
+
+        }
+
+
+        /* =========================================================
+           ACCOUNT CARD
+           ========================================================= */
+
+        .sb-account-card-head {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 11px;
+
+            padding-bottom: 14px;
+
+            border-bottom:
+                1px solid
+                rgba(15,23,42,.07);
+
+        }
+
+
+        .sb-avatar {
+
+            width: 44px;
+
+            height: 44px;
+
+            min-width: 44px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            border-radius: 13px;
+
+            color: #fff;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--sb-primary),
+                    var(--sb-purple)
+                );
+
+            box-shadow:
+                0 9px 22px
+                rgba(79,70,229,.17);
+
+            font-size: 15px;
+
+            font-weight: 950;
+
+        }
+
+
+        .sb-account-name {
+
+            overflow: hidden;
+
+            color: var(--sb-text);
+
+            font-size: 11px;
+
+            font-weight: 900;
+
+            white-space: nowrap;
+
+            text-overflow: ellipsis;
+
+        }
+
+
+        .sb-account-role {
+
+            margin-top: 3px;
+
+            color: var(--sb-muted);
+
+            font-size: 8px;
+
+        }
+
+
+        .sb-account-info {
+
+            display: grid;
+
+            gap: 7px;
+
+            margin-top: 13px;
+
+        }
+
+
+        .sb-account-info-row {
+
+            min-height: 35px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 10px;
+
+            padding:
+                7px 9px;
+
+            border-radius: 9px;
+
+            background:
+                #f8fafc;
+
+        }
+
+
+        .sb-account-info-label {
+
+            color: var(--sb-muted);
+
+            font-size: 7.5px;
+
+            font-weight: 750;
+
+        }
+
+
+        .sb-account-info-value {
+
+            max-width: 60%;
+
+            overflow: hidden;
+
+            color: var(--sb-text);
+
+            font-size: 7.5px;
+
+            font-weight: 900;
+
+            text-align: right;
+
+            white-space: nowrap;
+
+            text-overflow: ellipsis;
+
+        }
+
+
+        .sb-account-info-value.active {
+
+            color: var(--sb-success);
+
+        }
+
+
+        .sb-account-info-value.review {
+
+            color: var(--sb-primary);
+
+        }
+
+
+        .sb-account-info-value.danger {
+
+            color: var(--sb-danger);
+
+        }
+
+
+        .sb-account-info-value.pending {
+
+            color: var(--sb-warning);
+
+        }
+
+
+        /* =========================================================
+           ICONS
+           ========================================================= */
+
+        .sb-dashboard-page
+        i[class^="fa-"],
+        .sb-dashboard-page
+        i[class*=" fa-"] {
+
+            font-style: normal;
+
+            line-height: 1;
+
+            text-rendering:
+                optimizeLegibility;
+
+            -webkit-font-smoothing:
+                antialiased;
+
+            -moz-osx-font-smoothing:
+                grayscale;
+
+        }
+
+
+        /* =========================================================
+           FOCUS
+           ========================================================= */
+
+        .sb-dashboard-page
+        a:focus-visible,
+        .sb-dashboard-page
+        button:focus-visible {
+
+            outline:
+                2px solid
+                var(--sb-primary) !important;
+
+            outline-offset:
+                2px !important;
+
+        }
+
+
+        /* =========================================================
+           LARGE DESKTOP
+           ========================================================= */
+
+        @media (min-width: 1600px) {
+
+            .sb-dashboard {
+
+                padding-left:
+                    38px;
+
+                padding-right:
+                    38px;
+
+            }
+
+
+            .sb-product-image {
+
+                height: 225px;
+
+            }
+
+        }
+
+
+        /* =========================================================
+           1300
+           ========================================================= */
+
+        @media (max-width: 1300px) {
+
+            .sb-product-grid {
+
+                grid-template-columns:
+                    repeat(4, minmax(0, 1fr));
+
+            }
+
+
+            .sb-product-image {
+
+                height: 180px;
+
+            }
+
+        }
+
+
+        /* =========================================================
+           1100
+           ========================================================= */
+
+        @media (max-width: 1100px) {
+
+            .sb-main-grid {
+
+                grid-template-columns:
+                    minmax(0, 1fr)
+                    minmax(300px, .75fr);
+
+            }
+
+
+            .sb-bottom-grid {
+
+                grid-template-columns:
+                    1fr;
+
+            }
+
+
+            .sb-tip-list {
+
+                grid-template-columns:
+                    repeat(3, minmax(0, 1fr));
+
+            }
+
+        }
+
+
+        /* =========================================================
+           950
+           ========================================================= */
+
+        @media (max-width: 950px) {
+
+            .sb-commandbar {
+
+                align-items: flex-start;
+
+                flex-direction: column;
+
+            }
+
+
+            .sb-command-right {
+
+                width: 100%;
+
+                justify-content: flex-start;
+
+            }
+
+
+            .sb-hero {
+
+                align-items: flex-start;
+
+                flex-direction: column;
+
+            }
+
+
+            .sb-hero-actions {
+
+                justify-content: flex-start;
+
+            }
+
+
+            .sb-main-grid {
+
+                grid-template-columns:
+                    1fr;
+
+            }
+
+
+            .sb-product-grid {
+
+                grid-template-columns:
+                    repeat(3, minmax(0, 1fr));
+
+            }
+
+        }
+
+
+        /* =========================================================
+           760
+           ========================================================= */
+
+        @media (max-width: 760px) {
+
+            .sb-dashboard {
+
+                padding:
+                    15px 12px 35px;
+
+            }
+
+
+            .sb-stats {
+
+                grid-template-columns:
+                    repeat(2, minmax(0, 1fr));
+
+                gap: 9px;
+
+            }
+
+
+            .sb-product-grid {
+
+                grid-template-columns:
+                    repeat(2, minmax(0, 1fr));
+
+                gap: 10px;
+
+            }
+
+
+            .sb-products-head {
+
+                align-items: flex-start;
+
+                flex-direction: column;
+
+            }
+
+
+            .sb-products-head-right {
+
+                width: 100%;
+
+                justify-content: flex-start;
+
+            }
+
+
+            .sb-verification {
+
+                align-items: flex-start;
+
+                flex-direction: column;
+
+            }
+
+
+            .sb-verification-main {
+
+                width: 100%;
+
+            }
+
+
+            .sb-verification-controls {
+
+                width: 100%;
+
+                justify-content: flex-start;
+
+            }
+
+
+            .sb-tip-list {
+
+                grid-template-columns:
+                    1fr;
+
+            }
+
+        }
+
+
+        /* =========================================================
+           560
+           ========================================================= */
+
+        @media (max-width: 560px) {
+
+            .sb-commandbar {
+
+                padding:
+                    13px;
+
+                border-radius:
+                    16px;
+
+            }
+
+
+            .sb-brand-mark {
+
+                width: 43px;
+
+                height: 43px;
+
+                min-width: 43px;
+
+                border-radius: 12px;
+
+            }
+
+
+            .sb-command-title {
+
+                font-size: 18px;
+
+            }
+
+
+            .sb-command-subtitle {
+
+                font-size: 8px;
+
+            }
+
+
+            .sb-account-status {
+
+                width: 100%;
+
+            }
+
+
+            .sb-hero {
+
+                padding:
+                    25px 20px;
+
+                border-radius:
+                    20px;
+
+            }
+
+
+            .sb-hero-title {
+
+                font-size:
+                    29px;
+
+            }
+
+
+            .sb-hero-text {
+
+                font-size: 10px;
+
+            }
+
+
+            .sb-hero-actions {
+
+                width: 100%;
+
+            }
+
+
+            .sb-primary-btn,
+            .sb-secondary-btn {
+
+                flex: 1;
+
+            }
+
+
+            .sb-actions {
+
+                grid-template-columns:
+                    1fr;
+
+            }
+
+
+            .sb-product-image {
+
+                height:
+                    155px;
+
+            }
+
+
+            .sb-product-body {
+
+                padding:
+                    10px;
+
+            }
+
+
+            .sb-product-price {
+
+                font-size:
+                    13px;
+
+            }
+
+
+            .sb-product-actions {
+
+                flex-direction:
+                    column;
+
+            }
+
+
+            .sb-edit,
+            .sb-delete {
+
+                width: 100%;
+
+            }
+
+
+            .sb-products-head-right {
+
+                display: grid;
+
+                grid-template-columns:
+                    1fr 1fr;
+
+            }
+
+
+            .sb-view-all,
+            .sb-add-product {
+
+                width: 100%;
+
+            }
+
+        }
+
+
+        /* =========================================================
+           420
+           ========================================================= */
+
+        @media (max-width: 420px) {
+
+            .sb-dashboard {
+
+                padding:
+                    11px 8px 30px;
+
+            }
+
+
+            .sb-stats {
+
+                gap: 7px;
+
+            }
+
+
+            .sb-stat {
+
+                padding:
+                    12px;
+
+            }
+
+
+            .sb-stat-icon {
+
+                width: 34px;
+
+                height: 34px;
+
+                border-radius: 9px;
+
+            }
+
+
+            .sb-stat-number {
+
+                margin-top:
+                    13px;
+
+                font-size:
+                    19px;
+
+            }
+
+
+            .sb-stat-label {
+
+                font-size:
+                    8px;
+
+            }
+
+
+            .sb-product-grid {
+
+                grid-template-columns:
+                    1fr 1fr;
+
+                gap: 7px;
+
+            }
+
+
+            .sb-product-image {
+
+                height:
+                    135px;
+
+            }
+
+
+            .sb-product-stock-badge {
+
+                top: 6px;
+
+                left: 6px;
+
+                padding:
+                    4px 5px;
+
+                font-size:
+                    6px;
+
+            }
+
+
+            .sb-product-body {
+
+                padding:
+                    8px;
+
+            }
+
+
+            .sb-product-name {
+
+                font-size:
+                    8px;
+
+            }
+
+
+            .sb-product-category {
+
+                font-size:
+                    6.5px;
+
+            }
+
+
+            .sb-product-price {
+
+                font-size:
+                    12px;
+
+            }
+
+
+            .sb-product-stock {
+
+                font-size:
+                    6.5px;
+
+            }
+
+
+            .sb-account-card,
+            .sb-tip-card,
+            .sb-products-wrap,
+            .sb-panel {
+
+                padding:
+                    14px;
+
+            }
+
+        }
+
+
+        /* =========================================================
+           REDUCE MOTION
+           ========================================================= */
+
+        @media (prefers-reduced-motion: reduce) {
+
+            .sb-dashboard-page *,
+            .sb-dashboard-page *::before,
+            .sb-dashboard-page *::after {
+
+                transition:
+                    none !important;
+
+                animation:
+                    none !important;
+
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    {{-- =========================================================
+         COMMON SELLER TASKBAR
+         IMPORTANT:
+         DO NOT CHANGE THESE.
+         SAME AS SELLER ORDERS PAGE.
+         ========================================================= --}}
+
+    @include('seller.partials.topbar')
+
+    @include('seller.partials.seller-menu')
+
+
+    {{-- =========================================================
+         SELLER DATA
+         ========================================================= --}}
 
     @php
 
-        $kycCurrentStep = 1;
-
-        if (!empty($seller->email_verified_at)) {
-            $kycCurrentStep = 2;
-        }
-
-        if (
-            !empty($seller->business_certificate_path)
-            &&
-            !empty($seller->aadhaar_document_path)
-        ) {
-            $kycCurrentStep = 3;
-        }
-
-        if (!empty($seller->aadhaar_verified_at)) {
-            $kycCurrentStep = 4;
-        }
-
-        if (
-            !empty($seller->business_type)
-            &&
-            !empty($seller->pan_number)
-            &&
-            !empty($seller->udyam_number)
-        ) {
-            $kycCurrentStep = 5;
-        }
-
-        if (
-            !empty($seller->bank_account_holder)
-            &&
-            !empty($seller->bank_account_number)
-            &&
-            !empty($seller->bank_ifsc)
-            &&
-            !empty($seller->bank_name)
-        ) {
-            $kycCurrentStep = 6;
-        }
+        $sellerName = $seller->business_name
+            ?? $seller->name
+            ?? $seller->owner_name
+            ?? 'Seller';
 
 
-        $kycStatusValue =
-            $seller->verification_status ?? null;
+        $sellerInitial = strtoupper(
+            substr(
+                trim((string) $sellerName),
+                0,
+                1
+            )
+        );
 
 
-        $kycStatusText = match ($kycStatusValue) {
+        $sellerStatus =
+            $seller->verification_status
+            ?? null;
+
+
+        $sellerDashboardStatus = match ($sellerStatus) {
+
+            \App\Models\SellerProfile::STATUS_APPROVED,
+            \App\Models\SellerProfile::STATUS_ACTIVE
+                => 'Seller account active',
+
+            \App\Models\SellerProfile::STATUS_PENDING_ADMIN_REVIEW,
+            \App\Models\SellerProfile::STATUS_PENDING_REVIEW
+                => 'Application under review',
+
+            \App\Models\SellerProfile::STATUS_REJECTED
+                => 'Application rejected',
+
+            \App\Models\SellerProfile::STATUS_EMAIL_VERIFICATION,
+            \App\Models\SellerProfile::STATUS_PENDING_EMAIL,
+            \App\Models\SellerProfile::STATUS_PENDING,
+            \App\Models\SellerProfile::STATUS_DRAFT
+                => 'Verification pending',
+
+            default
+                => 'Verification in progress',
+
+        };
+
+
+        $sellerStatusType = match ($sellerStatus) {
+
+            \App\Models\SellerProfile::STATUS_APPROVED,
+            \App\Models\SellerProfile::STATUS_ACTIVE
+                => 'active',
+
+            \App\Models\SellerProfile::STATUS_REJECTED
+                => 'danger',
+
+            \App\Models\SellerProfile::STATUS_PENDING_ADMIN_REVIEW,
+            \App\Models\SellerProfile::STATUS_PENDING_REVIEW
+                => 'review',
+
+            default
+                => 'pending',
+
+        };
+
+
+        $verificationStatusText = match ($sellerStatus) {
 
             \App\Models\SellerProfile::STATUS_APPROVED,
             \App\Models\SellerProfile::STATUS_ACTIVE
@@ -1700,707 +3174,1657 @@
             \App\Models\SellerProfile::STATUS_REJECTED
                 => 'Action Required',
 
-            \App\Models\SellerProfile::STATUS_DRAFT,
-            \App\Models\SellerProfile::STATUS_PENDING,
-            \App\Models\SellerProfile::STATUS_EMAIL_VERIFICATION,
-            \App\Models\SellerProfile::STATUS_DOCUMENTS_PENDING,
-            \App\Models\SellerProfile::STATUS_AADHAAR_VERIFICATION,
-            \App\Models\SellerProfile::STATUS_BUSINESS_DETAILS,
-            \App\Models\SellerProfile::STATUS_BANK_DETAILS
-                => 'Incomplete',
-
             default
-                => 'Incomplete',
+                => 'Verification Pending',
+
         };
 
 
-        $kycActionText = match ($kycStatusValue) {
-
-            \App\Models\SellerProfile::STATUS_APPROVED,
-            \App\Models\SellerProfile::STATUS_ACTIVE
-                => 'VIEW COMPLETE APPLICATION',
-
-            \App\Models\SellerProfile::STATUS_PENDING_ADMIN_REVIEW,
-            \App\Models\SellerProfile::STATUS_PENDING_REVIEW
-                => 'VIEW COMPLETE APPLICATION',
-
-            \App\Models\SellerProfile::STATUS_REJECTED
-                => 'UPDATE APPLICATION',
-
-            default
-                => 'CONTINUE VERIFICATION',
-        };
+        $totalProductsValue =
+            (int) ($totalProducts ?? 0);
 
 
-        $kycActionRoute = match ($kycStatusValue) {
+        $totalOrdersValue =
+            (int) ($totalOrders ?? 0);
 
-            \App\Models\SellerProfile::STATUS_APPROVED,
-            \App\Models\SellerProfile::STATUS_ACTIVE
-                => route(
-                    'seller.verification.application.summary'
-                ),
 
-            \App\Models\SellerProfile::STATUS_PENDING_ADMIN_REVIEW,
-            \App\Models\SellerProfile::STATUS_PENDING_REVIEW
-                => route(
-                    'seller.verification.application.summary'
-                ),
+        $pendingOrdersValue =
+            (int) ($pendingOrders ?? 0);
 
-            \App\Models\SellerProfile::STATUS_REJECTED
-                => route(
-                    'seller.verification.index'
-                ),
 
-            default
-                => route(
-                    'seller.verification.index'
-                ),
-        };
+        $totalRevenueValue =
+            (float) ($totalRevenue ?? 0);
+
+
+        $productsCollection =
+            collect($products ?? []);
+
+
+        $lowStockCount =
+            $productsCollection
+                ->filter(function ($product) {
+
+                    return
+                        (int) ($product->stock ?? 0) > 0
+                        &&
+                        (int) ($product->stock ?? 0) <= 5;
+
+                })
+                ->count();
+
+
+        $outOfStockCount =
+            $productsCollection
+                ->filter(function ($product) {
+
+                    return
+                        (int) ($product->stock ?? 0) <= 0;
+
+                })
+                ->count();
+
+
+        $inStockCount =
+            max(
+                0,
+                $totalProductsValue - $outOfStockCount
+            );
 
     @endphp
 
 
-    {{-- =====================================================
-         VERIFICATION & KYC CARD
-    ====================================================== --}}
+    {{-- =========================================================
+         DASHBOARD
+         ========================================================= --}}
 
-    <div class="sd-kyc-card">
+    <main class="sb-dashboard-page">
 
+        <div class="sb-dashboard">
 
-        <div class="sd-kyc-header">
 
+            {{-- =================================================
+                 COMMAND BAR
+                 ================================================= --}}
 
-            <div class="sd-kyc-title-wrap">
+            <section class="sb-commandbar">
 
+                <div class="sb-command-left">
 
-                <div class="sd-kyc-badge">
+                    <div class="sb-brand-mark">
 
-                    <i class="fa-solid fa-shield-halved"></i>
-
-                </div>
-
-
-                <div>
-
-                    <div class="sd-kyc-title">
-                        Verification &amp; KYC
-                    </div>
-
-                    <div class="sd-kyc-subtitle">
-                        Seller onboarding status
-                    </div>
-
-                </div>
-
-
-            </div>
-
-
-            <span class="sd-kyc-status">
-
-                {{ $kycStatusText }}
-
-            </span>
-
-
-        </div>
-
-
-        <div class="sd-kyc-body">
-
-
-            <div class="sd-kyc-label">
-                Progress
-            </div>
-
-
-            <div class="sd-kyc-progress">
-
-                Step {{ $kycCurrentStep }} of 6
-
-            </div>
-
-
-        </div>
-
-
-        <a
-            href="{{ $kycActionRoute }}"
-            class="sd-kyc-button"
-        >
-
-            {{ $kycActionText }}
-
-        </a>
-
-
-    </div>
-
-
-    {{-- =====================================================
-         QUICK ACTIONS
-    ====================================================== --}}
-
-    <div class="sd-actions">
-
-
-        {{-- ADD PRODUCT --}}
-
-        <a
-            href="{{ route('seller.product.add') }}"
-            class="sd-action"
-        >
-
-            <div class="sd-action-icon">
-
-                <i class="fa-solid fa-plus"></i>
-
-            </div>
-
-            <div class="sd-action-title">
-                Add Product
-            </div>
-
-            <div class="sd-action-text">
-                List a new product
-            </div>
-
-        </a>
-
-
-        {{-- MY PRODUCTS --}}
-
-        <a
-            href="{{ route('seller.products.index') }}"
-            class="sd-action"
-        >
-
-            <div class="sd-action-icon">
-
-                <i class="fa-solid fa-box"></i>
-
-            </div>
-
-            <div class="sd-action-title">
-                My Products
-            </div>
-
-            <div class="sd-action-text">
-                Manage your products
-            </div>
-
-        </a>
-
-
-        {{-- ORDERS --}}
-
-        <a
-            href="{{ route('seller.orders.index') }}"
-            class="sd-action"
-        >
-
-            <div class="sd-action-icon">
-
-                <i class="fa-solid fa-cart-shopping"></i>
-
-            </div>
-
-            <div class="sd-action-title">
-                Orders
-            </div>
-
-            <div class="sd-action-text">
-                View customer orders
-            </div>
-
-        </a>
-
-
-        {{-- PAYMENTS --}}
-
-        <a
-            href="{{ route('seller.payments.index') }}"
-            class="sd-action"
-        >
-
-            <div class="sd-action-icon">
-
-                <i class="fa-solid fa-wallet"></i>
-
-            </div>
-
-            <div class="sd-action-title">
-                Payments
-            </div>
-
-            <div class="sd-action-text">
-                Track your earnings
-            </div>
-
-        </a>
-
-
-    </div>
-
-
-    {{-- =====================================================
-         STATISTICS
-    ====================================================== --}}
-
-    <div class="sd-stats">
-
-
-        {{-- PRODUCTS --}}
-
-        <div class="sd-stat">
-
-            <div class="sd-stat-icon">
-
-                <i class="fa-solid fa-box"></i>
-
-            </div>
-
-            <div class="sd-stat-number">
-
-                {{ $totalProducts }}
-
-            </div>
-
-            <div class="sd-stat-label">
-
-                Total Products
-
-            </div>
-
-        </div>
-
-
-        {{-- ORDERS --}}
-
-        <div class="sd-stat">
-
-            <div class="sd-stat-icon">
-
-                <i class="fa-solid fa-cart-shopping"></i>
-
-            </div>
-
-            <div class="sd-stat-number">
-
-                {{ $totalOrders }}
-
-            </div>
-
-            <div class="sd-stat-label">
-
-                Total Orders
-
-            </div>
-
-        </div>
-
-
-        {{-- PENDING ORDERS --}}
-
-        <div class="sd-stat">
-
-            <div class="sd-stat-icon">
-
-                <i class="fa-solid fa-clock"></i>
-
-            </div>
-
-            <div class="sd-stat-number">
-
-                {{ $pendingOrders }}
-
-            </div>
-
-            <div class="sd-stat-label">
-
-                Pending Orders
-
-            </div>
-
-        </div>
-
-
-        {{-- REVENUE --}}
-
-        <div class="sd-stat">
-
-            <div class="sd-stat-icon">
-
-                <i class="fa-solid fa-indian-rupee-sign"></i>
-
-            </div>
-
-            <div class="sd-stat-number">
-
-                ₹ {{ number_format($totalRevenue) }}
-
-            </div>
-
-            <div class="sd-stat-label">
-
-                Total Earnings
-
-            </div>
-
-        </div>
-
-
-    </div>
-
-
-    {{-- =====================================================
-         PRODUCTS
-    ====================================================== --}}
-
-    <section class="sd-products">
-
-
-        <div class="sd-section-head">
-
-
-            <div>
-
-                <div class="sd-section-title">
-                    My Products
-                </div>
-
-                <div class="sd-section-subtitle">
-                    Manage your listed products
-                </div>
-
-            </div>
-
-
-            <a
-                href="{{ route('seller.product.add') }}"
-                class="sd-add"
-            >
-
-                <i class="fa-solid fa-plus"></i>
-
-                Add Product
-
-            </a>
-
-
-        </div>
-
-
-        <div class="sd-product-grid">
-
-
-            @forelse($products as $product)
-
-
-                <div class="sd-product">
-
-
-                    {{-- PRODUCT IMAGE --}}
-
-                    <div class="sd-product-image">
-
-                        <img
-                            src="{{ asset('products/'.$product->image) }}"
-                            alt="{{ $product->name }}"
-                            loading="lazy"
-                        >
+                        <i
+                            class="fa-solid fa-store"
+                            aria-hidden="true"
+                        ></i>
 
                     </div>
 
 
-                    {{-- PRODUCT BODY --}}
+                    <div class="sb-command-copy">
 
-                    <div class="sd-product-body">
+                        <div class="sb-eyebrow">
 
+                            <i
+                                class="fa-solid fa-bolt"
+                                aria-hidden="true"
+                            ></i>
 
-                        <div class="sd-product-name">
-
-                            {{ $product->name }}
-
-                        </div>
-
-
-                        <div class="sd-product-category">
-
-                            {{ $product->category }}
+                            Seller Workspace
 
                         </div>
 
 
-                        <div class="sd-product-price">
+                        <h1 class="sb-command-title">
 
-                            ₹ {{ number_format($product->price) }}
+                            {{ $sellerName }}
 
-                        </div>
-
-
-                        <div class="sd-product-stock">
-
-                            <i class="fa-solid fa-cubes"></i>
-
-                            Stock:
-                            {{ $product->stock }}
-
-                        </div>
+                        </h1>
 
 
-                        <div class="sd-product-actions">
+                        <p class="sb-command-subtitle">
 
+                            SmartBasket Seller Center
 
-                            {{-- EDIT --}}
-
-                            <a
-                                href="{{ route('seller.product.edit', $product->id) }}"
-                                class="sd-edit"
-                            >
-
-                                <i class="fa-solid fa-pen"></i>
-
-                                Edit
-
-                            </a>
-
-
-                            {{-- DELETE --}}
-
-                            <form
-                                action="{{ route('seller.product.delete', $product->id) }}"
-                                method="POST"
-                                style="
-                                    flex: 1;
-                                    margin: 0;
-                                "
-                            >
-
-                                @csrf
-
-                                <button
-                                    type="submit"
-                                    class="sd-delete"
-                                    onclick="
-                                        return confirm(
-                                            'Delete this product?'
-                                        )
-                                    "
-                                >
-
-                                    <i class="fa-solid fa-trash"></i>
-
-                                    Delete
-
-                                </button>
-
-                            </form>
-
-
-                        </div>
-
+                        </p>
 
                     </div>
-
 
                 </div>
 
 
-            @empty
+                <div class="sb-command-right">
+
+                    <div
+                        class="sb-account-status {{ $sellerStatusType }}"
+                    >
+
+                        <span class="sb-account-dot"></span>
+
+                        {{ $sellerDashboardStatus }}
+
+                    </div>
+
+                </div>
+
+            </section>
 
 
-                {{-- EMPTY STATE --}}
+            {{-- =================================================
+                 HERO
+                 ================================================= --}}
 
-                <div class="sd-empty">
+            <section class="sb-hero">
 
-                    <i class="fa-solid fa-box-open"></i>
+                <div class="sb-hero-copy">
 
-                    <h3>
-                        No Products Added
-                    </h3>
+                    <span class="sb-hero-label">
 
-                    <p>
-                        Start selling by adding your first product.
+                        <i
+                            class="fa-solid fa-chart-line"
+                            aria-hidden="true"
+                        ></i>
+
+                        Seller Dashboard
+
+                    </span>
+
+
+                    <h2 class="sb-hero-title">
+
+                        Grow your store.
+                        <br>
+                        Sell smarter.
+
+                    </h2>
+
+
+                    <p class="sb-hero-text">
+
+                        Manage your products, orders, payments and seller
+                        account from one powerful SmartBasket workspace.
+
                     </p>
+
+                </div>
+
+
+                <div class="sb-hero-actions">
 
                     <a
                         href="{{ route('seller.product.add') }}"
-                        class="sd-add"
+                        class="sb-primary-btn"
                     >
 
-                        <i class="fa-solid fa-plus"></i>
+                        <i
+                            class="fa-solid fa-plus"
+                            aria-hidden="true"
+                        ></i>
 
-                        Add Your First Product
+                        Add Product
+
+                    </a>
+
+
+                    <a
+                        href="{{ route('seller.orders.index') }}"
+                        class="sb-secondary-btn"
+                    >
+
+                        <i
+                            class="fa-solid fa-receipt"
+                            aria-hidden="true"
+                        ></i>
+
+                        View Orders
 
                     </a>
 
                 </div>
 
+            </section>
 
-            @endforelse
+
+            {{-- =================================================
+                 STORE OVERVIEW
+                 ================================================= --}}
+
+            <section>
+
+                <div class="sb-section-heading">
+
+                    <div>
+
+                        <div class="sb-section-kicker">
+
+                            Business Analytics
+
+                        </div>
+
+
+                        <h2 class="sb-section-title">
+
+                            Store Overview
+
+                        </h2>
+
+
+                        <p class="sb-section-description">
+
+                            Monitor your seller business from one place.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="sb-stats">
+
+
+                    {{-- PRODUCTS --}}
+
+                    <div class="sb-stat">
+
+                        <div class="sb-stat-top">
+
+                            <div class="sb-stat-icon">
+
+                                <i
+                                    class="fa-solid fa-box"
+                                    aria-hidden="true"
+                                ></i>
+
+                            </div>
+
+
+                            <span class="sb-stat-live">
+
+                                Catalog
+
+                            </span>
+
+                        </div>
+
+
+                        <div class="sb-stat-number">
+
+                            {{ number_format($totalProductsValue) }}
+
+                        </div>
+
+
+                        <div class="sb-stat-label">
+
+                            Total Products
+
+                        </div>
+
+                    </div>
+
+
+                    {{-- ORDERS --}}
+
+                    <div class="sb-stat">
+
+                        <div class="sb-stat-top">
+
+                            <div class="sb-stat-icon">
+
+                                <i
+                                    class="fa-solid fa-bag-shopping"
+                                    aria-hidden="true"
+                                ></i>
+
+                            </div>
+
+
+                            <span class="sb-stat-live">
+
+                                Orders
+
+                            </span>
+
+                        </div>
+
+
+                        <div class="sb-stat-number">
+
+                            {{ number_format($totalOrdersValue) }}
+
+                        </div>
+
+
+                        <div class="sb-stat-label">
+
+                            Total Orders
+
+                        </div>
+
+                    </div>
+
+
+                    {{-- PENDING --}}
+
+                    <div class="sb-stat">
+
+                        <div class="sb-stat-top">
+
+                            <div class="sb-stat-icon">
+
+                                <i
+                                    class="fa-solid fa-clock"
+                                    aria-hidden="true"
+                                ></i>
+
+                            </div>
+
+
+                            <span
+                                class="sb-stat-live"
+                                style="{{ $pendingOrdersValue > 0 ? 'color:var(--sb-warning);background:rgba(217,119,6,.07);' : '' }}"
+                            >
+
+                                {{
+                                    $pendingOrdersValue > 0
+                                        ? 'Action needed'
+                                        : 'All clear'
+                                }}
+
+                            </span>
+
+                        </div>
+
+
+                        <div class="sb-stat-number">
+
+                            {{ number_format($pendingOrdersValue) }}
+
+                        </div>
+
+
+                        <div class="sb-stat-label">
+
+                            Pending Orders
+
+                        </div>
+
+                    </div>
+
+
+                    {{-- REVENUE --}}
+
+                    <div class="sb-stat">
+
+                        <div class="sb-stat-top">
+
+                            <div class="sb-stat-icon">
+
+                                <i
+                                    class="fa-solid fa-indian-rupee-sign"
+                                    aria-hidden="true"
+                                ></i>
+
+                            </div>
+
+
+                            <span class="sb-stat-live">
+
+                                Earnings
+
+                            </span>
+
+                        </div>
+
+
+                        <div class="sb-stat-number">
+
+                            ₹{{ number_format($totalRevenueValue, 2) }}
+
+                        </div>
+
+
+                        <div class="sb-stat-label">
+
+                            Total Revenue
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            {{-- =================================================
+                 MAIN GRID
+                 ================================================= --}}
+
+            <section class="sb-main-grid">
+
+
+                {{-- QUICK ACTIONS --}}
+
+                <div class="sb-panel">
+
+                    <div class="sb-section-heading">
+
+                        <div>
+
+                            <div class="sb-section-kicker">
+
+                                Seller Tools
+
+                            </div>
+
+
+                            <h2 class="sb-section-title">
+
+                                Quick Actions
+
+                            </h2>
+
+
+                            <p class="sb-section-description">
+
+                                Your most-used seller operations.
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="sb-actions">
+
+
+                        <a
+                            href="{{ route('seller.product.add') }}"
+                            class="sb-action"
+                        >
+
+                            <span class="sb-action-icon">
+
+                                <i
+                                    class="fa-solid fa-plus"
+                                    aria-hidden="true"
+                                ></i>
+
+                            </span>
+
+
+                            <span class="sb-action-content">
+
+                                <span class="sb-action-title">
+
+                                    Add Product
+
+                                </span>
+
+
+                                <span class="sb-action-text">
+
+                                    Create a new product listing.
+
+                                </span>
+
+                            </span>
+
+
+                            <i
+                                class="fa-solid fa-arrow-right sb-action-arrow"
+                                aria-hidden="true"
+                            ></i>
+
+                        </a>
+
+
+                        <a
+                            href="{{ route('seller.products.index') }}"
+                            class="sb-action"
+                        >
+
+                            <span class="sb-action-icon">
+
+                                <i
+                                    class="fa-solid fa-boxes-stacked"
+                                    aria-hidden="true"
+                                ></i>
+
+                            </span>
+
+
+                            <span class="sb-action-content">
+
+                                <span class="sb-action-title">
+
+                                    Manage Products
+
+                                </span>
+
+
+                                <span class="sb-action-text">
+
+                                    Edit, update and manage products.
+
+                                </span>
+
+                            </span>
+
+
+                            <i
+                                class="fa-solid fa-arrow-right sb-action-arrow"
+                                aria-hidden="true"
+                            ></i>
+
+                        </a>
+
+
+                        <a
+                            href="{{ route('seller.orders.index') }}"
+                            class="sb-action"
+                        >
+
+                            <span class="sb-action-icon">
+
+                                <i
+                                    class="fa-solid fa-truck-fast"
+                                    aria-hidden="true"
+                                ></i>
+
+                            </span>
+
+
+                            <span class="sb-action-content">
+
+                                <span class="sb-action-title">
+
+                                    Manage Orders
+
+                                </span>
+
+
+                                <span class="sb-action-text">
+
+                                    Process pending customer orders.
+
+                                </span>
+
+                            </span>
+
+
+                            <i
+                                class="fa-solid fa-arrow-right sb-action-arrow"
+                                aria-hidden="true"
+                            ></i>
+
+                        </a>
+
+
+                        <a
+                            href="{{ route('seller.payments.index') }}"
+                            class="sb-action"
+                        >
+
+                            <span class="sb-action-icon">
+
+                                <i
+                                    class="fa-solid fa-wallet"
+                                    aria-hidden="true"
+                                ></i>
+
+                            </span>
+
+
+                            <span class="sb-action-content">
+
+                                <span class="sb-action-title">
+
+                                    Payments
+
+                                </span>
+
+
+                                <span class="sb-action-text">
+
+                                    View earnings and payment receipts.
+
+                                </span>
+
+                            </span>
+
+
+                            <i
+                                class="fa-solid fa-arrow-right sb-action-arrow"
+                                aria-hidden="true"
+                            ></i>
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+
+                {{-- STORE HEALTH --}}
+
+                <div class="sb-panel">
+
+                    <div class="sb-section-heading">
+
+                        <div>
+
+                            <div class="sb-section-kicker">
+
+                                Inventory
+
+                            </div>
+
+
+                            <h2 class="sb-section-title">
+
+                                Store Health
+
+                            </h2>
+
+
+                            <p class="sb-section-description">
+
+                                Keep your catalog ready to sell.
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="sb-health-list">
+
+
+                        <div class="sb-health-row">
+
+                            <div class="sb-health-left">
+
+                                <span class="sb-health-icon">
+
+                                    <i
+                                        class="fa-solid fa-box"
+                                        aria-hidden="true"
+                                    ></i>
+
+                                </span>
+
+
+                                <div>
+
+                                    <div class="sb-health-name">
+
+                                        Product Catalog
+
+                                    </div>
+
+
+                                    <div class="sb-health-desc">
+
+                                        Total listed products
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <span class="sb-health-value success">
+
+                                {{ number_format($totalProductsValue) }}
+
+                            </span>
+
+                        </div>
+
+
+                        <div class="sb-health-row">
+
+                            <div class="sb-health-left">
+
+                                <span class="sb-health-icon">
+
+                                    <i
+                                        class="fa-solid fa-circle-check"
+                                        aria-hidden="true"
+                                    ></i>
+
+                                </span>
+
+
+                                <div>
+
+                                    <div class="sb-health-name">
+
+                                        In Stock
+
+                                    </div>
+
+
+                                    <div class="sb-health-desc">
+
+                                        Products currently available
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <span class="sb-health-value success">
+
+                                {{ number_format($inStockCount) }}
+
+                            </span>
+
+                        </div>
+
+
+                        <div class="sb-health-row">
+
+                            <div class="sb-health-left">
+
+                                <span class="sb-health-icon">
+
+                                    <i
+                                        class="fa-solid fa-triangle-exclamation"
+                                        aria-hidden="true"
+                                    ></i>
+
+                                </span>
+
+
+                                <div>
+
+                                    <div class="sb-health-name">
+
+                                        Low Stock
+
+                                    </div>
+
+
+                                    <div class="sb-health-desc">
+
+                                        Five or fewer units
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <span class="sb-health-value warning">
+
+                                {{ number_format($lowStockCount) }}
+
+                            </span>
+
+                        </div>
+
+
+                        <div class="sb-health-row">
+
+                            <div class="sb-health-left">
+
+                                <span class="sb-health-icon">
+
+                                    <i
+                                        class="fa-solid fa-circle-xmark"
+                                        aria-hidden="true"
+                                    ></i>
+
+                                </span>
+
+
+                                <div>
+
+                                    <div class="sb-health-name">
+
+                                        Out of Stock
+
+                                    </div>
+
+
+                                    <div class="sb-health-desc">
+
+                                        Products unavailable
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <span
+                                class="sb-health-value {{ $outOfStockCount > 0 ? 'danger' : 'success' }}"
+                            >
+
+                                {{ number_format($outOfStockCount) }}
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            {{-- =================================================
+                 PENDING ORDERS
+                 ================================================= --}}
+
+            @if($pendingOrdersValue > 0)
+
+                <section
+                    class="sb-verification"
+                    style="border-color:rgba(217,119,6,.16);"
+                >
+
+                    <div class="sb-verification-main">
+
+                        <div
+                            class="sb-verification-icon"
+                            style="
+                                color:var(--sb-warning);
+                                background:rgba(217,119,6,.08);
+                            "
+                        >
+
+                            <i
+                                class="fa-solid fa-bell"
+                                aria-hidden="true"
+                            ></i>
+
+                        </div>
+
+
+                        <div>
+
+                            <h3 class="sb-verification-title">
+
+                                You have
+                                {{ number_format($pendingOrdersValue) }}
+                                pending order{{ $pendingOrdersValue === 1 ? '' : 's' }}
+
+                            </h3>
+
+
+                            <p class="sb-verification-text">
+
+                                Review and process your customer orders
+                                to keep your store running smoothly.
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <a
+                        href="{{ route('seller.orders.index') }}"
+                        class="sb-verification-action"
+                        style="
+                            color:var(--sb-warning);
+                            background:rgba(217,119,6,.08);
+                        "
+                    >
+
+                        Manage Orders
+
+                        <i
+                            class="fa-solid fa-arrow-right"
+                            aria-hidden="true"
+                        ></i>
+
+                    </a>
+
+                </section>
+
+            @endif
+
+
+            {{-- =================================================
+                 SELLER VERIFICATION
+                 ================================================= --}}
+
+            <section class="sb-verification">
+
+                <div class="sb-verification-main">
+
+                    <div class="sb-verification-icon">
+
+                        <i
+                            class="fa-solid fa-shield-halved"
+                            aria-hidden="true"
+                        ></i>
+
+                    </div>
+
+
+                    <div>
+
+                        <h3 class="sb-verification-title">
+
+                            Seller Verification
+
+                        </h3>
+
+
+                        <p class="sb-verification-text">
+
+                            Manage your seller verification and account
+                            information.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="sb-verification-controls">
+
+
+                    <div
+                        class="sb-verification-status {{ $sellerStatusType }}"
+                    >
+
+                        @if($sellerStatusType === 'active')
+
+                            <i
+                                class="fa-solid fa-circle-check"
+                                aria-hidden="true"
+                            ></i>
+
+                        @elseif($sellerStatusType === 'danger')
+
+                            <i
+                                class="fa-solid fa-circle-exclamation"
+                                aria-hidden="true"
+                            ></i>
+
+                        @elseif($sellerStatusType === 'review')
+
+                            <i
+                                class="fa-solid fa-clock"
+                                aria-hidden="true"
+                            ></i>
+
+                        @else
+
+                            <i
+                                class="fa-solid fa-shield-halved"
+                                aria-hidden="true"
+                            ></i>
+
+                        @endif
+
+
+                        {{ $verificationStatusText }}
+
+                    </div>
+
+
+                    @if(
+                        $sellerStatusType !== 'active'
+                        &&
+                        $sellerStatusType !== 'review'
+                    )
+
+                        <a
+                            href="{{ route('seller.verification.index') }}"
+                            class="sb-verification-action"
+                        >
+
+                            {{
+                                $sellerStatusType === 'danger'
+                                    ? 'Update Application'
+                                    : 'Continue Verification'
+                            }}
+
+
+                            <i
+                                class="fa-solid fa-arrow-right"
+                                aria-hidden="true"
+                            ></i>
+
+                        </a>
+
+                    @endif
+
+                </div>
+
+            </section>
+
+
+            {{-- =================================================
+                 PRODUCTS
+                 ================================================= --}}
+
+            <section class="sb-products-wrap">
+
+                <div class="sb-products-head">
+
+                    <div>
+
+                        <div class="sb-section-kicker">
+
+                            Seller Catalog
+
+                        </div>
+
+
+                        <h2 class="sb-section-title">
+
+                            My Products
+
+                        </h2>
+
+
+                        <p class="sb-section-description">
+
+                            Manage your latest products and inventory.
+
+                        </p>
+
+                    </div>
+
+
+                    <div class="sb-products-head-right">
+
+                        <a
+                            href="{{ route('seller.products.index') }}"
+                            class="sb-view-all"
+                        >
+
+                            View All
+
+                            <i
+                                class="fa-solid fa-arrow-right"
+                                aria-hidden="true"
+                            ></i>
+
+                        </a>
+
+
+                        <a
+                            href="{{ route('seller.product.add') }}"
+                            class="sb-add-product"
+                        >
+
+                            <i
+                                class="fa-solid fa-plus"
+                                aria-hidden="true"
+                            ></i>
+
+                            Add Product
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+
+                <div class="sb-product-grid">
+
+
+                    @forelse($products as $product)
+
+                        @php
+
+                            $productStock =
+                                (int) ($product->stock ?? 0);
+
+
+                            if ($productStock <= 0) {
+
+                                $stockClass = 'out';
+
+                                $stockText = 'Out of Stock';
+
+                            } elseif ($productStock <= 5) {
+
+                                $stockClass = 'low';
+
+                                $stockText = 'Low Stock';
+
+                            } else {
+
+                                $stockClass = '';
+
+                                $stockText = 'In Stock';
+
+                            }
+
+                        @endphp
+
+
+                        <article class="sb-product">
+
+
+                            <div class="sb-product-image">
+
+                                <img
+                                    src="{{ asset('products/' . $product->image) }}"
+                                    alt="{{ $product->name }}"
+                                    loading="lazy"
+                                    onerror="this.style.display='none';"
+                                >
+
+
+                                <span
+                                    class="sb-product-stock-badge {{ $stockClass }}"
+                                >
+
+                                    <i
+                                        class="fa-solid fa-circle"
+                                        aria-hidden="true"
+                                    ></i>
+
+                                    {{ $stockText }}
+
+                                </span>
+
+                            </div>
+
+
+                            <div class="sb-product-body">
+
+                                <h3 class="sb-product-name">
+
+                                    {{ $product->name }}
+
+                                </h3>
+
+
+                                <div class="sb-product-category">
+
+                                    {{ $product->category ?? 'Product' }}
+
+                                </div>
+
+
+                                <div class="sb-product-info">
+
+                                    <div class="sb-product-price">
+
+                                        ₹{{ number_format((float) $product->price, 2) }}
+
+                                    </div>
+
+
+                                    <div class="sb-product-stock">
+
+                                        Stock: {{ $productStock }}
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="sb-product-actions">
+
+
+                                    <a
+                                        href="{{ route('seller.product.edit', $product->id) }}"
+                                        class="sb-edit"
+                                    >
+
+                                        <i
+                                            class="fa-solid fa-pen"
+                                            aria-hidden="true"
+                                        ></i>
+
+                                        Edit
+
+                                    </a>
+
+
+                                    <form
+                                        action="{{ route('seller.product.delete', $product->id) }}"
+                                        method="POST"
+                                        style="
+                                            margin:0;
+                                            flex:1;
+                                        "
+                                    >
+
+                                        @csrf
+
+
+                                        <button
+                                            type="submit"
+                                            class="sb-delete"
+                                            style="width:100%;"
+                                            onclick="
+                                                return confirm(
+                                                    'Delete this product?'
+                                                )
+                                            "
+                                        >
+
+                                            <i
+                                                class="fa-solid fa-trash"
+                                                aria-hidden="true"
+                                            ></i>
+
+                                            Delete
+
+                                        </button>
+
+                                    </form>
+
+                                </div>
+
+                            </div>
+
+                        </article>
+
+
+                    @empty
+
+
+                        <div class="sb-empty">
+
+                            <div class="sb-empty-icon">
+
+                                <i
+                                    class="fa-solid fa-box-open"
+                                    aria-hidden="true"
+                                ></i>
+
+                            </div>
+
+
+                            <h3 class="sb-empty-title">
+
+                                Your catalog is empty
+
+                            </h3>
+
+
+                            <p class="sb-empty-text">
+
+                                Add your first product and start building
+                                your SmartBasket store.
+
+                            </p>
+
+
+                            <a
+                                href="{{ route('seller.product.add') }}"
+                                class="sb-empty-action"
+                            >
+
+                                <i
+                                    class="fa-solid fa-plus"
+                                    aria-hidden="true"
+                                ></i>
+
+                                Add Your First Product
+
+                            </a>
+
+                        </div>
+
+
+                    @endforelse
+
+                </div>
+
+            </section>
+
+
+            {{-- =================================================
+                 BOTTOM SECTION
+                 ================================================= --}}
+
+            <section class="sb-bottom-grid">
+
+
+                {{-- GROWTH TIPS --}}
+
+                <div class="sb-tip-card">
+
+                    <div class="sb-section-kicker">
+
+                        Seller Growth
+
+                    </div>
+
+
+                    <h2 class="sb-section-title">
+
+                        Store Growth Essentials
+
+                    </h2>
+
+
+                    <p class="sb-section-description">
+
+                        Simple ways to keep your seller store competitive.
+
+                    </p>
+
+
+                    <div class="sb-tip-list">
+
+
+                        <div class="sb-tip">
+
+                            <div class="sb-tip-icon">
+
+                                <i
+                                    class="fa-solid fa-camera"
+                                    aria-hidden="true"
+                                ></i>
+
+                            </div>
+
+
+                            <div class="sb-tip-title">
+
+                                Better Product Images
+
+                            </div>
+
+
+                            <p class="sb-tip-text">
+
+                                Use clear, high-quality images to make
+                                your products easier to discover.
+
+                            </p>
+
+                        </div>
+
+
+                        <div class="sb-tip">
+
+                            <div class="sb-tip-icon">
+
+                                <i
+                                    class="fa-solid fa-tags"
+                                    aria-hidden="true"
+                                ></i>
+
+                            </div>
+
+
+                            <div class="sb-tip-title">
+
+                                Competitive Pricing
+
+                            </div>
+
+
+                            <p class="sb-tip-text">
+
+                                Keep prices attractive while maintaining
+                                healthy margins.
+
+                            </p>
+
+                        </div>
+
+
+                        <div class="sb-tip">
+
+                            <div class="sb-tip-icon">
+
+                                <i
+                                    class="fa-solid fa-truck-fast"
+                                    aria-hidden="true"
+                                ></i>
+
+                            </div>
+
+
+                            <div class="sb-tip-title">
+
+                                Fast Order Handling
+
+                            </div>
+
+
+                            <p class="sb-tip-text">
+
+                                Process customer orders quickly for a
+                                smoother shopping experience.
+
+                            </p>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+
+                {{-- ACCOUNT INFORMATION --}}
+
+                <div class="sb-account-card">
+
+                    <div class="sb-account-card-head">
+
+                        <div class="sb-avatar">
+
+                            {{ $sellerInitial }}
+
+                        </div>
+
+
+                        <div>
+
+                            <div class="sb-account-name">
+
+                                {{ $sellerName }}
+
+                            </div>
+
+
+                            <div class="sb-account-role">
+
+                                SmartBasket Seller Account
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="sb-account-info">
+
+
+                        <div class="sb-account-info-row">
+
+                            <span class="sb-account-info-label">
+
+                                Account Status
+
+                            </span>
+
+
+                            <span
+                                class="sb-account-info-value {{ $sellerStatusType }}"
+                            >
+
+                                {{ $sellerDashboardStatus }}
+
+                            </span>
+
+                        </div>
+
+
+                        <div class="sb-account-info-row">
+
+                            <span class="sb-account-info-label">
+
+                                Verification
+
+                            </span>
+
+
+                            <span
+                                class="sb-account-info-value {{ $sellerStatusType }}"
+                            >
+
+                                {{ $verificationStatusText }}
+
+                            </span>
+
+                        </div>
+
+
+                        <div class="sb-account-info-row">
+
+                            <span class="sb-account-info-label">
+
+                                Products
+
+                            </span>
+
+
+                            <span class="sb-account-info-value">
+
+                                {{ number_format($totalProductsValue) }}
+
+                            </span>
+
+                        </div>
+
+
+                        <div class="sb-account-info-row">
+
+                            <span class="sb-account-info-label">
+
+                                Orders
+
+                            </span>
+
+
+                            <span class="sb-account-info-value">
+
+                                {{ number_format($totalOrdersValue) }}
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
 
 
         </div>
 
-
-    </section>
-
-
-</div>
+    </main>
 
 
-{{-- =========================================================
-     SELLER CENTER JAVASCRIPT
-========================================================= --}}
+    {{-- =========================================================
+         DASHBOARD JS
+         NO TASKBAR JS
+         ========================================================= --}}
 
-<script>
-
-document.addEventListener(
-    'DOMContentLoaded',
-    function () {
-
-        const wrapper =
-            document.getElementById(
-                'sellerCenterWrap'
-            );
-
-        const button =
-            document.getElementById(
-                'sellerCenterButton'
-            );
-
-        if (!wrapper || !button) {
-            return;
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | OPEN / CLOSE SELLER CENTER
-        |--------------------------------------------------------------------------
-        */
-
-        button.addEventListener(
-            'click',
-            function (event) {
-
-                event.stopPropagation();
-
-                const active =
-                    wrapper.classList.toggle(
-                        'active'
-                    );
-
-                button.setAttribute(
-                    'aria-expanded',
-                    active
-                        ? 'true'
-                        : 'false'
-                );
-
-            }
-        );
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | CLOSE WHEN CLICKING OUTSIDE
-        |--------------------------------------------------------------------------
-        */
+    <script>
 
         document.addEventListener(
-            'click',
-            function (event) {
+            'DOMContentLoaded',
+            function () {
 
-                if (
-                    !wrapper.contains(
-                        event.target
+                /*
+                 * Broken image handling
+                 */
+
+                document
+                    .querySelectorAll(
+                        '.sb-product-image img'
                     )
-                ) {
+                    .forEach(
+                        function (image) {
 
-                    wrapper.classList.remove(
-                        'active'
+                            image.addEventListener(
+                                'error',
+                                function () {
+
+                                    this.style.display =
+                                        'none';
+
+                                }
+                            );
+
+                        }
                     );
 
-                    button.setAttribute(
-                        'aria-expanded',
-                        'false'
-                    );
 
-                }
+                /*
+                 * Small protection against accidental
+                 * double submit on product delete.
+                 */
+
+                document
+                    .querySelectorAll(
+                        '.sb-product form'
+                    )
+                    .forEach(
+                        function (form) {
+
+                            form.addEventListener(
+                                'submit',
+                                function () {
+
+                                    const button =
+                                        this.querySelector(
+                                            'button[type="submit"]'
+                                        );
+
+                                    if (button) {
+
+                                        button.disabled =
+                                            true;
+
+                                    }
+
+                                }
+                            );
+
+                        }
+                    );
 
             }
         );
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | ESCAPE KEY
-        |--------------------------------------------------------------------------
-        */
-
-        document.addEventListener(
-            'keydown',
-            function (event) {
-
-                if (
-                    event.key === 'Escape'
-                ) {
-
-                    wrapper.classList.remove(
-                        'active'
-                    );
-
-                    button.setAttribute(
-                        'aria-expanded',
-                        'false'
-                    );
-
-                    button.focus();
-
-                }
-
-            }
-        );
+    </script>
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | CLOSE AFTER SELECTING SELLER CENTER ITEM
-        |--------------------------------------------------------------------------
-        */
+    {{-- Bootstrap JS --}}
 
-        const menuItems =
-            wrapper.querySelectorAll(
-                '.seller-center-item'
-            );
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    ></script>
 
-        menuItems.forEach(
-            function (item) {
 
-                item.addEventListener(
-                    'click',
-                    function () {
+</body>
 
-                        wrapper.classList.remove(
-                            'active'
-                        );
-
-                        button.setAttribute(
-                            'aria-expanded',
-                            'false'
-                        );
-
-                    }
-                );
-
-            }
-        );
-
-    }
-);
-
-</script>
-
-@endsection
+</html>

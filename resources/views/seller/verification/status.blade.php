@@ -97,7 +97,21 @@
             color: var(--text);
 
             padding:
-                34px 18px 55px;
+                0 18px 55px;
+        }
+
+
+        /* =========================================================
+           COMMON SELLER TOPBAR
+        ========================================================= */
+
+        .seller-status-page {
+
+            width: 100%;
+
+            display: flex;
+
+            justify-content: center;
         }
 
 
@@ -111,7 +125,7 @@
                 min(920px, 100%);
 
             margin:
-                0 auto;
+                34px auto 0;
         }
 
 
@@ -1012,7 +1026,12 @@
             body {
 
                 padding:
-                    20px 12px 35px;
+                    0 12px 35px;
+            }
+
+            .container {
+
+                margin-top: 20px;
             }
 
             .brand {
@@ -1147,1004 +1166,1012 @@
 <body>
 
 
-@php
-
-    /*
-    |--------------------------------------------------------------------------
-    | BASIC VALUES
-    |--------------------------------------------------------------------------
-    */
-
-    $status =
-        $seller->verification_status
-        ?? \App\Models\SellerProfile::STATUS_PENDING_EMAIL;
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | STEP 1 — EMAIL
-    |--------------------------------------------------------------------------
-    */
-
-    $emailDone =
-        !empty($seller->email_verified_at);
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | STEP 2 — DOCUMENTS
-    |--------------------------------------------------------------------------
-    */
-
-    $documentsDone =
-        !empty($seller->business_certificate_path)
-        &&
-        !empty($seller->aadhaar_document_path);
+{{-- =========================================================
+     COMMON SELLER TOP TASKBAR
+     ========================================================== --}}
 
+@include('seller.partials.topbar')
 
-    /*
-    |--------------------------------------------------------------------------
-    | STEP 3 — AADHAAR
-    |--------------------------------------------------------------------------
-    */
 
-    $aadhaarDone =
-        !empty($seller->aadhaar_verified_at);
+<div class="seller-status-page">
 
+    <div class="container">
 
-    /*
-    |--------------------------------------------------------------------------
-    | STEP 4 — BUSINESS DETAILS
-    |--------------------------------------------------------------------------
-    */
 
-    $businessDone =
-        !empty($seller->business_type)
-        &&
-        !empty($seller->pan_number)
-        &&
-        !empty($seller->udyam_number);
+        @php
 
+            /*
+            |--------------------------------------------------------------------------
+            | BASIC VALUES
+            |--------------------------------------------------------------------------
+            */
+
+            $status =
+                $seller->verification_status
+                ?? \App\Models\SellerProfile::STATUS_PENDING_EMAIL;
 
-    /*
-    |--------------------------------------------------------------------------
-    | STEP 5 — BANK DETAILS
-    |--------------------------------------------------------------------------
-    */
 
-    $bankDone =
-        !empty($seller->bank_account_holder)
-        &&
-        !empty($seller->bank_account_number)
-        &&
-        !empty($seller->bank_ifsc)
-        &&
-        !empty($seller->bank_name);
+            /*
+            |--------------------------------------------------------------------------
+            | STEP 1 — EMAIL
+            |--------------------------------------------------------------------------
+            */
+
+            $emailDone =
+                !empty($seller->email_verified_at);
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | STEP 6 — REVIEW / SUBMIT
-    |--------------------------------------------------------------------------
-    */
+            /*
+            |--------------------------------------------------------------------------
+            | STEP 2 — DOCUMENTS
+            |--------------------------------------------------------------------------
+            */
 
-    $reviewDone =
-        in_array(
-            $status,
-            [
-                \App\Models\SellerProfile::STATUS_PENDING_ADMIN_REVIEW,
-                \App\Models\SellerProfile::STATUS_PENDING_REVIEW,
-                \App\Models\SellerProfile::STATUS_APPROVED,
-                \App\Models\SellerProfile::STATUS_ACTIVE,
-            ],
-            true
-        );
+            $documentsDone =
+                !empty($seller->business_certificate_path)
+                &&
+                !empty($seller->aadhaar_document_path);
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | APPROVAL
-    |--------------------------------------------------------------------------
-    */
+            /*
+            |--------------------------------------------------------------------------
+            | STEP 3 — AADHAAR
+            |--------------------------------------------------------------------------
+            */
 
-    $applicationApproved =
-        in_array(
-            $status,
-            [
-                \App\Models\SellerProfile::STATUS_APPROVED,
-                \App\Models\SellerProfile::STATUS_ACTIVE,
-            ],
-            true
-        );
+            $aadhaarDone =
+                !empty($seller->aadhaar_verified_at);
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | CURRENT STEP — 1 TO 6 ONLY
-    |--------------------------------------------------------------------------
-    */
+            /*
+            |--------------------------------------------------------------------------
+            | STEP 4 — BUSINESS DETAILS
+            |--------------------------------------------------------------------------
+            */
 
-    if (!$emailDone) {
+            $businessDone =
+                !empty($seller->business_type)
+                &&
+                !empty($seller->pan_number)
+                &&
+                !empty($seller->udyam_number);
 
-        $currentStep = 1;
 
-    } elseif (!$documentsDone) {
+            /*
+            |--------------------------------------------------------------------------
+            | STEP 5 — BANK DETAILS
+            |--------------------------------------------------------------------------
+            */
 
-        $currentStep = 2;
+            $bankDone =
+                !empty($seller->bank_account_holder)
+                &&
+                !empty($seller->bank_account_number)
+                &&
+                !empty($seller->bank_ifsc)
+                &&
+                !empty($seller->bank_name);
 
-    } elseif (!$aadhaarDone) {
 
-        $currentStep = 3;
+            /*
+            |--------------------------------------------------------------------------
+            | STEP 6 — REVIEW / SUBMIT
+            |--------------------------------------------------------------------------
+            */
 
-    } elseif (!$businessDone) {
+            $reviewDone =
+                in_array(
+                    $status,
+                    [
+                        \App\Models\SellerProfile::STATUS_PENDING_ADMIN_REVIEW,
+                        \App\Models\SellerProfile::STATUS_PENDING_REVIEW,
+                        \App\Models\SellerProfile::STATUS_APPROVED,
+                        \App\Models\SellerProfile::STATUS_ACTIVE,
+                    ],
+                    true
+                );
 
-        $currentStep = 4;
 
-    } elseif (!$bankDone) {
+            /*
+            |--------------------------------------------------------------------------
+            | APPROVAL
+            |--------------------------------------------------------------------------
+            */
 
-        $currentStep = 5;
+            $applicationApproved =
+                in_array(
+                    $status,
+                    [
+                        \App\Models\SellerProfile::STATUS_APPROVED,
+                        \App\Models\SellerProfile::STATUS_ACTIVE,
+                    ],
+                    true
+                );
 
-    } elseif (!$reviewDone) {
 
-        $currentStep = 6;
+            /*
+            |--------------------------------------------------------------------------
+            | CURRENT STEP — 1 TO 6 ONLY
+            |--------------------------------------------------------------------------
+            */
 
-    } else {
+            if (!$emailDone) {
 
-        $currentStep = 6;
-    }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | PROGRESS %
-    |--------------------------------------------------------------------------
-    */
-
-    $completedSteps = 0;
-
-    if ($emailDone) {
-        $completedSteps++;
-    }
-
-    if ($documentsDone) {
-        $completedSteps++;
-    }
-
-    if ($aadhaarDone) {
-        $completedSteps++;
-    }
-
-    if ($businessDone) {
-        $completedSteps++;
-    }
-
-    if ($bankDone) {
-        $completedSteps++;
-    }
-
-    if ($reviewDone) {
-        $completedSteps++;
-    }
-
-    $progressPercent =
-        round(
-            ($completedSteps / 6) * 100
-        );
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | STATUS MESSAGE
-    |--------------------------------------------------------------------------
-    */
-
-    $statusMap = [
-
-        \App\Models\SellerProfile::STATUS_PENDING_EMAIL => [
-            'class' => 'pending',
-            'icon' => 'fa-envelope',
-            'title' => 'Email Verification Pending',
-            'message' =>
-                'Please verify your registered seller email to continue.'
-        ],
-
-        \App\Models\SellerProfile::STATUS_EMAIL_VERIFICATION => [
-            'class' => 'pending',
-            'icon' => 'fa-envelope-circle-check',
-            'title' => 'Email Verification Pending',
-            'message' =>
-                'Please complete your email verification to continue.'
-        ],
-
-        \App\Models\SellerProfile::STATUS_DOCUMENTS_PENDING => [
-            'class' => 'pending',
-            'icon' => 'fa-file-circle-check',
-            'title' => 'Documents Required',
-            'message' =>
-                'Your email has been verified. Please upload all required seller documents.'
-        ],
-
-        \App\Models\SellerProfile::STATUS_AADHAAR_VERIFICATION => [
-            'class' => 'pending',
-            'icon' => 'fa-id-card',
-            'title' => 'Aadhaar Verification Pending',
-            'message' =>
-                'Your documents are available. Please complete Aadhaar verification.'
-        ],
-
-        \App\Models\SellerProfile::STATUS_BUSINESS_DETAILS => [
-            'class' => 'pending',
-            'icon' => 'fa-building',
-            'title' => 'Business Details Pending',
-            'message' =>
-                'Please complete your business information to continue.'
-        ],
-
-        \App\Models\SellerProfile::STATUS_BANK_DETAILS => [
-            'class' => 'pending',
-            'icon' => 'fa-building-columns',
-            'title' => 'Bank Details Pending',
-            'message' =>
-                'Please complete your bank information before submitting the application.'
-        ],
+                $currentStep = 1;
 
-        \App\Models\SellerProfile::STATUS_PENDING_ADMIN_REVIEW => [
-            'class' => 'pending',
-            'icon' => 'fa-hourglass-half',
-            'title' => 'Application Under Review',
-            'message' =>
-                'Your complete seller application has been submitted and is waiting for admin approval.'
-        ],
+            } elseif (!$documentsDone) {
 
-        \App\Models\SellerProfile::STATUS_PENDING_REVIEW => [
-            'class' => 'pending',
-            'icon' => 'fa-hourglass-half',
-            'title' => 'Application Under Review',
-            'message' =>
-                'Your seller application is currently being reviewed by the SmartBasket admin team.'
-        ],
+                $currentStep = 2;
 
-        \App\Models\SellerProfile::STATUS_APPROVED => [
-            'class' => 'approved',
-            'icon' => 'fa-circle-check',
-            'title' => 'Application Approved',
-            'message' =>
-                'Congratulations! Your seller application has been approved.'
-        ],
+            } elseif (!$aadhaarDone) {
 
-        \App\Models\SellerProfile::STATUS_ACTIVE => [
-            'class' => 'approved',
-            'icon' => 'fa-circle-check',
-            'title' => 'Seller Account Active',
-            'message' =>
-                'Your seller account is fully verified and active.'
-        ],
+                $currentStep = 3;
 
-        \App\Models\SellerProfile::STATUS_REJECTED => [
-            'class' => 'rejected',
-            'icon' => 'fa-circle-xmark',
-            'title' => 'Application Rejected',
-            'message' =>
-                !empty($seller->rejection_reason)
-                    ? 'Reason: '.$seller->rejection_reason
-                    : 'Your seller application was rejected.'
-        ],
+            } elseif (!$businessDone) {
 
-        'suspended' => [
-            'class' => 'suspended',
-            'icon' => 'fa-triangle-exclamation',
-            'title' => 'Seller Account Suspended',
-            'message' =>
-                'Your seller account is currently suspended.'
-        ],
+                $currentStep = 4;
 
-    ];
+            } elseif (!$bankDone) {
 
+                $currentStep = 5;
 
-    $currentStatus =
-        $statusMap[$status]
-        ?? [
-            'class' => 'pending',
-            'icon' => 'fa-shield-halved',
-            'title' => 'Verification Status',
-            'message' =>
-                'Your seller verification is currently being processed.'
-        ];
+            } elseif (!$reviewDone) {
 
-@endphp
+                $currentStep = 6;
 
+            } else {
 
-<div class="container">
-
-
-    {{-- =========================================================
-         BRAND
-    ========================================================== --}}
-
-    <div class="brand">
-
-        <div class="brand-mark">
-
-            <i class="fa-solid fa-store"></i>
-
-        </div>
-
-        <h1>
-            SMART BASKET
-            <span>PREMIUM</span>
-        </h1>
-
-    </div>
-
-
-    {{-- =========================================================
-         MAIN CARD
-    ========================================================== --}}
-
-    <div class="card">
-
-
-        {{-- =====================================================
-             SUCCESS
-        ====================================================== --}}
-
-        @if(session('success'))
-
-            <div class="alert success">
-
-                <i class="fa-solid fa-circle-check"></i>
-
-                {{ session('success') }}
+                $currentStep = 6;
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | PROGRESS %
+            |--------------------------------------------------------------------------
+            */
+
+            $completedSteps = 0;
+
+            if ($emailDone) {
+                $completedSteps++;
+            }
+
+            if ($documentsDone) {
+                $completedSteps++;
+            }
+
+            if ($aadhaarDone) {
+                $completedSteps++;
+            }
+
+            if ($businessDone) {
+                $completedSteps++;
+            }
+
+            if ($bankDone) {
+                $completedSteps++;
+            }
+
+            if ($reviewDone) {
+                $completedSteps++;
+            }
+
+            $progressPercent =
+                round(
+                    ($completedSteps / 6) * 100
+                );
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | STATUS MESSAGE
+            |--------------------------------------------------------------------------
+            */
+
+            $statusMap = [
+
+                \App\Models\SellerProfile::STATUS_PENDING_EMAIL => [
+                    'class' => 'pending',
+                    'icon' => 'fa-envelope',
+                    'title' => 'Email Verification Pending',
+                    'message' =>
+                        'Please verify your registered seller email to continue.'
+                ],
+
+                \App\Models\SellerProfile::STATUS_EMAIL_VERIFICATION => [
+                    'class' => 'pending',
+                    'icon' => 'fa-envelope-circle-check',
+                    'title' => 'Email Verification Pending',
+                    'message' =>
+                        'Please complete your email verification to continue.'
+                ],
+
+                \App\Models\SellerProfile::STATUS_DOCUMENTS_PENDING => [
+                    'class' => 'pending',
+                    'icon' => 'fa-file-circle-check',
+                    'title' => 'Documents Required',
+                    'message' =>
+                        'Your email has been verified. Please upload all required seller documents.'
+                ],
+
+                \App\Models\SellerProfile::STATUS_AADHAAR_VERIFICATION => [
+                    'class' => 'pending',
+                    'icon' => 'fa-id-card',
+                    'title' => 'Aadhaar Verification Pending',
+                    'message' =>
+                        'Your documents are available. Please complete Aadhaar verification.'
+                ],
+
+                \App\Models\SellerProfile::STATUS_BUSINESS_DETAILS => [
+                    'class' => 'pending',
+                    'icon' => 'fa-building',
+                    'title' => 'Business Details Pending',
+                    'message' =>
+                        'Please complete your business information to continue.'
+                ],
+
+                \App\Models\SellerProfile::STATUS_BANK_DETAILS => [
+                    'class' => 'pending',
+                    'icon' => 'fa-building-columns',
+                    'title' => 'Bank Details Pending',
+                    'message' =>
+                        'Please complete your bank information before submitting the application.'
+                ],
+
+                \App\Models\SellerProfile::STATUS_PENDING_ADMIN_REVIEW => [
+                    'class' => 'pending',
+                    'icon' => 'fa-hourglass-half',
+                    'title' => 'Application Under Review',
+                    'message' =>
+                        'Your complete seller application has been submitted and is waiting for admin approval.'
+                ],
+
+                \App\Models\SellerProfile::STATUS_PENDING_REVIEW => [
+                    'class' => 'pending',
+                    'icon' => 'fa-hourglass-half',
+                    'title' => 'Application Under Review',
+                    'message' =>
+                        'Your seller application is currently being reviewed by the SmartBasket admin team.'
+                ],
+
+                \App\Models\SellerProfile::STATUS_APPROVED => [
+                    'class' => 'approved',
+                    'icon' => 'fa-circle-check',
+                    'title' => 'Application Approved',
+                    'message' =>
+                        'Congratulations! Your seller application has been approved.'
+                ],
+
+                \App\Models\SellerProfile::STATUS_ACTIVE => [
+                    'class' => 'approved',
+                    'icon' => 'fa-circle-check',
+                    'title' => 'Seller Account Active',
+                    'message' =>
+                        'Your seller account is fully verified and active.'
+                ],
+
+                \App\Models\SellerProfile::STATUS_REJECTED => [
+                    'class' => 'rejected',
+                    'icon' => 'fa-circle-xmark',
+                    'title' => 'Application Rejected',
+                    'message' =>
+                        !empty($seller->rejection_reason)
+                            ? 'Reason: '.$seller->rejection_reason
+                            : 'Your seller application was rejected.'
+                ],
+
+                'suspended' => [
+                    'class' => 'suspended',
+                    'icon' => 'fa-triangle-exclamation',
+                    'title' => 'Seller Account Suspended',
+                    'message' =>
+                        'Your seller account is currently suspended.'
+                ],
+
+            ];
+
+
+            $currentStatus =
+                $statusMap[$status]
+                ?? [
+                    'class' => 'pending',
+                    'icon' => 'fa-shield-halved',
+                    'title' => 'Verification Status',
+                    'message' =>
+                        'Your seller verification is currently being processed.'
+                ];
+
+        @endphp
+
+
+        {{-- =========================================================
+             BRAND
+        ========================================================== --}}
+
+        <div class="brand">
+
+            <div class="brand-mark">
+
+                <i class="fa-solid fa-store"></i>
 
             </div>
 
-        @endif
-
-
-        {{-- =====================================================
-             ERROR
-        ====================================================== --}}
-
-        @if(session('error'))
-
-            <div class="alert error">
-
-                <i class="fa-solid fa-circle-exclamation"></i>
-
-                {{ session('error') }}
-
-            </div>
-
-        @endif
-
-
-        {{-- =====================================================
-             TITLE
-        ====================================================== --}}
-
-        <div class="title">
-
-            <div class="title-icon">
-
-                <i class="fa-solid fa-shield-halved"></i>
-
-            </div>
-
-            <h2>
-                Seller Verification Status
-            </h2>
-
-            <p>
-                Your complete seller onboarding progress is shown below.
-            </p>
+            <h1>
+                SMART BASKET
+                <span>PREMIUM</span>
+            </h1>
 
         </div>
 
 
-        {{-- =====================================================
-             SELLER INFORMATION
-        ====================================================== --}}
+        {{-- =========================================================
+             MAIN CARD
+        ========================================================== --}}
 
-        <div class="seller-info">
+        <div class="card">
 
 
-            <div class="info">
+            {{-- =====================================================
+                 SUCCESS
+            ====================================================== --}}
 
-                <small>
-                    Seller Name
-                </small>
+            @if(session('success'))
 
-                <strong>
-                    {{ $seller->seller_name ?? 'Seller' }}
-                </strong>
-
-            </div>
-
-
-            <div class="info">
-
-                <small>
-                    Email
-                </small>
-
-                <strong>
-                    {{ $seller->email ?? '-' }}
-                </strong>
-
-            </div>
-
-
-            <div class="info">
-
-                <small>
-                    Application ID
-                </small>
-
-                <strong>
-                    #{{ $seller->id }}
-                </strong>
-
-            </div>
-
-
-            <div class="info">
-
-                <small>
-                    Current Progress
-                </small>
-
-                <strong>
-                    {{ $completedSteps }} / 6 Completed
-                </strong>
-
-            </div>
-
-
-        </div>
-
-
-        {{-- =====================================================
-             CURRENT STATUS
-        ====================================================== --}}
-
-        <div class="status {{ $currentStatus['class'] }}">
-
-
-            <div class="status-icon">
-
-                <i class="fa-solid {{ $currentStatus['icon'] }}"></i>
-
-            </div>
-
-
-            <h3>
-                {{ $currentStatus['title'] }}
-            </h3>
-
-
-            <p>
-                {{ $currentStatus['message'] }}
-            </p>
-
-
-        </div>
-
-
-        {{-- =====================================================
-             VERIFICATION PROGRESS
-        ====================================================== --}}
-
-        <div class="steps">
-
-
-            <div class="steps-header">
-
-                <h3>
-                    Verification Progress
-                </h3>
-
-                <div class="steps-count">
-
-                    Step {{ $currentStep }} of 6
-
-                </div>
-
-            </div>
-
-
-            {{-- PROGRESS BAR --}}
-
-            <div class="progress-track">
-
-                <div
-                    class="progress-fill"
-                    style="width: {{ $progressPercent }}%;"
-                ></div>
-
-            </div>
-
-
-            {{-- =================================================
-                 STEP 1
-            ================================================== --}}
-
-            <div class="step">
-
-                <div class="circle
-                    {{ $emailDone
-                        ? 'done'
-                        : ($currentStep === 1 ? 'current' : '') }}">
-
-                    @if($emailDone)
-
-                        <i class="fa-solid fa-check"></i>
-
-                    @else
-
-                        1
-
-                    @endif
-
-                </div>
-
-
-                <div class="step-text">
-
-                    <strong>
-                        Step 1 — Email Verification
-                    </strong>
-
-                    <small>
-                        {{ $emailDone ? 'Completed' : 'Pending' }}
-                    </small>
-
-                </div>
-
-
-                @if(!$emailDone)
-
-                    <a
-                        href="{{ route('seller.verification.email') }}"
-                        class="step-link"
-                    >
-                        Open
-                    </a>
-
-                @endif
-
-            </div>
-
-
-            {{-- =================================================
-                 STEP 2
-            ================================================== --}}
-
-            <div class="step">
-
-                <div class="circle
-                    {{ $documentsDone
-                        ? 'done'
-                        : ($currentStep === 2 ? 'current' : '') }}">
-
-                    @if($documentsDone)
-
-                        <i class="fa-solid fa-check"></i>
-
-                    @else
-
-                        2
-
-                    @endif
-
-                </div>
-
-
-                <div class="step-text">
-
-                    <strong>
-                        Step 2 — Documents
-                    </strong>
-
-                    <small>
-                        {{ $documentsDone ? 'Completed' : 'Pending' }}
-                    </small>
-
-                </div>
-
-
-                @if($emailDone && !$documentsDone)
-
-                    <a
-                        href="{{ route('seller.verification.documents') }}"
-                        class="step-link"
-                    >
-                        Open
-                    </a>
-
-                @endif
-
-            </div>
-
-
-            {{-- =================================================
-                 STEP 3
-            ================================================== --}}
-
-            <div class="step">
-
-                <div class="circle
-                    {{ $aadhaarDone
-                        ? 'done'
-                        : ($currentStep === 3 ? 'current' : '') }}">
-
-                    @if($aadhaarDone)
-
-                        <i class="fa-solid fa-check"></i>
-
-                    @else
-
-                        3
-
-                    @endif
-
-                </div>
-
-
-                <div class="step-text">
-
-                    <strong>
-                        Step 3 — Aadhaar Verification
-                    </strong>
-
-                    <small>
-                        {{ $aadhaarDone ? 'Completed' : 'Pending' }}
-                    </small>
-
-                </div>
-
-
-                @if($documentsDone && !$aadhaarDone)
-
-                    <a
-                        href="{{ route('seller.verification.aadhaar') }}"
-                        class="step-link"
-                    >
-                        Open
-                    </a>
-
-                @endif
-
-            </div>
-
-
-            {{-- =================================================
-                 STEP 4
-            ================================================== --}}
-
-            <div class="step">
-
-                <div class="circle
-                    {{ $businessDone
-                        ? 'done'
-                        : ($currentStep === 4 ? 'current' : '') }}">
-
-                    @if($businessDone)
-
-                        <i class="fa-solid fa-check"></i>
-
-                    @else
-
-                        4
-
-                    @endif
-
-                </div>
-
-
-                <div class="step-text">
-
-                    <strong>
-                        Step 4 — Business Details
-                    </strong>
-
-                    <small>
-                        {{ $businessDone ? 'Completed' : 'Pending' }}
-                    </small>
-
-                </div>
-
-
-                @if($aadhaarDone && !$businessDone)
-
-                    <a
-                        href="{{ route('seller.verification.business-details') }}"
-                        class="step-link"
-                    >
-                        Open
-                    </a>
-
-                @endif
-
-            </div>
-
-
-            {{-- =================================================
-                 STEP 5
-            ================================================== --}}
-
-            <div class="step">
-
-                <div class="circle
-                    {{ $bankDone
-                        ? 'done'
-                        : ($currentStep === 5 ? 'current' : '') }}">
-
-                    @if($bankDone)
-
-                        <i class="fa-solid fa-check"></i>
-
-                    @else
-
-                        5
-
-                    @endif
-
-                </div>
-
-
-                <div class="step-text">
-
-                    <strong>
-                        Step 5 — Bank Details
-                    </strong>
-
-                    <small>
-                        {{ $bankDone ? 'Completed' : 'Pending' }}
-                    </small>
-
-                </div>
-
-
-                @if($businessDone && !$bankDone)
-
-                    <a
-                        href="{{ route('seller.verification.bank-details') }}"
-                        class="step-link"
-                    >
-                        Open
-                    </a>
-
-                @endif
-
-            </div>
-
-
-            {{-- =================================================
-                 STEP 6
-            ================================================== --}}
-
-            <div class="step">
-
-                <div class="circle
-                    {{ $reviewDone
-                        ? 'done'
-                        : ($currentStep === 6 ? 'current' : '') }}">
-
-                    @if($reviewDone)
-
-                        <i class="fa-solid fa-check"></i>
-
-                    @else
-
-                        6
-
-                    @endif
-
-                </div>
-
-
-                <div class="step-text">
-
-                    <strong>
-                        Step 6 — Review &amp; Submit
-                    </strong>
-
-                    <small>
-                        {{ $reviewDone
-                            ? 'Application Submitted'
-                            : 'Ready for Review' }}
-                    </small>
-
-                </div>
-
-
-                @if($bankDone && !$reviewDone)
-
-                    <a
-                        href="{{ route('seller.verification.review') }}"
-                        class="step-link"
-                    >
-                        Open
-                    </a>
-
-                @endif
-
-            </div>
-
-
-        </div>
-
-
-        {{-- =====================================================
-             INFORMATION NOTE
-        ====================================================== --}}
-
-        @if($status === \App\Models\SellerProfile::STATUS_PENDING_ADMIN_REVIEW)
-
-            <div class="note">
-
-                <i class="fa-solid fa-hourglass-half"></i>
-
-                Your application has been submitted successfully.
-                Please wait while the SmartBasket admin team reviews your
-                documents and seller information.
-
-            </div>
-
-
-        @elseif(
-            $status === \App\Models\SellerProfile::STATUS_PENDING_REVIEW
-        )
-
-            <div class="note">
-
-                <i class="fa-solid fa-magnifying-glass"></i>
-
-                Your seller application is currently under review.
-                We will update your verification status after the review.
-
-            </div>
-
-
-        @elseif(
-            $status === \App\Models\SellerProfile::STATUS_APPROVED
-            ||
-            $status === \App\Models\SellerProfile::STATUS_ACTIVE
-        )
-
-            <div class="note">
-
-                <i class="fa-solid fa-circle-check"></i>
-
-                Your seller application has been approved.
-                Your SmartBasket seller account is ready.
-
-            </div>
-
-
-        @elseif($status === \App\Models\SellerProfile::STATUS_REJECTED)
-
-            <div class="note">
-
-                <i class="fa-solid fa-circle-exclamation"></i>
-
-                Please review the rejection reason and update your
-                application if resubmission is allowed.
-
-            </div>
-
-        @endif
-
-
-        {{-- =====================================================
-             ACTION BUTTONS
-        ====================================================== --}}
-
-        <div class="actions">
-
-
-            @if(!$reviewDone)
-
-                <a
-                    href="{{ route('seller.verification.index') }}"
-                    class="btn btn-primary"
-                >
-
-                    <i class="fa-solid fa-arrow-right"></i>
-
-                    Continue Verification
-
-                </a>
-
-
-            @elseif(
-                $status === \App\Models\SellerProfile::STATUS_PENDING_ADMIN_REVIEW
-                ||
-                $status === \App\Models\SellerProfile::STATUS_PENDING_REVIEW
-            )
-
-                <a
-                    href="{{ route('seller.verification.application.summary') }}"
-                    class="btn btn-primary"
-                >
-
-                    <i class="fa-solid fa-file-lines"></i>
-
-                    View Complete Application
-
-                </a>
-
-
-            @elseif(
-                $status === \App\Models\SellerProfile::STATUS_APPROVED
-            )
-
-                <a
-                    href="{{ route('seller.verification.application.summary') }}"
-                    class="btn btn-success"
-                >
+                <div class="alert success">
 
                     <i class="fa-solid fa-circle-check"></i>
 
-                    View Approved Application
+                    {{ session('success') }}
 
-                </a>
-
-
-            @elseif(
-                $status === \App\Models\SellerProfile::STATUS_ACTIVE
-            )
-
-                <a
-                    href="{{ route('seller-dashboard') }}"
-                    class="btn btn-success"
-                >
-
-                    <i class="fa-solid fa-store"></i>
-
-                    Go To Seller Dashboard
-
-                </a>
-
-
-            @elseif(
-                $status === \App\Models\SellerProfile::STATUS_REJECTED
-            )
-
-                <a
-                    href="{{ route('seller.verification.index') }}"
-                    class="btn btn-primary"
-                >
-
-                    <i class="fa-solid fa-rotate-right"></i>
-
-                    Update Application
-
-                </a>
-
+                </div>
 
             @endif
 
 
+            {{-- =====================================================
+                 ERROR
+            ====================================================== --}}
+
+            @if(session('error'))
+
+                <div class="alert error">
+
+                    <i class="fa-solid fa-circle-exclamation"></i>
+
+                    {{ session('error') }}
+
+                </div>
+
+            @endif
+
+
+            {{-- =====================================================
+                 TITLE
+            ====================================================== --}}
+
+            <div class="title">
+
+                <div class="title-icon">
+
+                    <i class="fa-solid fa-shield-halved"></i>
+
+                </div>
+
+                <h2>
+                    Seller Verification Status
+                </h2>
+
+                <p>
+                    Your complete seller onboarding progress is shown below.
+                </p>
+
+            </div>
+
+
+            {{-- =====================================================
+                 SELLER INFORMATION
+            ====================================================== --}}
+
+            <div class="seller-info">
+
+
+                <div class="info">
+
+                    <small>
+                        Seller Name
+                    </small>
+
+                    <strong>
+                        {{ $seller->seller_name ?? 'Seller' }}
+                    </strong>
+
+                </div>
+
+
+                <div class="info">
+
+                    <small>
+                        Email
+                    </small>
+
+                    <strong>
+                        {{ $seller->email ?? '-' }}
+                    </strong>
+
+                </div>
+
+
+                <div class="info">
+
+                    <small>
+                        Application ID
+                    </small>
+
+                    <strong>
+                        #{{ $seller->id }}
+                    </strong>
+
+                </div>
+
+
+                <div class="info">
+
+                    <small>
+                        Current Progress
+                    </small>
+
+                    <strong>
+                        {{ $completedSteps }} / 6 Completed
+                    </strong>
+
+                </div>
+
+
+            </div>
+
+
+            {{-- =====================================================
+                 CURRENT STATUS
+            ====================================================== --}}
+
+            <div class="status {{ $currentStatus['class'] }}">
+
+
+                <div class="status-icon">
+
+                    <i class="fa-solid {{ $currentStatus['icon'] }}"></i>
+
+                </div>
+
+
+                <h3>
+                    {{ $currentStatus['title'] }}
+                </h3>
+
+
+                <p>
+                    {{ $currentStatus['message'] }}
+                </p>
+
+
+            </div>
+
+
+            {{-- =====================================================
+                 VERIFICATION PROGRESS
+            ====================================================== --}}
+
+            <div class="steps">
+
+
+                <div class="steps-header">
+
+                    <h3>
+                        Verification Progress
+                    </h3>
+
+                    <div class="steps-count">
+
+                        Step {{ $currentStep }} of 6
+
+                    </div>
+
+                </div>
+
+
+                {{-- PROGRESS BAR --}}
+
+                <div class="progress-track">
+
+                    <div
+                        class="progress-fill"
+                        style="width: {{ $progressPercent }}%;"
+                    ></div>
+
+                </div>
+
+
+                {{-- =================================================
+                     STEP 1
+                ================================================== --}}
+
+                <div class="step">
+
+                    <div class="circle
+                        {{ $emailDone
+                            ? 'done'
+                            : ($currentStep === 1 ? 'current' : '') }}">
+
+                        @if($emailDone)
+
+                            <i class="fa-solid fa-check"></i>
+
+                        @else
+
+                            1
+
+                        @endif
+
+                    </div>
+
+
+                    <div class="step-text">
+
+                        <strong>
+                            Step 1 — Email Verification
+                        </strong>
+
+                        <small>
+                            {{ $emailDone ? 'Completed' : 'Pending' }}
+                        </small>
+
+                    </div>
+
+
+                    @if(!$emailDone)
+
+                        <a
+                            href="{{ route('seller.verification.email') }}"
+                            class="step-link"
+                        >
+                            Open
+                        </a>
+
+                    @endif
+
+                </div>
+
+
+                {{-- =================================================
+                     STEP 2
+                ================================================== --}}
+
+                <div class="step">
+
+                    <div class="circle
+                        {{ $documentsDone
+                            ? 'done'
+                            : ($currentStep === 2 ? 'current' : '') }}">
+
+                        @if($documentsDone)
+
+                            <i class="fa-solid fa-check"></i>
+
+                        @else
+
+                            2
+
+                        @endif
+
+                    </div>
+
+
+                    <div class="step-text">
+
+                        <strong>
+                            Step 2 — Documents
+                        </strong>
+
+                        <small>
+                            {{ $documentsDone ? 'Completed' : 'Pending' }}
+                        </small>
+
+                    </div>
+
+
+                    @if($emailDone && !$documentsDone)
+
+                        <a
+                            href="{{ route('seller.verification.documents') }}"
+                            class="step-link"
+                        >
+                            Open
+                        </a>
+
+                    @endif
+
+                </div>
+
+
+                {{-- =================================================
+                     STEP 3
+                ================================================== --}}
+
+                <div class="step">
+
+                    <div class="circle
+                        {{ $aadhaarDone
+                            ? 'done'
+                            : ($currentStep === 3 ? 'current' : '') }}">
+
+                        @if($aadhaarDone)
+
+                            <i class="fa-solid fa-check"></i>
+
+                        @else
+
+                            3
+
+                        @endif
+
+                    </div>
+
+
+                    <div class="step-text">
+
+                        <strong>
+                            Step 3 — Aadhaar Verification
+                        </strong>
+
+                        <small>
+                            {{ $aadhaarDone ? 'Completed' : 'Pending' }}
+                        </small>
+
+                    </div>
+
+
+                    @if($documentsDone && !$aadhaarDone)
+
+                        <a
+                            href="{{ route('seller.verification.aadhaar') }}"
+                            class="step-link"
+                        >
+                            Open
+                        </a>
+
+                    @endif
+
+                </div>
+
+
+                {{-- =================================================
+                     STEP 4
+                ================================================== --}}
+
+                <div class="step">
+
+                    <div class="circle
+                        {{ $businessDone
+                            ? 'done'
+                            : ($currentStep === 4 ? 'current' : '') }}">
+
+                        @if($businessDone)
+
+                            <i class="fa-solid fa-check"></i>
+
+                        @else
+
+                            4
+
+                        @endif
+
+                    </div>
+
+
+                    <div class="step-text">
+
+                        <strong>
+                            Step 4 — Business Details
+                        </strong>
+
+                        <small>
+                            {{ $businessDone ? 'Completed' : 'Pending' }}
+                        </small>
+
+                    </div>
+
+
+                    @if($aadhaarDone && !$businessDone)
+
+                        <a
+                            href="{{ route('seller.verification.business-details') }}"
+                            class="step-link"
+                        >
+                            Open
+                        </a>
+
+                    @endif
+
+                </div>
+
+
+                {{-- =================================================
+                     STEP 5
+                ================================================== --}}
+
+                <div class="step">
+
+                    <div class="circle
+                        {{ $bankDone
+                            ? 'done'
+                            : ($currentStep === 5 ? 'current' : '') }}">
+
+                        @if($bankDone)
+
+                            <i class="fa-solid fa-check"></i>
+
+                        @else
+
+                            5
+
+                        @endif
+
+                    </div>
+
+
+                    <div class="step-text">
+
+                        <strong>
+                            Step 5 — Bank Details
+                        </strong>
+
+                        <small>
+                            {{ $bankDone ? 'Completed' : 'Pending' }}
+                        </small>
+
+                    </div>
+
+
+                    @if($businessDone && !$bankDone)
+
+                        <a
+                            href="{{ route('seller.verification.bank-details') }}"
+                            class="step-link"
+                        >
+                            Open
+                        </a>
+
+                    @endif
+
+                </div>
+
+
+                {{-- =================================================
+                     STEP 6
+                ================================================== --}}
+
+                <div class="step">
+
+                    <div class="circle
+                        {{ $reviewDone
+                            ? 'done'
+                            : ($currentStep === 6 ? 'current' : '') }}">
+
+                        @if($reviewDone)
+
+                            <i class="fa-solid fa-check"></i>
+
+                        @else
+
+                            6
+
+                        @endif
+
+                    </div>
+
+
+                    <div class="step-text">
+
+                        <strong>
+                            Step 6 — Review &amp; Submit
+                        </strong>
+
+                        <small>
+                            {{ $reviewDone
+                                ? 'Application Submitted'
+                                : 'Ready for Review' }}
+                        </small>
+
+                    </div>
+
+
+                    @if($bankDone && !$reviewDone)
+
+                        <a
+                            href="{{ route('seller.verification.review') }}"
+                            class="step-link"
+                        >
+                            Open
+                        </a>
+
+                    @endif
+
+                </div>
+
+
+            </div>
+
+
+            {{-- =====================================================
+                 INFORMATION NOTE
+            ====================================================== --}}
+
+            @if($status === \App\Models\SellerProfile::STATUS_PENDING_ADMIN_REVIEW)
+
+                <div class="note">
+
+                    <i class="fa-solid fa-hourglass-half"></i>
+
+                    Your application has been submitted successfully.
+                    Please wait while the SmartBasket admin team reviews your
+                    documents and seller information.
+
+                </div>
+
+
+            @elseif(
+                $status === \App\Models\SellerProfile::STATUS_PENDING_REVIEW
+            )
+
+                <div class="note">
+
+                    <i class="fa-solid fa-magnifying-glass"></i>
+
+                    Your seller application is currently under review.
+                    We will update your verification status after the review.
+
+                </div>
+
+
+            @elseif(
+                $status === \App\Models\SellerProfile::STATUS_APPROVED
+                ||
+                $status === \App\Models\SellerProfile::STATUS_ACTIVE
+            )
+
+                <div class="note">
+
+                    <i class="fa-solid fa-circle-check"></i>
+
+                    Your seller application has been approved.
+                    Your SmartBasket seller account is ready.
+
+                </div>
+
+
+            @elseif($status === \App\Models\SellerProfile::STATUS_REJECTED)
+
+                <div class="note">
+
+                    <i class="fa-solid fa-circle-exclamation"></i>
+
+                    Please review the rejection reason and update your
+                    application if resubmission is allowed.
+
+                </div>
+
+            @endif
+
+
+            {{-- =====================================================
+                 ACTION BUTTONS
+            ====================================================== --}}
+
+            <div class="actions">
+
+
+                @if(!$reviewDone)
+
+                    <a
+                        href="{{ route('seller.verification.index') }}"
+                        class="btn btn-primary"
+                    >
+
+                        <i class="fa-solid fa-arrow-right"></i>
+
+                        Continue Verification
+
+                    </a>
+
+
+                @elseif(
+                    $status === \App\Models\SellerProfile::STATUS_PENDING_ADMIN_REVIEW
+                    ||
+                    $status === \App\Models\SellerProfile::STATUS_PENDING_REVIEW
+                )
+
+                    <a
+                        href="{{ route('seller.verification.application.summary') }}"
+                        class="btn btn-primary"
+                    >
+
+                        <i class="fa-solid fa-file-lines"></i>
+
+                        View Complete Application
+
+                    </a>
+
+
+                @elseif(
+                    $status === \App\Models\SellerProfile::STATUS_APPROVED
+                )
+
+                    <a
+                        href="{{ route('seller.verification.application.summary') }}"
+                        class="btn btn-success"
+                    >
+
+                        <i class="fa-solid fa-circle-check"></i>
+
+                        View Approved Application
+
+                    </a>
+
+
+                @elseif(
+                    $status === \App\Models\SellerProfile::STATUS_ACTIVE
+                )
+
+                    <a
+                        href="{{ route('seller.dashboard') }}"
+                        class="btn btn-success"
+                    >
+
+                        <i class="fa-solid fa-store"></i>
+
+                        Go To Seller Dashboard
+
+                    </a>
+
+
+                @elseif(
+                    $status === \App\Models\SellerProfile::STATUS_REJECTED
+                )
+
+                    <a
+                        href="{{ route('seller.verification.index') }}"
+                        class="btn btn-primary"
+                    >
+
+                        <i class="fa-solid fa-rotate-right"></i>
+
+                        Update Application
+
+                    </a>
+
+
+                @endif
+
+
+            </div>
+
+
+        </div>
+
+
+        <div class="page-footer">
+
+            SMART BASKET PREMIUM
+            &nbsp;•&nbsp;
+            Seller Verification Center
+
         </div>
 
 
     </div>
 
-
-    <div class="page-footer">
-
-        SMART BASKET PREMIUM
-        &nbsp;•&nbsp;
-        Seller Verification Center
-
-    </div>
-
-
 </div>
-
-
-@include('seller.partials.seller-menu')
 
 
 </body>

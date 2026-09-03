@@ -68,6 +68,21 @@ class User extends Authenticatable
         return $this->hasMany(Order::class);
     }
 
+    public function paymentTransactions()
+    {
+        return $this->hasMany(PaymentTransaction::class);
+    }
+
+    public function carts()
+    {
+        return $this->hasMany(Cart::class);
+    }
+
+    public function wishlists()
+    {
+        return $this->hasMany(Wishlist::class);
+    }
+
 
     // Security PIN Relation
     public function securitySetting()

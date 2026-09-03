@@ -69,8 +69,22 @@ class SellerController extends Controller
             'seller_id' => $seller->id,
         ]);
 
+        if ($seller->isApproved() || $seller->isActive()) {
+            return redirect()->route('seller.dashboard');
+        }
+
+        if (
+            $seller->isApplicationSubmitted() ||
+            $seller->isRejected() ||
+            $seller->isSuspended()
+        ) {
+            return redirect()->route(
+                'seller.verification.status'
+            );
+        }
+
         return redirect()->route(
-            'seller.dashboard'
+            'seller.verification.index'
         );
     }
 
@@ -134,6 +148,12 @@ class SellerController extends Controller
                 Hash::make(
                     $validated['password']
                 ),
+
+            'verification_status' =>
+                SellerProfile::STATUS_DRAFT,
+
+            'onboarding_step' =>
+                1,
         ]);
 
         return redirect()
@@ -180,6 +200,12 @@ class SellerController extends Controller
 
         $sellerId = $seller->id;
 
+        /*
+        |--------------------------------------------------------------------------
+        | SELLER PRODUCTS
+        |--------------------------------------------------------------------------
+        */
+
         $products = Product::where(
             'seller_id',
             $sellerId
@@ -191,21 +217,64 @@ class SellerController extends Controller
         $totalProducts =
             $products->count();
 
+        /*
+        |--------------------------------------------------------------------------
+        | SELLER ORDERS
+        |--------------------------------------------------------------------------
+        |
+        | IMPORTANT:
+        | forSeller() makes sure that only orders belonging
+        | to the currently logged-in seller are included.
+        |
+        */
+
         $sellerOrders =
             Order::forSeller($sellerId);
+
+        /*
+        |--------------------------------------------------------------------------
+        | TOTAL ORDERS
+        |--------------------------------------------------------------------------
+        */
 
         $totalOrders =
             (clone $sellerOrders)->count();
 
+        /*
+        |--------------------------------------------------------------------------
+        | PENDING ORDERS
+        |--------------------------------------------------------------------------
+        */
+
         $pendingOrders =
             (clone $sellerOrders)
-                ->where(
-                    'status',
-                    'Pending'
-                )
+                ->where(function ($query) {
+                    $query
+                        ->where(
+                            'status',
+                            'Pending'
+                        )
+                        ->orWhere(
+                            'order_status',
+                            'Pending'
+                        );
+                })
                 ->count();
 
-        $totalRevenue =
+        /*
+        |--------------------------------------------------------------------------
+        | TOTAL EARNINGS
+        |--------------------------------------------------------------------------
+        |
+        | Seller earning is calculated only from successful
+        | payments.
+        |
+        | Cancelled orders are excluded so that seller does
+        | not see cancelled order amount as earnings.
+        |
+        */
+
+        $totalEarnings =
             (clone $sellerOrders)
                 ->whereIn(
                     'payment_status',
@@ -214,7 +283,93 @@ class SellerController extends Controller
                         'Successful',
                     ]
                 )
+                ->where(function ($query) {
+                    $query
+                        ->whereNull('status')
+                        ->orWhereNotIn(
+                            'status',
+                            [
+                                'Cancelled',
+                                'Canceled',
+                            ]
+                        );
+                })
                 ->sum('total');
+
+        /*
+        |--------------------------------------------------------------------------
+        | TOTAL REVENUE
+        |--------------------------------------------------------------------------
+        |
+        | Keep the old variable as well so existing
+        | seller dashboard Blade code continues working.
+        |
+        */
+
+        $totalRevenue =
+            $totalEarnings;
+
+        /*
+        |--------------------------------------------------------------------------
+        | ADDITIONAL EARNING DATA
+        |--------------------------------------------------------------------------
+        */
+
+        $paidOrders =
+            (clone $sellerOrders)
+                ->whereIn(
+                    'payment_status',
+                    [
+                        'Paid',
+                        'Successful',
+                    ]
+                )
+                ->where(function ($query) {
+                    $query
+                        ->whereNull('status')
+                        ->orWhereNotIn(
+                            'status',
+                            [
+                                'Cancelled',
+                                'Canceled',
+                            ]
+                        );
+                })
+                ->count();
+
+        /*
+        |--------------------------------------------------------------------------
+        | CANCELLED ORDERS
+        |--------------------------------------------------------------------------
+        */
+
+        $cancelledOrders =
+            (clone $sellerOrders)
+                ->whereIn(
+                    'status',
+                    [
+                        'Cancelled',
+                        'Canceled',
+                    ]
+                )
+                ->count();
+
+        /*
+        |--------------------------------------------------------------------------
+        | UNPAID ORDERS
+        |--------------------------------------------------------------------------
+        */
+
+        $unpaidOrders =
+            (clone $sellerOrders)
+                ->whereNotIn(
+                    'payment_status',
+                    [
+                        'Paid',
+                        'Successful',
+                    ]
+                )
+                ->count();
 
         return view(
             'seller.dashboard',
@@ -223,7 +378,16 @@ class SellerController extends Controller
                 'totalProducts',
                 'totalOrders',
                 'pendingOrders',
+
+                // Earnings
+                'totalEarnings',
                 'totalRevenue',
+                'paidOrders',
+
+                // Other order information
+                'cancelledOrders',
+                'unpaidOrders',
+
                 'seller'
             )
         );
@@ -249,25 +413,11 @@ class SellerController extends Controller
     |--------------------------------------------------------------------------
     | UPDATE SELLER PROFILE
     |--------------------------------------------------------------------------
-    |
-    | ALL ACCOUNT INFORMATION
-    | BUSINESS INFORMATION
-    | ADDRESS
-    | KYC
-    | BANK
-    | SHOP LOGO
-    |
     */
 
     public function updateProfile(Request $request)
     {
         $seller = $this->currentSeller();
-
-        /*
-        |--------------------------------------------------------------------------
-        | VALIDATION
-        |--------------------------------------------------------------------------
-        */
 
         $validated = $request->validate([
 
@@ -338,7 +488,7 @@ class SellerController extends Controller
 
             /*
             |--------------------------------------------------------------------------
-            | BUSINESS DETAILS
+            | BUSINESS
             |--------------------------------------------------------------------------
             */
 
@@ -428,36 +578,25 @@ class SellerController extends Controller
             ],
         ]);
 
-        /*
-        |--------------------------------------------------------------------------
-        | FIELDS TO UPDATE
-        |--------------------------------------------------------------------------
-        */
-
         $profileFields = [
 
-            // Basic
             'seller_name',
             'shop_name',
             'email',
             'mobile_number',
 
-            // Address
             'shop_address',
             'city',
             'state',
             'pincode',
 
-            // Business
             'business_type',
             'gst_number',
             'pan_number',
             'udyam_number',
 
-            // Aadhaar
             'aadhaar_number',
 
-            // Bank
             'bank_name',
             'account_holder_name',
             'account_number',
@@ -507,10 +646,6 @@ class SellerController extends Controller
                         '/'
                     );
 
-                /*
-                | storage/ prefix remove
-                */
-
                 if (
                     str_starts_with(
                         $oldLogo,
@@ -524,16 +659,8 @@ class SellerController extends Controller
                         );
                 }
 
-                /*
-                | Delete exact stored file
-                */
-
                 Storage::disk('public')
                     ->delete($oldLogo);
-
-                /*
-                | Legacy filename support
-                */
 
                 if (
                     !str_contains(
@@ -584,12 +711,6 @@ class SellerController extends Controller
                     'public'
                 );
 
-            /*
-            |--------------------------------------------------------------------------
-            | VERIFY LOGO
-            |--------------------------------------------------------------------------
-            */
-
             if (
                 !$logoPath ||
                 !Storage::disk('public')
@@ -603,25 +724,9 @@ class SellerController extends Controller
                     ]);
             }
 
-            /*
-            |--------------------------------------------------------------------------
-            | DATABASE PATH
-            |--------------------------------------------------------------------------
-            */
-
             $updateData['shop_logo'] =
                 $logoPath;
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | SAVE EVERYTHING TO DATABASE
-        |--------------------------------------------------------------------------
-        |
-        | forceFill() ensures that these profile fields are written even if
-        | the SellerProfile model has an incomplete $fillable array.
-        |
-        */
 
         $seller->forceFill(
             $updateData
@@ -629,19 +734,7 @@ class SellerController extends Controller
 
         $seller->save();
 
-        /*
-        |--------------------------------------------------------------------------
-        | REFRESH DATABASE MODEL
-        |--------------------------------------------------------------------------
-        */
-
         $seller->refresh();
-
-        /*
-        |--------------------------------------------------------------------------
-        | UPDATE SESSION
-        |--------------------------------------------------------------------------
-        */
 
         session([
             'seller_login' =>
@@ -653,12 +746,6 @@ class SellerController extends Controller
             'seller_id' =>
                 $seller->id,
         ]);
-
-        /*
-        |--------------------------------------------------------------------------
-        | SUCCESS
-        |--------------------------------------------------------------------------
-        */
 
         return redirect()
             ->route(
@@ -1598,24 +1685,30 @@ class SellerController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function updatePaymentQr(
-        Request $request
-    ) {
-        $data =
-            $request->validate([
-                'payment_qr' => [
-                    'required',
-                    'image',
-                    'mimes:jpeg,jpg,png,webp',
-                    'max:2048',
-                ],
-            ]);
+    public function updatePaymentQr(Request $request)
+    {
+        $data = $request->validate([
+            'payment_qr' => [
+                'required',
+                'image',
+                'mimes:jpeg,jpg,png,webp',
+                'max:2048',
+            ],
+        ]);
 
-        $seller =
-            $this->currentSeller();
+        $seller = $this->currentSeller();
+
+        if (!$seller) {
+            return back()->with(
+                'error',
+                'Seller session not found.'
+            );
+        }
 
         /*
-        | Delete old QR
+        |--------------------------------------------------------------------------
+        | DELETE OLD QR
+        |--------------------------------------------------------------------------
         */
 
         if (!empty($seller->payment_qr)) {
@@ -1644,15 +1737,29 @@ class SellerController extends Controller
         }
 
         /*
-        | Store new QR
+        |--------------------------------------------------------------------------
+        | STORE NEW QR
+        |--------------------------------------------------------------------------
         */
 
+        $qrPath = $data['payment_qr']->store(
+            'seller-payment-qr',
+            'public'
+        );
+
+        if (
+            !$qrPath ||
+            !Storage::disk('public')
+                ->exists($qrPath)
+        ) {
+            return back()->with(
+                'error',
+                'Payment QR could not be saved.'
+            );
+        }
+
         $seller->payment_qr =
-            $data['payment_qr']
-                ->store(
-                    'seller-payment-qr',
-                    'public'
-                );
+            $qrPath;
 
         $seller->save();
 

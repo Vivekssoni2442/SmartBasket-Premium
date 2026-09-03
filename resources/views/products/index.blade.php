@@ -114,6 +114,527 @@ select {
 
 
 /* =========================================================
+   CUSTOMER LOGIN — PREMIUM WELCOME ANIMATION
+========================================================= */
+
+.customer-welcome-overlay {
+    position:fixed;
+    inset:0;
+    z-index:99999;
+
+    display:grid;
+    place-items:center;
+
+    overflow:hidden;
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(37,99,235,.22),
+            rgba(4,9,20,.97) 62%
+        );
+
+    backdrop-filter:blur(18px);
+
+    opacity:1;
+    visibility:visible;
+
+    animation:
+        customerWelcomeIn .22s ease-out both;
+}
+
+.customer-welcome-overlay.is-hidden {
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+
+    transition:
+        opacity .5s ease,
+        visibility .5s ease;
+}
+
+.customer-welcome-bg {
+    position:absolute;
+    inset:-30%;
+
+    background:
+        conic-gradient(
+            from 0deg,
+            rgba(0,246,255,.16),
+            rgba(40,123,255,.14),
+            rgba(139,53,255,.18),
+            rgba(255,32,200,.16),
+            rgba(255,64,93,.13),
+            rgba(255,228,92,.12),
+            rgba(0,246,255,.16)
+        );
+
+    filter:blur(70px);
+
+    animation:
+        customerWelcomeBg 4s linear infinite;
+
+    pointer-events:none;
+}
+
+.customer-welcome-content {
+    position:relative;
+    z-index:5;
+
+    width:min(420px,calc(100vw - 40px));
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+
+    padding:35px 25px;
+
+    text-align:center;
+
+    border:1px solid rgba(255,255,255,.14);
+    border-radius:30px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,.10),
+            rgba(255,255,255,.035)
+        );
+
+    box-shadow:
+        0 35px 100px rgba(0,0,0,.55),
+        inset 0 1px 0 rgba(255,255,255,.14);
+
+    backdrop-filter:blur(25px);
+
+    animation:
+        customerWelcomeCard .72s
+        cubic-bezier(.16,1,.3,1)
+        both;
+}
+
+.customer-welcome-emoji {
+    position:relative;
+    z-index:3;
+
+    width:92px;
+    height:92px;
+
+    display:grid;
+    place-items:center;
+
+    border-radius:50%;
+
+    font-size:48px;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(255,255,255,.16),
+            rgba(37,99,235,.12),
+            transparent 72%
+        );
+
+    border:1px solid rgba(255,255,255,.16);
+
+    box-shadow:
+        0 0 25px rgba(0,246,255,.25),
+        0 0 55px rgba(139,53,255,.22);
+
+    animation:
+        customerWelcomeEmoji .85s
+        cubic-bezier(.16,1,.3,1)
+        both;
+}
+
+.customer-welcome-title {
+    margin-top:22px;
+
+    font-size:clamp(38px,8vw,58px);
+    line-height:1;
+
+    font-weight:1000;
+    letter-spacing:.12em;
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--rgb-cyan),
+            var(--rgb-blue),
+            var(--rgb-purple),
+            var(--rgb-pink),
+            var(--rgb-red),
+            var(--rgb-yellow),
+            var(--rgb-cyan)
+        );
+
+    background-size:600% 100%;
+
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+
+    animation:
+        customerWelcomeRGB 2.5s linear infinite;
+}
+
+.customer-welcome-line {
+    width:80px;
+    height:2px;
+
+    margin:17px 0 13px;
+
+    border-radius:99px;
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--rgb-cyan),
+            var(--rgb-purple),
+            var(--rgb-pink),
+            var(--rgb-yellow)
+        );
+
+    box-shadow:
+        0 0 12px rgba(0,246,255,.55),
+        0 0 25px rgba(255,32,200,.35);
+
+    animation:
+        customerWelcomeLine .6s
+        ease-out .18s both;
+}
+
+.customer-welcome-subtitle {
+    color:rgba(255,255,255,.72);
+
+    font-size:11px;
+    letter-spacing:.08em;
+    font-weight:700;
+
+    animation:
+        customerWelcomeSubtitle .5s
+        ease-out .25s both;
+}
+
+.customer-welcome-subtitle strong {
+    font-weight:950;
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--rgb-cyan),
+            var(--rgb-purple),
+            var(--rgb-pink)
+        );
+
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+}
+
+.customer-welcome-ring {
+    position:absolute;
+
+    left:50%;
+    top:72px;
+
+    border-radius:50%;
+
+    transform:translate(-50%,-50%);
+
+    pointer-events:none;
+}
+
+.customer-welcome-ring.ring-1 {
+    width:125px;
+    height:125px;
+
+    border:1px solid rgba(0,246,255,.28);
+
+    animation:
+        customerWelcomeRing 2s
+        ease-in-out infinite;
+}
+
+.customer-welcome-ring.ring-2 {
+    width:165px;
+    height:165px;
+
+    border:1px solid rgba(255,32,200,.18);
+
+    animation:
+        customerWelcomeRing 2.5s
+        ease-in-out infinite reverse;
+}
+
+.customer-welcome-particles {
+    position:absolute;
+    inset:0;
+
+    pointer-events:none;
+}
+
+.customer-welcome-particles span {
+    position:absolute;
+
+    width:5px;
+    height:5px;
+
+    border-radius:50%;
+
+    background:currentColor;
+
+    box-shadow:
+        0 0 10px currentColor,
+        0 0 25px currentColor;
+
+    opacity:.8;
+}
+
+.customer-welcome-particles span:nth-child(1) {
+    top:22%;
+    left:20%;
+    color:var(--rgb-cyan);
+    animation:welcomeParticle1 1.5s ease-in-out infinite;
+}
+
+.customer-welcome-particles span:nth-child(2) {
+    top:30%;
+    right:18%;
+    color:var(--rgb-pink);
+    animation:welcomeParticle2 1.8s ease-in-out infinite;
+}
+
+.customer-welcome-particles span:nth-child(3) {
+    bottom:25%;
+    left:17%;
+    color:var(--rgb-purple);
+    animation:welcomeParticle3 1.7s ease-in-out infinite;
+}
+
+.customer-welcome-particles span:nth-child(4) {
+    bottom:20%;
+    right:21%;
+    color:var(--rgb-yellow);
+    animation:welcomeParticle4 1.4s ease-in-out infinite;
+}
+
+.customer-welcome-particles span:nth-child(5) {
+    top:17%;
+    left:50%;
+    color:var(--rgb-blue);
+    animation:welcomeParticle5 1.9s ease-in-out infinite;
+}
+
+.customer-welcome-particles span:nth-child(6) {
+    bottom:15%;
+    right:50%;
+    color:var(--rgb-red);
+    animation:welcomeParticle6 1.6s ease-in-out infinite;
+}
+
+@keyframes customerWelcomeIn {
+    from {
+        opacity:0;
+    }
+
+    to {
+        opacity:1;
+    }
+}
+
+@keyframes customerWelcomeCard {
+    from {
+        opacity:0;
+        transform:
+            translateY(20px)
+            scale(.88);
+    }
+
+    to {
+        opacity:1;
+        transform:
+            translateY(0)
+            scale(1);
+    }
+}
+
+@keyframes customerWelcomeEmoji {
+    0% {
+        opacity:0;
+        transform:scale(.35) rotate(-15deg);
+    }
+
+    65% {
+        transform:scale(1.08) rotate(3deg);
+    }
+
+    100% {
+        opacity:1;
+        transform:scale(1) rotate(0);
+    }
+}
+
+@keyframes customerWelcomeRGB {
+    from {
+        background-position:0% 50%;
+    }
+
+    to {
+        background-position:600% 50%;
+    }
+}
+
+@keyframes customerWelcomeLine {
+    from {
+        width:0;
+        opacity:0;
+    }
+
+    to {
+        width:80px;
+        opacity:1;
+    }
+}
+
+@keyframes customerWelcomeSubtitle {
+    from {
+        opacity:0;
+        transform:translateY(7px);
+    }
+
+    to {
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+@keyframes customerWelcomeBg {
+    from {
+        transform:rotate(0deg) scale(1);
+    }
+
+    to {
+        transform:rotate(360deg) scale(1.08);
+    }
+}
+
+@keyframes customerWelcomeRing {
+    0%,100% {
+        opacity:.25;
+
+        transform:
+            translate(-50%,-50%)
+            scale(.88);
+    }
+
+    50% {
+        opacity:.75;
+
+        transform:
+            translate(-50%,-50%)
+            scale(1.12);
+    }
+}
+
+@keyframes welcomeParticle1 {
+    0%,100% {
+        transform:translate(0,0);
+    }
+
+    50% {
+        transform:
+            translate(25px,-18px)
+            scale(1.5);
+    }
+}
+
+@keyframes welcomeParticle2 {
+    0%,100% {
+        transform:translate(0,0);
+    }
+
+    50% {
+        transform:
+            translate(-20px,25px)
+            scale(1.5);
+    }
+}
+
+@keyframes welcomeParticle3 {
+    0%,100% {
+        transform:translate(0,0);
+    }
+
+    50% {
+        transform:
+            translate(25px,15px)
+            scale(1.4);
+    }
+}
+
+@keyframes welcomeParticle4 {
+    0%,100% {
+        transform:translate(0,0);
+    }
+
+    50% {
+        transform:
+            translate(-25px,-20px)
+            scale(1.5);
+    }
+}
+
+@keyframes welcomeParticle5 {
+    0%,100% {
+        transform:translateY(0);
+    }
+
+    50% {
+        transform:
+            translateY(30px)
+            scale(1.4);
+    }
+}
+
+@keyframes welcomeParticle6 {
+    0%,100% {
+        transform:translateY(0);
+    }
+
+    50% {
+        transform:
+            translateY(-25px)
+            scale(1.4);
+    }
+}
+
+@media (max-width:600px) {
+
+    .customer-welcome-content {
+        width:calc(100vw - 30px);
+        padding:30px 18px;
+        border-radius:25px;
+    }
+
+    .customer-welcome-emoji {
+        width:78px;
+        height:78px;
+        font-size:40px;
+    }
+
+    .customer-welcome-title {
+        font-size:38px;
+    }
+
+    .customer-welcome-subtitle {
+        font-size:9px;
+    }
+}
+
+
+/* =========================================================
    TOP BAR
 ========================================================= */
 
@@ -288,14 +809,20 @@ select {
     from {
         background-position:0 0,0% 50%;
     }
+
     to {
         background-position:0 0,500% 50%;
     }
 }
 
 @keyframes greetingFloat {
-    0%,100% {transform:translateY(0);}
-    50% {transform:translateY(-2px);}
+    0%,100% {
+        transform:translateY(0);
+    }
+
+    50% {
+        transform:translateY(-2px);
+    }
 }
 
 @keyframes greetingPulse {
@@ -303,6 +830,7 @@ select {
         transform:scale(.75);
         opacity:.55;
     }
+
     50% {
         transform:scale(1.35);
         opacity:1;
@@ -310,8 +838,13 @@ select {
 }
 
 @keyframes rgbText {
-    from {background-position:0% 50%;}
-    to {background-position:500% 50%;}
+    from {
+        background-position:0% 50%;
+    }
+
+    to {
+        background-position:500% 50%;
+    }
 }
 
 
@@ -550,9 +1083,6 @@ select {
     animation:heroAppear .8s ease both;
 }
 
-
-/* animated RGB frame */
-
 .hero::before {
     content:"";
 
@@ -597,11 +1127,6 @@ select {
             color-mix(in srgb,var(--surface2) 94%,transparent)
         );
 }
-
-
-/* =========================================================
-   RGB LIGHT CLOUDS
-========================================================= */
 
 .hero-glow {
     position:absolute;
@@ -674,6 +1199,7 @@ select {
     0%,100% {
         transform:translate(0,0) scale(1);
     }
+
     50% {
         transform:translate(-100px,90px) scale(1.25);
     }
@@ -683,6 +1209,7 @@ select {
     0%,100% {
         transform:translate(0,0);
     }
+
     50% {
         transform:translate(120px,-40px) scale(1.2);
     }
@@ -692,15 +1219,11 @@ select {
     0%,100% {
         transform:translateX(0);
     }
+
     50% {
         transform:translateX(-80px) scale(1.2);
     }
 }
-
-
-/* =========================================================
-   HERO GRID
-========================================================= */
 
 .hero-grid {
     position:absolute;
@@ -737,15 +1260,11 @@ select {
     from {
         transform:translate(0,0);
     }
+
     to {
         transform:translate(38px,38px);
     }
 }
-
-
-/* =========================================================
-   LIGHT SWEEP
-========================================================= */
 
 .hero-light {
     position:absolute;
@@ -779,15 +1298,11 @@ select {
     0%,25% {
         left:-35%;
     }
+
     70%,100% {
         left:125%;
     }
 }
-
-
-/* =========================================================
-   HERO CONTENT
-========================================================= */
 
 .hero-content {
     position:relative;
@@ -876,6 +1391,7 @@ select {
     from {
         background-position:0 0,0% 50%;
     }
+
     to {
         background-position:0 0,500% 50%;
     }
@@ -885,15 +1401,11 @@ select {
     0%,100% {
         transform:scale(1) rotate(0);
     }
+
     50% {
         transform:scale(1.22) rotate(12deg);
     }
 }
-
-
-/* =========================================================
-   HERO TITLE — FULL RGB
-========================================================= */
 
 .hero h1 {
     margin:18px 0 13px;
@@ -956,15 +1468,11 @@ select {
     from {
         background-position:0% 50%;
     }
+
     to {
         background-position:600% 50%;
     }
 }
-
-
-/* =========================================================
-   HERO SUBTITLE — RGB WORD HIGHLIGHT
-========================================================= */
 
 .hero-subtitle {
     max-width:600px;
@@ -1001,11 +1509,6 @@ select {
 
     animation:rgbText 4s linear infinite;
 }
-
-
-/* =========================================================
-   HERO BUTTONS
-========================================================= */
 
 .hero-actions {
     display:flex;
@@ -1089,14 +1592,14 @@ select {
 }
 
 @keyframes buttonRGB {
-    from {background-position:0% 50%;}
-    to {background-position:600% 50%;}
+    from {
+        background-position:0% 50%;
+    }
+
+    to {
+        background-position:600% 50%;
+    }
 }
-
-
-/* =========================================================
-   FUTURISTIC SHOPPING CORE
-========================================================= */
 
 .hero-art {
     position:absolute;
@@ -1113,9 +1616,6 @@ select {
 
     pointer-events:none;
 }
-
-
-/* central energy sphere */
 
 .rgb-core {
     position:absolute;
@@ -1203,6 +1703,7 @@ select {
     from {
         transform:translate(-50%,-50%) rotate(0deg);
     }
+
     to {
         transform:translate(-50%,-50%) rotate(360deg);
     }
@@ -1212,6 +1713,7 @@ select {
     0%,100% {
         scale:.94;
     }
+
     50% {
         scale:1.06;
     }
@@ -1222,14 +1724,12 @@ select {
         transform:scale(.9);
         opacity:.35;
     }
+
     50% {
         transform:scale(1.18);
         opacity:.8;
     }
 }
-
-
-/* basket center */
 
 .hero-basket {
     position:absolute;
@@ -1273,23 +1773,24 @@ select {
 }
 
 @keyframes basketRGB {
-    from {background-position:0% 50%;}
-    to {background-position:300% 50%;}
+    from {
+        background-position:0% 50%;
+    }
+
+    to {
+        background-position:300% 50%;
+    }
 }
 
 @keyframes basketFloat {
     0%,100% {
         transform:translate(-50%,-50%) rotate(-2deg);
     }
+
     50% {
         transform:translate(-50%,-57%) rotate(2deg);
     }
 }
-
-
-/* =========================================================
-   ORBIT RINGS
-========================================================= */
 
 .core-ring {
     position:absolute;
@@ -1364,11 +1865,6 @@ select {
     }
 }
 
-
-/* =========================================================
-   FLOATING RGB PARTICLES
-========================================================= */
-
 .core-particle {
     position:absolute;
 
@@ -1419,34 +1915,54 @@ select {
 }
 
 @keyframes particleOne {
-    0%,100% {transform:translate(0,0) scale(.7);}
-    50% {transform:translate(-15px,18px) scale(1.3);}
+    0%,100% {
+        transform:translate(0,0) scale(.7);
+    }
+
+    50% {
+        transform:translate(-15px,18px) scale(1.3);
+    }
 }
 
 @keyframes particleTwo {
-    0%,100% {transform:translate(0,0);}
-    50% {transform:translate(-18px,-12px) scale(1.35);}
+    0%,100% {
+        transform:translate(0,0);
+    }
+
+    50% {
+        transform:translate(-18px,-12px) scale(1.35);
+    }
 }
 
 @keyframes particleThree {
-    0%,100% {transform:translate(0,0) scale(.8);}
-    50% {transform:translate(15px,-20px) scale(1.3);}
+    0%,100% {
+        transform:translate(0,0) scale(.8);
+    }
+
+    50% {
+        transform:translate(15px,-20px) scale(1.3);
+    }
 }
 
 @keyframes particleFour {
-    0%,100% {transform:translate(0,0);}
-    50% {transform:translate(25px,10px) scale(1.4);}
+    0%,100% {
+        transform:translate(0,0);
+    }
+
+    50% {
+        transform:translate(25px,10px) scale(1.4);
+    }
 }
 
 @keyframes particleFive {
-    0%,100% {transform:translate(0,0);}
-    50% {transform:translate(15px,-20px) scale(1.25);}
+    0%,100% {
+        transform:translate(0,0);
+    }
+
+    50% {
+        transform:translate(15px,-20px) scale(1.25);
+    }
 }
-
-
-/* =========================================================
-   GLASS INFO CARDS
-========================================================= */
 
 .hero-float {
     position:absolute;
@@ -1525,21 +2041,18 @@ select {
     0%,100% {
         transform:translateY(0);
     }
+
     50% {
         transform:translateY(-8px);
     }
 }
-
-
-/* =========================================================
-   HERO ENTRY
-========================================================= */
 
 @keyframes heroEntry {
     from {
         opacity:0;
         transform:translateY(20px);
     }
+
     to {
         opacity:1;
         transform:translateY(0);
@@ -1551,6 +2064,7 @@ select {
         opacity:0;
         transform:translateY(18px) scale(.985);
     }
+
     to {
         opacity:1;
         transform:translateY(0) scale(1);
@@ -1561,6 +2075,7 @@ select {
     from {
         transform:rotate(0deg);
     }
+
     to {
         transform:rotate(360deg);
     }
@@ -2151,6 +2666,62 @@ html[data-theme="dark"] .discount {
 </head>
 
 <body>
+
+{{-- =========================================================
+     CUSTOMER LOGIN WELCOME — SINGLE OVERLAY
+========================================================= --}}
+
+@if($showWelcome ?? false)
+
+<div
+    id="customerWelcomeOverlay"
+    class="customer-welcome-overlay"
+    aria-hidden="true"
+>
+
+    <div class="customer-welcome-bg"></div>
+
+    <div class="customer-welcome-particles">
+
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+
+    </div>
+
+    <div class="customer-welcome-content">
+
+        <div class="customer-welcome-ring ring-1"></div>
+        <div class="customer-welcome-ring ring-2"></div>
+
+        <div class="customer-welcome-emoji">
+            🙏🏿
+        </div>
+
+        <div class="customer-welcome-title">
+            WELCOME
+        </div>
+
+        <div class="customer-welcome-line"></div>
+
+        <div class="customer-welcome-subtitle">
+
+            Welcome to
+
+            <strong>
+                SMART BASKET
+            </strong>
+
+        </div>
+
+    </div>
+
+</div>
+
+@endif
 
 
 <!-- MENU OVERLAY -->
@@ -3179,6 +3750,66 @@ html[data-theme="dark"] .discount {
 })();
 
 </script>
+
+
+{{-- =========================================================
+     CUSTOMER LOGIN WELCOME — 3 SECOND DISPLAY
+========================================================= --}}
+
+@if($showWelcome ?? false)
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    const welcomeOverlay =
+        document.getElementById(
+            'customerWelcomeOverlay'
+        );
+
+    if (!welcomeOverlay) {
+        return;
+    }
+
+
+    /*
+     * WELCOME ANIMATION
+     *
+     * Overlay remains fully visible
+     * for exactly 3 seconds.
+     *
+     * Then it smoothly fades out
+     * for 500ms.
+     */
+
+    window.setTimeout(function () {
+
+        welcomeOverlay.classList.add(
+            'is-hidden'
+        );
+
+
+        /*
+         * Remove overlay after the
+         * 500ms fade-out is complete.
+         */
+
+        window.setTimeout(function () {
+
+            if (welcomeOverlay) {
+                welcomeOverlay.remove();
+            }
+
+        }, 500);
+
+    }, 3000);
+
+});
+
+</script>
+
+@endif
+
 
 </body>
 </html>

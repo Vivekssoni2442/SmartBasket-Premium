@@ -57,6 +57,18 @@
     $maskedBank = !empty($seller->bank_account_number)
         ? 'XXXX XXXX ' . substr($seller->bank_account_number, -4)
         : 'Not provided';
+
+    /*
+    |--------------------------------------------------------------------------
+    | PROGRESS
+    |--------------------------------------------------------------------------
+    */
+
+    $completedCount = collect($completedSteps)
+        ->filter()
+        ->count();
+
+    $progressPercent = min(100, ($completedCount / 5) * 100);
 @endphp
 
 @extends('seller.partials.premium-layout')
@@ -70,102 +82,193 @@
     <div class="seller-verification-card">
 
         {{-- =========================================================
-             HEADER
+             PREMIUM HEADER
         ========================================================== --}}
 
-        <div class="verification-header">
+        <header class="verification-header">
 
-            <div>
+            <div class="header-main">
+
                 <div class="eyebrow">
-                    SELLER PARTNER PROGRAM
+                    <span class="eyebrow-dot"></span>
+                    SMART BASKET · SELLER PARTNER PROGRAM
                 </div>
 
-                <h1>
-                    Verification &amp; KYC
-                </h1>
+                <div class="header-title-row">
 
-                <p class="header-description">
-                    Complete all 6 steps to activate your SmartBasket seller account.
-                </p>
+                    <div class="header-title-icon">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+
+                    <div class="header-copy">
+
+                        <h1>
+                            Verification <span>&amp; KYC</span>
+                        </h1>
+
+                        <p>
+                            Complete all 6 verification steps to activate your
+                            SmartBasket seller account.
+                        </p>
+
+                    </div>
+
+                </div>
+
             </div>
 
-            <div class="step-pill">
-                Step {{ $currentStep }} / 6
+            <div class="header-right">
+
+                <div class="progress-summary">
+
+                    <div class="progress-summary-top">
+
+                        <span>
+                            Verification Progress
+                        </span>
+
+                        <strong>
+                            {{ $completedCount }}/5
+                        </strong>
+
+                    </div>
+
+                    <div class="progress-track">
+
+                        <span
+                            class="progress-value"
+                            style="width: {{ $progressPercent }}%;"
+                        ></span>
+
+                    </div>
+
+                </div>
+
+                <div class="step-pill">
+
+                    <span class="step-pill-icon">
+                        <i class="fa-solid fa-layer-group"></i>
+                    </span>
+
+                    <span>
+                        Step {{ $currentStep }} / 6
+                    </span>
+
+                </div>
+
             </div>
 
-        </div>
+        </header>
 
 
         {{-- =========================================================
-             PROGRESS STEPPER
+             STEP PROGRESS
         ========================================================== --}}
 
-        <div class="stepper">
+        <div class="stepper-wrapper">
 
-            @foreach($steps as $stepNumber => $label)
+            <div class="stepper">
 
-                @php
-                    $isCurrent = $stepNumber === $currentStep;
+                @foreach($steps as $stepNumber => $label)
 
-                    /*
-                     * Previous steps are accessible.
-                     * Future steps remain locked.
-                     */
-                    $isLocked = $stepNumber > $currentStep;
+                    @php
+                        $isCurrent = $stepNumber === $currentStep;
+                        $isLocked = $stepNumber > $currentStep;
 
-                    $isComplete =
-                        $stepNumber < $currentStep ||
-                        ($stepNumber <= 5 && ($completedSteps[$stepNumber] ?? false));
+                        $isComplete =
+                            $stepNumber < $currentStep ||
+                            ($stepNumber <= 5 && ($completedSteps[$stepNumber] ?? false));
 
-                    $statusClass = '';
+                        $statusClass = '';
 
-                    if ($isCurrent) {
-                        $statusClass = 'active';
-                    } elseif ($isComplete) {
-                        $statusClass = 'complete';
-                    } elseif ($isLocked) {
-                        $statusClass = 'locked';
-                    }
-                @endphp
+                        if ($isCurrent) {
+                            $statusClass = 'active';
+                        } elseif ($isComplete) {
+                            $statusClass = 'complete';
+                        } elseif ($isLocked) {
+                            $statusClass = 'locked';
+                        }
+                    @endphp
 
-                <button
-                    type="button"
-                    class="step-item {{ $statusClass }}"
-                    data-step-button="{{ $stepNumber }}"
-                    data-target-step="{{ $stepNumber }}"
-                    {{ $isLocked ? 'disabled' : '' }}
-                >
+                    <button
+                        type="button"
+                        class="step-item {{ $statusClass }}"
+                        data-step-button="{{ $stepNumber }}"
+                        data-target-step="{{ $stepNumber }}"
+                        {{ $isLocked ? 'disabled' : '' }}
+                    >
 
-                    <span class="step-number">
+                        <span class="step-number">
 
-                        @if($isComplete && !$isCurrent)
-                            ✓
-                        @else
-                            {{ $stepNumber }}
-                        @endif
+                            @if($isComplete && !$isCurrent)
 
-                    </span>
+                                <i class="fa-solid fa-check"></i>
 
-                    <span class="step-label">
-                        {{ $label }}
-                    </span>
+                            @else
 
-                </button>
+                                {{ $stepNumber }}
 
-            @endforeach
+                            @endif
+
+                        </span>
+
+                        <span class="step-content">
+
+                            <span class="step-label">
+                                {{ $label }}
+                            </span>
+
+                            <span class="step-state">
+
+                                @if($isCurrent)
+                                    Current
+                                @elseif($isComplete)
+                                    Completed
+                                @elseif($isLocked)
+                                    Locked
+                                @else
+                                    Pending
+                                @endif
+
+                            </span>
+
+                        </span>
+
+                    </button>
+
+                @endforeach
+
+            </div>
 
         </div>
 
 
         {{-- =========================================================
-             FLASH MESSAGES
+             ALERTS
         ========================================================== --}}
 
         @if(session('success'))
 
             <div class="global-alert success-alert">
-                <span class="alert-icon">✓</span>
-                <span>{{ session('success') }}</span>
+
+                <span class="alert-icon">
+                    <i class="fa-solid fa-check"></i>
+                </span>
+
+                <div class="alert-content">
+                    <strong>Success</strong>
+                    <span>{{ session('success') }}</span>
+                </div>
+
+                <button
+                    type="button"
+                    class="alert-close"
+                    onclick="this.closest('.global-alert').remove()"
+                    aria-label="Close"
+                >
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
             </div>
 
         @endif
@@ -174,8 +277,25 @@
         @if(session('error'))
 
             <div class="global-alert error-alert">
-                <span class="alert-icon">!</span>
-                <span>{{ session('error') }}</span>
+
+                <span class="alert-icon">
+                    <i class="fa-solid fa-exclamation"></i>
+                </span>
+
+                <div class="alert-content">
+                    <strong>Action required</strong>
+                    <span>{{ session('error') }}</span>
+                </div>
+
+                <button
+                    type="button"
+                    class="alert-close"
+                    onclick="this.closest('.global-alert').remove()"
+                    aria-label="Close"
+                >
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
             </div>
 
         @endif
@@ -185,16 +305,28 @@
 
             <div class="global-alert error-alert">
 
-                <span class="alert-icon">!</span>
+                <span class="alert-icon">
+                    <i class="fa-solid fa-exclamation"></i>
+                </span>
 
-                <div>
-                    <strong>Please fix the following:</strong>
+                <div class="alert-content">
+
+                    <strong>
+                        Please fix the following:
+                    </strong>
 
                     <ul>
+
                         @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
+
+                            <li>
+                                {{ $error }}
+                            </li>
+
                         @endforeach
+
                     </ul>
+
                 </div>
 
             </div>
@@ -203,14 +335,14 @@
 
 
         {{-- =========================================================
-             PANELS
+             VERIFICATION CONTENT
         ========================================================== --}}
 
-        <div class="verification-panels">
+        <main class="verification-panels">
 
 
             {{-- =====================================================
-                 STEP 1 — EMAIL
+                 STEP 1 · EMAIL
             ====================================================== --}}
 
             <section
@@ -218,31 +350,88 @@
                 data-panel="1"
             >
 
-                <div class="panel-header">
+                <div class="panel-heading">
 
-                    <div>
-                        <div class="panel-kicker">
-                            STEP 01 · SECURE ACCESS
+                    <div class="panel-heading-left">
+
+                        <div class="panel-icon blue">
+                            <i class="fa-solid fa-envelope-circle-check"></i>
                         </div>
 
-                        <h2 class="panel-title">
-                            Verify your seller email
-                        </h2>
+                        <div>
+
+                            <div class="panel-kicker">
+                                STEP 01 · SECURE ACCESS
+                            </div>
+
+                            <h2 class="panel-title">
+                                Verify your seller email
+                            </h2>
+
+                            <p class="panel-description">
+                                Confirm your registered email address before
+                                continuing with KYC verification.
+                            </p>
+
+                        </div>
+
                     </div>
 
                     <span class="status-tag {{ $emailCompleted ? 'green' : 'amber' }}">
+
+                        <span class="status-dot"></span>
+
                         {{ $emailCompleted ? 'Verified' : 'Required' }}
+
                     </span>
 
                 </div>
 
-                <p class="muted">
-                    A secure 16-digit verification code will be sent to your registered
-                    seller email address.
-                </p>
+
+                <div class="security-note">
+
+                    <div class="security-note-icon">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            Secure email verification
+                        </strong>
+
+                        <p>
+                            A secure 16-digit verification code will be sent
+                            to your registered seller email address.
+                        </p>
+
+                    </div>
+
+                </div>
 
 
-                <div class="surface-box">
+                <div class="form-card">
+
+                    <div class="form-card-header">
+
+                        <div>
+
+                            <h3>
+                                Send verification code
+                            </h3>
+
+                            <p>
+                                Request a new verification code for your email.
+                            </p>
+
+                        </div>
+
+                        <span class="mini-icon">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </span>
+
+                    </div>
+
 
                     <form
                         method="POST"
@@ -256,16 +445,23 @@
 
                             <label class="form-label">
                                 Seller Email Address
+                                <span>*</span>
                             </label>
 
-                            <input
-                                type="email"
-                                name="email"
-                                value="{{ old('email', $seller->email ?? '') }}"
-                                class="form-input"
-                                autocomplete="email"
-                                required
-                            >
+                            <div class="input-with-icon">
+
+                                <i class="fa-solid fa-envelope"></i>
+
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value="{{ old('email', $seller->email ?? '') }}"
+                                    class="form-input"
+                                    autocomplete="email"
+                                    required
+                                >
+
+                            </div>
 
                         </div>
 
@@ -273,7 +469,11 @@
                             type="submit"
                             class="primary-button"
                         >
+
+                            <i class="fa-solid fa-paper-plane"></i>
+
                             Send Verification Code
+
                         </button>
 
                     </form>
@@ -281,7 +481,28 @@
                 </div>
 
 
-                <div class="surface-box alt-box">
+                <div class="form-card secondary-form-card">
+
+                    <div class="form-card-header">
+
+                        <div>
+
+                            <h3>
+                                Enter verification code
+                            </h3>
+
+                            <p>
+                                Enter the 16-digit code received in your email.
+                            </p>
+
+                        </div>
+
+                        <span class="mini-icon success">
+                            <i class="fa-solid fa-key"></i>
+                        </span>
+
+                    </div>
+
 
                     <form
                         method="POST"
@@ -295,18 +516,29 @@
 
                             <label class="form-label">
                                 16-Digit Verification Code
+                                <span>*</span>
                             </label>
 
-                            <input
-                                type="text"
-                                name="code"
-                                class="form-input code-input"
-                                inputmode="numeric"
-                                pattern="[0-9]{16}"
-                                maxlength="16"
-                                placeholder="0000000000000000"
-                                required
-                            >
+                            <div class="input-with-icon">
+
+                                <i class="fa-solid fa-hashtag"></i>
+
+                                <input
+                                    type="text"
+                                    name="code"
+                                    class="form-input code-input"
+                                    inputmode="numeric"
+                                    pattern="[0-9]{16}"
+                                    maxlength="16"
+                                    placeholder="0000000000000000"
+                                    required
+                                >
+
+                            </div>
+
+                            <small class="field-help">
+                                Enter all 16 digits without spaces.
+                            </small>
 
                         </div>
 
@@ -314,7 +546,11 @@
                             type="submit"
                             class="success-button"
                         >
+
+                            <i class="fa-solid fa-circle-check"></i>
+
                             Verify Email
+
                         </button>
 
                     </form>
@@ -325,7 +561,7 @@
 
 
             {{-- =====================================================
-                 STEP 2 — DOCUMENTS
+                 STEP 2 · DOCUMENTS
             ====================================================== --}}
 
             <section
@@ -333,28 +569,63 @@
                 data-panel="2"
             >
 
-                <div class="panel-header">
+                <div class="panel-heading">
 
-                    <div>
-                        <div class="panel-kicker">
-                            STEP 02 · DOCUMENT CHECK
+                    <div class="panel-heading-left">
+
+                        <div class="panel-icon blue">
+                            <i class="fa-solid fa-file-shield"></i>
                         </div>
 
-                        <h2 class="panel-title">
-                            Upload your KYC documents
-                        </h2>
+                        <div>
+
+                            <div class="panel-kicker">
+                                STEP 02 · DOCUMENT CHECK
+                            </div>
+
+                            <h2 class="panel-title">
+                                Upload your KYC documents
+                            </h2>
+
+                            <p class="panel-description">
+                                Provide clear and valid documents for seller verification.
+                            </p>
+
+                        </div>
+
                     </div>
 
                     <span class="status-tag {{ $documentsCompleted ? 'green' : 'amber' }}">
+
+                        <span class="status-dot"></span>
+
                         {{ $documentsCompleted ? 'Complete' : 'Required' }}
+
                     </span>
 
                 </div>
 
-                <p class="muted">
-                    Upload your business certificate and Aadhaar document.
-                    Files are stored privately for authorized SmartBasket verification.
-                </p>
+
+                <div class="security-note">
+
+                    <div class="security-note-icon">
+                        <i class="fa-solid fa-lock"></i>
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            Your documents are protected
+                        </strong>
+
+                        <p>
+                            Files are stored privately and are available only
+                            to authorized SmartBasket verification personnel.
+                        </p>
+
+                    </div>
+
+                </div>
 
 
                 <form
@@ -366,7 +637,6 @@
 
                     @csrf
 
-
                     <div class="upload-grid">
 
 
@@ -377,39 +647,74 @@
                             <div class="upload-header">
 
                                 <span class="upload-icon">
+
                                     <i class="fa-solid fa-file-lines"></i>
+
                                 </span>
 
                                 <div>
-                                    <strong>Business Certificate</strong>
+
+                                    <strong>
+                                        Business Certificate
+                                    </strong>
 
                                     <small>
                                         Required document
                                     </small>
+
                                 </div>
 
                             </div>
+
+
+                            <label
+                                for="business_certificate"
+                                class="file-drop-zone"
+                            >
+
+                                <span class="file-drop-icon">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                                </span>
+
+                                <span class="file-drop-title">
+                                    Choose certificate
+                                </span>
+
+                                <span class="file-drop-subtitle">
+                                    PDF, JPG, JPEG, PNG or WEBP
+                                </span>
+
+                            </label>
 
                             <input
                                 id="business_certificate"
                                 type="file"
                                 name="business_certificate"
                                 accept=".pdf,.jpg,.jpeg,.png,.webp"
-                                class="form-input file-input"
+                                class="native-file-input"
                                 {{ empty($seller->business_certificate_path) ? 'required' : '' }}
                             >
 
                             <div class="file-help">
-                                PDF, JPG, JPEG, PNG or WEBP · Max 5 MB
+                                Maximum file size: 5 MB
                             </div>
 
                             @if(!empty($seller->business_certificate_path))
 
                                 <div class="uploaded-status">
-                                    ✓ Business certificate already uploaded
+
+                                    <i class="fa-solid fa-circle-check"></i>
+
+                                    Business certificate already uploaded
+
                                 </div>
 
                             @endif
+
+                            <div
+                                class="selected-file"
+                                data-file-name="business_certificate"
+                            ></div>
 
                         </div>
 
@@ -420,40 +725,75 @@
 
                             <div class="upload-header">
 
-                                <span class="upload-icon blue-icon">
+                                <span class="upload-icon">
+
                                     <i class="fa-solid fa-id-card"></i>
+
                                 </span>
 
                                 <div>
-                                    <strong>Aadhaar Document</strong>
+
+                                    <strong>
+                                        Aadhaar Document
+                                    </strong>
 
                                     <small>
                                         Required document
                                     </small>
+
                                 </div>
 
                             </div>
+
+
+                            <label
+                                for="aadhaar_document"
+                                class="file-drop-zone"
+                            >
+
+                                <span class="file-drop-icon">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                                </span>
+
+                                <span class="file-drop-title">
+                                    Choose Aadhaar document
+                                </span>
+
+                                <span class="file-drop-subtitle">
+                                    PDF, JPG, JPEG, PNG or WEBP
+                                </span>
+
+                            </label>
 
                             <input
                                 id="aadhaar_document"
                                 type="file"
                                 name="aadhaar_document"
                                 accept=".pdf,.jpg,.jpeg,.png,.webp"
-                                class="form-input file-input"
+                                class="native-file-input"
                                 {{ empty($seller->aadhaar_document_path) ? 'required' : '' }}
                             >
 
                             <div class="file-help">
-                                PDF, JPG, JPEG, PNG or WEBP · Max 5 MB
+                                Maximum file size: 5 MB
                             </div>
 
                             @if(!empty($seller->aadhaar_document_path))
 
                                 <div class="uploaded-status">
-                                    ✓ Aadhaar document already uploaded
+
+                                    <i class="fa-solid fa-circle-check"></i>
+
+                                    Aadhaar document already uploaded
+
                                 </div>
 
                             @endif
+
+                            <div
+                                class="selected-file"
+                                data-file-name="aadhaar_document"
+                            ></div>
 
                         </div>
 
@@ -462,9 +802,15 @@
 
                     <button
                         type="submit"
-                        class="primary-button"
+                        class="primary-button wide-button"
                     >
-                        Upload Securely &amp; Continue →
+
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+
+                        Upload Securely &amp; Continue
+
+                        <i class="fa-solid fa-arrow-right"></i>
+
                     </button>
 
                 </form>
@@ -473,7 +819,7 @@
 
 
             {{-- =====================================================
-                 STEP 3 — AADHAAR
+                 STEP 3 · AADHAAR
             ====================================================== --}}
 
             <section
@@ -481,46 +827,113 @@
                 data-panel="3"
             >
 
-                <div class="panel-header">
+                <div class="panel-heading">
 
-                    <div>
-                        <div class="panel-kicker">
-                            STEP 03 · IDENTITY VERIFICATION
+                    <div class="panel-heading-left">
+
+                        <div class="panel-icon blue">
+                            <i class="fa-solid fa-id-card"></i>
                         </div>
 
-                        <h2 class="panel-title">
-                            Verify your Aadhaar
-                        </h2>
+                        <div>
+
+                            <div class="panel-kicker">
+                                STEP 03 · IDENTITY VERIFICATION
+                            </div>
+
+                            <h2 class="panel-title">
+                                Verify your Aadhaar
+                            </h2>
+
+                            <p class="panel-description">
+                                Complete Aadhaar verification through the configured
+                                authorized verification workflow.
+                            </p>
+
+                        </div>
+
                     </div>
 
                     <span class="status-tag {{ $aadhaarCompleted ? 'green' : 'blue' }}">
+
+                        <span class="status-dot"></span>
+
                         {{ $aadhaarCompleted ? 'Verified' : 'Secure' }}
+
                     </span>
 
                 </div>
-
-                <p class="muted">
-                    Complete Aadhaar verification through the configured authorized
-                    verification workflow.
-                </p>
 
 
                 @if(isset($configured) && !$configured)
 
                     <div class="info-box">
 
-                        <strong>Aadhaar verification service is not configured.</strong>
+                        <div class="info-box-icon">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
 
-                        <p>
-                            Please configure the authorized verification provider
-                            before attempting Aadhaar verification.
-                        </p>
+                        <div>
+
+                            <strong>
+                                Aadhaar verification service is not configured.
+                            </strong>
+
+                            <p>
+                                Please configure the authorized verification
+                                provider before attempting Aadhaar verification.
+                            </p>
+
+                        </div>
 
                     </div>
 
                 @else
 
-                    <div class="surface-box">
+                    <div class="security-note">
+
+                        <div class="security-note-icon">
+                            <i class="fa-solid fa-user-shield"></i>
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                Secure identity verification
+                            </strong>
+
+                            <p>
+                                Your Aadhaar information is handled only through
+                                the authorized verification workflow.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-card">
+
+                        <div class="form-card-header">
+
+                            <div>
+
+                                <h3>
+                                    Start Aadhaar verification
+                                </h3>
+
+                                <p>
+                                    Enter your Aadhaar number or provider reference.
+                                </p>
+
+                            </div>
+
+                            <span class="mini-icon">
+                                <i class="fa-solid fa-shield-halved"></i>
+                            </span>
+
+                        </div>
+
 
                         <form
                             method="POST"
@@ -534,31 +947,43 @@
 
                                 <label class="form-label">
                                     Aadhaar / Provider Reference
+                                    <span>*</span>
                                 </label>
 
-                                <input
-                                    type="text"
-                                    name="aadhaar_identifier"
-                                    value="{{ old('aadhaar_identifier', $seller->verification_reference_id ?? '') }}"
-                                    class="form-input"
-                                    inputmode="numeric"
-                                    maxlength="12"
-                                    placeholder="Enter Aadhaar number or provider reference"
-                                    required
-                                >
+                                <div class="input-with-icon">
+
+                                    <i class="fa-solid fa-id-card"></i>
+
+                                    <input
+                                        type="text"
+                                        name="aadhaar_identifier"
+                                        value="{{ old('aadhaar_identifier', $seller->verification_reference_id ?? '') }}"
+                                        class="form-input"
+                                        inputmode="numeric"
+                                        maxlength="12"
+                                        placeholder="Enter Aadhaar number or provider reference"
+                                        required
+                                    >
+
+                                </div>
 
                                 <small class="field-help">
-                                    Your Aadhaar number is handled only through the
-                                    authorized verification workflow.
+                                    Your Aadhaar number is handled only through
+                                    the authorized verification workflow.
                                 </small>
 
                             </div>
+
 
                             <button
                                 type="submit"
                                 class="primary-button"
                             >
+
+                                <i class="fa-solid fa-shield-halved"></i>
+
                                 Start Aadhaar Verification
+
                             </button>
 
                         </form>
@@ -566,7 +991,28 @@
                     </div>
 
 
-                    <div class="surface-box alt-box">
+                    <div class="form-card secondary-form-card">
+
+                        <div class="form-card-header">
+
+                            <div>
+
+                                <h3>
+                                    Enter verification OTP
+                                </h3>
+
+                                <p>
+                                    Enter the OTP received from the verification provider.
+                                </p>
+
+                            </div>
+
+                            <span class="mini-icon success">
+                                <i class="fa-solid fa-lock"></i>
+                            </span>
+
+                        </div>
+
 
                         <form
                             method="POST"
@@ -580,27 +1026,39 @@
 
                                 <label class="form-label">
                                     Verification OTP
+                                    <span>*</span>
                                 </label>
 
-                                <input
-                                    type="text"
-                                    name="otp"
-                                    class="form-input code-input"
-                                    inputmode="numeric"
-                                    autocomplete="one-time-code"
-                                    maxlength="6"
-                                    pattern="[0-9]{4,6}"
-                                    placeholder="Enter OTP"
-                                    required
-                                >
+                                <div class="input-with-icon">
+
+                                    <i class="fa-solid fa-key"></i>
+
+                                    <input
+                                        type="text"
+                                        name="otp"
+                                        class="form-input code-input"
+                                        inputmode="numeric"
+                                        autocomplete="one-time-code"
+                                        maxlength="6"
+                                        pattern="[0-9]{4,6}"
+                                        placeholder="Enter OTP"
+                                        required
+                                    >
+
+                                </div>
 
                             </div>
+
 
                             <button
                                 type="submit"
                                 class="success-button"
                             >
+
+                                <i class="fa-solid fa-circle-check"></i>
+
                                 Verify Aadhaar OTP
+
                             </button>
 
                         </form>
@@ -613,7 +1071,7 @@
 
 
             {{-- =====================================================
-                 STEP 4 — BUSINESS
+                 STEP 4 · BUSINESS
             ====================================================== --}}
 
             <section
@@ -621,28 +1079,42 @@
                 data-panel="4"
             >
 
-                <div class="panel-header">
+                <div class="panel-heading">
 
-                    <div>
-                        <div class="panel-kicker">
-                            STEP 04 · BUSINESS PROFILE
+                    <div class="panel-heading-left">
+
+                        <div class="panel-icon blue">
+                            <i class="fa-solid fa-building"></i>
                         </div>
 
-                        <h2 class="panel-title">
-                            Tell us about your business
-                        </h2>
+                        <div>
+
+                            <div class="panel-kicker">
+                                STEP 04 · BUSINESS PROFILE
+                            </div>
+
+                            <h2 class="panel-title">
+                                Tell us about your business
+                            </h2>
+
+                            <p class="panel-description">
+                                Enter your legal business information exactly
+                                as it appears on your official documents.
+                            </p>
+
+                        </div>
+
                     </div>
 
-                    <span class="status-tag {{ $businessCompleted ? 'green' : 'violet' }}">
+                    <span class="status-tag {{ $businessCompleted ? 'green' : 'blue' }}">
+
+                        <span class="status-dot"></span>
+
                         {{ $businessCompleted ? 'Complete' : 'Legal Details' }}
+
                     </span>
 
                 </div>
-
-                <p class="muted">
-                    Enter your legal business information exactly as it appears
-                    on your official documents.
-                </p>
 
 
                 <form
@@ -655,199 +1127,241 @@
                     @method('PUT')
 
 
-                    <div class="grid-two">
+                    <div class="form-card">
+
+                        <div class="section-heading">
+
+                            <div class="section-heading-icon">
+                                <i class="fa-solid fa-briefcase"></i>
+                            </div>
+
+                            <div>
+
+                                <h3>
+                                    Business identity
+                                </h3>
+
+                                <p>
+                                    Provide your official business information.
+                                </p>
+
+                            </div>
+
+                        </div>
 
 
-                        {{-- BUSINESS TYPE --}}
+                        <div class="grid-two">
 
-                        <div class="field-block">
+                            <div class="field-block">
 
-                            <label class="form-label">
-                                Business Type *
-                            </label>
+                                <label class="form-label">
+                                    Business Type
+                                    <span>*</span>
+                                </label>
 
-                            <select
-                                name="business_type"
-                                class="form-input"
-                                required
-                            >
+                                <select
+                                    name="business_type"
+                                    class="form-input"
+                                    required
+                                >
 
-                                <option value="">
-                                    Select business type
-                                </option>
-
-                                @foreach([
-                                    'Individual Seller',
-                                    'Proprietorship',
-                                    'Partnership',
-                                    'Private Limited',
-                                    'LLP',
-                                    'Other'
-                                ] as $type)
-
-                                    <option
-                                        value="{{ $type }}"
-                                        @selected(old('business_type', $seller->business_type ?? '') === $type)
-                                    >
-                                        {{ $type }}
+                                    <option value="">
+                                        Select business type
                                     </option>
 
-                                @endforeach
+                                    @foreach([
+                                        'Individual Seller',
+                                        'Proprietorship',
+                                        'Partnership',
+                                        'Private Limited',
+                                        'LLP',
+                                        'Other'
+                                    ] as $type)
 
-                            </select>
+                                        <option
+                                            value="{{ $type }}"
+                                            @selected(old('business_type', $seller->business_type ?? '') === $type)
+                                        >
+                                            {{ $type }}
+                                        </option>
+
+                                    @endforeach
+
+                                </select>
+
+                            </div>
+
+
+                            <div class="field-block">
+
+                                <label class="form-label">
+                                    Business Name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="business_name"
+                                    value="{{ old('business_name', $seller->business_name ?? $seller->shop_name ?? '') }}"
+                                    class="form-input"
+                                    placeholder="Enter business name"
+                                >
+
+                            </div>
+
+
+                            <div class="field-block">
+
+                                <label class="form-label">
+                                    PAN Number
+                                    <span>*</span>
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="pan_number"
+                                    value="{{ old('pan_number', $seller->pan_number ?? '') }}"
+                                    class="form-input uppercase-input"
+                                    placeholder="ABCDE1234F"
+                                    maxlength="10"
+                                    autocomplete="off"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="field-block">
+
+                                <label class="form-label">
+                                    Udyam Number
+                                    <span>*</span>
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="udyam_number"
+                                    value="{{ old('udyam_number', $seller->udyam_number ?? '') }}"
+                                    class="form-input uppercase-input"
+                                    placeholder="UDYAM-XX-00-0000000"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="field-block">
+
+                                <label class="form-label">
+                                    GST Number
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="gst_number"
+                                    value="{{ old('gst_number', $seller->gst_number ?? '') }}"
+                                    class="form-input uppercase-input"
+                                    placeholder="Optional GST number"
+                                >
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-card">
+
+                        <div class="section-heading">
+
+                            <div class="section-heading-icon">
+                                <i class="fa-solid fa-location-dot"></i>
+                            </div>
+
+                            <div>
+
+                                <h3>
+                                    Business address
+                                </h3>
+
+                                <p>
+                                    Add the primary address associated with your business.
+                                </p>
+
+                            </div>
 
                         </div>
 
 
-                        {{-- BUSINESS NAME --}}
+                        <div class="grid-two">
 
-                        <div class="field-block">
+                            <div class="field-block full-span">
 
-                            <label class="form-label">
-                                Business Name
-                            </label>
+                                <label class="form-label">
+                                    Business Address
+                                </label>
 
-                            <input
-                                type="text"
-                                name="business_name"
-                                value="{{ old('business_name', $seller->business_name ?? $seller->shop_name ?? '') }}"
-                                class="form-input"
-                                placeholder="Enter business name"
-                            >
+                                <textarea
+                                    name="shop_address"
+                                    class="form-input textarea-input"
+                                    rows="3"
+                                    placeholder="Street, area, business address"
+                                >{{ old('shop_address', $seller->shop_address ?? '') }}</textarea>
 
-                        </div>
-
-
-                        {{-- PAN --}}
-
-                        <div class="field-block">
-
-                            <label class="form-label">
-                                PAN Number *
-                            </label>
-
-                            <input
-                                type="text"
-                                name="pan_number"
-                                value="{{ old('pan_number', $seller->pan_number ?? '') }}"
-                                class="form-input uppercase-input"
-                                placeholder="ABCDE1234F"
-                                maxlength="10"
-                                required
-                            >
-
-                        </div>
+                            </div>
 
 
-                        {{-- UDYAM --}}
+                            <div class="field-block">
 
-                        <div class="field-block">
+                                <label class="form-label">
+                                    City
+                                </label>
 
-                            <label class="form-label">
-                                Udyam Number *
-                            </label>
+                                <input
+                                    type="text"
+                                    name="city"
+                                    value="{{ old('city', $seller->city ?? '') }}"
+                                    class="form-input"
+                                    placeholder="City"
+                                >
 
-                            <input
-                                type="text"
-                                name="udyam_number"
-                                value="{{ old('udyam_number', $seller->udyam_number ?? '') }}"
-                                class="form-input uppercase-input"
-                                placeholder="UDYAM-XX-00-0000000"
-                                required
-                            >
-
-                        </div>
+                            </div>
 
 
-                        {{-- GST --}}
+                            <div class="field-block">
 
-                        <div class="field-block">
+                                <label class="form-label">
+                                    State
+                                </label>
 
-                            <label class="form-label">
-                                GST Number
-                            </label>
+                                <input
+                                    type="text"
+                                    name="state"
+                                    value="{{ old('state', $seller->state ?? '') }}"
+                                    class="form-input"
+                                    placeholder="State"
+                                >
 
-                            <input
-                                type="text"
-                                name="gst_number"
-                                value="{{ old('gst_number', $seller->gst_number ?? '') }}"
-                                class="form-input uppercase-input"
-                                placeholder="Optional GST number"
-                            >
-
-                        </div>
+                            </div>
 
 
-                        {{-- ADDRESS --}}
+                            <div class="field-block">
 
-                        <div class="field-block">
+                                <label class="form-label">
+                                    Pincode
+                                </label>
 
-                            <label class="form-label">
-                                Business Address
-                            </label>
+                                <input
+                                    type="text"
+                                    name="pincode"
+                                    value="{{ old('pincode', $seller->pincode ?? '') }}"
+                                    class="form-input"
+                                    inputmode="numeric"
+                                    maxlength="6"
+                                    placeholder="6-digit pincode"
+                                >
 
-                            <textarea
-                                name="shop_address"
-                                class="form-input"
-                                rows="3"
-                                placeholder="Street, area, business address"
-                            >{{ old('shop_address', $seller->shop_address ?? '') }}</textarea>
-
-                        </div>
-
-
-                        {{-- CITY --}}
-
-                        <div class="field-block">
-
-                            <label class="form-label">
-                                City
-                            </label>
-
-                            <input
-                                type="text"
-                                name="city"
-                                value="{{ old('city', $seller->city ?? '') }}"
-                                class="form-input"
-                            >
-
-                        </div>
-
-
-                        {{-- STATE --}}
-
-                        <div class="field-block">
-
-                            <label class="form-label">
-                                State
-                            </label>
-
-                            <input
-                                type="text"
-                                name="state"
-                                value="{{ old('state', $seller->state ?? '') }}"
-                                class="form-input"
-                            >
-
-                        </div>
-
-
-                        {{-- PINCODE --}}
-
-                        <div class="field-block">
-
-                            <label class="form-label">
-                                Pincode
-                            </label>
-
-                            <input
-                                type="text"
-                                name="pincode"
-                                value="{{ old('pincode', $seller->pincode ?? '') }}"
-                                class="form-input"
-                                inputmode="numeric"
-                                maxlength="6"
-                            >
+                            </div>
 
                         </div>
 
@@ -856,9 +1370,15 @@
 
                     <button
                         type="submit"
-                        class="primary-button"
+                        class="primary-button wide-button"
                     >
-                        Save Business Details &amp; Continue →
+
+                        <i class="fa-solid fa-floppy-disk"></i>
+
+                        Save Business Details &amp; Continue
+
+                        <i class="fa-solid fa-arrow-right"></i>
+
                     </button>
 
                 </form>
@@ -867,7 +1387,7 @@
 
 
             {{-- =====================================================
-                 STEP 5 — BANK
+                 STEP 5 · BANK
             ====================================================== --}}
 
             <section
@@ -875,28 +1395,63 @@
                 data-panel="5"
             >
 
-                <div class="panel-header">
+                <div class="panel-heading">
 
-                    <div>
-                        <div class="panel-kicker">
-                            STEP 05 · PAYOUT SETUP
+                    <div class="panel-heading-left">
+
+                        <div class="panel-icon blue">
+                            <i class="fa-solid fa-building-columns"></i>
                         </div>
 
-                        <h2 class="panel-title">
-                            Add your bank details
-                        </h2>
+                        <div>
+
+                            <div class="panel-kicker">
+                                STEP 05 · PAYOUT SETUP
+                            </div>
+
+                            <h2 class="panel-title">
+                                Add your bank details
+                            </h2>
+
+                            <p class="panel-description">
+                                These details are used for secure seller payouts.
+                            </p>
+
+                        </div>
+
                     </div>
 
-                    <span class="status-tag {{ $bankCompleted ? 'green' : 'green' }}">
+                    <span class="status-tag {{ $bankCompleted ? 'green' : 'blue' }}">
+
+                        <span class="status-dot"></span>
+
                         {{ $bankCompleted ? 'Complete' : 'Payout Setup' }}
+
                     </span>
 
                 </div>
 
-                <p class="muted">
-                    These details are used for seller payouts. Your account number
-                    is never displayed in full after saving.
-                </p>
+
+                <div class="security-note">
+
+                    <div class="security-note-icon">
+                        <i class="fa-solid fa-lock"></i>
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            Bank information is protected
+                        </strong>
+
+                        <p>
+                            Your account number is never displayed in full
+                            after saving.
+                        </p>
+
+                    </div>
+
+                </div>
 
 
                 <form
@@ -911,192 +1466,274 @@
                     @method('PUT')
 
 
-                    <div class="grid-two">
+                    <div class="form-card">
 
+                        <div class="section-heading">
 
-                        {{-- ACCOUNT HOLDER --}}
+                            <div class="section-heading-icon">
+                                <i class="fa-solid fa-building-columns"></i>
+                            </div>
 
-                        <div class="field-block">
+                            <div>
 
-                            <label class="form-label">
-                                Account Holder Name *
-                            </label>
+                                <h3>
+                                    Payout account
+                                </h3>
 
-                            <input
-                                type="text"
-                                name="bank_account_holder"
-                                value="{{ old('bank_account_holder', $seller->bank_account_holder ?? '') }}"
-                                class="form-input"
-                                autocomplete="name"
-                                required
-                            >
+                                <p>
+                                    Enter the bank account where your seller
+                                    payouts should be received.
+                                </p>
 
-                        </div>
-
-
-                        {{-- BANK NAME --}}
-
-                        <div class="field-block">
-
-                            <label class="form-label">
-                                Bank Name *
-                            </label>
-
-                            <input
-                                type="text"
-                                name="bank_name"
-                                value="{{ old('bank_name', $seller->bank_name ?? '') }}"
-                                class="form-input"
-                                autocomplete="organization"
-                                required
-                            >
+                            </div>
 
                         </div>
 
 
-                        {{-- ACCOUNT NUMBER --}}
+                        <div class="grid-two">
 
-                        <div class="field-block">
+                            <div class="field-block">
 
-                            <label class="form-label">
-                                Account Number *
-                            </label>
+                                <label class="form-label">
+                                    Account Holder Name
+                                    <span>*</span>
+                                </label>
 
-                            <input
-                                type="password"
-                                name="bank_account_number"
-                                value=""
-                                class="form-input"
-                                inputmode="numeric"
-                                autocomplete="new-password"
-                                placeholder="{{ !empty($seller->bank_account_number) ? 'Enter again to replace' : 'Enter account number' }}"
-                                required
-                            >
-
-                            @if(!empty($seller->bank_account_number))
-
-                                <small class="field-help">
-                                    Existing account:
-                                    XXXX XXXX {{ substr($seller->bank_account_number, -4) }}
-                                </small>
-
-                            @endif
-
-                        </div>
-
-
-                        {{-- CONFIRM ACCOUNT --}}
-
-                        <div class="field-block">
-
-                            <label class="form-label">
-                                Confirm Account Number *
-                            </label>
-
-                            <input
-                                type="password"
-                                name="bank_account_number_confirmation"
-                                value=""
-                                class="form-input"
-                                inputmode="numeric"
-                                autocomplete="new-password"
-                                placeholder="Re-enter account number"
-                                required
-                            >
-
-                        </div>
-
-
-                        {{-- IFSC --}}
-
-                        <div class="field-block">
-
-                            <label class="form-label">
-                                IFSC Code *
-                            </label>
-
-                            <input
-                                type="text"
-                                name="bank_ifsc"
-                                value="{{ old('bank_ifsc', $seller->bank_ifsc ?? '') }}"
-                                class="form-input uppercase-input"
-                                maxlength="11"
-                                placeholder="SBIN0001234"
-                                required
-                            >
-
-                        </div>
-
-
-                        {{-- ACCOUNT TYPE --}}
-
-                        <div class="field-block">
-
-                            <label class="form-label">
-                                Account Type
-                            </label>
-
-                            <select
-                                name="account_type"
-                                class="form-input"
-                            >
-
-                                <option value="">
-                                    Select account type
-                                </option>
-
-                                <option
-                                    value="Savings"
-                                    @selected(old('account_type', $seller->account_type ?? '') === 'Savings')
+                                <input
+                                    type="text"
+                                    name="bank_account_holder"
+                                    value="{{ old('bank_account_holder', $seller->bank_account_holder ?? '') }}"
+                                    class="form-input"
+                                    autocomplete="name"
+                                    placeholder="Account holder name"
+                                    required
                                 >
-                                    Savings
-                                </option>
 
-                                <option
-                                    value="Current"
-                                    @selected(old('account_type', $seller->account_type ?? '') === 'Current')
+                            </div>
+
+
+                            <div class="field-block">
+
+                                <label class="form-label">
+                                    Bank Name
+                                    <span>*</span>
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="bank_name"
+                                    value="{{ old('bank_name', $seller->bank_name ?? '') }}"
+                                    class="form-input"
+                                    autocomplete="organization"
+                                    placeholder="Bank name"
+                                    required
                                 >
-                                    Current
-                                </option>
 
-                                <option
-                                    value="Business"
-                                    @selected(old('account_type', $seller->account_type ?? '') === 'Business')
+                            </div>
+
+
+                            <div class="field-block">
+
+                                <label class="form-label">
+                                    Account Number
+                                    <span>*</span>
+                                </label>
+
+                                <div class="input-with-icon">
+
+                                    <i class="fa-solid fa-credit-card"></i>
+
+                                    <input
+                                        type="password"
+                                        name="bank_account_number"
+                                        value=""
+                                        class="form-input"
+                                        inputmode="numeric"
+                                        autocomplete="new-password"
+                                        placeholder="{{ !empty($seller->bank_account_number) ? 'Enter again to replace' : 'Enter account number' }}"
+                                        required
+                                    >
+
+                                </div>
+
+                                @if(!empty($seller->bank_account_number))
+
+                                    <small class="field-help">
+
+                                        Existing account:
+                                        XXXX XXXX {{ substr($seller->bank_account_number, -4) }}
+
+                                    </small>
+
+                                @endif
+
+                            </div>
+
+
+                            <div class="field-block">
+
+                                <label class="form-label">
+                                    Confirm Account Number
+                                    <span>*</span>
+                                </label>
+
+                                <div class="input-with-icon">
+
+                                    <i class="fa-solid fa-circle-check"></i>
+
+                                    <input
+                                        type="password"
+                                        name="bank_account_number_confirmation"
+                                        value=""
+                                        class="form-input"
+                                        inputmode="numeric"
+                                        autocomplete="new-password"
+                                        placeholder="Re-enter account number"
+                                        required
+                                    >
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="field-block">
+
+                                <label class="form-label">
+                                    IFSC Code
+                                    <span>*</span>
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="bank_ifsc"
+                                    value="{{ old('bank_ifsc', $seller->bank_ifsc ?? '') }}"
+                                    class="form-input uppercase-input"
+                                    maxlength="11"
+                                    placeholder="SBIN0001234"
+                                    required
                                 >
-                                    Business
-                                </option>
 
-                            </select>
+                            </div>
+
+
+                            <div class="field-block">
+
+                                <label class="form-label">
+                                    Account Type
+                                </label>
+
+                                <select
+                                    name="account_type"
+                                    class="form-input"
+                                >
+
+                                    <option value="">
+                                        Select account type
+                                    </option>
+
+                                    <option
+                                        value="Savings"
+                                        @selected(old('account_type', $seller->account_type ?? '') === 'Savings')
+                                    >
+                                        Savings
+                                    </option>
+
+                                    <option
+                                        value="Current"
+                                        @selected(old('account_type', $seller->account_type ?? '') === 'Current')
+                                    >
+                                        Current
+                                    </option>
+
+                                    <option
+                                        value="Business"
+                                        @selected(old('account_type', $seller->account_type ?? '') === 'Business')
+                                    >
+                                        Business
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-card">
+
+                        <div class="section-heading">
+
+                            <div class="section-heading-icon">
+                                <i class="fa-solid fa-file-circle-check"></i>
+                            </div>
+
+                            <div>
+
+                                <h3>
+                                    Bank proof
+                                </h3>
+
+                                <p>
+                                    Upload supporting bank documentation if required.
+                                </p>
+
+                            </div>
 
                         </div>
 
 
-                        {{-- BANK PROOF --}}
-
-                        <div class="field-block full-span">
-
-                            <label class="form-label">
-                                Bank Proof
-                            </label>
+                        <div class="bank-proof-upload">
 
                             <input
                                 type="file"
                                 name="bank_proof"
-                                class="form-input file-input"
+                                id="bank_proof"
+                                class="native-file-input"
                                 accept=".pdf,.jpg,.jpeg,.png,.webp"
                             >
 
-                            <small class="field-help">
-                                Optional · PDF, JPG, JPEG, PNG or WEBP · Maximum 5 MB
-                            </small>
+                            <label
+                                for="bank_proof"
+                                class="bank-proof-label"
+                            >
+
+                                <span class="bank-proof-icon">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                                </span>
+
+                                <span>
+
+                                    <strong>
+                                        Choose bank proof
+                                    </strong>
+
+                                    <small>
+                                        PDF, JPG, JPEG, PNG or WEBP · Maximum 5 MB
+                                    </small>
+
+                                </span>
+
+                            </label>
 
                             @if(!empty($seller->bank_proof_path))
 
                                 <div class="uploaded-status">
-                                    ✓ Bank proof already uploaded
+
+                                    <i class="fa-solid fa-circle-check"></i>
+
+                                    Bank proof already uploaded
+
                                 </div>
 
                             @endif
+
+                            <div
+                                class="selected-file"
+                                data-file-name="bank_proof"
+                            ></div>
 
                         </div>
 
@@ -1105,9 +1742,15 @@
 
                     <button
                         type="submit"
-                        class="primary-button"
+                        class="primary-button wide-button"
                     >
-                        Save Bank Details &amp; Continue →
+
+                        <i class="fa-solid fa-building-columns"></i>
+
+                        Save Bank Details &amp; Continue
+
+                        <i class="fa-solid fa-arrow-right"></i>
+
                     </button>
 
                 </form>
@@ -1116,7 +1759,7 @@
 
 
             {{-- =====================================================
-                 STEP 6 — REVIEW
+                 STEP 6 · REVIEW
             ====================================================== --}}
 
             <section
@@ -1124,59 +1767,122 @@
                 data-panel="6"
             >
 
-                <div class="panel-header">
+                <div class="panel-heading">
 
-                    <div>
-                        <div class="panel-kicker">
-                            STEP 06 · FINAL REVIEW
+                    <div class="panel-heading-left">
+
+                        <div class="panel-icon blue">
+                            <i class="fa-solid fa-clipboard-check"></i>
                         </div>
 
-                        <h2 class="panel-title">
-                            Review &amp; submit your application
-                        </h2>
+                        <div>
+
+                            <div class="panel-kicker">
+                                STEP 06 · FINAL REVIEW
+                            </div>
+
+                            <h2 class="panel-title">
+                                Review &amp; submit your application
+                            </h2>
+
+                            <p class="panel-description">
+                                Verify your information before submitting your
+                                seller verification application.
+                            </p>
+
+                        </div>
+
                     </div>
 
-                    <span class="status-tag success">
+                    <span class="status-tag blue">
+
+                        <span class="status-dot"></span>
+
                         Final Step
+
                     </span>
 
                 </div>
 
-                <p class="muted">
-                    Please verify all information before submitting your seller
-                    verification application.
-                </p>
+
+                <div class="review-banner">
+
+                    <div class="review-banner-icon">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            Almost there!
+                        </strong>
+
+                        <p>
+                            Review each section carefully. Once submitted,
+                            your application will be sent for SmartBasket verification.
+                        </p>
+
+                    </div>
+
+                </div>
 
 
                 <div class="review-grid">
 
 
-                    {{-- SELLER --}}
+                    {{-- SELLER INFORMATION --}}
 
                     <div class="review-card">
 
-                        <div class="review-icon">
-                            <i class="fa-solid fa-user"></i>
+                        <div class="review-card-top">
+
+                            <div class="review-icon blue">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+
+                            <span class="review-status neutral">
+                                Profile
+                            </span>
+
                         </div>
 
                         <h3>
                             Seller Information
                         </h3>
 
-                        <p>
-                            <strong>Name:</strong>
-                            {{ $seller->seller_name ?? 'Not provided' }}
-                        </p>
+                        <div class="review-details">
 
-                        <p>
-                            <strong>Email:</strong>
-                            {{ $seller->email ?? 'Not provided' }}
-                        </p>
+                            <div class="review-row">
 
-                        <p>
-                            <strong>Mobile:</strong>
-                            {{ $seller->mobile_number ?? 'Not provided' }}
-                        </p>
+                                <span>Name</span>
+
+                                <strong>
+                                    {{ $seller->seller_name ?? 'Not provided' }}
+                                </strong>
+
+                            </div>
+
+                            <div class="review-row">
+
+                                <span>Email</span>
+
+                                <strong>
+                                    {{ $seller->email ?? 'Not provided' }}
+                                </strong>
+
+                            </div>
+
+                            <div class="review-row">
+
+                                <span>Mobile</span>
+
+                                <strong>
+                                    {{ $seller->mobile_number ?? 'Not provided' }}
+                                </strong>
+
+                            </div>
+
+                        </div>
 
                     </div>
 
@@ -1185,8 +1891,18 @@
 
                     <div class="review-card">
 
-                        <div class="review-icon green-review">
-                            <i class="fa-solid fa-envelope-circle-check"></i>
+                        <div class="review-card-top">
+
+                            <div class="review-icon green">
+                                <i class="fa-solid fa-envelope-circle-check"></i>
+                            </div>
+
+                            <span class="review-status {{ $emailCompleted ? 'success' : 'pending' }}">
+
+                                {{ $emailCompleted ? 'Verified' : 'Pending' }}
+
+                            </span>
+
                         </div>
 
                         <h3>
@@ -1196,13 +1912,21 @@
                         @if($emailCompleted)
 
                             <div class="review-success">
-                                ✓ Email verified
+
+                                <i class="fa-solid fa-circle-check"></i>
+
+                                Email verified successfully
+
                             </div>
 
                         @else
 
                             <div class="review-pending">
+
+                                <i class="fa-solid fa-clock"></i>
+
                                 Verification pending
+
                             </div>
 
                         @endif
@@ -1214,27 +1938,75 @@
 
                     <div class="review-card">
 
-                        <div class="review-icon">
-                            <i class="fa-solid fa-file-shield"></i>
+                        <div class="review-card-top">
+
+                            <div class="review-icon blue">
+                                <i class="fa-solid fa-file-shield"></i>
+                            </div>
+
+                            <span class="review-status {{ $documentsCompleted ? 'success' : 'pending' }}">
+
+                                {{ $documentsCompleted ? 'Complete' : 'Missing' }}
+
+                            </span>
+
                         </div>
 
                         <h3>
                             KYC Documents
                         </h3>
 
-                        <p>
-                            Business Certificate:
-                            <strong>
-                                {{ !empty($seller->business_certificate_path) ? 'Uploaded ✓' : 'Missing' }}
-                            </strong>
-                        </p>
+                        <div class="review-check-list">
 
-                        <p>
-                            Aadhaar Document:
-                            <strong>
-                                {{ !empty($seller->aadhaar_document_path) ? 'Uploaded ✓' : 'Missing' }}
-                            </strong>
-                        </p>
+                            <div class="review-check-row">
+
+                                <span>
+                                    <i class="fa-solid fa-file-lines"></i>
+                                    Business Certificate
+                                </span>
+
+                                @if(!empty($seller->business_certificate_path))
+
+                                    <strong class="check">
+                                        <i class="fa-solid fa-check"></i>
+                                        Uploaded
+                                    </strong>
+
+                                @else
+
+                                    <strong class="missing">
+                                        Missing
+                                    </strong>
+
+                                @endif
+
+                            </div>
+
+                            <div class="review-check-row">
+
+                                <span>
+                                    <i class="fa-solid fa-id-card"></i>
+                                    Aadhaar Document
+                                </span>
+
+                                @if(!empty($seller->aadhaar_document_path))
+
+                                    <strong class="check">
+                                        <i class="fa-solid fa-check"></i>
+                                        Uploaded
+                                    </strong>
+
+                                @else
+
+                                    <strong class="missing">
+                                        Missing
+                                    </strong>
+
+                                @endif
+
+                            </div>
+
+                        </div>
 
                     </div>
 
@@ -1243,8 +2015,18 @@
 
                     <div class="review-card">
 
-                        <div class="review-icon blue-review">
-                            <i class="fa-solid fa-id-card"></i>
+                        <div class="review-card-top">
+
+                            <div class="review-icon blue">
+                                <i class="fa-solid fa-id-card"></i>
+                            </div>
+
+                            <span class="review-status {{ $aadhaarCompleted ? 'success' : 'pending' }}">
+
+                                {{ $aadhaarCompleted ? 'Verified' : 'Pending' }}
+
+                            </span>
+
                         </div>
 
                         <h3>
@@ -1254,13 +2036,21 @@
                         @if($aadhaarCompleted)
 
                             <div class="review-success">
-                                ✓ Aadhaar verified
+
+                                <i class="fa-solid fa-circle-check"></i>
+
+                                Aadhaar verified successfully
+
                             </div>
 
                         @else
 
                             <div class="review-pending">
+
+                                <i class="fa-solid fa-clock"></i>
+
                                 Verification pending
+
                             </div>
 
                         @endif
@@ -1272,33 +2062,67 @@
 
                     <div class="review-card">
 
-                        <div class="review-icon violet-review">
-                            <i class="fa-solid fa-building"></i>
+                        <div class="review-card-top">
+
+                            <div class="review-icon blue">
+                                <i class="fa-solid fa-building"></i>
+                            </div>
+
+                            <span class="review-status {{ $businessCompleted ? 'success' : 'pending' }}">
+
+                                {{ $businessCompleted ? 'Complete' : 'Pending' }}
+
+                            </span>
+
                         </div>
 
                         <h3>
                             Business Details
                         </h3>
 
-                        <p>
-                            <strong>Type:</strong>
-                            {{ $seller->business_type ?: 'Not provided' }}
-                        </p>
+                        <div class="review-details">
 
-                        <p>
-                            <strong>PAN:</strong>
-                            {{ $maskedPan }}
-                        </p>
+                            <div class="review-row">
 
-                        <p>
-                            <strong>Udyam:</strong>
-                            {{ $seller->udyam_number ?: 'Not provided' }}
-                        </p>
+                                <span>Type</span>
 
-                        <p>
-                            <strong>GST:</strong>
-                            {{ $seller->gst_number ?: 'Not provided' }}
-                        </p>
+                                <strong>
+                                    {{ $seller->business_type ?: 'Not provided' }}
+                                </strong>
+
+                            </div>
+
+                            <div class="review-row">
+
+                                <span>PAN</span>
+
+                                <strong>
+                                    {{ $maskedPan }}
+                                </strong>
+
+                            </div>
+
+                            <div class="review-row">
+
+                                <span>Udyam</span>
+
+                                <strong>
+                                    {{ $seller->udyam_number ?: 'Not provided' }}
+                                </strong>
+
+                            </div>
+
+                            <div class="review-row">
+
+                                <span>GST</span>
+
+                                <strong>
+                                    {{ $seller->gst_number ?: 'Not provided' }}
+                                </strong>
+
+                            </div>
+
+                        </div>
 
                     </div>
 
@@ -1307,65 +2131,101 @@
 
                     <div class="review-card">
 
-                        <div class="review-icon green-review">
-                            <i class="fa-solid fa-building-columns"></i>
+                        <div class="review-card-top">
+
+                            <div class="review-icon blue">
+                                <i class="fa-solid fa-building-columns"></i>
+                            </div>
+
+                            <span class="review-status {{ $bankCompleted ? 'success' : 'pending' }}">
+
+                                {{ $bankCompleted ? 'Complete' : 'Pending' }}
+
+                            </span>
+
                         </div>
 
                         <h3>
                             Bank Details
                         </h3>
 
-                        <p>
-                            <strong>Holder:</strong>
-                            {{ $seller->bank_account_holder ?: 'Not provided' }}
-                        </p>
+                        <div class="review-details">
 
-                        <p>
-                            <strong>Bank:</strong>
-                            {{ $seller->bank_name ?: 'Not provided' }}
-                        </p>
+                            <div class="review-row">
 
-                        <p>
-                            <strong>Account:</strong>
-                            {{ $maskedBank }}
-                        </p>
+                                <span>Holder</span>
 
-                        <p>
-                            <strong>IFSC:</strong>
-                            {{ $seller->bank_ifsc ?: 'Not provided' }}
-                        </p>
+                                <strong>
+                                    {{ $seller->bank_account_holder ?: 'Not provided' }}
+                                </strong>
+
+                            </div>
+
+                            <div class="review-row">
+
+                                <span>Bank</span>
+
+                                <strong>
+                                    {{ $seller->bank_name ?: 'Not provided' }}
+                                </strong>
+
+                            </div>
+
+                            <div class="review-row">
+
+                                <span>Account</span>
+
+                                <strong>
+                                    {{ $maskedBank }}
+                                </strong>
+
+                            </div>
+
+                            <div class="review-row">
+
+                                <span>IFSC</span>
+
+                                <strong>
+                                    {{ $seller->bank_ifsc ?: 'Not provided' }}
+                                </strong>
+
+                            </div>
+
+                        </div>
 
                     </div>
 
                 </div>
 
 
-                {{-- FINAL WARNING --}}
+                {{-- FINAL SUBMISSION --}}
 
                 <div class="final-submit-box">
 
                     <div class="final-submit-icon">
-                        <i class="fa-solid fa-shield-halved"></i>
+                        <i class="fa-solid fa-paper-plane"></i>
                     </div>
 
-                    <div>
+                    <div class="final-submit-content">
+
+                        <span class="final-submit-kicker">
+                            FINAL APPLICATION
+                        </span>
 
                         <h3>
-                            Ready to submit?
+                            Ready to submit your verification?
                         </h3>
 
                         <p>
-                            By submitting this application, you confirm that the
-                            information and documents provided are accurate and
-                            belong to you / your business.
+                            By submitting this application, you confirm that
+                            the information and documents provided are accurate
+                            and belong to you or your business.
                         </p>
 
                     </div>
 
                 </div>
 
-
-                {{-- FINAL SUBMIT --}}
 
                 <form
                     method="POST"
@@ -1383,34 +2243,41 @@
                             required
                         >
 
-                        <span>
-                            I confirm that all information provided above is correct
-                            and I agree to SmartBasket seller verification terms.
+                        <span class="custom-check"></span>
+
+                        <span class="confirmation-text">
+                            I confirm that all information provided above is
+                            correct and I agree to SmartBasket seller
+                            verification terms.
                         </span>
 
                     </label>
+
 
                     <button
                         type="submit"
                         class="submit-application-button"
                         id="submitApplicationButton"
                     >
+
                         <i class="fa-solid fa-paper-plane"></i>
+
                         SUBMIT APPLICATION
+
                     </button>
 
                 </form>
 
             </section>
 
-        </div>
+        </main>
 
 
         {{-- =========================================================
-             BOTTOM NAVIGATION
+             STEP ACTION BAR
         ========================================================== --}}
 
-        <div class="verification-actions">
+        <footer class="verification-actions">
 
             <button
                 type="button"
@@ -1418,17 +2285,23 @@
                 class="secondary-button"
                 {{ $currentStep <= 1 ? 'disabled' : '' }}
             >
-                ← Back
+
+                <i class="fa-solid fa-arrow-left"></i>
+
+                Back
+
             </button>
 
 
             <div class="navigation-info">
 
-                <span>
+                <span class="navigation-step-label">
                     Step {{ $currentStep }} of 6
                 </span>
 
-                <span class="navigation-dot">•</span>
+                <span class="navigation-dot">
+                    •
+                </span>
 
                 <span>
                     {{ $steps[$currentStep] }}
@@ -1444,18 +2317,28 @@
                     id="nextButton"
                     class="primary-button"
                 >
-                    Next →
+
+                    Continue
+
+                    <i class="fa-solid fa-arrow-right"></i>
+
                 </button>
 
             @else
 
                 <span class="final-ready-label">
-                    Final review complete
+
+                    <span class="final-ready-icon">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </span>
+
+                    Final review
+
                 </span>
 
             @endif
 
-        </div>
+        </footer>
 
     </div>
 
@@ -1464,193 +2347,227 @@
 @endsection
 
 
-{{-- ================================================================
-     STYLES
-================================================================ --}}
-
 @push('styles')
 
 <style>
 
 :root {
-    --kyc-green: #22c55e;
-    --kyc-green-dark: #16a34a;
-    --kyc-blue: #3b82f6;
-    --kyc-bg: #07111f;
-    --kyc-card: rgba(15, 23, 42, .97);
-    --kyc-border: rgba(148, 163, 184, .18);
-    --kyc-text: #e2e8f0;
-    --kyc-muted: #94a3b8;
+
+    --kyc-primary: #2563eb;
+    --kyc-primary-dark: #1d4ed8;
+    --kyc-primary-deep: #1e40af;
+
+    --kyc-primary-soft: #eff6ff;
+    --kyc-primary-soft-2: #dbeafe;
+
+    --kyc-blue-border: #bfdbfe;
+
+    --kyc-success: #16a34a;
+    --kyc-success-soft: #f0fdf4;
+    --kyc-success-border: #bbf7d0;
+
+    --kyc-warning: #d97706;
+    --kyc-warning-soft: #fffbeb;
+    --kyc-warning-border: #fde68a;
+
+    --kyc-danger: #dc2626;
+    --kyc-danger-soft: #fef2f2;
+    --kyc-danger-border: #fecaca;
+
+    --kyc-bg: #f4f8ff;
+    --kyc-surface: #ffffff;
+    --kyc-surface-soft: #f8fbff;
+
+    --kyc-border: #e2e8f0;
+    --kyc-border-dark: #cbd5e1;
+
+    --kyc-text: #0f172a;
+    --kyc-text-secondary: #334155;
+    --kyc-muted: #64748b;
+    --kyc-placeholder: #94a3b8;
+
+    --kyc-radius-xl: 26px;
+    --kyc-radius-lg: 20px;
+    --kyc-radius-md: 15px;
+    --kyc-radius-sm: 11px;
+
+    --kyc-shadow:
+        0 24px 70px rgba(15, 23, 42, .10);
+
+    --kyc-shadow-soft:
+        0 8px 28px rgba(15, 23, 42, .06);
+
 }
 
 
-/* =========================================================
-   MAIN
-========================================================= */
+/* ================================================================
+   MAIN SHELL
+================================================================ */
 
 .seller-verification-shell {
 
-    min-height: calc(100vh - 40px);
+    width: 100%;
+    min-height: calc(100vh - 50px);
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    box-sizing: border-box;
 
-    padding: 30px 16px 50px;
+    padding: 24px 24px 42px;
 
     background:
         radial-gradient(
-            circle at 5% 5%,
-            rgba(34,197,94,.13),
-            transparent 24%
+            circle at 0% 0%,
+            rgba(37, 99, 235, .09),
+            transparent 28%
         ),
         radial-gradient(
-            circle at 95% 90%,
-            rgba(59,130,246,.10),
-            transparent 25%
+            circle at 100% 100%,
+            rgba(59, 130, 246, .07),
+            transparent 26%
         ),
-        var(--sb-bg, #07111f);
+        linear-gradient(
+            180deg,
+            #f8fbff 0%,
+            #f2f7ff 100%
+        );
+
 }
 
+
+/* ================================================================
+   MAIN CARD
+================================================================ */
 
 .seller-verification-card {
 
-    width: min(1150px, 100%);
+    width: min(1580px, 100%);
+
+    margin: 0 auto;
 
     overflow: hidden;
 
-    background:
-        linear-gradient(
-            145deg,
-            rgba(15,23,42,.98),
-            rgba(10,22,35,.97)
-        );
+    background: var(--kyc-surface);
 
     border: 1px solid var(--kyc-border);
 
-    border-radius: 30px;
+    border-radius: var(--kyc-radius-xl);
 
-    box-shadow:
-        0 35px 90px rgba(0,0,0,.30),
-        0 10px 30px rgba(0,0,0,.15);
-
-    backdrop-filter: blur(20px);
+    box-shadow: var(--kyc-shadow);
 
 }
 
 
-/* =========================================================
+/* ================================================================
    HEADER
-========================================================= */
+================================================================ */
 
 .verification-header {
 
+    position: relative;
+
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
 
-    gap: 25px;
+    gap: 30px;
 
-    padding: 34px 34px 28px;
+    padding: 34px 38px;
 
     color: #fff;
 
     background:
+        radial-gradient(
+            circle at 85% 15%,
+            rgba(96, 165, 250, .28),
+            transparent 30%
+        ),
         linear-gradient(
             135deg,
-            #0f172a,
-            #064e3b
+            #1e40af 0%,
+            #2563eb 52%,
+            #1d4ed8 100%
         );
 
-    border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+
+.verification-header::after {
+
+    content: "";
+
+    position: absolute;
+
+    right: 0;
+    bottom: 0;
+    left: 0;
+
+    height: 1px;
+
+    background: rgba(255,255,255,.18);
+
+}
+
+
+.header-main {
+
+    min-width: 0;
 
 }
 
 
 .eyebrow {
 
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    margin-bottom: 13px;
+
+    color: #dbeafe;
+
     font-size: .68rem;
-
-    font-weight: 800;
-
-    letter-spacing: .20em;
-
-    color: #86efac;
-
-}
-
-
-.verification-header h1 {
-
-    margin: 8px 0 7px;
-
-    font-size: clamp(2rem, 4vw, 3rem);
-
-    line-height: 1.05;
-
-    letter-spacing: -.045em;
 
     font-weight: 900;
 
-}
-
-
-.header-description {
-
-    margin: 0;
-
-    color: #cbd5e1;
-
-    font-size: .92rem;
+    letter-spacing: .18em;
 
 }
 
 
-.step-pill {
+.eyebrow-dot {
 
-    flex-shrink: 0;
+    width: 7px;
+    height: 7px;
 
-    padding: 11px 17px;
+    border-radius: 50%;
 
-    border-radius: 999px;
+    background: #fff;
 
-    color: #dcfce7;
-
-    background: rgba(255,255,255,.08);
-
-    border: 1px solid rgba(255,255,255,.14);
-
-    font-size: .78rem;
-
-    font-weight: 800;
+    box-shadow: 0 0 0 5px rgba(255,255,255,.12);
 
 }
 
 
-/* =========================================================
-   STEPPER
-========================================================= */
+.header-title-row {
 
-.stepper {
+    display: flex;
 
-    display: grid;
+    align-items: center;
 
-    grid-template-columns: repeat(6, 1fr);
-
-    gap: 10px;
-
-    padding: 18px 22px 20px;
-
-    background: rgba(2,6,23,.32);
-
-    border-bottom: 1px solid var(--kyc-border);
+    gap: 16px;
 
 }
 
 
-.step-item {
+.header-title-icon {
 
-    min-height: 58px;
+    width: 56px;
+    height: 56px;
+
+    flex: 0 0 56px;
 
     display: flex;
 
@@ -1658,19 +2575,238 @@
 
     justify-content: center;
 
-    gap: 8px;
+    border-radius: 17px;
 
-    border-radius: 14px;
+    color: #fff;
+
+    background: rgba(255,255,255,.13);
+
+    border: 1px solid rgba(255,255,255,.20);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.10),
+        0 10px 25px rgba(15,23,42,.10);
+
+    font-size: 1.35rem;
+
+}
+
+
+.verification-header h1 {
+
+    margin: 0;
+
+    color: #fff;
+
+    font-size: clamp(2rem, 3vw, 3rem);
+
+    line-height: 1.05;
+
+    font-weight: 900;
+
+    letter-spacing: -.045em;
+
+}
+
+
+.verification-header h1 span {
+
+    color: #dbeafe;
+
+}
+
+
+.header-copy p {
+
+    max-width: 700px;
+
+    margin: 9px 0 0;
+
+    color: #dbeafe;
+
+    font-size: .92rem;
+
+    line-height: 1.6;
+
+}
+
+
+.header-right {
+
+    display: flex;
+
+    align-items: flex-end;
+
+    flex-direction: column;
+
+    gap: 13px;
+
+    flex-shrink: 0;
+
+}
+
+
+.progress-summary {
+
+    width: 210px;
+
+}
+
+
+.progress-summary-top {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    margin-bottom: 7px;
+
+    color: #dbeafe;
+
+    font-size: .68rem;
+
+    font-weight: 800;
+
+}
+
+
+.progress-summary-top strong {
+
+    color: #fff;
+
+    font-size: .72rem;
+
+}
+
+
+.progress-track {
+
+    width: 100%;
+
+    height: 6px;
+
+    overflow: hidden;
+
+    border-radius: 99px;
+
+    background: rgba(255,255,255,.16);
+
+}
+
+
+.progress-value {
+
+    display: block;
+
+    height: 100%;
+
+    border-radius: inherit;
+
+    background: #fff;
+
+    transition: width .35s ease;
+
+}
+
+
+.step-pill {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+    padding: 10px 15px;
+
+    border-radius: 999px;
+
+    color: #fff;
+
+    background: rgba(255,255,255,.11);
+
+    border: 1px solid rgba(255,255,255,.20);
+
+    font-size: .75rem;
+
+    font-weight: 900;
+
+}
+
+
+.step-pill-icon {
+
+    width: 25px;
+    height: 25px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: rgba(255,255,255,.15);
+
+}
+
+
+/* ================================================================
+   STEPPER
+================================================================ */
+
+.stepper-wrapper {
+
+    padding: 18px 24px;
+
+    background: #fff;
+
+    border-bottom: 1px solid var(--kyc-border);
+
+}
+
+
+.stepper {
+
+    display: grid;
+
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+
+    gap: 10px;
+
+}
+
+
+.step-item {
+
+    min-width: 0;
+
+    min-height: 70px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 10px;
+
+    padding: 10px 12px;
 
     border: 1px solid var(--kyc-border);
 
-    background: rgba(148,163,184,.035);
+    border-radius: 15px;
 
-    color: var(--kyc-text);
+    background: #fff;
+
+    color: var(--kyc-text-secondary);
 
     cursor: pointer;
 
-    font-weight: 800;
+    text-align: left;
 
     transition:
         transform .18s ease,
@@ -1685,36 +2821,45 @@
 
     transform: translateY(-2px);
 
-    border-color: rgba(34,197,94,.42);
+    border-color: var(--kyc-blue-border);
+
+    box-shadow: var(--kyc-shadow-soft);
 
 }
 
 
 .step-item.active {
 
-    background: rgba(34,197,94,.13);
+    color: var(--kyc-primary-deep);
 
-    border-color: rgba(34,197,94,.55);
+    background: var(--kyc-primary-soft);
+
+    border-color: #93c5fd;
 
     box-shadow:
-        0 0 0 1px rgba(34,197,94,.12),
-        0 8px 20px rgba(34,197,94,.06);
+        0 0 0 3px rgba(37,99,235,.06);
 
 }
 
 
 .step-item.complete {
 
-    background: rgba(34,197,94,.075);
+    color: #166534;
 
-    border-color: rgba(34,197,94,.32);
+    background: #f7fef9;
+
+    border-color: var(--kyc-success-border);
 
 }
 
 
 .step-item.locked {
 
-    opacity: .45;
+    color: #94a3b8;
+
+    background: #f8fafc;
+
+    opacity: .68;
 
     cursor: not-allowed;
 
@@ -1723,9 +2868,10 @@
 
 .step-number {
 
-    width: 26px;
+    width: 34px;
+    height: 34px;
 
-    height: 26px;
+    flex: 0 0 34px;
 
     display: inline-flex;
 
@@ -1733,117 +2879,225 @@
 
     justify-content: center;
 
-    flex-shrink: 0;
-
     border-radius: 50%;
 
-    background: rgba(255,255,255,.07);
+    color: #64748b;
 
-    color: #cbd5e1;
+    background: #f1f5f9;
 
-    font-size: .76rem;
+    border: 1px solid #e2e8f0;
+
+    font-size: .75rem;
 
     font-weight: 900;
 
 }
 
 
-.step-item.active .step-number,
+.step-item.active .step-number {
+
+    color: #fff;
+
+    background: var(--kyc-primary);
+
+    border-color: var(--kyc-primary);
+
+}
+
+
 .step-item.complete .step-number {
 
-    background: linear-gradient(
-        135deg,
-        var(--kyc-green),
-        var(--kyc-green-dark)
-    );
+    color: #fff;
 
-    color: #03200f;
+    background: var(--kyc-success);
+
+    border-color: var(--kyc-success);
+
+}
+
+
+.step-content {
+
+    min-width: 0;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 2px;
 
 }
 
 
 .step-label {
 
-    font-size: .78rem;
+    font-size: .77rem;
+
+    font-weight: 900;
+
+    white-space: nowrap;
 
 }
 
 
-/* =========================================================
+.step-state {
+
+    color: #94a3b8;
+
+    font-size: .62rem;
+
+    font-weight: 700;
+
+}
+
+
+.step-item.active .step-state {
+
+    color: #3b82f6;
+
+}
+
+
+.step-item.complete .step-state {
+
+    color: #16a34a;
+
+}
+
+
+/* ================================================================
    ALERTS
-========================================================= */
+================================================================ */
 
 .global-alert {
 
-    margin: 22px 24px 0;
+    position: relative;
+
+    margin: 20px 30px 0;
 
     padding: 14px 16px;
 
     display: flex;
 
-    gap: 12px;
-
     align-items: flex-start;
 
-    border-radius: 14px;
+    gap: 12px;
 
     border: 1px solid;
 
-    font-size: .9rem;
+    border-radius: 14px;
 
 }
 
 
 .success-alert {
 
-    color: #bbf7d0;
+    color: #166534;
 
-    background: rgba(34,197,94,.08);
+    background: var(--kyc-success-soft);
 
-    border-color: rgba(34,197,94,.25);
+    border-color: var(--kyc-success-border);
 
 }
 
 
 .error-alert {
 
-    color: #fecaca;
+    color: #991b1b;
 
-    background: rgba(239,68,68,.08);
+    background: var(--kyc-danger-soft);
 
-    border-color: rgba(239,68,68,.25);
+    border-color: var(--kyc-danger-border);
 
 }
 
 
 .alert-icon {
 
-    width: 24px;
+    width: 30px;
+    height: 30px;
 
-    height: 24px;
+    flex: 0 0 30px;
 
-    display: inline-flex;
+    display: flex;
 
     align-items: center;
 
     justify-content: center;
 
-    flex-shrink: 0;
-
     border-radius: 50%;
+
+    background: rgba(255,255,255,.75);
+
+}
+
+
+.alert-content {
+
+    min-width: 0;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 2px;
+
+    padding-top: 2px;
+
+    font-size: .84rem;
+
+    line-height: 1.55;
+
+}
+
+
+.alert-content strong {
 
     font-weight: 900;
 
 }
 
 
-/* =========================================================
+.alert-content ul {
+
+    margin: 7px 0 0;
+
+    padding-left: 18px;
+
+}
+
+
+.alert-close {
+
+    margin-left: auto;
+
+    border: 0;
+
+    background: transparent;
+
+    color: inherit;
+
+    cursor: pointer;
+
+    opacity: .65;
+
+}
+
+
+.alert-close:hover {
+
+    opacity: 1;
+
+}
+
+
+/* ================================================================
    PANELS
-========================================================= */
+================================================================ */
 
 .verification-panels {
 
-    padding: 30px 26px 12px;
+    padding: 34px 34px 26px;
 
 }
 
@@ -1879,28 +3133,76 @@
 }
 
 
-.panel-header {
+/* ================================================================
+   PANEL HEADING
+================================================================ */
+
+.panel-heading {
+
+    display: flex;
+
+    align-items: flex-start;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    margin-bottom: 25px;
+
+}
+
+
+.panel-heading-left {
+
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 14px;
+
+    min-width: 0;
+
+}
+
+
+.panel-icon {
+
+    width: 48px;
+    height: 48px;
+
+    flex: 0 0 48px;
 
     display: flex;
 
     align-items: center;
 
-    justify-content: space-between;
+    justify-content: center;
 
-    gap: 18px;
+    border-radius: 14px;
 
-    margin-bottom: 8px;
+}
+
+
+.panel-icon.blue {
+
+    color: var(--kyc-primary);
+
+    background: var(--kyc-primary-soft);
+
+    border: 1px solid var(--kyc-blue-border);
 
 }
 
 
 .panel-kicker {
 
-    color: #7dd3fc;
+    margin-top: 2px;
 
-    font-size: .68rem;
+    color: var(--kyc-primary);
 
-    font-weight: 800;
+    font-size: .65rem;
+
+    font-weight: 900;
 
     letter-spacing: .13em;
 
@@ -1911,11 +3213,13 @@
 
 .panel-title {
 
-    margin: 5px 0 0;
+    margin: 5px 0 5px;
 
     color: var(--kyc-text);
 
     font-size: clamp(1.45rem, 2.5vw, 2rem);
+
+    line-height: 1.15;
 
     font-weight: 900;
 
@@ -1924,22 +3228,34 @@
 }
 
 
-.muted {
+.panel-description {
 
-    margin: 0 0 22px;
+    max-width: 800px;
+
+    margin: 0;
 
     color: var(--kyc-muted);
 
-    line-height: 1.65;
+    font-size: .88rem;
+
+    line-height: 1.6;
 
 }
 
 
-/* =========================================================
+/* ================================================================
    STATUS
-========================================================= */
+================================================================ */
 
 .status-tag {
+
+    flex-shrink: 0;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 7px;
 
     padding: 7px 11px;
 
@@ -1947,97 +3263,315 @@
 
     border: 1px solid;
 
-    font-size: .65rem;
+    font-size: .62rem;
 
     font-weight: 900;
 
-    letter-spacing: .08em;
+    letter-spacing: .07em;
 
     text-transform: uppercase;
 
 }
 
 
+.status-dot {
+
+    width: 6px;
+    height: 6px;
+
+    border-radius: 50%;
+
+    background: currentColor;
+
+}
+
+
 .status-tag.green {
 
-    color: #86efac;
+    color: #15803d;
 
-    background: rgba(34,197,94,.08);
+    background: var(--kyc-success-soft);
 
-    border-color: rgba(34,197,94,.22);
+    border-color: var(--kyc-success-border);
 
 }
 
 
 .status-tag.amber {
 
-    color: #fbbf24;
+    color: #b45309;
 
-    background: rgba(245,158,11,.08);
+    background: var(--kyc-warning-soft);
 
-    border-color: rgba(245,158,11,.22);
+    border-color: var(--kyc-warning-border);
 
 }
 
 
 .status-tag.blue {
 
-    color: #93c5fd;
+    color: var(--kyc-primary);
 
-    background: rgba(59,130,246,.08);
+    background: var(--kyc-primary-soft);
 
-    border-color: rgba(59,130,246,.22);
-
-}
-
-
-.status-tag.violet {
-
-    color: #c4b5fd;
-
-    background: rgba(168,85,247,.08);
-
-    border-color: rgba(168,85,247,.22);
+    border-color: var(--kyc-blue-border);
 
 }
 
 
-.status-tag.success {
+/* ================================================================
+   SECURITY NOTE
+================================================================ */
 
-    color: #a7f3d0;
+.security-note {
 
-    background: rgba(16,185,129,.08);
+    display: flex;
 
-    border-color: rgba(16,185,129,.22);
+    align-items: flex-start;
+
+    gap: 12px;
+
+    margin-bottom: 20px;
+
+    padding: 15px 17px;
+
+    border: 1px solid var(--kyc-blue-border);
+
+    border-radius: 15px;
+
+    background: linear-gradient(
+        135deg,
+        #f8fbff,
+        #eff6ff
+    );
 
 }
 
 
-/* =========================================================
-   FORMS
-========================================================= */
+.security-note-icon {
 
-.surface-box {
+    width: 36px;
+    height: 36px;
 
-    padding: 20px;
+    flex: 0 0 36px;
 
-    margin-bottom: 16px;
+    display: flex;
 
-    border-radius: 18px;
+    align-items: center;
 
-    background: rgba(148,163,184,.035);
+    justify-content: center;
+
+    border-radius: 10px;
+
+    color: var(--kyc-primary);
+
+    background: #fff;
+
+    border: 1px solid var(--kyc-blue-border);
+
+}
+
+
+.security-note strong {
+
+    display: block;
+
+    margin: 1px 0 3px;
+
+    color: var(--kyc-text);
+
+    font-size: .81rem;
+
+    font-weight: 900;
+
+}
+
+
+.security-note p {
+
+    margin: 0;
+
+    color: var(--kyc-muted);
+
+    font-size: .76rem;
+
+    line-height: 1.55;
+
+}
+
+
+/* ================================================================
+   FORM CARDS
+================================================================ */
+
+.form-card {
+
+    margin-bottom: 18px;
+
+    padding: 22px;
+
+    background: #fff;
 
     border: 1px solid var(--kyc-border);
 
-}
+    border-radius: var(--kyc-radius-lg);
 
-
-.alt-box {
-
-    background: rgba(2,6,23,.16);
+    box-shadow: 0 5px 18px rgba(15,23,42,.025);
 
 }
 
+
+.secondary-form-card {
+
+    background: var(--kyc-surface-soft);
+
+}
+
+
+.form-card-header {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    margin-bottom: 20px;
+
+}
+
+
+.form-card-header h3 {
+
+    margin: 0 0 4px;
+
+    color: var(--kyc-text);
+
+    font-size: .98rem;
+
+    font-weight: 900;
+
+}
+
+
+.form-card-header p {
+
+    margin: 0;
+
+    color: var(--kyc-muted);
+
+    font-size: .75rem;
+
+}
+
+
+.mini-icon {
+
+    width: 40px;
+    height: 40px;
+
+    flex: 0 0 40px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 12px;
+
+    color: var(--kyc-primary);
+
+    background: var(--kyc-primary-soft);
+
+    border: 1px solid var(--kyc-blue-border);
+
+}
+
+
+.mini-icon.success {
+
+    color: var(--kyc-success);
+
+    background: var(--kyc-success-soft);
+
+    border-color: var(--kyc-success-border);
+
+}
+
+
+/* ================================================================
+   SECTION HEADING
+================================================================ */
+
+.section-heading {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    margin-bottom: 22px;
+
+    padding-bottom: 16px;
+
+    border-bottom: 1px solid #edf2f7;
+
+}
+
+
+.section-heading-icon {
+
+    width: 38px;
+    height: 38px;
+
+    flex: 0 0 38px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 10px;
+
+    color: var(--kyc-primary);
+
+    background: var(--kyc-primary-soft);
+
+}
+
+
+.section-heading h3 {
+
+    margin: 0 0 3px;
+
+    color: var(--kyc-text);
+
+    font-size: .92rem;
+
+    font-weight: 900;
+
+}
+
+
+.section-heading p {
+
+    margin: 0;
+
+    color: var(--kyc-muted);
+
+    font-size: .73rem;
+
+}
+
+
+/* ================================================================
+   FORMS
+================================================================ */
 
 .stacked-form {
 
@@ -2045,18 +3579,7 @@
 
     flex-direction: column;
 
-    gap: 16px;
-
-}
-
-
-.field-block {
-
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 8px;
+    gap: 18px;
 
 }
 
@@ -2079,13 +3602,31 @@
 }
 
 
+.field-block {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 7px;
+
+}
+
+
 .form-label {
 
-    color: var(--kyc-text);
+    color: var(--kyc-text-secondary);
 
-    font-size: .88rem;
+    font-size: .78rem;
 
-    font-weight: 800;
+    font-weight: 850;
+
+}
+
+
+.form-label span {
+
+    color: var(--kyc-danger);
 
 }
 
@@ -2098,15 +3639,19 @@
 
     box-sizing: border-box;
 
-    border-radius: 12px;
+    padding: 11px 13px;
 
-    border: 1px solid var(--kyc-border);
+    border: 1px solid #dbe3ed;
 
-    padding: 11px 14px;
+    border-radius: 11px;
 
-    background: rgba(2,6,23,.22);
+    outline: none;
 
     color: var(--kyc-text);
+
+    background: #fff;
+
+    font-size: .84rem;
 
     transition:
         border-color .18s ease,
@@ -2116,30 +3661,86 @@
 }
 
 
+.form-input:hover {
+
+    border-color: #cbd5e1;
+
+}
+
+
 .form-input:focus {
 
-    outline: none;
-
-    border-color: rgba(34,197,94,.60);
+    border-color: #60a5fa;
 
     box-shadow:
-        0 0 0 3px rgba(34,197,94,.11);
+        0 0 0 3px rgba(37,99,235,.10);
 
 }
 
 
 .form-input::placeholder {
 
-    color: #64748b;
+    color: var(--kyc-placeholder);
+
+}
+
+
+select.form-input {
+
+    cursor: pointer;
 
 }
 
 
 select.form-input option {
 
-    background: #0f172a;
+    color: #0f172a;
 
-    color: #f8fafc;
+    background: #fff;
+
+}
+
+
+.textarea-input {
+
+    min-height: 95px;
+
+    resize: vertical;
+
+}
+
+
+.input-with-icon {
+
+    position: relative;
+
+}
+
+
+.input-with-icon > i {
+
+    position: absolute;
+
+    left: 14px;
+
+    top: 50%;
+
+    z-index: 2;
+
+    color: #94a3b8;
+
+    transform: translateY(-50%);
+
+    pointer-events: none;
+
+    font-size: .78rem;
+
+}
+
+
+.input-with-icon .form-input {
+
+    padding-left: 39px;
 
 }
 
@@ -2153,28 +3754,161 @@ select.form-input option {
 
 .code-input {
 
-    letter-spacing: .20em;
+    letter-spacing: .18em;
 
-    font-weight: 800;
+    font-weight: 850;
 
 }
 
 
-.field-help,
-.file-help {
+.field-help {
 
-    color: #64748b;
+    color: var(--kyc-muted);
 
-    font-size: .76rem;
+    font-size: .70rem;
 
     line-height: 1.5;
 
 }
 
 
-/* =========================================================
+/* ================================================================
+   BUTTONS
+================================================================ */
+
+.primary-button,
+.secondary-button,
+.success-button {
+
+    min-height: 46px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 8px;
+
+    padding: 11px 18px;
+
+    border-radius: 11px;
+
+    border: 1px solid transparent;
+
+    font-size: .78rem;
+
+    font-weight: 900;
+
+    cursor: pointer;
+
+    transition:
+        transform .18s ease,
+        box-shadow .18s ease,
+        background .18s ease,
+        opacity .18s ease;
+
+}
+
+
+.primary-button {
+
+    color: #fff;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--kyc-primary),
+            var(--kyc-primary-dark)
+        );
+
+    box-shadow:
+        0 7px 17px rgba(37,99,235,.17);
+
+}
+
+
+.primary-button:hover {
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 10px 22px rgba(37,99,235,.23);
+
+}
+
+
+.secondary-button {
+
+    color: var(--kyc-text-secondary);
+
+    background: #fff;
+
+    border-color: var(--kyc-border);
+
+}
+
+
+.secondary-button:hover {
+
+    transform: translateY(-1px);
+
+    border-color: var(--kyc-blue-border);
+
+    color: var(--kyc-primary);
+
+    background: var(--kyc-primary-soft);
+
+}
+
+
+.secondary-button:disabled {
+
+    opacity: .40;
+
+    cursor: not-allowed;
+
+    transform: none;
+
+    box-shadow: none;
+
+}
+
+
+.success-button {
+
+    color: #fff;
+
+    background:
+        linear-gradient(
+            135deg,
+            #16a34a,
+            #15803d
+        );
+
+    box-shadow:
+        0 7px 17px rgba(22,163,74,.15);
+
+}
+
+
+.success-button:hover {
+
+    transform: translateY(-1px);
+
+}
+
+
+.wide-button {
+
+    width: 100%;
+
+}
+
+
+/* ================================================================
    UPLOAD
-========================================================= */
+================================================================ */
 
 .upload-grid {
 
@@ -2189,7 +3923,7 @@ select.form-input option {
 
 .upload-box {
 
-    padding: 20px;
+    position: relative;
 
     display: flex;
 
@@ -2197,11 +3931,29 @@ select.form-input option {
 
     gap: 13px;
 
-    border-radius: 18px;
-
-    background: rgba(2,6,23,.18);
+    padding: 20px;
 
     border: 1px solid var(--kyc-border);
+
+    border-radius: 18px;
+
+    background: var(--kyc-surface-soft);
+
+    transition:
+        border-color .18s ease,
+        box-shadow .18s ease,
+        transform .18s ease;
+
+}
+
+
+.upload-box:hover {
+
+    border-color: var(--kyc-blue-border);
+
+    box-shadow: var(--kyc-shadow-soft);
+
+    transform: translateY(-1px);
 
 }
 
@@ -2212,9 +3964,31 @@ select.form-input option {
 
     align-items: center;
 
-    gap: 12px;
+    gap: 11px;
 
-    color: var(--kyc-text);
+}
+
+
+.upload-icon {
+
+    width: 43px;
+    height: 43px;
+
+    flex: 0 0 43px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 12px;
+
+    color: var(--kyc-primary);
+
+    background: var(--kyc-primary-soft);
+
+    border: 1px solid var(--kyc-blue-border);
 
 }
 
@@ -2222,6 +3996,12 @@ select.form-input option {
 .upload-header strong {
 
     display: block;
+
+    color: var(--kyc-text);
+
+    font-size: .84rem;
+
+    font-weight: 900;
 
 }
 
@@ -2232,18 +4012,328 @@ select.form-input option {
 
     margin-top: 3px;
 
-    color: #64748b;
+    color: var(--kyc-muted);
+
+    font-size: .68rem;
 
 }
 
 
-.upload-icon {
+.file-drop-zone {
+
+    min-height: 105px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    flex-direction: column;
+
+    gap: 5px;
+
+    padding: 18px;
+
+    border: 1.5px dashed #bfdbfe;
+
+    border-radius: 14px;
+
+    color: var(--kyc-primary);
+
+    background: #fff;
+
+    cursor: pointer;
+
+    text-align: center;
+
+    transition:
+        border-color .18s ease,
+        background .18s ease;
+
+}
+
+
+.file-drop-zone:hover {
+
+    border-color: var(--kyc-primary);
+
+    background: var(--kyc-primary-soft);
+
+}
+
+
+.file-drop-icon {
+
+    font-size: 1.2rem;
+
+}
+
+
+.file-drop-title {
+
+    color: var(--kyc-text);
+
+    font-size: .78rem;
+
+    font-weight: 850;
+
+}
+
+
+.file-drop-subtitle {
+
+    color: var(--kyc-muted);
+
+    font-size: .65rem;
+
+}
+
+
+.native-file-input {
+
+    position: absolute;
+
+    width: 1px;
+    height: 1px;
+
+    opacity: 0;
+
+    pointer-events: none;
+
+}
+
+
+.selected-file {
+
+    display: none;
+
+    padding: 8px 10px;
+
+    border-radius: 9px;
+
+    color: var(--kyc-primary-deep);
+
+    background: var(--kyc-primary-soft);
+
+    border: 1px solid var(--kyc-blue-border);
+
+    font-size: .70rem;
+
+    font-weight: 800;
+
+}
+
+
+.selected-file.show {
+
+    display: block;
+
+}
+
+
+.uploaded-status {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    color: #15803d;
+
+    font-size: .72rem;
+
+    font-weight: 850;
+
+}
+
+
+.bank-proof-upload {
+
+    position: relative;
+
+}
+
+
+.bank-proof-label {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+    padding: 16px;
+
+    border: 1px dashed #bfdbfe;
+
+    border-radius: 13px;
+
+    background: var(--kyc-primary-soft);
+
+    cursor: pointer;
+
+}
+
+
+.bank-proof-label strong {
+
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: var(--kyc-text);
+
+    font-size: .78rem;
+
+}
+
+
+.bank-proof-label small {
+
+    color: var(--kyc-muted);
+
+    font-size: .67rem;
+
+}
+
+
+.bank-proof-icon {
+
+    width: 40px;
+    height: 40px;
+
+    flex: 0 0 40px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 11px;
+
+    color: var(--kyc-primary);
+
+    background: #fff;
+
+    border: 1px solid var(--kyc-blue-border);
+
+}
+
+
+/* ================================================================
+   INFO BOX
+================================================================ */
+
+.info-box {
+
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 13px;
+
+    margin-bottom: 20px;
+
+    padding: 17px;
+
+    border: 1px solid var(--kyc-warning-border);
+
+    border-radius: 15px;
+
+    background: var(--kyc-warning-soft);
+
+}
+
+
+.info-box-icon {
+
+    width: 38px;
+    height: 38px;
+
+    flex: 0 0 38px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 10px;
+
+    color: var(--kyc-warning);
+
+    background: #fff;
+
+}
+
+
+.info-box strong {
+
+    display: block;
+
+    color: #92400e;
+
+    font-size: .82rem;
+
+    font-weight: 900;
+
+}
+
+
+.info-box p {
+
+    margin: 4px 0 0;
+
+    color: #a16207;
+
+    font-size: .75rem;
+
+    line-height: 1.55;
+
+}
+
+
+/* ================================================================
+   REVIEW BANNER
+================================================================ */
+
+.review-banner {
+
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 13px;
+
+    margin-bottom: 22px;
+
+    padding: 17px;
+
+    border: 1px solid var(--kyc-blue-border);
+
+    border-radius: 16px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #f8fbff,
+            #eff6ff
+        );
+
+}
+
+
+.review-banner-icon {
 
     width: 42px;
-
     height: 42px;
 
-    display: inline-flex;
+    flex: 0 0 42px;
+
+    display: flex;
 
     align-items: center;
 
@@ -2251,77 +4341,44 @@ select.form-input option {
 
     border-radius: 12px;
 
-    color: #86efac;
+    color: var(--kyc-primary);
 
-    background: rgba(34,197,94,.10);
+    background: #fff;
 
-    border: 1px solid rgba(34,197,94,.20);
-
-}
-
-
-.blue-icon {
-
-    color: #93c5fd;
-
-    background: rgba(59,130,246,.10);
-
-    border-color: rgba(59,130,246,.20);
+    border: 1px solid var(--kyc-blue-border);
 
 }
 
 
-.file-input {
+.review-banner strong {
 
-    padding: 9px 10px;
+    display: block;
 
-}
+    color: var(--kyc-text);
 
+    font-size: .83rem;
 
-.uploaded-status {
-
-    color: #86efac;
-
-    font-size: .78rem;
-
-    font-weight: 800;
+    font-weight: 900;
 
 }
 
 
-/* =========================================================
-   INFO
-========================================================= */
+.review-banner p {
 
-.info-box {
+    margin: 4px 0 0;
 
-    padding: 18px;
+    color: var(--kyc-muted);
 
-    margin-bottom: 18px;
+    font-size: .74rem;
 
-    border-radius: 16px;
-
-    color: #fde68a;
-
-    background: rgba(245,158,11,.08);
-
-    border: 1px solid rgba(245,158,11,.22);
+    line-height: 1.55;
 
 }
 
 
-.info-box p {
-
-    margin: 7px 0 0;
-
-    color: #fcd34d;
-
-}
-
-
-/* =========================================================
-   REVIEW
-========================================================= */
+/* ================================================================
+   REVIEW GRID
+================================================================ */
 
 .review-grid {
 
@@ -2336,24 +4393,38 @@ select.form-input option {
 
 .review-card {
 
-    position: relative;
-
     padding: 20px;
+
+    border: 1px solid var(--kyc-border);
 
     border-radius: 18px;
 
-    background: rgba(148,163,184,.035);
+    background: #fff;
 
-    border: 1px solid var(--kyc-border);
+    box-shadow: 0 5px 18px rgba(15,23,42,.025);
+
+}
+
+
+.review-card-top {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 10px;
+
+    margin-bottom: 13px;
 
 }
 
 
 .review-icon {
 
-    width: 38px;
-
-    height: 38px;
+    width: 40px;
+    height: 40px;
 
     display: flex;
 
@@ -2361,91 +4432,279 @@ select.form-input option {
 
     justify-content: center;
 
-    margin-bottom: 13px;
-
     border-radius: 11px;
 
-    color: #93c5fd;
+}
 
-    background: rgba(59,130,246,.09);
+
+.review-icon.blue {
+
+    color: var(--kyc-primary);
+
+    background: var(--kyc-primary-soft);
 
 }
 
 
-.green-review {
+.review-icon.green {
 
-    color: #86efac;
+    color: var(--kyc-success);
 
-    background: rgba(34,197,94,.09);
-
-}
-
-
-.blue-review {
-
-    color: #93c5fd;
-
-    background: rgba(59,130,246,.09);
-
-}
-
-
-.violet-review {
-
-    color: #c4b5fd;
-
-    background: rgba(168,85,247,.09);
+    background: var(--kyc-success-soft);
 
 }
 
 
 .review-card h3 {
 
-    margin: 0 0 13px;
+    margin: 0 0 15px;
 
-    color: #f8fafc;
+    color: var(--kyc-text);
 
-    font-size: 1rem;
+    font-size: .92rem;
 
-    font-weight: 850;
+    font-weight: 900;
 
 }
 
 
-.review-card p {
+.review-status {
 
-    margin: 0 0 7px;
+    display: inline-flex;
 
-    color: var(--kyc-text);
+    align-items: center;
 
-    font-size: .87rem;
+    padding: 5px 8px;
 
-    line-height: 1.55;
+    border-radius: 999px;
+
+    font-size: .59rem;
+
+    font-weight: 900;
+
+    text-transform: uppercase;
+
+    letter-spacing: .06em;
+
+}
+
+
+.review-status.success {
+
+    color: #15803d;
+
+    background: var(--kyc-success-soft);
+
+}
+
+
+.review-status.pending {
+
+    color: #b45309;
+
+    background: var(--kyc-warning-soft);
+
+}
+
+
+.review-status.neutral {
+
+    color: #475569;
+
+    background: #f1f5f9;
+
+}
+
+
+.review-details {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 9px;
+
+}
+
+
+.review-row {
+
+    display: flex;
+
+    align-items: flex-start;
+
+    justify-content: space-between;
+
+    gap: 14px;
+
+    padding-bottom: 9px;
+
+    border-bottom: 1px solid #f1f5f9;
+
+}
+
+
+.review-row:last-child {
+
+    padding-bottom: 0;
+
+    border-bottom: 0;
+
+}
+
+
+.review-row span {
+
+    color: var(--kyc-muted);
+
+    font-size: .70rem;
+
+}
+
+
+.review-row strong {
+
+    max-width: 65%;
+
+    color: var(--kyc-text-secondary);
+
+    font-size: .72rem;
+
+    font-weight: 800;
+
+    text-align: right;
+
+    word-break: break-word;
+
+}
+
+
+.review-check-list {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 11px;
+
+}
+
+
+.review-check-row {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 12px;
+
+    padding: 10px 11px;
+
+    border-radius: 10px;
+
+    background: #f8fafc;
+
+}
+
+
+.review-check-row > span {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    color: var(--kyc-text-secondary);
+
+    font-size: .71rem;
+
+    font-weight: 700;
+
+}
+
+
+.review-check-row > span i {
+
+    color: var(--kyc-primary);
+
+}
+
+
+.review-check-row strong {
+
+    font-size: .66rem;
+
+    font-weight: 900;
+
+}
+
+
+.review-check-row strong.check {
+
+    color: #15803d;
+
+}
+
+
+.review-check-row strong.missing {
+
+    color: #dc2626;
 
 }
 
 
 .review-success {
 
-    color: #86efac;
+    display: flex;
 
-    font-weight: 800;
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 11px 12px;
+
+    border-radius: 10px;
+
+    color: #15803d;
+
+    background: var(--kyc-success-soft);
+
+    font-size: .73rem;
+
+    font-weight: 850;
 
 }
 
 
 .review-pending {
 
-    color: #fbbf24;
+    display: flex;
 
-    font-weight: 800;
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 11px 12px;
+
+    border-radius: 10px;
+
+    color: #b45309;
+
+    background: var(--kyc-warning-soft);
+
+    font-size: .73rem;
+
+    font-weight: 850;
 
 }
 
 
-/* =========================================================
+/* ================================================================
    FINAL SUBMIT
-========================================================= */
+================================================================ */
 
 .final-submit-box {
 
@@ -2453,33 +4712,32 @@ select.form-input option {
 
     align-items: flex-start;
 
-    gap: 15px;
+    gap: 14px;
 
     margin-top: 22px;
 
     padding: 20px;
 
-    border-radius: 18px;
+    border: 1px solid var(--kyc-blue-border);
 
-    color: #d1fae5;
+    border-radius: 18px;
 
     background:
         linear-gradient(
             135deg,
-            rgba(34,197,94,.09),
-            rgba(16,185,129,.04)
+            #f8fbff,
+            #eff6ff
         );
-
-    border: 1px solid rgba(34,197,94,.22);
 
 }
 
 
 .final-submit-icon {
 
-    width: 44px;
+    width: 46px;
+    height: 46px;
 
-    height: 44px;
+    flex: 0 0 46px;
 
     display: flex;
 
@@ -2487,13 +4745,36 @@ select.form-input option {
 
     justify-content: center;
 
-    flex-shrink: 0;
-
     border-radius: 13px;
 
-    color: #86efac;
+    color: #fff;
 
-    background: rgba(34,197,94,.12);
+    background:
+        linear-gradient(
+            135deg,
+            var(--kyc-primary),
+            var(--kyc-primary-dark)
+        );
+
+    box-shadow:
+        0 8px 20px rgba(37,99,235,.18);
+
+}
+
+
+.final-submit-kicker {
+
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: var(--kyc-primary);
+
+    font-size: .62rem;
+
+    font-weight: 900;
+
+    letter-spacing: .12em;
 
 }
 
@@ -2502,9 +4783,11 @@ select.form-input option {
 
     margin: 0 0 5px;
 
-    color: #ecfdf5;
+    color: var(--kyc-text);
 
-    font-size: 1rem;
+    font-size: .98rem;
+
+    font-weight: 900;
 
 }
 
@@ -2513,23 +4796,29 @@ select.form-input option {
 
     margin: 0;
 
-    color: #a7f3d0;
+    color: var(--kyc-muted);
 
-    font-size: .83rem;
+    font-size: .76rem;
 
     line-height: 1.6;
 
 }
 
 
+/* ================================================================
+   CONFIRMATION
+================================================================ */
+
 #finalSubmitForm {
 
-    margin-top: 18px;
+    margin-top: 17px;
 
 }
 
 
 .confirmation-check {
+
+    position: relative;
 
     display: flex;
 
@@ -2537,13 +4826,13 @@ select.form-input option {
 
     gap: 10px;
 
-    padding: 13px 0;
+    padding: 12px 0;
 
-    color: #cbd5e1;
+    color: var(--kyc-text-secondary);
 
-    font-size: .82rem;
+    font-size: .76rem;
 
-    line-height: 1.5;
+    line-height: 1.55;
 
     cursor: pointer;
 
@@ -2552,13 +4841,78 @@ select.form-input option {
 
 .confirmation-check input {
 
-    width: 18px;
+    position: absolute;
 
-    height: 18px;
+    opacity: 0;
+
+    pointer-events: none;
+
+}
+
+
+.custom-check {
+
+    width: 19px;
+    height: 19px;
+
+    flex: 0 0 19px;
 
     margin-top: 1px;
 
-    accent-color: var(--kyc-green);
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border: 1.5px solid #cbd5e1;
+
+    border-radius: 5px;
+
+    background: #fff;
+
+    transition:
+        background .18s ease,
+        border-color .18s ease;
+
+}
+
+
+.confirmation-check input:checked + .custom-check {
+
+    background: var(--kyc-primary);
+
+    border-color: var(--kyc-primary);
+
+}
+
+
+.confirmation-check input:checked + .custom-check::after {
+
+    content: "\f00c";
+
+    color: #fff;
+
+    font-family: "Font Awesome 6 Free";
+
+    font-size: .62rem;
+
+    font-weight: 900;
+
+}
+
+
+.confirmation-check input:focus-visible + .custom-check {
+
+    box-shadow:
+        0 0 0 3px rgba(37,99,235,.12);
+
+}
+
+
+.confirmation-text {
+
+    padding-top: 1px;
 
 }
 
@@ -2567,30 +4921,44 @@ select.form-input option {
 
     width: 100%;
 
-    min-height: 52px;
+    min-height: 54px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 9px;
 
     border: 0;
 
-    border-radius: 14px;
+    border-radius: 13px;
 
-    color: #022c16;
+    color: #fff;
 
     background:
         linear-gradient(
             135deg,
-            #4ade80,
-            #16a34a
+            #2563eb,
+            #1d4ed8
         );
 
-    font-weight: 900;
+    box-shadow:
+        0 9px 24px rgba(37,99,235,.18);
 
-    letter-spacing: .02em;
+    font-size: .78rem;
+
+    font-weight: 950;
+
+    letter-spacing: .035em;
 
     cursor: pointer;
 
     transition:
         transform .18s ease,
-        filter .18s ease;
+        box-shadow .18s ease,
+        opacity .18s ease;
 
 }
 
@@ -2599,14 +4967,26 @@ select.form-input option {
 
     transform: translateY(-1px);
 
-    filter: brightness(1.06);
+    box-shadow:
+        0 13px 30px rgba(37,99,235,.24);
 
 }
 
 
-/* =========================================================
-   BOTTOM ACTIONS
-========================================================= */
+.submit-application-button:disabled {
+
+    opacity: .65;
+
+    cursor: wait;
+
+    transform: none;
+
+}
+
+
+/* ================================================================
+   ACTION BAR
+================================================================ */
 
 .verification-actions {
 
@@ -2618,291 +4998,192 @@ select.form-input option {
 
     gap: 15px;
 
-    padding: 20px 26px 28px;
+    padding: 18px 34px 25px;
 
     border-top: 1px solid var(--kyc-border);
 
-    background: rgba(2,6,23,.18);
+    background: #fbfdff;
 
 }
 
 
 .navigation-info {
 
-    color: #64748b;
+    display: flex;
 
-    font-size: .78rem;
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 7px;
+
+    color: var(--kyc-muted);
+
+    font-size: .73rem;
 
     font-weight: 700;
 
 }
 
 
+.navigation-step-label {
+
+    color: var(--kyc-text-secondary);
+
+    font-weight: 900;
+
+}
+
+
 .navigation-dot {
 
-    margin: 0 6px;
+    color: #cbd5e1;
 
 }
 
 
 .final-ready-label {
 
-    color: #86efac;
+    display: inline-flex;
 
-    font-size: .78rem;
+    align-items: center;
 
-    font-weight: 800;
+    gap: 8px;
 
-}
+    padding: 9px 12px;
 
+    border-radius: 999px;
 
-.primary-button,
-.secondary-button,
-.success-button {
+    color: #15803d;
 
-    min-height: 46px;
+    background: var(--kyc-success-soft);
 
-    padding: 11px 19px;
+    border: 1px solid var(--kyc-success-border);
 
-    border-radius: 12px;
+    font-size: .69rem;
 
-    font-weight: 850;
-
-    cursor: pointer;
-
-    border: 1px solid transparent;
-
-    transition:
-        transform .18s ease,
-        filter .18s ease,
-        opacity .18s ease;
+    font-weight: 900;
 
 }
 
 
-.primary-button {
+.final-ready-icon {
 
-    color: #03200f;
-
-    background:
-        linear-gradient(
-            135deg,
-            #22c55e,
-            #16a34a
-        );
+    display: inline-flex;
 
 }
 
 
-.success-button {
+/* ================================================================
+   FOCUS ACCESSIBILITY
+================================================================ */
 
-    color: #fff;
+button:focus-visible,
+label:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
 
-    background:
-        linear-gradient(
-            135deg,
-            #60a5fa,
-            #2563eb
-        );
+    outline: 3px solid rgba(37,99,235,.16);
 
-}
-
-
-.secondary-button {
-
-    color: var(--kyc-text);
-
-    background: rgba(148,163,184,.07);
-
-    border-color: var(--kyc-border);
+    outline-offset: 2px;
 
 }
 
 
-.primary-button:hover,
-.secondary-button:hover,
-.success-button:hover {
-
-    transform: translateY(-1px);
-
-    filter: brightness(1.05);
-
-}
-
-
-.secondary-button:disabled {
-
-    opacity: .35;
-
-    cursor: not-allowed;
-
-    transform: none;
-
-}
-
-
-/* =========================================================
-   LIGHT THEME
-========================================================= */
-
-html.light .seller-verification-shell,
-body.light .seller-verification-shell {
-
-    background:
-        radial-gradient(
-            circle at 5% 5%,
-            rgba(34,197,94,.10),
-            transparent 24%
-        ),
-        #f4f7fb;
-
-}
-
-
-html.light .seller-verification-card,
-body.light .seller-verification-card {
-
-    background: #fff;
-
-    border-color: #e2e8f0;
-
-    box-shadow: 0 25px 70px rgba(15,23,42,.10);
-
-}
-
-
-html.light .stepper,
-body.light .stepper {
-
-    background: #f8fafc;
-
-}
-
-
-html.light .form-input,
-body.light .form-input {
-
-    color: #111827;
-
-    background: #fff;
-
-    border-color: #dbe3ed;
-
-}
-
-
-html.light .form-label,
-body.light .form-label {
-
-    color: #111827;
-
-}
-
-
-html.light .panel-title,
-body.light .panel-title {
-
-    color: #111827;
-
-}
-
-
-html.light .muted,
-body.light .muted {
-
-    color: #64748b;
-
-}
-
-
-html.light .surface-box,
-html.light .upload-box,
-html.light .review-card,
-body.light .surface-box,
-body.light .upload-box,
-body.light .review-card {
-
-    background: #f8fafc;
-
-    border-color: #e2e8f0;
-
-}
-
-
-html.light .review-card h3,
-body.light .review-card h3 {
-
-    color: #111827;
-
-}
-
-
-html.light .review-card p,
-body.light .review-card p {
-
-    color: #374151;
-
-}
-
-
-html.light .verification-actions,
-body.light .verification-actions {
-
-    background: #f8fafc;
-
-}
-
-
-html.light .step-item,
-body.light .step-item {
-
-    color: #374151;
-
-    background: #fff;
-
-    border-color: #e2e8f0;
-
-}
-
-
-html.light select.form-input option,
-body.light select.form-input option {
-
-    background: #fff;
-
-    color: #111827;
-
-}
-
-
-/* =========================================================
+/* ================================================================
    RESPONSIVE
-========================================================= */
+================================================================ */
 
-@media (max-width: 900px) {
-
-    .stepper {
-
-        grid-template-columns: repeat(3, 1fr);
-
-    }
-
-    .step-label {
-
-        font-size: .72rem;
-
-    }
-
-}
-
-
-@media (max-width: 700px) {
+@media (max-width: 1200px) {
 
     .seller-verification-shell {
 
-        padding: 10px;
+        padding-left: 16px;
+        padding-right: 16px;
+
+    }
+
+
+    .verification-header {
+
+        padding: 30px;
+
+    }
+
+
+    .verification-panels {
+
+        padding-left: 26px;
+        padding-right: 26px;
+
+    }
+
+
+    .verification-actions {
+
+        padding-left: 26px;
+        padding-right: 26px;
+
+    }
+
+}
+
+
+@media (max-width: 980px) {
+
+    .verification-header {
 
         align-items: flex-start;
+
+        flex-direction: column;
+
+    }
+
+
+    .header-right {
+
+        width: 100%;
+
+        align-items: flex-start;
+
+        flex-direction: row;
+
+        justify-content: space-between;
+
+    }
+
+
+    .progress-summary {
+
+        width: min(300px, 100%);
+
+    }
+
+
+    .stepper {
+
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    }
+
+
+    .step-item {
+
+        justify-content: flex-start;
+
+    }
+
+}
+
+
+@media (max-width: 760px) {
+
+    .seller-verification-shell {
+
+        min-height: auto;
+
+        padding: 10px;
 
     }
 
@@ -2918,9 +5199,24 @@ body.light select.form-input option {
 
         padding: 25px 20px;
 
-        flex-direction: column;
+    }
+
+
+    .header-title-row {
 
         align-items: flex-start;
+
+    }
+
+
+    .header-title-icon {
+
+        width: 45px;
+        height: 45px;
+
+        flex-basis: 45px;
+
+        border-radius: 13px;
 
     }
 
@@ -2932,9 +5228,39 @@ body.light select.form-input option {
     }
 
 
-    .stepper {
+    .header-right {
+
+        align-items: stretch;
+
+        flex-direction: column;
+
+    }
+
+
+    .progress-summary {
+
+        width: 100%;
+
+    }
+
+
+    .step-pill {
+
+        align-self: flex-start;
+
+    }
+
+
+    .stepper-wrapper {
 
         padding: 12px;
+
+    }
+
+
+    .stepper {
+
+        grid-template-columns: repeat(2, minmax(0, 1fr));
 
         gap: 7px;
 
@@ -2943,27 +5269,39 @@ body.light select.form-input option {
 
     .step-item {
 
-        min-height: 50px;
+        min-height: 58px;
 
-        padding: 8px 5px;
-
-        flex-direction: column;
-
-        gap: 4px;
+        padding: 8px;
 
     }
 
 
-    .step-label {
+    .step-state {
 
-        font-size: .64rem;
+        display: none;
 
     }
 
 
     .verification-panels {
 
-        padding: 22px 16px 8px;
+        padding: 23px 16px 18px;
+
+    }
+
+
+    .panel-heading {
+
+        flex-direction: column;
+
+        margin-bottom: 20px;
+
+    }
+
+
+    .status-tag {
+
+        align-self: flex-start;
 
     }
 
@@ -2984,20 +5322,28 @@ body.light select.form-input option {
     }
 
 
-    .panel-header {
+    .form-card {
 
-        align-items: flex-start;
+        padding: 17px;
 
-        flex-direction: column;
+        border-radius: 16px;
 
     }
 
 
     .verification-actions {
 
-        padding: 17px 16px 22px;
+        padding: 16px;
 
         flex-wrap: wrap;
+
+    }
+
+
+    .verification-actions .secondary-button,
+    .verification-actions .primary-button {
+
+        flex: 1;
 
     }
 
@@ -3008,50 +5354,229 @@ body.light select.form-input option {
 
         width: 100%;
 
-        text-align: center;
-
-    }
-
-
-    .primary-button,
-    .secondary-button,
-    .success-button {
-
-        min-width: 0;
-
     }
 
 }
 
 
-@media (max-width: 450px) {
+@media (max-width: 480px) {
 
-    .stepper {
+    .seller-verification-shell {
 
-        grid-template-columns: repeat(2, 1fr);
-
-    }
-
-
-    .step-item {
-
-        flex-direction: row;
-
-        min-height: 46px;
+        padding: 5px;
 
     }
 
 
-    .step-label {
+    .verification-header {
 
-        font-size: .70rem;
+        padding: 22px 16px;
+
+    }
+
+
+    .eyebrow {
+
+        font-size: .58rem;
+
+        letter-spacing: .12em;
+
+    }
+
+
+    .header-title-row {
+
+        gap: 10px;
+
+    }
+
+
+    .header-title-icon {
+
+        width: 40px;
+        height: 40px;
+
+        flex-basis: 40px;
+
+        border-radius: 11px;
+
+        font-size: 1rem;
 
     }
 
 
     .verification-header h1 {
 
-        font-size: 1.75rem;
+        font-size: 1.65rem;
+
+    }
+
+
+    .header-copy p {
+
+        font-size: .78rem;
+
+    }
+
+
+    .stepper {
+
+        grid-template-columns: 1fr 1fr;
+
+    }
+
+
+    .step-item {
+
+        min-height: 48px;
+
+        justify-content: center;
+
+    }
+
+
+    .step-number {
+
+        width: 28px;
+        height: 28px;
+
+        flex-basis: 28px;
+
+    }
+
+
+    .step-label {
+
+        font-size: .66rem;
+
+    }
+
+
+    .panel-heading-left {
+
+        gap: 10px;
+
+    }
+
+
+    .panel-icon {
+
+        width: 40px;
+        height: 40px;
+
+        flex-basis: 40px;
+
+        border-radius: 11px;
+
+    }
+
+
+    .panel-title {
+
+        font-size: 1.3rem;
+
+    }
+
+
+    .panel-description {
+
+        font-size: .77rem;
+
+    }
+
+
+    .security-note {
+
+        padding: 13px;
+
+    }
+
+
+    .security-note-icon {
+
+        width: 32px;
+        height: 32px;
+
+        flex-basis: 32px;
+
+    }
+
+
+    .upload-box {
+
+        padding: 15px;
+
+    }
+
+
+    .review-card {
+
+        padding: 16px;
+
+    }
+
+
+    .review-row {
+
+        flex-direction: column;
+
+        gap: 3px;
+
+    }
+
+
+    .review-row strong {
+
+        max-width: 100%;
+
+        text-align: left;
+
+    }
+
+
+    .final-submit-box {
+
+        flex-direction: column;
+
+    }
+
+
+    .verification-actions {
+
+        gap: 8px;
+
+    }
+
+
+    .verification-actions .secondary-button,
+    .verification-actions .primary-button {
+
+        width: 100%;
+
+        flex: 1 1 100%;
+
+    }
+
+}
+
+
+/* ================================================================
+   REDUCED MOTION
+================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+
+        scroll-behavior: auto !important;
+
+        animation-duration: .01ms !important;
+
+        animation-iteration-count: 1 !important;
+
+        transition-duration: .01ms !important;
 
     }
 
@@ -3062,39 +5587,54 @@ body.light select.form-input option {
 @endpush
 
 
-{{-- ================================================================
-     JAVASCRIPT
-================================================================ --}}
-
 @push('scripts')
 
 <script>
 
 document.addEventListener('DOMContentLoaded', function () {
 
+    'use strict';
+
+
     const panels = Array.from(
         document.querySelectorAll('.verification-panel')
     );
+
 
     const stepButtons = Array.from(
         document.querySelectorAll('[data-step-button]')
     );
 
+
     const backButton =
         document.getElementById('backButton');
 
+
     const nextButton =
         document.getElementById('nextButton');
+
 
     const currentStep =
         Number(@json($currentStep));
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | ACTIVATE PANEL
-    |--------------------------------------------------------------------------
-    */
+    const verificationIndexUrl =
+        @json(route('seller.verification.index'));
+
+
+    function goToStep(step) {
+
+        step = Number(step);
+
+        if (step < 1 || step > 6) {
+            return;
+        }
+
+        window.location.href =
+            verificationIndexUrl + '?step=' + step;
+
+    }
+
 
     function activateStep(step) {
 
@@ -3103,6 +5643,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (step < 1 || step > 6) {
             return;
         }
+
 
         panels.forEach(function (panel) {
 
@@ -3126,7 +5667,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (backButton) {
 
-            backButton.disabled = step <= 1;
+            backButton.disabled =
+                step <= 1;
 
         }
 
@@ -3135,7 +5677,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /*
     |--------------------------------------------------------------------------
-    | COMPLETED / PREVIOUS STEP CLICK
+    | STEP BUTTONS
     |--------------------------------------------------------------------------
     */
 
@@ -3147,20 +5689,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
+
             const target =
                 Number(button.dataset.targetStep);
 
-            /*
-             * Only current and already completed
-             * steps can be opened.
-             */
 
             if (target <= currentStep) {
 
-                window.location.href =
-                    "{{ route('seller.verification.index') }}"
-                    + "?step="
-                    + target;
+                goToStep(target);
 
             }
 
@@ -3183,10 +5719,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            window.location.href =
-                "{{ route('seller.verification.index') }}"
-                + "?step="
-                + (currentStep - 1);
+            goToStep(currentStep - 1);
 
         });
 
@@ -3195,14 +5728,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /*
     |--------------------------------------------------------------------------
-    | NEXT
+    | NEXT / CONTINUE
     |--------------------------------------------------------------------------
-    |
-    | IMPORTANT:
-    |
-    | Step 2, 3, 4 and 5 have their own forms.
-    | Therefore Next will submit the active form.
-    |
     */
 
     if (nextButton) {
@@ -3214,6 +5741,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     '.verification-panel.active'
                 );
 
+
             if (!activePanel) {
                 return;
             }
@@ -3224,19 +5752,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
             /*
-             * STEP 1:
-             * Email has two forms.
-             * User must verify email through
-             * the Verify Email button.
-             */
+            |--------------------------------------------------------------------------
+            | STEP 1
+            |--------------------------------------------------------------------------
+            */
 
             if (currentStep === 1) {
 
                 @if($emailCompleted)
 
-                    window.location.href =
-                        "{{ route('seller.verification.index') }}"
-                        + "?step=2";
+                    goToStep(2);
 
                 @else
 
@@ -3252,8 +5777,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
             /*
-             * STEP 2:
-             */
+            |--------------------------------------------------------------------------
+            | STEP 2
+            |--------------------------------------------------------------------------
+            */
 
             if (currentStep === 2) {
 
@@ -3262,52 +5789,59 @@ document.addEventListener('DOMContentLoaded', function () {
                         'form[action*="documents.upload"]'
                     );
 
-                if (uploadForm) {
 
-                    const businessFile =
-                        uploadForm.querySelector(
-                            '[name="business_certificate"]'
-                        );
-
-                    const aadhaarFile =
-                        uploadForm.querySelector(
-                            '[name="aadhaar_document"]'
-                        );
-
-                    @if(!$documentsCompleted)
-
-                        if (
-                            !businessFile ||
-                            !businessFile.files.length
-                        ) {
-
-                            alert(
-                                'Please upload your Business Certificate.'
-                            );
-
-                            return;
-
-                        }
-
-
-                        if (
-                            !aadhaarFile ||
-                            !aadhaarFile.files.length
-                        ) {
-
-                            alert(
-                                'Please upload your Aadhaar document.'
-                            );
-
-                            return;
-
-                        }
-
-                    @endif
-
-                    uploadForm.submit();
-
+                if (!uploadForm) {
+                    return;
                 }
+
+
+                const businessFile =
+                    uploadForm.querySelector(
+                        '[name="business_certificate"]'
+                    );
+
+
+                const aadhaarFile =
+                    uploadForm.querySelector(
+                        '[name="aadhaar_document"]'
+                    );
+
+
+                @if(!$documentsCompleted)
+
+                    if (
+                        !businessFile ||
+                        !businessFile.files ||
+                        !businessFile.files.length
+                    ) {
+
+                        alert(
+                            'Please upload your Business Certificate.'
+                        );
+
+                        return;
+
+                    }
+
+
+                    if (
+                        !aadhaarFile ||
+                        !aadhaarFile.files ||
+                        !aadhaarFile.files.length
+                    ) {
+
+                        alert(
+                            'Please upload your Aadhaar document.'
+                        );
+
+                        return;
+
+                    }
+
+                @endif
+
+
+                uploadForm.requestSubmit();
 
                 return;
 
@@ -3315,16 +5849,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
             /*
-             * STEP 3:
-             */
+            |--------------------------------------------------------------------------
+            | STEP 3
+            |--------------------------------------------------------------------------
+            */
 
             if (currentStep === 3) {
 
                 @if($aadhaarCompleted)
 
-                    window.location.href =
-                        "{{ route('seller.verification.index') }}"
-                        + "?step=4";
+                    goToStep(4);
 
                 @else
 
@@ -3340,74 +5874,85 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
             /*
-             * STEP 4:
-             */
+            |--------------------------------------------------------------------------
+            | STEP 4
+            |--------------------------------------------------------------------------
+            */
 
             if (currentStep === 4) {
 
-                if (form) {
-
-                    const businessType =
-                        form.querySelector(
-                            '[name="business_type"]'
-                        );
-
-                    const pan =
-                        form.querySelector(
-                            '[name="pan_number"]'
-                        );
-
-                    const udyam =
-                        form.querySelector(
-                            '[name="udyam_number"]'
-                        );
+                if (!form) {
+                    return;
+                }
 
 
-                    if (
-                        !businessType ||
-                        !businessType.value.trim()
-                    ) {
-
-                        alert(
-                            'Please select your business type.'
-                        );
-
-                        return;
-
-                    }
+                const businessType =
+                    form.querySelector(
+                        '[name="business_type"]'
+                    );
 
 
-                    if (
-                        !pan ||
-                        !pan.value.trim()
-                    ) {
-
-                        alert(
-                            'Please enter your PAN number.'
-                        );
-
-                        return;
-
-                    }
+                const pan =
+                    form.querySelector(
+                        '[name="pan_number"]'
+                    );
 
 
-                    if (
-                        !udyam ||
-                        !udyam.value.trim()
-                    ) {
-
-                        alert(
-                            'Please enter your Udyam number.'
-                        );
-
-                        return;
-
-                    }
+                const udyam =
+                    form.querySelector(
+                        '[name="udyam_number"]'
+                    );
 
 
-                    form.submit();
+                if (
+                    !businessType ||
+                    !businessType.value.trim()
+                ) {
+
+                    alert(
+                        'Please select your business type.'
+                    );
+
+                    businessType?.focus();
+
+                    return;
 
                 }
+
+
+                if (
+                    !pan ||
+                    !pan.value.trim()
+                ) {
+
+                    alert(
+                        'Please enter your PAN number.'
+                    );
+
+                    pan?.focus();
+
+                    return;
+
+                }
+
+
+                if (
+                    !udyam ||
+                    !udyam.value.trim()
+                ) {
+
+                    alert(
+                        'Please enter your Udyam number.'
+                    );
+
+                    udyam?.focus();
+
+                    return;
+
+                }
+
+
+                form.requestSubmit();
 
                 return;
 
@@ -3415,59 +5960,65 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
             /*
-             * STEP 5:
-             */
+            |--------------------------------------------------------------------------
+            | STEP 5
+            |--------------------------------------------------------------------------
+            */
 
             if (currentStep === 5) {
 
-                if (form) {
-
-                    const account =
-                        form.querySelector(
-                            '[name="bank_account_number"]'
-                        );
-
-                    const confirmation =
-                        form.querySelector(
-                            '[name="bank_account_number_confirmation"]'
-                        );
-
-                    if (
-                        account &&
-                        confirmation &&
-                        account.value !== confirmation.value
-                    ) {
-
-                        alert(
-                            'Bank account number and confirmation do not match.'
-                        );
-
-                        confirmation.focus();
-
-                        return;
-
-                    }
+                if (!form) {
+                    return;
+                }
 
 
-                    if (
-                        account &&
-                        !/^[0-9]+$/.test(account.value)
-                    ) {
-
-                        alert(
-                            'Please enter a valid bank account number.'
-                        );
-
-                        account.focus();
-
-                        return;
-
-                    }
+                const account =
+                    form.querySelector(
+                        '[name="bank_account_number"]'
+                    );
 
 
-                    form.submit();
+                const confirmation =
+                    form.querySelector(
+                        '[name="bank_account_number_confirmation"]'
+                    );
+
+
+                if (
+                    account &&
+                    confirmation &&
+                    account.value !== confirmation.value
+                ) {
+
+                    alert(
+                        'Bank account number and confirmation do not match.'
+                    );
+
+                    confirmation.focus();
+
+                    return;
 
                 }
+
+
+                if (
+                    account &&
+                    account.value &&
+                    !/^[0-9]+$/.test(account.value)
+                ) {
+
+                    alert(
+                        'Please enter a valid bank account number.'
+                    );
+
+                    account.focus();
+
+                    return;
+
+                }
+
+
+                form.requestSubmit();
 
                 return;
 
@@ -3480,12 +6031,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /*
     |--------------------------------------------------------------------------
-    | BANK ACCOUNT CONFIRMATION
+    | BANK FORM VALIDATION
     |--------------------------------------------------------------------------
     */
 
     const bankForm =
         document.getElementById('bankDetailsForm');
+
 
     if (bankForm) {
 
@@ -3496,10 +6048,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     '[name="bank_account_number"]'
                 );
 
+
             const confirmation =
                 bankForm.querySelector(
                     '[name="bank_account_number_confirmation"]'
                 );
+
 
             if (
                 account &&
@@ -3509,9 +6063,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 event.preventDefault();
 
+
                 alert(
                     'Bank account number and confirmation do not match.'
                 );
+
 
                 confirmation.focus();
 
@@ -3524,12 +6080,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /*
     |--------------------------------------------------------------------------
-    | FINAL SUBMIT CONFIRMATION
+    | FINAL SUBMIT
     |--------------------------------------------------------------------------
     */
 
     const finalForm =
         document.getElementById('finalSubmitForm');
+
 
     if (finalForm) {
 
@@ -3540,6 +6097,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     'confirmApplication'
                 );
 
+
             if (
                 !checkbox ||
                 !checkbox.checked
@@ -3547,9 +6105,30 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 event.preventDefault();
 
+
                 alert(
                     'Please confirm that all information provided is correct.'
                 );
+
+
+                return;
+
+            }
+
+
+            const submitButton =
+                document.getElementById(
+                    'submitApplicationButton'
+                );
+
+
+            if (submitButton) {
+
+                submitButton.disabled = true;
+
+
+                submitButton.innerHTML =
+                    '<i class="fa-solid fa-spinner fa-spin"></i> SUBMITTING APPLICATION...';
 
             }
 
@@ -3560,7 +6139,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /*
     |--------------------------------------------------------------------------
-    | PAN AUTO UPPERCASE
+    | UPPERCASE INPUTS
     |--------------------------------------------------------------------------
     */
 
@@ -3583,7 +6162,117 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /*
     |--------------------------------------------------------------------------
-    | INITIAL STATE
+    | NUMERIC INPUTS
+    |--------------------------------------------------------------------------
+    */
+
+    document
+        .querySelectorAll(
+            'input[name="code"], input[name="otp"], input[name="pincode"]'
+        )
+        .forEach(function (input) {
+
+            input.addEventListener(
+                'input',
+                function () {
+
+                    this.value =
+                        this.value.replace(/\D/g, '');
+
+                }
+            );
+
+        });
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | BANK ACCOUNT NUMBERS
+    |--------------------------------------------------------------------------
+    */
+
+    document
+        .querySelectorAll(
+            'input[name="bank_account_number"], input[name="bank_account_number_confirmation"]'
+        )
+        .forEach(function (input) {
+
+            input.addEventListener(
+                'input',
+                function () {
+
+                    this.value =
+                        this.value.replace(/\D/g, '');
+
+                }
+            );
+
+        });
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | FILE NAME PREVIEW
+    |--------------------------------------------------------------------------
+    */
+
+    const fileInputs =
+        document.querySelectorAll(
+            '.native-file-input'
+        );
+
+
+    fileInputs.forEach(function (input) {
+
+        input.addEventListener(
+            'change',
+            function () {
+
+                const file =
+                    this.files && this.files.length
+                        ? this.files[0]
+                        : null;
+
+
+                const name =
+                    this.getAttribute('name');
+
+
+                const preview =
+                    document.querySelector(
+                        '[data-file-name="' + name + '"]'
+                    );
+
+
+                if (!preview) {
+                    return;
+                }
+
+
+                if (file) {
+
+                    preview.textContent =
+                        'Selected: ' + file.name;
+
+                    preview.classList.add('show');
+
+                } else {
+
+                    preview.textContent = '';
+
+                    preview.classList.remove('show');
+
+                }
+
+            }
+        );
+
+    });
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | ACTIVATE CURRENT STEP
     |--------------------------------------------------------------------------
     */
 

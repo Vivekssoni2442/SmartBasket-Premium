@@ -4,149 +4,134 @@
 
 @section('content')
 
+{{-- =========================================================
+     SMART BASKET — SELLER SETTINGS
+     FULL WIDTH PREMIUM SELLER PANEL
+     COMMON SELLER TASKBAR + MENU
+========================================================= --}}
+
+{{-- SAME COMMON SELLER TASKBAR AS SELLER ORDERS / MY PRODUCTS --}}
+@include('seller.partials.topbar')
+@include('seller.partials.seller-menu')
+
 <style>
-/* =========================================================
-   SMART BASKET — SELLER SETTINGS
-   PREMIUM SETTINGS UI — FULL REPLACEMENT
-========================================================= */
-
 :root {
-    --sb-set-bg: #f4f7fb;
-    --sb-set-surface: rgba(255,255,255,.88);
-    --sb-set-surface-solid: #ffffff;
-    --sb-set-soft: #f7f9fc;
-    --sb-set-text: #101828;
-    --sb-set-muted: #667085;
-    --sb-set-border: rgba(16,24,40,.08);
+    --set-primary: #2563eb;
+    --set-primary-dark: #1d4ed8;
+    --set-primary-deep: #1e40af;
+    --set-blue: #3b82f6;
+    --set-blue-soft: #eff6ff;
+    --set-blue-soft-2: #dbeafe;
+    --set-blue-border: #bfdbfe;
 
-    --sb-set-primary: #635bff;
-    --sb-set-primary-2: #8b5cf6;
-    --sb-set-cyan: #06b6d4;
-    --sb-set-green: #10b981;
-    --sb-set-red: #ef4444;
+    --set-bg: #f5f8fc;
+    --set-surface: #ffffff;
+    --set-surface-soft: #f8fafc;
+    --set-text: #0f172a;
+    --set-text-2: #1e293b;
+    --set-muted: #64748b;
+    --set-border: #e2e8f0;
 
-    --sb-set-radius: 24px;
-    --sb-set-shadow:
-        0 20px 60px rgba(16,24,40,.08);
+    --set-success: #059669;
+    --set-success-bg: #ecfdf5;
+    --set-danger: #dc2626;
+    --set-danger-bg: #fef2f2;
+    --set-warning: #d97706;
 
-    --sb-set-shadow-hover:
-        0 25px 70px rgba(16,24,40,.13);
+    --set-radius: 20px;
+    --set-shadow: 0 12px 40px rgba(15, 23, 42, .07);
+    --set-shadow-hover: 0 18px 50px rgba(37, 99, 235, .11);
 }
 
-html[data-theme="dark"],
-html[data-sb-theme="dark"],
-html[data-seller-theme="dark"] {
-    --sb-set-bg: #070a11;
-    --sb-set-surface: rgba(17,23,34,.90);
-    --sb-set-surface-solid: #111722;
-    --sb-set-soft: #171e2b;
-    --sb-set-text: #f8fafc;
-    --sb-set-muted: #98a2b3;
-    --sb-set-border: rgba(255,255,255,.075);
-
-    --sb-set-shadow:
-        0 25px 75px rgba(0,0,0,.34);
-
-    --sb-set-shadow-hover:
-        0 30px 90px rgba(0,0,0,.48);
-}
-
-* {
+.seller-settings-page,
+.seller-settings-page * {
     box-sizing: border-box;
 }
 
 .seller-settings-page {
+    width: 100%;
     min-height: calc(100vh - 70px);
-    padding: 30px;
+    padding: 22px 26px 50px;
     position: relative;
     overflow: hidden;
 
     background:
-        radial-gradient(
-            circle at 5% 5%,
-            rgba(99,91,255,.10),
-            transparent 27%
-        ),
-        radial-gradient(
-            circle at 95% 10%,
-            rgba(6,182,212,.08),
-            transparent 25%
-        ),
-        var(--sb-set-bg);
+        radial-gradient(circle at 0% 0%, rgba(37,99,235,.08), transparent 25%),
+        radial-gradient(circle at 100% 10%, rgba(59,130,246,.06), transparent 23%),
+        var(--set-bg);
 
-    color: var(--sb-set-text);
-
-    transition:
-        background .3s ease,
-        color .3s ease;
+    color: var(--set-text);
 }
 
 .seller-settings-page::before {
     content: "";
     position: absolute;
-    width: 360px;
-    height: 360px;
-    right: -180px;
-    top: 260px;
+    width: 420px;
+    height: 420px;
+    right: -210px;
+    bottom: 60px;
     border-radius: 50%;
-    background: rgba(139,92,246,.07);
-    filter: blur(80px);
+    background: rgba(37,99,235,.045);
+    filter: blur(70px);
     pointer-events: none;
 }
 
 .settings-wrapper {
     width: 100%;
-    max-width: 1450px;
+    max-width: none;
     margin: 0 auto;
     position: relative;
     z-index: 1;
 }
 
 /* =========================================================
-   TOP HEADER
+   HERO
 ========================================================= */
 
 .settings-hero {
     position: relative;
     overflow: hidden;
+    width: 100%;
+    margin-bottom: 20px;
+    padding: 23px 27px;
 
-    padding: 28px 30px;
-    margin-bottom: 22px;
-
-    border: 1px solid var(--sb-set-border);
-    border-radius: 28px;
+    border: 1px solid var(--set-blue-border);
+    border-radius: 22px;
 
     background:
         linear-gradient(
             135deg,
-            rgba(99,91,255,.10),
-            rgba(139,92,246,.05)
-        ),
-        var(--sb-set-surface);
+            rgba(239,246,255,.98),
+            rgba(255,255,255,.98)
+        );
 
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    box-shadow: var(--set-shadow);
+}
 
-    box-shadow: var(--sb-set-shadow);
+.settings-hero::before {
+    content: "";
+    position: absolute;
+    width: 280px;
+    height: 280px;
+    right: -100px;
+    top: -145px;
+    border-radius: 50%;
+    background: rgba(37,99,235,.08);
 }
 
 .settings-hero::after {
     content: "";
     position: absolute;
-    width: 230px;
-    height: 230px;
-    right: -80px;
-    top: -100px;
-    border-radius: 50%;
-
-    background:
-        linear-gradient(
-            135deg,
-            rgba(99,91,255,.18),
-            rgba(139,92,246,.05)
-        );
-
-    filter: blur(4px);
+    width: 7px;
+    height: 72%;
+    left: 0;
+    top: 14%;
+    border-radius: 0 8px 8px 0;
+    background: linear-gradient(
+        180deg,
+        var(--set-primary),
+        var(--set-blue)
+    );
 }
 
 .settings-hero-content {
@@ -154,103 +139,92 @@ html[data-seller-theme="dark"] {
     z-index: 2;
 
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
     gap: 25px;
 }
 
 .settings-hero-left {
+    min-width: 0;
     display: flex;
     align-items: center;
-    gap: 18px;
+    gap: 16px;
 }
 
 .settings-hero-icon {
-    width: 58px;
-    height: 58px;
+    width: 57px;
+    height: 57px;
     flex-shrink: 0;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
-    border-radius: 18px;
+    border-radius: 16px;
 
     color: #fff;
-    font-size: 21px;
+    font-size: 20px;
 
     background:
         linear-gradient(
             135deg,
-            var(--sb-set-primary),
-            var(--sb-set-primary-2)
+            var(--set-primary),
+            var(--set-primary-deep)
         );
 
     box-shadow:
-        0 14px 35px rgba(99,91,255,.28);
+        0 12px 28px rgba(37,99,235,.24);
 }
 
 .settings-kicker {
-    margin-bottom: 5px;
-
+    margin-bottom: 4px;
+    color: var(--set-primary);
     font-size: 10px;
     font-weight: 900;
-    letter-spacing: 1.6px;
+    letter-spacing: 1.4px;
     text-transform: uppercase;
-
-    color: var(--sb-set-primary);
 }
 
 .settings-title {
     margin: 0;
-
-    font-size: 31px;
+    color: var(--set-text);
+    font-size: 29px;
     line-height: 1.1;
-    font-weight: 950;
-    letter-spacing: -.9px;
+    font-weight: 900;
+    letter-spacing: -.7px;
 }
 
 .settings-title span {
-    background:
-        linear-gradient(
-            135deg,
-            var(--sb-set-primary),
-            var(--sb-set-primary-2)
-        );
-
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--set-primary);
 }
 
 .settings-subtitle {
-    margin: 8px 0 0;
-
-    max-width: 650px;
-
-    color: var(--sb-set-muted);
-    font-size: 13px;
-    line-height: 1.6;
+    max-width: 780px;
+    margin: 7px 0 0;
+    color: var(--set-muted);
+    font-size: 12px;
+    line-height: 1.55;
 }
 
 .settings-profile {
-    min-width: 230px;
+    min-width: 235px;
 
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 11px;
 
-    padding: 10px 13px;
+    padding: 9px 12px;
 
-    border: 1px solid var(--sb-set-border);
-    border-radius: 17px;
+    border: 1px solid var(--set-border);
+    border-radius: 15px;
 
-    background: var(--sb-set-surface-solid);
+    background: rgba(255,255,255,.92);
+    box-shadow: 0 6px 20px rgba(15,23,42,.04);
 }
 
 .settings-profile-avatar {
-    width: 45px;
-    height: 45px;
+    width: 43px;
+    height: 43px;
     flex-shrink: 0;
 
     display: flex;
@@ -258,18 +232,17 @@ html[data-seller-theme="dark"] {
     justify-content: center;
 
     overflow: hidden;
-
-    border-radius: 14px;
+    border-radius: 12px;
 
     color: #fff;
-    font-weight: 950;
-    font-size: 15px;
+    font-size: 14px;
+    font-weight: 900;
 
     background:
         linear-gradient(
             135deg,
-            var(--sb-set-primary),
-            var(--sb-set-primary-2)
+            var(--set-primary),
+            var(--set-blue)
         );
 }
 
@@ -280,77 +253,70 @@ html[data-seller-theme="dark"] {
 }
 
 .settings-profile-name {
+    max-width: 170px;
+    color: var(--set-text);
     font-size: 12px;
-    font-weight: 900;
-
+    font-weight: 850;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .settings-profile-email {
+    max-width: 170px;
     margin-top: 3px;
-
-    color: var(--sb-set-muted);
-    font-size: 10px;
-
+    color: var(--set-muted);
+    font-size: 9px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 /* =========================================================
-   ALERT
+   ALERTS
 ========================================================= */
 
 .settings-alert {
     display: flex;
     align-items: flex-start;
-    gap: 11px;
+    gap: 10px;
 
-    margin-bottom: 18px;
-    padding: 14px 16px;
+    margin-bottom: 17px;
+    padding: 13px 15px;
 
-    border-radius: 16px;
+    border-radius: 13px;
 
-    font-size: 12px;
-    font-weight: 800;
+    font-size: 11px;
+    font-weight: 750;
 
-    animation: sbAlert .35s ease;
+    animation: settingsAlert .3s ease;
 }
 
-@keyframes sbAlert {
-    from {
-        opacity: 0;
-        transform: translateY(-7px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.settings-alert i {
+    margin-top: 1px;
 }
 
 .settings-alert.success {
     color: #047857;
-    background: rgba(16,185,129,.10);
-    border: 1px solid rgba(16,185,129,.20);
+    background: var(--set-success-bg);
+    border: 1px solid #a7f3d0;
 }
 
 .settings-alert.error {
     color: #b91c1c;
-    background: rgba(239,68,68,.09);
-    border: 1px solid rgba(239,68,68,.18);
+    background: var(--set-danger-bg);
+    border: 1px solid #fecaca;
 }
 
-html[data-theme="dark"] .settings-alert.success,
-html[data-sb-theme="dark"] .settings-alert.success {
-    color: #6ee7b7;
-}
-
-html[data-theme="dark"] .settings-alert.error,
-html[data-sb-theme="dark"] .settings-alert.error {
-    color: #fca5a5;
+@keyframes settingsAlert {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* =========================================================
@@ -358,39 +324,35 @@ html[data-sb-theme="dark"] .settings-alert.error {
 ========================================================= */
 
 .settings-layout {
-    display: grid;
-    grid-template-columns: 245px minmax(0,1fr);
-    gap: 22px;
+    width: 100%;
 
+    display: grid;
+    grid-template-columns: 235px minmax(0,1fr);
+    gap: 20px;
     align-items: start;
 }
 
-/* =========================================================
-   SIDEBAR
-========================================================= */
-
 .settings-nav {
     position: sticky;
-    top: 20px;
+    top: 18px;
 
-    padding: 10px;
+    width: 100%;
+    padding: 9px;
 
-    border: 1px solid var(--sb-set-border);
-    border-radius: 23px;
+    border: 1px solid var(--set-border);
+    border-radius: 20px;
 
-    background: var(--sb-set-surface);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: rgba(255,255,255,.94);
+    box-shadow: var(--set-shadow);
 
-    box-shadow: var(--sb-set-shadow);
+    z-index: 10;
 }
 
 .settings-nav-head {
-    padding: 12px 12px 10px;
-
     display: flex;
     align-items: center;
     gap: 9px;
+    padding: 11px 11px 9px;
 }
 
 .settings-nav-head-icon {
@@ -403,70 +365,64 @@ html[data-sb-theme="dark"] .settings-alert.error {
 
     border-radius: 9px;
 
-    color: var(--sb-set-primary);
-    background: rgba(99,91,255,.10);
+    color: var(--set-primary);
+    background: var(--set-blue-soft);
 
     font-size: 12px;
 }
 
 .settings-nav-head-text {
-    font-size: 10px;
-    font-weight: 950;
-    letter-spacing: 1.2px;
+    color: var(--set-muted);
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 1.1px;
     text-transform: uppercase;
-
-    color: var(--sb-set-muted);
 }
 
 .settings-nav-item {
     position: relative;
 
     width: 100%;
-    min-height: 48px;
+    min-height: 45px;
 
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 11px;
 
     margin: 3px 0;
-    padding: 0 13px;
+    padding: 0 12px;
 
     border: 0;
-    border-radius: 14px;
+    border-radius: 12px;
 
+    color: var(--set-muted);
     background: transparent;
-    color: var(--sb-set-muted);
 
     font-family: inherit;
-    font-size: 12px;
-    font-weight: 850;
+    font-size: 11px;
+    font-weight: 800;
 
     cursor: pointer;
     text-align: left;
 
     transition:
-        background .2s ease,
-        color .2s ease,
-        transform .2s ease;
+        background .18s ease,
+        color .18s ease,
+        transform .18s ease,
+        box-shadow .18s ease;
 }
 
 .settings-nav-item i {
     width: 19px;
-
+    color: currentColor;
     text-align: center;
-    font-size: 14px;
-
-    transition: transform .2s ease;
+    font-size: 13px;
 }
 
 .settings-nav-item:hover {
-    color: var(--sb-set-text);
-    background: var(--sb-set-soft);
+    color: var(--set-primary);
+    background: var(--set-blue-soft);
     transform: translateX(2px);
-}
-
-.settings-nav-item:hover i {
-    transform: scale(1.1);
 }
 
 .settings-nav-item.active {
@@ -475,130 +431,116 @@ html[data-sb-theme="dark"] .settings-alert.error {
     background:
         linear-gradient(
             135deg,
-            var(--sb-set-primary),
-            var(--sb-set-primary-2)
+            var(--set-primary),
+            var(--set-primary-deep)
         );
 
     box-shadow:
-        0 12px 28px rgba(99,91,255,.24);
+        0 9px 22px rgba(37,99,235,.22);
 }
 
 .settings-nav-item.active::after {
     content: "";
-
     position: absolute;
     right: 9px;
-
     width: 5px;
     height: 5px;
-
     border-radius: 50%;
-
     background: #fff;
 }
 
 /* =========================================================
-   SECTION
+   CONTENT
 ========================================================= */
+
+.settings-content {
+    min-width: 0;
+    width: 100%;
+}
 
 .settings-section {
     display: none;
-
-    animation: sbSection .28s ease;
+    animation: settingsSection .25s ease;
 }
 
 .settings-section.active {
     display: block;
 }
 
-@keyframes sbSection {
+@keyframes settingsSection {
     from {
         opacity: 0;
-        transform: translateY(8px);
+        transform: translateY(6px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
 
-/* =========================================================
-   CARD
-========================================================= */
-
 .settings-card {
-    margin-bottom: 20px;
-    padding: 27px;
+    width: 100%;
+    margin-bottom: 18px;
+    padding: 24px;
 
-    border: 1px solid var(--sb-set-border);
-    border-radius: var(--sb-set-radius);
+    border: 1px solid var(--set-border);
+    border-radius: var(--set-radius);
 
-    background: var(--sb-set-surface);
+    background: rgba(255,255,255,.97);
 
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-
-    box-shadow: var(--sb-set-shadow);
+    box-shadow: var(--set-shadow);
 
     transition:
-        box-shadow .25s ease,
-        transform .25s ease;
+        box-shadow .2s ease,
+        border-color .2s ease;
 }
 
 .settings-card:hover {
-    box-shadow: var(--sb-set-shadow-hover);
+    border-color: #d5e3f7;
+    box-shadow: var(--set-shadow-hover);
 }
 
 .settings-card-header {
     display: flex;
     align-items: center;
-    gap: 14px;
-
-    margin-bottom: 25px;
+    gap: 13px;
+    margin-bottom: 22px;
 }
 
 .settings-card-icon {
-    width: 48px;
-    height: 48px;
+    width: 46px;
+    height: 46px;
     flex-shrink: 0;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
-    border-radius: 15px;
+    border-radius: 14px;
 
-    color: #fff;
-    font-size: 16px;
+    color: var(--set-primary);
+    background: var(--set-blue-soft);
+    border: 1px solid var(--set-blue-border);
 
-    background:
-        linear-gradient(
-            135deg,
-            var(--sb-set-primary),
-            var(--sb-set-primary-2)
-        );
-
-    box-shadow:
-        0 11px 25px rgba(99,91,255,.20);
+    font-size: 15px;
 }
 
 .settings-card-title {
-    font-size: 16px;
-    font-weight: 950;
+    color: var(--set-text);
+    font-size: 15px;
+    font-weight: 900;
     letter-spacing: -.2px;
 }
 
 .settings-card-description {
     margin-top: 4px;
-
-    color: var(--sb-set-muted);
-    font-size: 11px;
+    color: var(--set-muted);
+    font-size: 10px;
     line-height: 1.5;
 }
 
 /* =========================================================
-   STORE PROFILE BANNER
+   PROFILE
 ========================================================= */
 
 .seller-profile-banner {
@@ -607,42 +549,39 @@ html[data-sb-theme="dark"] .settings-alert.error {
 
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 13px;
 
-    margin-bottom: 24px;
-    padding: 17px;
+    margin-bottom: 22px;
+    padding: 15px;
 
-    border: 1px solid rgba(99,91,255,.13);
-    border-radius: 18px;
+    border: 1px solid var(--set-blue-border);
+    border-radius: 16px;
 
     background:
         linear-gradient(
             135deg,
-            rgba(99,91,255,.10),
-            rgba(139,92,246,.035)
+            #eff6ff,
+            #ffffff
         );
 }
 
 .seller-profile-banner::after {
     content: "";
-
     position: absolute;
-    width: 150px;
-    height: 150px;
-    right: -60px;
-    top: -70px;
-
+    width: 170px;
+    height: 170px;
+    right: -75px;
+    top: -80px;
     border-radius: 50%;
-
-    background: rgba(99,91,255,.08);
+    background: rgba(37,99,235,.07);
 }
 
 .seller-avatar {
     position: relative;
     z-index: 2;
 
-    width: 54px;
-    height: 54px;
+    width: 52px;
+    height: 52px;
     flex-shrink: 0;
 
     display: flex;
@@ -650,19 +589,21 @@ html[data-sb-theme="dark"] .settings-alert.error {
     justify-content: center;
 
     overflow: hidden;
-
-    border-radius: 16px;
+    border-radius: 15px;
 
     color: #fff;
-    font-size: 15px;
-    font-weight: 950;
+    font-size: 14px;
+    font-weight: 900;
 
     background:
         linear-gradient(
             135deg,
-            var(--sb-set-primary),
-            var(--sb-set-primary-2)
+            var(--set-primary),
+            var(--set-blue)
         );
+
+    box-shadow:
+        0 8px 20px rgba(37,99,235,.18);
 }
 
 .seller-avatar img {
@@ -674,35 +615,34 @@ html[data-sb-theme="dark"] .settings-alert.error {
 .seller-profile-name {
     position: relative;
     z-index: 2;
-
-    font-size: 14px;
-    font-weight: 950;
+    color: var(--set-text);
+    font-size: 13px;
+    font-weight: 900;
 }
 
 .seller-profile-email {
     position: relative;
     z-index: 2;
-
     margin-top: 3px;
-
-    color: var(--sb-set-muted);
-    font-size: 10px;
+    color: var(--set-muted);
+    font-size: 9px;
 }
 
 /* =========================================================
-   FORM
+   FORMS
 ========================================================= */
 
 .settings-grid {
     display: grid;
     grid-template-columns: repeat(2,minmax(0,1fr));
-    gap: 17px;
+    gap: 15px;
 }
 
 .settings-field {
+    min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 7px;
+    gap: 6px;
 }
 
 .settings-field.full {
@@ -710,57 +650,58 @@ html[data-sb-theme="dark"] .settings-alert.error {
 }
 
 .settings-field label {
+    color: var(--set-text-2);
     font-size: 10px;
-    font-weight: 950;
-    letter-spacing: .2px;
+    font-weight: 850;
 }
 
 .settings-input,
 .settings-select {
     width: 100%;
-    min-height: 46px;
+    min-height: 44px;
 
-    padding: 11px 13px;
-
-    border: 1px solid var(--sb-set-border);
-    border-radius: 13px;
+    padding: 10px 12px;
 
     outline: none;
 
-    background: var(--sb-set-soft);
-    color: var(--sb-set-text);
+    border: 1px solid var(--set-border);
+    border-radius: 11px;
+
+    background: var(--set-surface-soft);
+    color: var(--set-text);
 
     font-family: inherit;
-    font-size: 12px;
+    font-size: 11px;
 
     transition:
-        border-color .2s ease,
-        box-shadow .2s ease,
-        background .2s ease;
+        border-color .18s ease,
+        box-shadow .18s ease,
+        background .18s ease;
 }
 
 .settings-input::placeholder {
-    color: var(--sb-set-muted);
+    color: #94a3b8;
 }
 
 .settings-input:focus,
 .settings-select:focus {
-    border-color: var(--sb-set-primary);
+    border-color: var(--set-primary);
+    background: #fff;
 
     box-shadow:
-        0 0 0 4px rgba(99,91,255,.09);
-
-    background: var(--sb-set-surface-solid);
+        0 0 0 3px rgba(37,99,235,.09);
 }
 
 .settings-input[readonly] {
     cursor: default;
-    opacity: .82;
+    color: #475569;
+    background: #f8fafc;
 }
 
 textarea.settings-input {
-    min-height: 110px;
+    min-height: 100px;
     resize: vertical;
+    line-height: 1.55;
 }
 
 /* =========================================================
@@ -768,16 +709,16 @@ textarea.settings-input {
 ========================================================= */
 
 .setting-row {
-    min-height: 70px;
+    min-height: 66px;
 
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 20px;
+    gap: 18px;
 
-    padding: 15px 0;
+    padding: 13px 0;
 
-    border-bottom: 1px solid var(--sb-set-border);
+    border-bottom: 1px solid #edf1f6;
 
     transition:
         background .2s ease,
@@ -791,28 +732,27 @@ textarea.settings-input {
 .setting-row.setting-changed {
     padding-left: 10px;
     padding-right: 10px;
+    border-radius: 11px;
+    background: var(--set-blue-soft);
+}
 
-    border-radius: 13px;
-
-    background: rgba(99,91,255,.06);
+.setting-info {
+    min-width: 0;
 }
 
 .setting-info strong {
     display: block;
-
-    font-size: 12px;
-    font-weight: 950;
+    color: var(--set-text);
+    font-size: 11px;
+    font-weight: 850;
 }
 
 .setting-info span {
     display: block;
-
-    max-width: 620px;
-
+    max-width: 720px;
     margin-top: 4px;
-
-    color: var(--sb-set-muted);
-    font-size: 10px;
+    color: var(--set-muted);
+    font-size: 9px;
     line-height: 1.5;
 }
 
@@ -822,18 +762,15 @@ textarea.settings-input {
 
 .toggle {
     position: relative;
-
-    width: 49px;
-    height: 28px;
+    width: 48px;
+    height: 27px;
     flex-shrink: 0;
 }
 
-.toggle input {
+.toggle input[type="checkbox"] {
     position: absolute;
-
     width: 1px;
     height: 1px;
-
     opacity: 0;
 }
 
@@ -842,12 +779,11 @@ textarea.settings-input {
     inset: 0;
 
     border-radius: 30px;
-
     cursor: pointer;
 
     background: #cbd5e1;
 
-    transition: .25s ease;
+    transition: .22s ease;
 }
 
 .toggle-slider::before {
@@ -855,8 +791,8 @@ textarea.settings-input {
 
     position: absolute;
 
-    width: 22px;
-    height: 22px;
+    width: 21px;
+    height: 21px;
 
     left: 3px;
     top: 3px;
@@ -866,107 +802,170 @@ textarea.settings-input {
     background: #fff;
 
     box-shadow:
-        0 3px 8px rgba(0,0,0,.18);
+        0 2px 7px rgba(15,23,42,.2);
 
-    transition: .25s ease;
+    transition: .22s ease;
 }
 
-.toggle input:checked + .toggle-slider {
+.toggle input[type="checkbox"]:checked + .toggle-slider {
     background:
         linear-gradient(
             135deg,
-            var(--sb-set-primary),
-            var(--sb-set-primary-2)
+            var(--set-primary),
+            var(--set-primary-deep)
         );
 }
 
-.toggle input:checked + .toggle-slider::before {
+.toggle input[type="checkbox"]:checked + .toggle-slider::before {
     transform: translateX(21px);
 }
 
+.toggle input[type="checkbox"]:focus-visible + .toggle-slider {
+    box-shadow:
+        0 0 0 4px rgba(37,99,235,.14);
+}
+
 /* =========================================================
-   BUTTONS
+   SAVE BUTTON
 ========================================================= */
 
-.settings-save,
-.security-btn {
+.settings-save {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
 
-    min-height: 43px;
+    min-height: 42px;
 
-    border-radius: 12px;
-
-    font-family: inherit;
-    font-size: 10px;
-    font-weight: 950;
-
-    cursor: pointer;
-
-    transition:
-        transform .2s ease,
-        box-shadow .2s ease,
-        background .2s ease;
-}
-
-.settings-save {
-    margin-top: 20px;
-
-    padding: 0 18px;
+    margin-top: 19px;
+    padding: 0 17px;
 
     border: 0;
+    border-radius: 11px;
 
     color: #fff;
 
     background:
         linear-gradient(
             135deg,
-            var(--sb-set-primary),
-            var(--sb-set-primary-2)
+            var(--set-primary),
+            var(--set-primary-dark)
         );
 
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 900;
+
+    cursor: pointer;
+
     box-shadow:
-        0 11px 25px rgba(99,91,255,.22);
+        0 8px 20px rgba(37,99,235,.18);
+
+    transition:
+        transform .18s ease,
+        box-shadow .18s ease;
 }
 
 .settings-save:hover {
     transform: translateY(-2px);
 
     box-shadow:
-        0 15px 30px rgba(99,91,255,.28);
+        0 12px 26px rgba(37,99,235,.25);
 }
 
-.security-btn {
-    padding: 0 14px;
-
-    border: 1px solid rgba(99,91,255,.18);
-
-    color: var(--sb-set-primary);
-    background: rgba(99,91,255,.07);
-
-    text-decoration: none;
-
-    white-space: nowrap;
+.settings-save:active {
+    transform: translateY(0);
 }
 
-.security-btn:hover {
-    color: #fff;
-
-    background: var(--sb-set-primary);
-
-    transform: translateY(-1px);
+.settings-save i {
+    font-size: 10px;
 }
 
 /* =========================================================
-   THEME SELECTOR
+   PAYMENT STATUS
+========================================================= */
+
+.payment-status-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+
+    margin-top: 18px;
+    padding: 14px 16px;
+
+    border: 1px solid var(--set-blue-border);
+    border-radius: 14px;
+
+    background: var(--set-blue-soft);
+}
+
+.payment-status-left {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.payment-status-icon {
+    width: 39px;
+    height: 39px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 11px;
+
+    color: var(--set-primary);
+    background: #fff;
+    border: 1px solid var(--set-blue-border);
+}
+
+.payment-status-title {
+    color: var(--set-text);
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.payment-status-text {
+    margin-top: 3px;
+    color: var(--set-muted);
+    font-size: 9px;
+}
+
+.payment-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    padding: 7px 10px;
+
+    border-radius: 999px;
+
+    font-size: 9px;
+    font-weight: 900;
+}
+
+.payment-status-badge.enabled {
+    color: #047857;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+}
+
+.payment-status-badge.disabled {
+    color: #b91c1c;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+}
+
+/* =========================================================
+   THEME
 ========================================================= */
 
 .theme-options {
     display: grid;
     grid-template-columns: repeat(3,minmax(0,1fr));
-    gap: 15px;
+    gap: 14px;
 }
 
 .theme-option input {
@@ -975,115 +974,102 @@ textarea.settings-input {
 
 .theme-label {
     display: block;
+    padding: 9px;
 
-    padding: 10px;
-
-    border: 2px solid var(--sb-set-border);
-    border-radius: 18px;
+    border: 2px solid var(--set-border);
+    border-radius: 16px;
 
     cursor: pointer;
 
     transition:
-        border-color .2s ease,
-        transform .2s ease,
-        box-shadow .2s ease;
+        border-color .18s ease,
+        transform .18s ease,
+        box-shadow .18s ease;
 }
 
 .theme-label:hover {
-    transform: translateY(-3px);
+    transform: translateY(-2px);
+    border-color: #cbdcf5;
 }
 
 .theme-option input:checked + .theme-label {
-    border-color: var(--sb-set-primary);
+    border-color: var(--set-primary);
 
     box-shadow:
-        0 0 0 4px rgba(99,91,255,.08),
-        0 15px 35px rgba(99,91,255,.10);
+        0 0 0 3px rgba(37,99,235,.08),
+        0 12px 28px rgba(37,99,235,.09);
 }
 
 .theme-preview {
     position: relative;
-
-    height: 105px;
-
-    margin-bottom: 11px;
-
+    height: 98px;
+    margin-bottom: 10px;
     overflow: hidden;
-
-    border-radius: 12px;
+    border-radius: 11px;
 }
 
 .theme-preview::before {
     content: "";
-
     position: absolute;
-
-    left: 10px;
-    top: 10px;
-
+    left: 9px;
+    top: 9px;
     width: 27%;
-    height: 85px;
-
-    border-radius: 6px;
+    height: 80px;
+    border-radius: 5px;
 }
 
 .theme-preview::after {
     content: "";
-
     position: absolute;
-
     left: 40%;
-    top: 18px;
-
+    top: 17px;
     width: 48%;
-    height: 13px;
-
-    border-radius: 5px;
-
+    height: 11px;
+    border-radius: 4px;
     box-shadow:
-        0 23px 0,
-        0 46px 0,
-        0 69px 0;
+        0 21px 0,
+        0 42px 0,
+        0 63px 0;
 }
 
 .theme-preview.dark {
-    background: #080c14;
+    background: #0f172a;
 }
 
 .theme-preview.dark::before {
-    background: #171e2c;
+    background: #1e293b;
 }
 
 .theme-preview.dark::after {
-    background: #252d3d;
+    background: #334155;
     box-shadow:
-        0 23px 0 #252d3d,
-        0 46px 0 #6366f1,
-        0 69px 0 #252d3d;
+        0 21px 0 #334155,
+        0 42px 0 #3b82f6,
+        0 63px 0 #334155;
 }
 
 .theme-preview.light {
-    background: #edf2f7;
+    background: #eef4fa;
 }
 
 .theme-preview.light::before {
-    background: #dfe5ec;
+    background: #dce6f0;
 }
 
 .theme-preview.light::after {
     background: #fff;
     box-shadow:
-        0 23px 0 #fff,
-        0 46px 0 #6366f1,
-        0 69px 0 #fff;
+        0 21px 0 #fff,
+        0 42px 0 #3b82f6,
+        0 63px 0 #fff;
 }
 
 .theme-preview.auto {
     background:
         linear-gradient(
             90deg,
-            #edf2f7 0 50%,
-            #080c14 50% 100%
+            #eef4fa 0 50%,
+            #0f172a 50% 100%
         );
 }
 
@@ -1091,8 +1077,8 @@ textarea.settings-input {
     background:
         linear-gradient(
             90deg,
-            #dfe5ec 0 50%,
-            #171e2c 50% 100%
+            #dce6f0 0 50%,
+            #1e293b 50% 100%
         );
 }
 
@@ -1101,24 +1087,24 @@ textarea.settings-input {
         linear-gradient(
             90deg,
             #fff 0 50%,
-            #252d3d 50% 100%
+            #334155 50% 100%
         );
 
     box-shadow:
-        0 23px 0 #fff,
-        0 46px 0 #6366f1,
-        0 69px 0 #252d3d;
+        0 21px 0 #fff,
+        0 42px 0 #3b82f6,
+        0 63px 0 #334155;
 }
 
 .theme-name {
-    font-size: 12px;
-    font-weight: 950;
+    color: var(--set-text);
+    font-size: 11px;
+    font-weight: 900;
 }
 
 .theme-description {
-    margin-top: 4px;
-
-    color: var(--sb-set-muted);
+    margin-top: 3px;
+    color: var(--set-muted);
     font-size: 9px;
 }
 
@@ -1127,16 +1113,16 @@ textarea.settings-input {
 ========================================================= */
 
 .security-item {
-    min-height: 68px;
+    min-height: 66px;
 
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 20px;
+    gap: 18px;
 
-    padding: 15px 0;
+    padding: 13px 0;
 
-    border-bottom: 1px solid var(--sb-set-border);
+    border-bottom: 1px solid #edf1f6;
 }
 
 .security-item:last-child {
@@ -1144,38 +1130,42 @@ textarea.settings-input {
 }
 
 .security-left {
+    min-width: 0;
+
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 11px;
 }
 
 .security-icon {
-    width: 41px;
-    height: 41px;
+    width: 39px;
+    height: 39px;
     flex-shrink: 0;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
-    border-radius: 12px;
+    border-radius: 11px;
 
-    color: var(--sb-set-primary);
-    background: var(--sb-set-soft);
+    color: var(--set-primary);
+    background: var(--set-blue-soft);
+    border: 1px solid var(--set-blue-border);
 
-    font-size: 13px;
+    font-size: 12px;
 }
 
 .security-title {
-    font-size: 12px;
-    font-weight: 950;
+    color: var(--set-text);
+    font-size: 11px;
+    font-weight: 900;
 }
 
 .security-text {
     margin-top: 3px;
-
-    color: var(--sb-set-muted);
-    font-size: 10px;
+    color: var(--set-muted);
+    font-size: 9px;
+    line-height: 1.45;
 }
 
 /* =========================================================
@@ -1185,48 +1175,76 @@ textarea.settings-input {
 .qr-preview {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 14px;
 
-    margin-top: 16px;
-    padding: 15px;
+    margin-top: 17px;
+    padding: 13px;
 
-    border: 1px solid var(--sb-set-border);
-    border-radius: 16px;
+    border: 1px solid var(--set-blue-border);
+    border-radius: 14px;
 
-    background: var(--sb-set-soft);
+    background: var(--set-blue-soft);
 }
 
 .qr-preview img {
-    width: 88px;
-    height: 88px;
+    width: 84px;
+    height: 84px;
+
+    flex-shrink: 0;
 
     object-fit: contain;
 
     padding: 5px;
 
-    border-radius: 10px;
+    border-radius: 9px;
 
     background: #fff;
+    border: 1px solid #e2e8f0;
 }
 
 .qr-preview-info strong {
     display: block;
-
-    font-size: 12px;
-    font-weight: 950;
+    color: var(--set-text);
+    font-size: 11px;
+    font-weight: 900;
 }
 
 .qr-preview-info span {
     display: block;
-
+    max-width: 520px;
     margin-top: 4px;
-
-    color: var(--sb-set-muted);
-    font-size: 10px;
+    color: var(--set-muted);
+    font-size: 9px;
+    line-height: 1.5;
 }
 
 /* =========================================================
-   TRANSITION
+   INFO BOX
+========================================================= */
+
+.info-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+
+    padding: 13px 14px;
+
+    border: 1px solid var(--set-blue-border);
+    border-radius: 13px;
+
+    color: #1e40af;
+    background: var(--set-blue-soft);
+
+    font-size: 10px;
+    line-height: 1.55;
+}
+
+.info-box i {
+    margin-top: 2px;
+}
+
+/* =========================================================
+   THEME TRANSITION
 ========================================================= */
 
 html.theme-transition,
@@ -1239,21 +1257,26 @@ html.theme-transition * {
 }
 
 /* =========================================================
-   MOBILE
+   RESPONSIVE
 ========================================================= */
 
-@media (max-width: 1050px) {
-
+@media (max-width: 1200px) {
     .seller-settings-page {
-        padding: 22px 17px;
+        padding: 20px 20px 45px;
     }
 
-    .settings-hero-content {
-        align-items: flex-start;
+    .settings-layout {
+        grid-template-columns: 215px minmax(0,1fr);
     }
 
     .settings-profile {
-        min-width: 205px;
+        min-width: 215px;
+    }
+}
+
+@media (max-width: 1000px) {
+    .settings-hero-content {
+        align-items: flex-start;
     }
 
     .settings-layout {
@@ -1270,8 +1293,9 @@ html.theme-transition * {
         overflow-x: auto;
 
         gap: 4px;
+        padding: 7px;
 
-        padding: 8px;
+        scrollbar-width: thin;
     }
 
     .settings-nav-head {
@@ -1282,6 +1306,7 @@ html.theme-transition * {
         width: auto;
         min-width: max-content;
         margin: 0;
+        padding: 0 13px;
     }
 
     .settings-nav-item.active::after {
@@ -1289,19 +1314,19 @@ html.theme-transition * {
     }
 }
 
-@media (max-width: 720px) {
-
+@media (max-width: 760px) {
     .seller-settings-page {
-        padding: 16px 12px;
+        padding: 15px 11px 38px;
     }
 
     .settings-hero {
-        padding: 21px;
-        border-radius: 22px;
+        padding: 19px;
+        border-radius: 19px;
     }
 
     .settings-hero-content {
         flex-direction: column;
+        align-items: stretch;
     }
 
     .settings-hero-left {
@@ -1315,11 +1340,11 @@ html.theme-transition * {
     }
 
     .settings-title {
-        font-size: 25px;
+        font-size: 24px;
     }
 
     .settings-subtitle {
-        font-size: 11px;
+        font-size: 10px;
     }
 
     .settings-profile {
@@ -1328,17 +1353,20 @@ html.theme-transition * {
     }
 
     .settings-card {
-        padding: 20px;
-        border-radius: 20px;
+        padding: 19px;
+        border-radius: 18px;
     }
 
-    .settings-grid,
-    .theme-options {
+    .settings-grid {
         grid-template-columns: 1fr;
     }
 
     .settings-field.full {
         grid-column: auto;
+    }
+
+    .theme-options {
+        grid-template-columns: 1fr;
     }
 
     .setting-row,
@@ -1349,12 +1377,20 @@ html.theme-transition * {
     .setting-info {
         min-width: 0;
     }
+
+    .setting-info span {
+        max-width: 100%;
+    }
+
+    .payment-status-card {
+        align-items: flex-start;
+        flex-direction: column;
+    }
 }
 
-@media (max-width: 480px) {
-
+@media (max-width: 500px) {
     .settings-hero-left {
-        gap: 12px;
+        gap: 11px;
     }
 
     .settings-hero-icon {
@@ -1364,64 +1400,64 @@ html.theme-transition * {
     }
 
     .settings-title {
-        font-size: 22px;
+        font-size: 21px;
     }
 
     .settings-card-header {
-        gap: 11px;
+        gap: 10px;
     }
 
     .settings-card-icon {
-        width: 43px;
-        height: 43px;
-        border-radius: 13px;
+        width: 41px;
+        height: 41px;
+        border-radius: 12px;
     }
 
     .settings-card-title {
-        font-size: 14px;
+        font-size: 13px;
     }
 
     .settings-nav {
-        border-radius: 17px;
+        border-radius: 15px;
     }
 
     .settings-nav-item {
-        min-height: 43px;
-        padding: 0 11px;
-        font-size: 10px;
+        min-height: 41px;
+        padding: 0 10px;
+        font-size: 9px;
     }
 
     .settings-nav-item i {
-        font-size: 12px;
+        font-size: 11px;
     }
 
-    .security-item,
-    .setting-row {
-        gap: 12px;
-    }
-
-    .security-btn {
-        min-height: 38px;
-        padding: 0 11px;
+    .setting-row,
+    .security-item {
+        gap: 10px;
     }
 
     .settings-save {
         width: 100%;
     }
+
+    .qr-preview {
+        align-items: flex-start;
+    }
+
+    .qr-preview img {
+        width: 72px;
+        height: 72px;
+    }
 }
 </style>
 
-
 <div class="seller-settings-page">
-
     <div class="settings-wrapper">
 
-        {{-- =====================================================
-             PREMIUM HEADER
-        ====================================================== --}}
-
+        {{-- =================================================
+             HEADER
+        ================================================== --}}
         <div class="settings-hero">
-
             <div class="settings-hero-content">
 
                 <div class="settings-hero-left">
@@ -1431,7 +1467,6 @@ html.theme-transition * {
                     </div>
 
                     <div>
-
                         <div class="settings-kicker">
                             Smart Basket Seller Center
                         </div>
@@ -1441,36 +1476,28 @@ html.theme-transition * {
                         </h1>
 
                         <p class="settings-subtitle">
-                            Manage your store, account, notifications,
-                            payments, appearance and security from one place.
+                            Manage your store, operations, notifications,
+                            payments, appearance and security from one
+                            professional seller workspace.
                         </p>
-
                     </div>
 
                 </div>
 
-
                 <div class="settings-profile">
 
                     <div class="settings-profile-avatar">
-
                         @if(!empty($seller->shop_logo))
-
                             <img
                                 src="{{ asset('storage/' . ltrim($seller->shop_logo, '/')) }}?v={{ optional($seller->updated_at)->timestamp ?? time() }}"
                                 alt="Shop Logo"
                             >
-
                         @else
-
                             {{ strtoupper(substr($seller->seller_name ?? 'S', 0, 1)) }}
-
                         @endif
-
                     </div>
 
                     <div>
-
                         <div class="settings-profile-name">
                             {{ $seller->seller_name ?? 'Seller' }}
                         </div>
@@ -1478,86 +1505,56 @@ html.theme-transition * {
                         <div class="settings-profile-email">
                             {{ $seller->email ?? 'Seller account' }}
                         </div>
-
                     </div>
 
                 </div>
 
             </div>
-
         </div>
 
-
-        {{-- =====================================================
+        {{-- =================================================
              ALERTS
-        ====================================================== --}}
+        ================================================== --}}
 
         @if(session('success'))
-
             <div class="settings-alert success">
-
                 <i class="fa-solid fa-circle-check"></i>
-
-                <div>
-                    {{ session('success') }}
-                </div>
-
+                <div>{{ session('success') }}</div>
             </div>
-
         @endif
-
 
         @if(session('error'))
-
             <div class="settings-alert error">
-
                 <i class="fa-solid fa-circle-exclamation"></i>
-
-                <div>
-                    {{ session('error') }}
-                </div>
-
+                <div>{{ session('error') }}</div>
             </div>
-
         @endif
-
 
         @if($errors->any())
-
             <div class="settings-alert error">
-
                 <i class="fa-solid fa-circle-exclamation"></i>
 
                 <div>
-
                     @foreach($errors->all() as $error)
-
                         <div>{{ $error }}</div>
-
                     @endforeach
-
                 </div>
-
             </div>
-
         @endif
 
-
-        {{-- =====================================================
+        {{-- =================================================
              MAIN SETTINGS
-        ====================================================== --}}
+        ================================================== --}}
 
         <div class="settings-layout">
 
-
             {{-- =================================================
-                 NAVIGATION
+                 SETTINGS MENU
             ================================================== --}}
 
             <aside class="settings-nav">
 
                 <div class="settings-nav-head">
-
                     <div class="settings-nav-head-icon">
                         <i class="fa-solid fa-gear"></i>
                     </div>
@@ -1565,9 +1562,7 @@ html.theme-transition * {
                     <div class="settings-nav-head-text">
                         Settings Menu
                     </div>
-
                 </div>
-
 
                 <button
                     type="button"
@@ -1578,24 +1573,23 @@ html.theme-transition * {
                     <span>Store</span>
                 </button>
 
-
-                <button
-                    type="button"
-                    Security
-                    class="settings-nav-item"
-
                 <button
                     type="button"
                     class="settings-nav-item"
                     data-section="operations"
                 >
                     <i class="fa-solid fa-sliders"></i>
-                    Operations
-            
+                    <span>Operations</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="settings-nav-item"
+                    data-section="account"
+                >
                     <i class="fa-solid fa-user"></i>
                     <span>Account</span>
                 </button>
-
 
                 <button
                     type="button"
@@ -1606,7 +1600,6 @@ html.theme-transition * {
                     <span>Notifications</span>
                 </button>
 
-
                 <button
                     type="button"
                     class="settings-nav-item"
@@ -1616,17 +1609,16 @@ html.theme-transition * {
                     <span>Payments</span>
                 </button>
 
-
                 <button
                     type="button"
                     class="settings-nav-item"
                     data-section="shipping"
                 >
-                    <i class="fa-solid fa-truck"></i>
+                    <i class="fa-solid fa-truck-fast"></i>
                     <span>Shipping</span>
                 </button>
 
-
+                {{-- FIXED: APPEARANCE WAS MISSING FROM MENU --}}
                 <button
                     type="button"
                     class="settings-nav-item"
@@ -1635,7 +1627,6 @@ html.theme-transition * {
                     <i class="fa-solid fa-palette"></i>
                     <span>Appearance</span>
                 </button>
-
 
                 <button
                     type="button"
@@ -1648,13 +1639,11 @@ html.theme-transition * {
 
             </aside>
 
-
             {{-- =================================================
                  CONTENT
             ================================================== --}}
 
             <div class="settings-content">
-
 
                 {{-- =================================================
                      STORE
@@ -1674,7 +1663,6 @@ html.theme-transition * {
                             </div>
 
                             <div>
-
                                 <div class="settings-card-title">
                                     Store Information
                                 </div>
@@ -1682,11 +1670,9 @@ html.theme-transition * {
                                 <div class="settings-card-description">
                                     View your store identity and seller information.
                                 </div>
-
                             </div>
 
                         </div>
-
 
                         <div class="seller-profile-banner">
 
@@ -1701,7 +1687,7 @@ html.theme-transition * {
 
                                 @else
 
-                                    SB
+                                    {{ strtoupper(substr($seller->shop_name ?? $seller->seller_name ?? 'S', 0, 2)) }}
 
                                 @endif
 
@@ -1721,6 +1707,420 @@ html.theme-transition * {
 
                         </div>
 
+                        <form
+                            method="POST"
+                            action="{{ route('seller.settings.update') }}"
+                        >
+                            @csrf
+                            @method('PUT')
+
+                            <input
+                                type="hidden"
+                                name="theme"
+                                value="{{ $seller->theme ?? 'light' }}"
+                            >
+
+                            <input
+                                type="hidden"
+                                name="notifications_enabled"
+                                value="{{ (bool)($seller->notifications_enabled ?? true) ? 1 : 0 }}"
+                            >
+
+                            <input
+                                type="hidden"
+                                name="online_payments_enabled"
+                                value="{{ (bool)($seller->online_payments_enabled ?? false) ? 1 : 0 }}"
+                            >
+
+                            <div class="settings-grid">
+
+                                <div class="settings-field">
+                                    <label>Store Name</label>
+
+                                    <input
+                                        type="text"
+                                        class="settings-input"
+                                        value="{{ $seller->shop_name ?? '' }}"
+                                        readonly
+                                    >
+                                </div>
+
+                                <div class="settings-field">
+                                    <label>Seller Name</label>
+
+                                    <input
+                                        type="text"
+                                        class="settings-input"
+                                        value="{{ $seller->seller_name ?? '' }}"
+                                        readonly
+                                    >
+                                </div>
+
+                                <div class="settings-field">
+                                    <label>Email Address</label>
+
+                                    <input
+                                        type="email"
+                                        class="settings-input"
+                                        value="{{ $seller->email ?? '' }}"
+                                        readonly
+                                    >
+                                </div>
+
+                                <div class="settings-field">
+                                    <label>Mobile Number</label>
+
+                                    <input
+                                        type="text"
+                                        class="settings-input"
+                                        value="{{ $seller->mobile_number ?? '' }}"
+                                        readonly
+                                    >
+                                </div>
+
+                            </div>
+
+                            <div
+                                class="info-box"
+                                style="margin-top:18px;"
+                            >
+                                <i class="fa-solid fa-circle-info"></i>
+
+                                <div>
+                                    Store identity information is managed through
+                                    your seller profile. Use the common seller
+                                    taskbar/menu for profile management.
+                                </div>
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </section>
+
+                {{-- =================================================
+                     OPERATIONS
+                ================================================== --}}
+
+                <section
+                    class="settings-section"
+                    data-content="operations"
+                >
+
+                    <form
+                        method="POST"
+                        action="{{ route('seller.settings.update') }}"
+                    >
+
+                        @csrf
+                        @method('PUT')
+
+                        <input
+                            type="hidden"
+                            name="theme"
+                            value="{{ $seller->theme ?? 'light' }}"
+                        >
+
+                        <input
+                            type="hidden"
+                            name="notifications_enabled"
+                            value="{{ (bool)($seller->notifications_enabled ?? true) ? 1 : 0 }}"
+                        >
+
+                        <input
+                            type="hidden"
+                            name="online_payments_enabled"
+                            value="{{ (bool)($seller->online_payments_enabled ?? false) ? 1 : 0 }}"
+                        >
+
+                        @php
+                            $operationGroups = [
+                                'Order Settings' => [
+                                    'auto_accept_orders' => 'Auto accept orders',
+                                    'allow_order_cancellation' => 'Allow order cancellation',
+                                    'allow_return_requests' => 'Allow return requests',
+                                    'allow_exchange_requests' => 'Allow exchange requests',
+                                    'auto_update_order_status' => 'Auto update order status',
+                                    'order_confirmation_notification' => 'Order confirmation notification',
+                                    'delivery_status_notification' => 'Delivery status notification',
+                                ],
+
+                                'Product Settings' => [
+                                    'allow_customer_reviews' => 'Allow customer reviews',
+                                    'allow_customer_questions' => 'Allow customer questions',
+                                    'show_stock_quantity' => 'Show stock quantity',
+                                    'product_visibility_enabled' => 'Enable product visibility',
+                                    'auto_hide_out_of_stock' => 'Auto hide out-of-stock products',
+                                ],
+
+                                'Shipping and Delivery' => [
+                                    'shipping_enabled' => 'Shipping enabled',
+                                    'seller_delivery' => 'Seller delivery',
+                                    'platform_delivery' => 'Platform delivery',
+                                    'pickup_option' => 'Pickup option',
+                                    'same_day_delivery' => 'Same-day delivery',
+                                    'express_delivery' => 'Express delivery',
+                                ],
+
+                                'Privacy and Store Visibility' => [
+                                    'profile_visibility' => 'Profile visibility',
+                                    'shop_visibility' => 'Shop visibility',
+                                    'show_mobile_number' => 'Show mobile number',
+                                    'show_email' => 'Show email',
+                                    'show_business_information' => 'Show business information',
+                                    'store_active' => 'Store active',
+                                    'temporarily_closed' => 'Store temporarily closed',
+                                    'vacation_mode' => 'Vacation mode',
+                                    'allow_customer_messages' => 'Allow customer messages',
+                                    'auto_reply' => 'Automatic customer reply',
+                                ],
+
+                                'Invoice and Receipt' => [
+                                    'show_seller_logo_on_invoice' => 'Show seller logo',
+                                    'show_gst_on_invoice' => 'Show GST',
+                                    'show_seller_address_on_invoice' => 'Show seller address',
+                                    'show_customer_address_on_invoice' => 'Show customer address',
+                                    'show_payment_details_on_invoice' => 'Show payment details',
+                                    'show_qr_on_invoice' => 'Show payment QR',
+                                ],
+                            ];
+                        @endphp
+
+                        @foreach($operationGroups as $groupTitle => $groupSettings)
+
+                            <div class="settings-card">
+
+                                <div class="settings-card-header">
+
+                                    <div class="settings-card-icon">
+                                        <i class="fa-solid fa-sliders"></i>
+                                    </div>
+
+                                    <div>
+                                        <div class="settings-card-title">
+                                            {{ $groupTitle }}
+                                        </div>
+
+                                        <div class="settings-card-description">
+                                            Configure how this part of your seller
+                                            workflow behaves.
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                @foreach($groupSettings as $settingKey => $settingLabel)
+
+                                    <div class="setting-row">
+
+                                        <div class="setting-info">
+
+                                            <strong>
+                                                {{ $settingLabel }}
+                                            </strong>
+
+                                            <span>
+                                                Apply this preference across the
+                                                relevant seller workflow.
+                                            </span>
+
+                                        </div>
+
+                                        <label class="toggle">
+
+                                            <input
+                                                type="hidden"
+                                                name="preferences[{{ $settingKey }}]"
+                                                value="0"
+                                            >
+
+                                            <input
+                                                type="checkbox"
+                                                name="preferences[{{ $settingKey }}]"
+                                                value="1"
+                                                {{ !empty($preferences[$settingKey]) ? 'checked' : '' }}
+                                            >
+
+                                            <span class="toggle-slider"></span>
+
+                                        </label>
+
+                                    </div>
+
+                                @endforeach
+
+                            </div>
+
+                        @endforeach
+
+                        <div class="settings-card">
+
+                            <div class="settings-card-header">
+
+                                <div class="settings-card-icon">
+                                    <i class="fa-solid fa-sliders"></i>
+                                </div>
+
+                                <div>
+                                    <div class="settings-card-title">
+                                        Store Defaults
+                                    </div>
+
+                                    <div class="settings-card-description">
+                                        Configure default values used by seller operations.
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div class="settings-grid">
+
+                                <div class="settings-field">
+                                    <label>Delivery Charge</label>
+
+                                    <input
+                                        class="settings-input"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        name="preferences[delivery_charge]"
+                                        value="{{ $preferences['delivery_charge'] ?? 0 }}"
+                                    >
+                                </div>
+
+                                <div class="settings-field">
+                                    <label>Free Shipping Threshold</label>
+
+                                    <input
+                                        class="settings-input"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        name="preferences[free_shipping_threshold]"
+                                        value="{{ $preferences['free_shipping_threshold'] ?? 0 }}"
+                                    >
+                                </div>
+
+                                <div class="settings-field">
+                                    <label>Estimated Delivery Days</label>
+
+                                    <input
+                                        class="settings-input"
+                                        type="number"
+                                        min="1"
+                                        name="preferences[estimated_delivery_days]"
+                                        value="{{ $preferences['estimated_delivery_days'] ?? 1 }}"
+                                    >
+                                </div>
+
+                                <div class="settings-field">
+                                    <label>Low Stock Threshold</label>
+
+                                    <input
+                                        class="settings-input"
+                                        type="number"
+                                        min="0"
+                                        name="preferences[low_stock_threshold]"
+                                        value="{{ $preferences['low_stock_threshold'] ?? 5 }}"
+                                    >
+                                </div>
+
+                                <div class="settings-field">
+                                    <label>Default Product Status</label>
+
+                                    <select
+                                        class="settings-select"
+                                        name="preferences[default_product_status]"
+                                    >
+                                        <option
+                                            value="active"
+                                            @selected(($preferences['default_product_status'] ?? 'active') === 'active')
+                                        >
+                                            Active
+                                        </option>
+
+                                        <option
+                                            value="inactive"
+                                            @selected(($preferences['default_product_status'] ?? 'active') === 'inactive')
+                                        >
+                                            Inactive
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div class="settings-field">
+                                    <label>Default Rating</label>
+
+                                    <input
+                                        class="settings-input"
+                                        type="number"
+                                        min="0"
+                                        max="5"
+                                        step="0.1"
+                                        name="preferences[default_rating]"
+                                        value="{{ $preferences['default_rating'] ?? 0 }}"
+                                    >
+                                </div>
+
+                                <div class="settings-field">
+                                    <label>Invoice Prefix</label>
+
+                                    <input
+                                        class="settings-input"
+                                        type="text"
+                                        maxlength="30"
+                                        name="preferences[invoice_prefix]"
+                                        value="{{ $preferences['invoice_prefix'] ?? '' }}"
+                                    >
+                                </div>
+
+                                <div class="settings-field full">
+                                    <label>Invoice Footer</label>
+
+                                    <textarea
+                                        class="settings-input"
+                                        name="preferences[invoice_footer]"
+                                        rows="3"
+                                    >{{ $preferences['invoice_footer'] ?? '' }}</textarea>
+                                </div>
+
+                            </div>
+
+                            <button
+                                type="submit"
+                                class="settings-save"
+                            >
+                                <i class="fa-solid fa-floppy-disk"></i>
+                                Save Operations Settings
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                    {{-- CUSTOMER COMMUNICATION --}}
+
+                    <div class="settings-card">
+
+                        <div class="settings-card-header">
+
+                            <div class="settings-card-icon">
+                                <i class="fa-solid fa-comments"></i>
+                            </div>
+
+                            <div>
+                                <div class="settings-card-title">
+                                    Customer Communication
+                                </div>
+
+                                <div class="settings-card-description">
+                                    Configure predefined messages used during the
+                                    order lifecycle.
+                                </div>
+                            </div>
+
+                        </div>
 
                         <form
                             method="POST"
@@ -1748,238 +2148,45 @@ html.theme-transition * {
                                 value="{{ (bool)($seller->online_payments_enabled ?? false) ? 1 : 0 }}"
                             >
 
+                            @foreach([
+                                'welcome_message' => 'Welcome message',
+                                'order_message' => 'Order message',
+                                'cancellation_message' => 'Cancellation message',
+                                'delivery_message' => 'Delivery message'
+                            ] as $messageKey => $messageLabel)
 
-                            <div class="settings-grid">
-
-                                <div class="settings-field">
-
-                                    <label>
-                                        Store Name
-                                    </label>
-
-                                    <input
-                                        type="text"
-                                        class="settings-input"
-                                        value="{{ $seller->shop_name ?? '' }}"
-                                        readonly
-                                    >
-
-                                </div>
-
-
-                                <div class="settings-field">
+                                <div
+                                    class="settings-field"
+                                    style="margin-top:14px;"
+                                >
 
                                     <label>
-                                        Seller Name
+                                        {{ $messageLabel }}
                                     </label>
 
-                                    <input
-                                        type="text"
+                                    <textarea
                                         class="settings-input"
-                                        value="{{ $seller->seller_name ?? '' }}"
-                                        readonly
-                                    >
+                                        name="preferences[{{ $messageKey }}]"
+                                        rows="2"
+                                    >{{ $preferences[$messageKey] ?? '' }}</textarea>
 
                                 </div>
 
-
-                                <div class="settings-field">
-
-                                    <label>
-                                        Email Address
-                                    </label>
-
-                                    <input
-                                        type="email"
-                                        class="settings-input"
-                                        value="{{ $seller->email ?? '' }}"
-                                        readonly
-                                    >
-
-                                </div>
-
-
-                                <div class="settings-field">
-
-                                    <label>
-                                        Mobile Number
-                                    </label>
-
-                                    <input
-                                        type="text"
-                                        class="settings-input"
-                                        value="{{ $seller->mobile_number ?? '' }}"
-                                        readonly
-                                    >
-
-                                </div>
-
-                            </div>
-
-
-                            <a
-                                href="{{ route('seller.profile') }}"
-                                class="security-btn"
-                                style="margin-top:20px;"
-                            >
-                                <i class="fa-solid fa-pen"></i>
-                                Edit Store Profile
-                            </a>
-
-                        </form>
-
-                    </div>
-
-                </section>
-
-                {{-- =================================================
-                     OPERATIONS
-                ================================================== --}}
-
-                <section
-                    class="settings-section"
-                    data-content="operations"
-                >
-
-                    <form method="POST" action="{{ route('seller.settings.update') }}">
-                        @csrf
-                        @method('PUT')
-
-                        <input type="hidden" name="theme" value="{{ $seller->theme ?? 'light' }}">
-                        <input type="hidden" name="notifications_enabled" value="{{ (bool)($seller->notifications_enabled ?? true) ? 1 : 0 }}">
-                        <input type="hidden" name="online_payments_enabled" value="{{ (bool)($seller->online_payments_enabled ?? false) ? 1 : 0 }}">
-
-                        @php
-                            $operationGroups = [
-                                'Order Settings' => [
-                                    'auto_accept_orders' => 'Auto accept orders',
-                                    'allow_order_cancellation' => 'Allow order cancellation',
-                                    'allow_return_requests' => 'Allow return requests',
-                                    'allow_exchange_requests' => 'Allow exchange requests',
-                                    'auto_update_order_status' => 'Auto update order status',
-                                    'order_confirmation_notification' => 'Order confirmation notification',
-                                    'delivery_status_notification' => 'Delivery status notification',
-                                ],
-                                'Product Settings' => [
-                                    'allow_customer_reviews' => 'Allow customer reviews',
-                                    'allow_customer_questions' => 'Allow customer questions',
-                                    'show_stock_quantity' => 'Show stock quantity',
-                                    'product_visibility_enabled' => 'Enable product visibility',
-                                    'auto_hide_out_of_stock' => 'Auto hide out-of-stock products',
-                                ],
-                                'Shipping and Delivery' => [
-                                    'shipping_enabled' => 'Shipping enabled',
-                                    'seller_delivery' => 'Seller delivery',
-                                    'platform_delivery' => 'Platform delivery',
-                                    'pickup_option' => 'Pickup option',
-                                    'same_day_delivery' => 'Same-day delivery',
-                                    'express_delivery' => 'Express delivery',
-                                ],
-                                'Privacy and Store Visibility' => [
-                                    'profile_visibility' => 'Profile visibility',
-                                    'shop_visibility' => 'Shop visibility',
-                                    'show_mobile_number' => 'Show mobile number',
-                                    'show_email' => 'Show email',
-                                    'show_business_information' => 'Show business information',
-                                    'store_active' => 'Store active',
-                                    'temporarily_closed' => 'Store temporarily closed',
-                                    'vacation_mode' => 'Vacation mode',
-                                    'allow_customer_messages' => 'Allow customer messages',
-                                    'auto_reply' => 'Automatic customer reply',
-                                ],
-                                'Invoice and Receipt' => [
-                                    'show_seller_logo_on_invoice' => 'Show seller logo',
-                                    'show_gst_on_invoice' => 'Show GST',
-                                    'show_seller_address_on_invoice' => 'Show seller address',
-                                    'show_customer_address_on_invoice' => 'Show customer address',
-                                    'show_payment_details_on_invoice' => 'Show payment details',
-                                    'show_qr_on_invoice' => 'Show payment QR',
-                                ],
-                            ];
-                        @endphp
-
-                        @foreach($operationGroups as $groupTitle => $groupSettings)
-                            <div class="settings-card">
-                                <div class="settings-card-header">
-                                    <div class="settings-card-icon"><i class="fa-solid fa-sliders"></i></div>
-                                    <div>
-                                        <div class="settings-card-title">{{ $groupTitle }}</div>
-                                        <div class="settings-card-description">These preferences are saved to your seller account.</div>
-                                    </div>
-                                </div>
-
-                                @foreach($groupSettings as $settingKey => $settingLabel)
-                                    <div class="setting-row">
-                                        <div class="setting-info"><strong>{{ $settingLabel }}</strong><span>Apply this preference across the relevant seller workflow.</span></div>
-                                        <label class="toggle">
-                                            <input type="hidden" name="preferences[{{ $settingKey }}]" value="0">
-                                            <input type="checkbox" name="preferences[{{ $settingKey }}]" value="1" {{ !empty($preferences[$settingKey]) ? 'checked' : '' }}>
-                                            <span class="toggle-slider"></span>
-                                        </label>
-                                    </div>
-                                @endforeach
-                            </div>
-                        @endforeach
-
-                        <div class="settings-card">
-                            <div class="settings-grid">
-                                <div class="settings-field">
-                                    <label>Delivery Charge</label>
-                                    <input class="settings-input" type="number" min="0" step="0.01" name="preferences[delivery_charge]" value="{{ $preferences['delivery_charge'] }}">
-                                </div>
-                                <div class="settings-field">
-                                    <label>Free Shipping Threshold</label>
-                                    <input class="settings-input" type="number" min="0" step="0.01" name="preferences[free_shipping_threshold]" value="{{ $preferences['free_shipping_threshold'] }}">
-                                </div>
-                                <div class="settings-field">
-                                    <label>Estimated Delivery Days</label>
-                                    <input class="settings-input" type="number" min="1" name="preferences[estimated_delivery_days]" value="{{ $preferences['estimated_delivery_days'] }}">
-                                </div>
-                                <div class="settings-field">
-                                    <label>Low Stock Threshold</label>
-                                    <input class="settings-input" type="number" min="0" name="preferences[low_stock_threshold]" value="{{ $preferences['low_stock_threshold'] }}">
-                                </div>
-                                <div class="settings-field">
-                                    <label>Default Product Status</label>
-                                    <select class="settings-select" name="preferences[default_product_status]"><option value="active" @selected($preferences['default_product_status'] === 'active')>Active</option><option value="inactive" @selected($preferences['default_product_status'] === 'inactive')>Inactive</option></select>
-                                </div>
-                                <div class="settings-field">
-                                    <label>Default Rating</label>
-                                    <input class="settings-input" type="number" min="0" max="5" step="0.1" name="preferences[default_rating]" value="{{ $preferences['default_rating'] }}">
-                                </div>
-                                <div class="settings-field">
-                                    <label>Invoice Prefix</label>
-                                    <input class="settings-input" type="text" maxlength="30" name="preferences[invoice_prefix]" value="{{ $preferences['invoice_prefix'] }}">
-                                </div>
-                                <div class="settings-field full">
-                                    <label>Invoice Footer</label>
-                                    <textarea class="settings-input" name="preferences[invoice_footer]" rows="3">{{ $preferences['invoice_footer'] }}</textarea>
-                                </div>
-                            </div>
-                            <button type="submit" class="settings-save"><i class="fa-solid fa-floppy-disk"></i>Save Operations Settings</button>
-                        </div>
-                    </form>
-
-                    <div class="settings-card">
-                        <div class="settings-card-header">
-                            <div class="settings-card-icon"><i class="fa-solid fa-comments"></i></div>
-                            <div><div class="settings-card-title">Customer Communication</div><div class="settings-card-description">Configure predefined messages shown during the order lifecycle.</div></div>
-                        </div>
-                        <form method="POST" action="{{ route('seller.settings.update') }}">
-                            @csrf
-                            @method('PUT')
-                            <input type="hidden" name="theme" value="{{ $seller->theme ?? 'light' }}">
-                            <input type="hidden" name="notifications_enabled" value="{{ (bool)($seller->notifications_enabled ?? true) ? 1 : 0 }}">
-                            <input type="hidden" name="online_payments_enabled" value="{{ (bool)($seller->online_payments_enabled ?? false) ? 1 : 0 }}">
-                            @foreach(['welcome_message' => 'Welcome message', 'order_message' => 'Order message', 'cancellation_message' => 'Cancellation message', 'delivery_message' => 'Delivery message'] as $messageKey => $messageLabel)
-                                <div class="settings-field" style="margin-top:14px;"><label>{{ $messageLabel }}</label><textarea class="settings-input" name="preferences[{{ $messageKey }}]" rows="2">{{ $preferences[$messageKey] }}</textarea></div>
                             @endforeach
-                            <button type="submit" class="settings-save"><i class="fa-solid fa-floppy-disk"></i>Save Messages</button>
+
+                            <button
+                                type="submit"
+                                class="settings-save"
+                            >
+                                <i class="fa-solid fa-floppy-disk"></i>
+                                Save Messages
+                            </button>
+
                         </form>
+
                     </div>
 
                 </section>
-
 
                 {{-- =================================================
                      ACCOUNT
@@ -1999,7 +2206,6 @@ html.theme-transition * {
                             </div>
 
                             <div>
-
                                 <div class="settings-card-title">
                                     Account Information
                                 </div>
@@ -2007,16 +2213,13 @@ html.theme-transition * {
                                 <div class="settings-card-description">
                                     Your Smart Basket seller account details.
                                 </div>
-
                             </div>
 
                         </div>
 
-
                         <div class="settings-grid">
 
                             <div class="settings-field">
-
                                 <label>Seller Name</label>
 
                                 <input
@@ -2024,12 +2227,9 @@ html.theme-transition * {
                                     value="{{ $seller->seller_name ?? '' }}"
                                     readonly
                                 >
-
                             </div>
 
-
                             <div class="settings-field">
-
                                 <label>Email Address</label>
 
                                 <input
@@ -2037,12 +2237,9 @@ html.theme-transition * {
                                     value="{{ $seller->email ?? '' }}"
                                     readonly
                                 >
-
                             </div>
 
-
                             <div class="settings-field">
-
                                 <label>Mobile Number</label>
 
                                 <input
@@ -2050,12 +2247,9 @@ html.theme-transition * {
                                     value="{{ $seller->mobile_number ?? '' }}"
                                     readonly
                                 >
-
                             </div>
 
-
                             <div class="settings-field">
-
                                 <label>Seller ID</label>
 
                                 <input
@@ -2063,25 +2257,26 @@ html.theme-transition * {
                                     value="#{{ $seller->id }}"
                                     readonly
                                 >
-
                             </div>
 
                         </div>
 
-
-                        <a
-                            href="{{ route('seller.profile') }}"
-                            class="security-btn"
-                            style="margin-top:20px;"
+                        <div
+                            class="info-box"
+                            style="margin-top:18px;"
                         >
-                            <i class="fa-solid fa-user-pen"></i>
-                            Edit Profile
-                        </a>
+                            <i class="fa-solid fa-circle-info"></i>
+
+                            <div>
+                                Your account identity is protected and shown here
+                                for reference. Profile editing remains available
+                                through the common seller taskbar.
+                            </div>
+                        </div>
 
                     </div>
 
                 </section>
-
 
                 {{-- =================================================
                      NOTIFICATIONS
@@ -2101,7 +2296,6 @@ html.theme-transition * {
                             </div>
 
                             <div>
-
                                 <div class="settings-card-title">
                                     Notification Preferences
                                 </div>
@@ -2109,11 +2303,9 @@ html.theme-transition * {
                                 <div class="settings-card-description">
                                     Control seller alerts and important account notifications.
                                 </div>
-
                             </div>
 
                         </div>
-
 
                         <form
                             method="POST"
@@ -2136,7 +2328,6 @@ html.theme-transition * {
                                 value="{{ (bool)($seller->online_payments_enabled ?? false) ? 1 : 0 }}"
                             >
 
-
                             <div class="setting-row">
 
                                 <div class="setting-info">
@@ -2146,14 +2337,19 @@ html.theme-transition * {
                                     </strong>
 
                                     <span>
-                                        Receive order alerts, account updates
-                                        and important seller notifications.
+                                        Receive order alerts, account updates and
+                                        important seller notifications.
                                     </span>
 
                                 </div>
 
-
                                 <label class="toggle">
+
+                                    <input
+                                        type="hidden"
+                                        name="notifications_enabled"
+                                        value="0"
+                                    >
 
                                     <input
                                         type="checkbox"
@@ -2184,18 +2380,49 @@ html.theme-transition * {
                             @endphp
 
                             @foreach($notificationPreferences as $notificationKey => $notificationLabel)
+
                                 <div class="setting-row">
+
                                     <div class="setting-info">
-                                        <strong>{{ $notificationLabel }}</strong>
-                                        <span>Receive this alert in your seller workspace.</span>
+
+                                        <strong>
+                                            {{ $notificationLabel }}
+                                        </strong>
+
+                                        <span>
+                                            Receive this alert in your seller workspace.
+                                        </span>
+
                                     </div>
+
                                     <label class="toggle">
-                                        <input type="hidden" name="preferences[{{ $notificationKey }}]" value="0">
-                                        <input type="checkbox" name="preferences[{{ $notificationKey }}]" value="1" {{ !empty($preferences[$notificationKey]) ? 'checked' : '' }}>
+
+                                        <input
+                                            type="hidden"
+                                            name="preferences[{{ $notificationKey }}]"
+                                            value="0"
+                                        >
+
+                                        <input
+                                            type="checkbox"
+                                            name="preferences[{{ $notificationKey }}]"
+                                            value="1"
+                                            {{ !empty($preferences[$notificationKey]) ? 'checked' : '' }}
+                                        >
+
                                         <span class="toggle-slider"></span>
+
                                     </label>
+
                                 </div>
+
                             @endforeach
+
+                            <button
+                                type="submit"
+                                class="settings-save"
+                            >
+                                <i class="fa-solid fa-bell"></i>
                                 Save Notifications
                             </button>
 
@@ -2204,7 +2431,6 @@ html.theme-transition * {
                     </div>
 
                 </section>
-
 
                 {{-- =================================================
                      PAYMENTS
@@ -2224,23 +2450,21 @@ html.theme-transition * {
                             </div>
 
                             <div>
-
                                 <div class="settings-card-title">
                                     Payment Settings
                                 </div>
 
                                 <div class="settings-card-description">
-                                    Control online payments and payment QR configuration.
+                                    Control online payments and payment configuration.
                                 </div>
-
                             </div>
 
                         </div>
 
-
                         <form
                             method="POST"
                             action="{{ route('seller.settings.update') }}"
+                            id="payment-settings-form"
                         >
 
                             @csrf
@@ -2258,6 +2482,15 @@ html.theme-transition * {
                                 value="{{ (bool)($seller->notifications_enabled ?? true) ? 1 : 0 }}"
                             >
 
+                            {{-- IMPORTANT:
+                                 Always submit 0 when checkbox is OFF.
+                                 Checkbox 1 overrides it when ON.
+                            --}}
+                            <input
+                                type="hidden"
+                                name="online_payments_enabled"
+                                value="0"
+                            >
 
                             <div class="setting-row">
 
@@ -2268,12 +2501,13 @@ html.theme-transition * {
                                     </strong>
 
                                     <span>
-                                        Allow customers to use online payment
-                                        methods for your products.
+                                        Allow customers to use supported online
+                                        payment methods for your products.
+                                        Turn this OFF to save online payments
+                                        as disabled for this seller.
                                     </span>
 
                                 </div>
-
 
                                 <label class="toggle">
 
@@ -2290,6 +2524,49 @@ html.theme-transition * {
 
                             </div>
 
+                            @php
+                                $onlinePaymentsEnabled = (bool)($seller->online_payments_enabled ?? false);
+                            @endphp
+
+                            <div class="payment-status-card">
+
+                                <div class="payment-status-left">
+
+                                    <div class="payment-status-icon">
+                                        <i class="fa-solid fa-money-bill-transfer"></i>
+                                    </div>
+
+                                    <div>
+
+                                        <div class="payment-status-title">
+                                            Customer Payment Availability
+                                        </div>
+
+                                        <div class="payment-status-text">
+                                            Current seller payment preference.
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                                <div
+                                    class="payment-status-badge {{ $onlinePaymentsEnabled ? 'enabled' : 'disabled' }}"
+                                    id="payment-status-badge"
+                                >
+
+                                    <i
+                                        class="fa-solid {{ $onlinePaymentsEnabled ? 'fa-circle-check' : 'fa-circle-xmark' }}"
+                                        id="payment-status-icon"
+                                    ></i>
+
+                                    <span id="payment-status-text">
+                                        {{ $onlinePaymentsEnabled ? 'Online Payments Enabled' : 'Online Payments Disabled' }}
+                                    </span>
+
+                                </div>
+
+                            </div>
 
                             <button
                                 type="submit"
@@ -2300,37 +2577,6 @@ html.theme-transition * {
                             </button>
 
                         </form>
-
-
-                        <div
-                            class="setting-row"
-                            style="margin-top:15px;"
-                        >
-
-                            <div class="setting-info">
-
-                                <strong>
-                                    Payment QR
-                                </strong>
-
-                                <span>
-                                    Manage the QR code customers use
-                                    to make payments.
-                                </span>
-
-                            </div>
-
-
-                            <a
-                                href="{{ route('seller.profile') }}"
-                                class="security-btn"
-                            >
-                                <i class="fa-solid fa-qrcode"></i>
-                                Manage QR
-                            </a>
-
-                        </div>
-
 
                         @if(!empty($seller->payment_qr))
 
@@ -2348,12 +2594,27 @@ html.theme-transition * {
                                     </strong>
 
                                     <span>
-                                        Your current payment QR is configured
-                                        and ready for customer payments.
+                                        Your current payment QR is configured and
+                                        ready for customer payments.
                                     </span>
 
                                 </div>
 
+                            </div>
+
+                        @else
+
+                            <div
+                                class="info-box"
+                                style="margin-top:17px;"
+                            >
+                                <i class="fa-solid fa-qrcode"></i>
+
+                                <div>
+                                    No payment QR is currently configured.
+                                    QR management is available through the seller
+                                    profile area in the common taskbar.
+                                </div>
                             </div>
 
                         @endif
@@ -2361,7 +2622,6 @@ html.theme-transition * {
                     </div>
 
                 </section>
-
 
                 {{-- =================================================
                      SHIPPING
@@ -2377,23 +2637,21 @@ html.theme-transition * {
                         <div class="settings-card-header">
 
                             <div class="settings-card-icon">
-                                <i class="fa-solid fa-truck"></i>
+                                <i class="fa-solid fa-truck-fast"></i>
                             </div>
 
                             <div>
-
                                 <div class="settings-card-title">
                                     Shipping Preferences
                                 </div>
 
                                 <div class="settings-card-description">
-                                    Manage orders, delivery and product inventory.
+                                    Configure delivery-related preferences for your
+                                    seller store.
                                 </div>
-
                             </div>
 
                         </div>
-
 
                         <div class="setting-row">
 
@@ -2404,52 +2662,99 @@ html.theme-transition * {
                                 </strong>
 
                                 <span>
-                                    Manage order delivery and shipping
-                                    status from your seller dashboard.
+                                    Shipping preferences can be configured from
+                                    the Operations settings.
                                 </span>
 
                             </div>
 
-                            <a
-                                href="{{ route('seller.dashboard') }}"
-                                class="security-btn"
-                            >
-                                <i class="fa-solid fa-box"></i>
-                                Open Orders
-                            </a>
+                            <i
+                                class="fa-solid fa-circle-check"
+                                style="color:#059669;"
+                                aria-hidden="true"
+                            ></i>
 
                         </div>
-
 
                         <div class="setting-row">
 
                             <div class="setting-info">
 
                                 <strong>
-                                    Product Stock
+                                    Delivery Charge
                                 </strong>
 
                                 <span>
-                                    Manage available stock and product
-                                    inventory.
+                                    Current configured delivery charge.
                                 </span>
 
                             </div>
 
-                            <a
-                                href="{{ route('seller.products') }}"
-                                class="security-btn"
-                            >
-                                <i class="fa-solid fa-boxes-stacked"></i>
-                                Products
-                            </a>
+                            <strong>
+                                ₹{{ number_format((float)($preferences['delivery_charge'] ?? 0), 2) }}
+                            </strong>
+
+                        </div>
+
+                        <div class="setting-row">
+
+                            <div class="setting-info">
+
+                                <strong>
+                                    Free Shipping Threshold
+                                </strong>
+
+                                <span>
+                                    Orders above this amount can qualify for
+                                    free shipping.
+                                </span>
+
+                            </div>
+
+                            <strong>
+                                ₹{{ number_format((float)($preferences['free_shipping_threshold'] ?? 0), 2) }}
+                            </strong>
+
+                        </div>
+
+                        <div class="setting-row">
+
+                            <div class="setting-info">
+
+                                <strong>
+                                    Estimated Delivery
+                                </strong>
+
+                                <span>
+                                    Default estimated delivery period.
+                                </span>
+
+                            </div>
+
+                            <strong>
+                                {{ $preferences['estimated_delivery_days'] ?? 1 }}
+                                {{ ((int)($preferences['estimated_delivery_days'] ?? 1) === 1) ? 'Day' : 'Days' }}
+                            </strong>
+
+                        </div>
+
+                        <div
+                            class="info-box"
+                            style="margin-top:18px;"
+                        >
+                            <i class="fa-solid fa-truck-fast"></i>
+
+                            <div>
+                                Detailed shipping controls are available under
+                                Operations so all delivery preferences remain
+                                centralized in one place.
+                            </div>
 
                         </div>
 
                     </div>
 
                 </section>
-
 
                 {{-- =================================================
                      APPEARANCE
@@ -2469,19 +2774,17 @@ html.theme-transition * {
                             </div>
 
                             <div>
-
                                 <div class="settings-card-title">
                                     Appearance & Theme
                                 </div>
 
                                 <div class="settings-card-description">
-                                    Choose how your Smart Basket seller dashboard looks.
+                                    Choose the appearance of your Smart Basket
+                                    seller workspace.
                                 </div>
-
                             </div>
 
                         </div>
-
 
                         <form
                             id="theme-settings-form"
@@ -2504,11 +2807,7 @@ html.theme-transition * {
                                 value="{{ (bool)($seller->online_payments_enabled ?? false) ? 1 : 0 }}"
                             >
 
-
                             <div class="theme-options">
-
-
-                                {{-- DARK --}}
 
                                 <div class="theme-option">
 
@@ -2539,9 +2838,6 @@ html.theme-transition * {
 
                                 </div>
 
-
-                                {{-- LIGHT --}}
-
                                 <div class="theme-option">
 
                                     <input
@@ -2564,15 +2860,12 @@ html.theme-transition * {
                                         </div>
 
                                         <div class="theme-description">
-                                            Clean bright interface
+                                            Clean blue & white interface
                                         </div>
 
                                     </label>
 
                                 </div>
-
-
-                                {{-- SYSTEM --}}
 
                                 <div class="theme-option">
 
@@ -2605,16 +2898,12 @@ html.theme-transition * {
 
                             </div>
 
-
                             <button
                                 type="submit"
                                 class="settings-save"
                             >
-
                                 <i class="fa-solid fa-palette"></i>
-
                                 Save Theme
-
                             </button>
 
                         </form>
@@ -2622,7 +2911,6 @@ html.theme-transition * {
                     </div>
 
                 </section>
-
 
                 {{-- =================================================
                      SECURITY
@@ -2642,73 +2930,129 @@ html.theme-transition * {
                             </div>
 
                             <div>
-
                                 <div class="settings-card-title">
-                                    Security
+                                    Account Security
                                 </div>
 
                                 <div class="settings-card-description">
-                                    Manage your seller account security and access.
+                                    Protect your seller account and update your
+                                    password securely.
                                 </div>
-
                             </div>
 
                         </div>
 
-                        <form method="POST" action="{{ route('seller.settings.password') }}" class="settings-grid" style="margin-top:20px;">
+                        <form
+                            method="POST"
+                            action="{{ route('seller.settings.password') }}"
+                            class="settings-grid"
+                            style="margin-top:4px;"
+                        >
+
                             @csrf
                             @method('PUT')
-                            <div class="settings-field">
-                                <label for="current_password">Current Password</label>
-                                <input id="current_password" class="settings-input" type="password" name="current_password" required autocomplete="current-password">
-                            </div>
-                            <div class="settings-field">
-                                <label for="password">New Password</label>
-                                <input id="password" class="settings-input" type="password" name="password" required autocomplete="new-password">
-                            </div>
-                            <div class="settings-field">
-                                <label for="password_confirmation">Confirm New Password</label>
-                                <input id="password_confirmation" class="settings-input" type="password" name="password_confirmation" required autocomplete="new-password">
-                            </div>
-                            <div class="settings-field" style="justify-content:end;">
-                                <button type="submit" class="settings-save"><i class="fa-solid fa-key"></i>Change Password</button>
-                            </div>
-                        </form>
 
+                            <div class="settings-field">
+
+                                <label for="current_password">
+                                    Current Password
+                                </label>
+
+                                <input
+                                    id="current_password"
+                                    class="settings-input"
+                                    type="password"
+                                    name="current_password"
+                                    required
+                                    autocomplete="current-password"
+                                    placeholder="Enter current password"
+                                >
+
+                            </div>
+
+                            <div class="settings-field">
+
+                                <label for="password">
+                                    New Password
+                                </label>
+
+                                <input
+                                    id="password"
+                                    class="settings-input"
+                                    type="password"
+                                    name="password"
+                                    required
+                                    autocomplete="new-password"
+                                    placeholder="Enter new password"
+                                >
+
+                            </div>
+
+                            <div class="settings-field">
+
+                                <label for="password_confirmation">
+                                    Confirm New Password
+                                </label>
+
+                                <input
+                                    id="password_confirmation"
+                                    class="settings-input"
+                                    type="password"
+                                    name="password_confirmation"
+                                    required
+                                    autocomplete="new-password"
+                                    placeholder="Confirm new password"
+                                >
+
+                            </div>
+
+                            <div
+                                class="settings-field"
+                                style="justify-content:flex-end;"
+                            >
+
+                                <button
+                                    type="submit"
+                                    class="settings-save"
+                                >
+                                    <i class="fa-solid fa-key"></i>
+                                    Change Password
+                                </button>
+
+                            </div>
+
+                        </form>
 
                         <div class="security-item">
 
                             <div class="security-left">
 
                                 <div class="security-icon">
-                                    <i class="fa-solid fa-key"></i>
+                                    <i class="fa-solid fa-lock"></i>
                                 </div>
 
                                 <div>
 
                                     <div class="security-title">
-                                        Password
+                                        Password Protection
                                     </div>
 
                                     <div class="security-text">
-                                        Change your account password.
+                                        Use a strong password and keep your seller
+                                        account credentials private.
                                     </div>
 
                                 </div>
 
                             </div>
 
-
-                            <a
-                                href="{{ url('/forgot-password') }}"
-                                class="security-btn"
-                            >
-                                <i class="fa-solid fa-arrow-right"></i>
-                                Change
-                            </a>
+                            <i
+                                class="fa-solid fa-circle-check"
+                                style="color:#059669;"
+                                aria-hidden="true"
+                            ></i>
 
                         </div>
-
 
                         <div class="security-item">
 
@@ -2721,59 +3065,37 @@ html.theme-transition * {
                                 <div>
 
                                     <div class="security-title">
-                                        Seller Profile
+                                        Seller Account
                                     </div>
 
                                     <div class="security-text">
-                                        Review and update your seller information.
+                                        Your seller identity and account information
+                                        are protected.
                                     </div>
 
                                 </div>
 
                             </div>
 
-
-                            <a
-                                href="{{ route('seller.profile') }}"
-                                class="security-btn"
-                            >
-                                <i class="fa-solid fa-arrow-right"></i>
-                                Open
-                            </a>
+                            <i
+                                class="fa-solid fa-shield-halved"
+                                style="color:#2563eb;"
+                                aria-hidden="true"
+                            ></i>
 
                         </div>
 
+                        <div
+                            class="info-box"
+                            style="margin-top:17px;"
+                        >
 
-                        <div class="security-item">
+                            <i class="fa-solid fa-circle-info"></i>
 
-                            <div class="security-left">
-
-                                <div class="security-icon">
-                                    <i class="fa-solid fa-store"></i>
-                                </div>
-
-                                <div>
-
-                                    <div class="security-title">
-                                        Seller Dashboard
-                                    </div>
-
-                                    <div class="security-text">
-                                        Return to your seller workspace.
-                                    </div>
-
-                                </div>
-
+                            <div>
+                                For security, password changes require your current
+                                password before the new password can be saved.
                             </div>
-
-
-                            <a
-                                href="{{ route('seller.dashboard') }}"
-                                class="security-btn"
-                            >
-                                <i class="fa-solid fa-arrow-right"></i>
-                                Dashboard
-                            </a>
 
                         </div>
 
@@ -2781,15 +3103,12 @@ html.theme-transition * {
 
                 </section>
 
-
             </div>
 
         </div>
 
     </div>
-
 </div>
-
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -2798,14 +3117,8 @@ document.addEventListener('DOMContentLoaded', function () {
        SETTINGS TABS
     ===================================================== */
 
-    const buttons = document.querySelectorAll(
-        '.settings-nav-item'
-    );
-
-    const sections = document.querySelectorAll(
-        '.settings-section'
-    );
-
+    const buttons = document.querySelectorAll('.settings-nav-item');
+    const sections = document.querySelectorAll('.settings-section');
 
     function openSection(sectionName) {
 
@@ -2818,7 +3131,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         });
 
-
         sections.forEach(function (section) {
 
             section.classList.toggle(
@@ -2828,45 +3140,58 @@ document.addEventListener('DOMContentLoaded', function () {
 
         });
 
-
         try {
-
             localStorage.setItem(
                 'smartbasket_settings_section',
                 sectionName
             );
-
         } catch (e) {}
 
     }
 
-
     buttons.forEach(function (button) {
 
-        button.addEventListener(
-            'click',
-            function () {
+        button.addEventListener('click', function () {
 
-                openSection(
-                    this.dataset.section
-                );
+            const sectionName = this.dataset.section;
+
+            if (!sectionName) {
+                return;
+            }
+
+            openSection(sectionName);
+
+            if (window.innerWidth <= 1000) {
+
+                const content =
+                    document.querySelector('.settings-content');
+
+                if (content) {
+
+                    setTimeout(function () {
+
+                        content.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+
+                    }, 50);
+
+                }
 
             }
-        );
+
+        });
 
     });
-
 
     let savedSection = null;
 
     try {
-
         savedSection = localStorage.getItem(
             'smartbasket_settings_section'
         );
-
     } catch (e) {}
-
 
     if (
         savedSection &&
@@ -2877,6 +3202,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         openSection(savedSection);
 
+    } else {
+
+        openSection('store');
+
     }
 
 
@@ -2884,12 +3213,10 @@ document.addEventListener('DOMContentLoaded', function () {
        THEME SYSTEM
     ===================================================== */
 
-    const themeRadios = document.querySelectorAll(
-        'input[name="theme"]'
-    );
+    const themeRadios =
+        document.querySelectorAll('input[name="theme"]');
 
     const html = document.documentElement;
-
 
     function systemTheme() {
 
@@ -2901,33 +3228,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
     }
 
-
     function applySellerTheme(theme) {
 
         let finalTheme = theme;
 
-
         if (theme === 'system') {
-
             finalTheme = systemTheme();
-
         }
-
 
         if (
             finalTheme !== 'dark' &&
             finalTheme !== 'light'
         ) {
-
             finalTheme = 'light';
-
         }
 
-
-        html.classList.add(
-            'theme-transition'
-        );
-
+        html.classList.add('theme-transition');
 
         html.setAttribute(
             'data-theme',
@@ -2944,7 +3260,6 @@ document.addEventListener('DOMContentLoaded', function () {
             theme
         );
 
-
         try {
 
             localStorage.setItem(
@@ -2953,7 +3268,6 @@ document.addEventListener('DOMContentLoaded', function () {
             );
 
         } catch (e) {}
-
 
         window.dispatchEvent(
             new CustomEvent(
@@ -2967,48 +3281,29 @@ document.addEventListener('DOMContentLoaded', function () {
             )
         );
 
-
         setTimeout(function () {
-
-            html.classList.remove(
-                'theme-transition'
-            );
-
+            html.classList.remove('theme-transition');
         }, 300);
 
     }
 
-
     themeRadios.forEach(function (radio) {
 
-        radio.addEventListener(
-            'change',
-            function () {
+        radio.addEventListener('change', function () {
 
-                if (this.checked) {
-
-                    applySellerTheme(
-                        this.value
-                    );
-
-                }
-
+            if (this.checked) {
+                applySellerTheme(this.value);
             }
-        );
+
+        });
 
     });
-
-
-    /* =====================================================
-       DATABASE THEME
-    ===================================================== */
 
     const databaseTheme =
         @json($seller->theme ?? 'light');
 
-
-    const initialTheme = databaseTheme;
-
+    const initialTheme =
+        databaseTheme || 'light';
 
     const initialRadio =
         document.querySelector(
@@ -3017,17 +3312,11 @@ document.addEventListener('DOMContentLoaded', function () {
             '"]'
         );
 
-
     if (initialRadio) {
-
         initialRadio.checked = true;
-
     }
 
-
-    applySellerTheme(
-        initialTheme
-    );
+    applySellerTheme(initialTheme);
 
 
     /* =====================================================
@@ -3039,30 +3328,24 @@ document.addEventListener('DOMContentLoaded', function () {
             '(prefers-color-scheme: dark)'
         );
 
-
     function handleSystemThemeChange() {
 
         let current = null;
 
         try {
 
-            current = localStorage.getItem(
-                'smartbasket_seller_theme'
-            );
+            current =
+                localStorage.getItem(
+                    'smartbasket_seller_theme'
+                );
 
         } catch (e) {}
 
-
         if (current === 'system') {
-
-            applySellerTheme(
-                'system'
-            );
-
+            applySellerTheme('system');
         }
 
     }
-
 
     if (
         typeof mediaQuery.addEventListener ===
@@ -3092,7 +3375,6 @@ document.addEventListener('DOMContentLoaded', function () {
             'theme-settings-form'
         );
 
-
     if (themeForm) {
 
         themeForm.addEventListener(
@@ -3103,7 +3385,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     document.querySelector(
                         'input[name="theme"]:checked'
                     );
-
 
                 if (checked) {
 
@@ -3129,7 +3410,7 @@ document.addEventListener('DOMContentLoaded', function () {
     ===================================================== */
 
     document.querySelectorAll(
-        '.toggle input'
+        '.toggle input[type="checkbox"]'
     ).forEach(function (input) {
 
         input.addEventListener(
@@ -3139,18 +3420,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 const row =
                     this.closest('.setting-row');
 
-
                 if (!row) {
-
                     return;
-
                 }
-
 
                 row.classList.add(
                     'setting-changed'
                 );
-
 
                 setTimeout(function () {
 
@@ -3158,12 +3434,141 @@ document.addEventListener('DOMContentLoaded', function () {
                         'setting-changed'
                     );
 
-                }, 500);
+                }, 550);
 
             }
         );
 
     });
+
+
+    /* =====================================================
+       ONLINE PAYMENT LIVE STATUS
+    ===================================================== */
+
+    const paymentCheckbox =
+        document.querySelector(
+            '#payment-settings-form input[type="checkbox"][name="online_payments_enabled"]'
+        );
+
+    const paymentBadge =
+        document.getElementById(
+            'payment-status-badge'
+        );
+
+    const paymentStatusIcon =
+        document.getElementById(
+            'payment-status-icon'
+        );
+
+    const paymentStatusText =
+        document.getElementById(
+            'payment-status-text'
+        );
+
+    function updatePaymentStatus() {
+
+        if (
+            !paymentCheckbox ||
+            !paymentBadge ||
+            !paymentStatusIcon ||
+            !paymentStatusText
+        ) {
+            return;
+        }
+
+        if (paymentCheckbox.checked) {
+
+            paymentBadge.classList.remove(
+                'disabled'
+            );
+
+            paymentBadge.classList.add(
+                'enabled'
+            );
+
+            paymentStatusIcon.className =
+                'fa-solid fa-circle-check';
+
+            paymentStatusText.textContent =
+                'Online Payments Enabled';
+
+        } else {
+
+            paymentBadge.classList.remove(
+                'enabled'
+            );
+
+            paymentBadge.classList.add(
+                'disabled'
+            );
+
+            paymentStatusIcon.className =
+                'fa-solid fa-circle-xmark';
+
+            paymentStatusText.textContent =
+                'Online Payments Disabled';
+
+        }
+
+    }
+
+    if (paymentCheckbox) {
+
+        paymentCheckbox.addEventListener(
+            'change',
+            updatePaymentStatus
+        );
+
+        updatePaymentStatus();
+
+    }
+
+
+    /* =====================================================
+       PAYMENT FORM SAFETY
+       Ensure checkbox value is represented correctly.
+    ===================================================== */
+
+    const paymentForm =
+        document.getElementById(
+            'payment-settings-form'
+        );
+
+    if (paymentForm) {
+
+        paymentForm.addEventListener(
+            'submit',
+            function () {
+
+                /*
+                 * The hidden input named online_payments_enabled
+                 * already sends 0.
+                 *
+                 * If checkbox is checked, browser sends 1 after
+                 * the hidden value. Laravel request handling will
+                 * receive the enabled value.
+                 */
+
+                if (
+                    paymentCheckbox &&
+                    paymentCheckbox.checked
+                ) {
+
+                    paymentCheckbox.value = '1';
+
+                } else if (paymentCheckbox) {
+
+                    paymentCheckbox.removeAttribute(
+                        'name'
+                    );
+
+                }
+
+            }
+        );
+
+    }
 
 
     /* =====================================================
@@ -3175,7 +3580,6 @@ document.addEventListener('DOMContentLoaded', function () {
             '.settings-alert'
         );
 
-
     alerts.forEach(function (alert) {
 
         setTimeout(function () {
@@ -3184,17 +3588,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 'opacity .3s ease, transform .3s ease';
 
             alert.style.opacity = '0';
-            alert.style.transform = 'translateY(-5px)';
-
+            alert.style.transform =
+                'translateY(-5px)';
 
             setTimeout(function () {
 
                 if (alert.parentNode) {
-
                     alert.parentNode.removeChild(
                         alert
                     );
-
                 }
 
             }, 300);
@@ -3202,6 +3604,51 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 5000);
 
     });
+
+
+    /* =====================================================
+       PASSWORD CONFIRMATION UX
+    ===================================================== */
+
+    const password =
+        document.getElementById(
+            'password'
+        );
+
+    const passwordConfirmation =
+        document.getElementById(
+            'password_confirmation'
+        );
+
+    if (
+        password &&
+        passwordConfirmation
+    ) {
+
+        passwordConfirmation.addEventListener(
+            'input',
+            function () {
+
+                if (
+                    password.value &&
+                    this.value &&
+                    password.value !== this.value
+                ) {
+
+                    this.style.borderColor =
+                        '#ef4444';
+
+                } else {
+
+                    this.style.borderColor =
+                        '';
+
+                }
+
+            }
+        );
+
+    }
 
 });
 </script>

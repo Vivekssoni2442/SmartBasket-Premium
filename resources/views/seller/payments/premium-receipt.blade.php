@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
 <meta charset="UTF-8">
 
 <link
@@ -84,10 +85,6 @@ body {
 
     line-height: 44px;
 
-    /*
-     * Silver bright SB text
-     * with glow / shine effect
-     */
     color: #1d1797;
 
     font-size: 20px;
@@ -154,8 +151,6 @@ body {
     white-space: nowrap;
 }
 
-/* BIG GOLD STARS */
-
 .ribbon-star {
     display: inline-block;
 
@@ -174,8 +169,6 @@ body {
         0px 0px 1px #b8860b,
         0px 0px 2px #f5d77a;
 }
-
-/* GOLD RIBBON */
 
 .title {
     display: inline-block;
@@ -546,6 +539,7 @@ th {
 }
 
 </style>
+
 </head>
 
 <body>
@@ -643,13 +637,18 @@ th {
 
 <div class="receipt">
 
-    {{-- HEADER --}}
+
+    {{-- =====================================================
+         HEADER
+    ====================================================== --}}
 
     <div class="header">
 
+
         <div class="brand-area">
 
-            {{-- ONLY ONE SB LOGO --}}
+
+            {{-- SB LOGO --}}
 
             <div class="brand-logo-wrap">
 
@@ -658,6 +657,9 @@ th {
                 </div>
 
             </div>
+
+
+            {{-- SMART BASKET --}}
 
             <div class="brand-content">
 
@@ -671,104 +673,136 @@ th {
 
             </div>
 
+
         </div>
 
 
         <div class="header-line">
 
+
             {{-- PAYMENT RECEIPT RIBBON --}}
 
             <div class="receipt-ribbon">
 
+
                 <span class="ribbon-star">
                     ★
                 </span>
+
 
                 <div class="title">
                     PAYMENT RECEIPT
                 </div>
 
+
                 <span class="ribbon-star">
                     ★
                 </span>
 
+
             </div>
+
 
             <div class="receipt-number">
+
                 Receipt No. {{ $receiptNo }}
+
             </div>
 
+
         </div>
+
 
     </div>
 
 
-    {{-- BILL TO + ORDER INFORMATION --}}
+    {{-- =====================================================
+         CUSTOMER + ORDER INFORMATION
+    ====================================================== --}}
 
     <table class="info-table">
 
         <tr>
 
+
             <td class="info-box">
+
 
                 <div class="label">
                     Bill To
                 </div>
 
+
                 <div class="main-value">
                     {{ $customerName }}
                 </div>
+
 
                 <div class="sub-value">
                     {{ $customerEmail }}
                 </div>
 
+
                 <div class="sub-value">
                     {{ $customerPhone }}
                 </div>
+
 
                 <div class="sub-value">
                     {{ $fullAddress ?: '—' }}
                 </div>
 
+
             </td>
+
 
             <td class="info-gap"></td>
 
+
             <td class="info-box">
+
 
                 <div class="label">
                     Order Information
                 </div>
 
+
                 <div class="main-value">
                     ORDER #SB-{{ $order->id }}
                 </div>
+
 
                 <div class="sub-value">
                     Order Date: {{ $orderDateText }}
                 </div>
 
+
                 <div class="sub-value">
                     Payment Date: {{ $paymentDateText }}
                 </div>
+
 
                 <div class="sub-value">
                     Method: {{ $method }}
                 </div>
 
+
             </td>
+
 
         </tr>
 
     </table>
 
 
-    {{-- STATUS --}}
+    {{-- =====================================================
+         STATUS
+    ====================================================== --}}
 
     <table class="status-table">
 
         <tr>
+
 
             <td>
 
@@ -782,6 +816,7 @@ th {
 
             </td>
 
+
             <td>
 
                 <div class="status-title">
@@ -793,6 +828,7 @@ th {
                 </div>
 
             </td>
+
 
             <td>
 
@@ -806,12 +842,15 @@ th {
 
             </td>
 
+
         </tr>
 
     </table>
 
 
-    {{-- PURCHASE DETAILS --}}
+    {{-- =====================================================
+         PURCHASE DETAILS
+    ====================================================== --}}
 
     <div class="section-title">
         PURCHASE DETAILS
@@ -819,6 +858,7 @@ th {
 
 
     <table class="products">
+
 
         <thead>
 
@@ -844,61 +884,92 @@ th {
 
         </thead>
 
+
         <tbody>
 
-        @include('seller.partials.seller-menu')
+
+        {{-- IMPORTANT:
+             NO SELLER MENU / NAVIGATION INCLUDE HERE.
+             THIS TABLE MUST CONTAIN ONLY PRODUCT ROWS.
+        --}}
+
 
         @foreach($receiptItems as $item)
 
+
             <tr>
+
 
                 <td class="product-col">
 
+
                     <div class="product-name">
+
                         {{ $item['name'] ?? 'Product' }}
+
                     </div>
+
 
                     @if(!empty($item['product_id']))
 
                         <div class="product-id">
+
                             Product ID:
                             {{ $item['product_id'] }}
+
                         </div>
 
                     @endif
 
+
                 </td>
+
 
                 <td class="qty-col">
+
                     {{ $item['quantity'] ?? 1 }}
+
                 </td>
 
+
                 <td class="price-col money">
+
                     ₹{{ number_format(
                         (float)($item['price'] ?? 0),
                         2
                     ) }}
+
                 </td>
 
+
                 <td class="amount-col money">
+
                     ₹{{ number_format(
                         (float)($item['line_total'] ?? 0),
                         2
                     ) }}
+
                 </td>
+
 
             </tr>
 
+
         @endforeach
 
+
         </tbody>
+
 
     </table>
 
 
-    {{-- TOTAL --}}
+    {{-- =====================================================
+         TOTAL
+    ====================================================== --}}
 
     <div class="total-section">
+
 
         <div class="total-left">
 
@@ -908,120 +979,170 @@ th {
 
         </div>
 
+
         <div class="total-right">
+
 
             <div class="total-label">
                 Total Paid / Payable
             </div>
 
+
             <div class="total">
+
                 ₹{{ number_format(
                     $finalTotal,
                     2
                 ) }}
+
             </div>
 
+
         </div>
+
 
     </div>
 
 
-    {{-- PAYMENT INFORMATION --}}
+    {{-- =====================================================
+         PAYMENT INFORMATION
+    ====================================================== --}}
 
     <div class="payment">
 
+
         <table class="payment-table">
+
 
             <tr>
 
+
                 <td>
+
 
                     <div class="payment-label">
                         Payment Method
                     </div>
 
+
                     <div class="payment-value">
                         {{ $method }}
                     </div>
 
+
                 </td>
 
+
                 <td>
+
 
                     <div class="payment-label">
                         Payment ID
                     </div>
 
+
                     <div class="payment-value">
                         {{ $paymentId ?? 'Not available' }}
                     </div>
 
+
                 </td>
 
+
                 <td>
+
 
                     <div class="payment-label">
                         Gateway Order
                     </div>
 
+
                     <div class="payment-value">
                         {{ $gatewayOrderId ?? '—' }}
                     </div>
 
+
                 </td>
 
+
                 <td>
+
 
                     <div class="payment-label">
                         Receipt Date
                     </div>
 
+
                     <div class="payment-value">
                         {{ $receiptDate ?? now()->format('d M Y') }}
                     </div>
 
+
                 </td>
+
 
             </tr>
 
+
         </table>
+
 
     </div>
 
 
-    {{-- FOOTER --}}
+    {{-- =====================================================
+         FOOTER
+    ====================================================== --}}
 
     <div class="footer">
 
+
         <div class="footer-left">
+
 
             <div class="thanks">
                 Thank you for choosing SMART BASKET.
             </div>
 
+
             <div class="footer-note">
+
                 This is a computer-generated receipt and does not
                 require a physical stamp.
+
             </div>
 
+
         </div>
+
 
         <div class="footer-right">
 
+
             <div class="signature-line"></div>
 
+
             <div class="signature">
+
                 Authorized Signature
+
                 <br>
-                <strong> SMART BASKET</strong>
+
+                <strong>
+                    SMART BASKET
+                </strong>
+
             </div>
+
 
         </div>
 
+
     </div>
+
 
 </div>
 
+
 </body>
 </html>
-

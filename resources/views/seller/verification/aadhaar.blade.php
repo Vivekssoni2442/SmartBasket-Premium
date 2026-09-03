@@ -767,6 +767,7 @@
             </div>
 
             <div>
+
                 <h1>
                     Aadhaar <span>Verification</span>
                 </h1>
@@ -775,6 +776,7 @@
                     Verify your identity securely before continuing
                     to your business details.
                 </p>
+
             </div>
 
         </div>

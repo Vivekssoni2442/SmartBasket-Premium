@@ -24,1448 +24,1800 @@
 
     <style>
 
-/* =========================================================
-   SMART BASKET
-   PREMIUM SELLER PAYMENT HISTORY — LIGHT THEME
-========================================================= */
+        /* =========================================================
+           SMART BASKET
+           PREMIUM SELLER PAYMENT HISTORY
+           TASKBAR SAFE
+           FULL WIDTH
+           RESPONSIVE
+        ========================================================= */
 
-:root {
+        .payment-page,
+        .payment-page * {
+            box-sizing: border-box;
+        }
 
-    --sb-green: #00b86b;
-    --sb-green-dark: #009657;
-    --sb-green-light: #e9fff5;
 
-    --sb-blue: #2563eb;
-    --sb-blue-light: #eff6ff;
+        /* =========================================================
+           PAGE VARIABLES
+        ========================================================= */
 
-    --sb-orange: #f59e0b;
-    --sb-orange-light: #fff7e6;
+        .payment-page {
 
-    --sb-red: #ef4444;
-    --sb-red-light: #fff1f2;
+            --pay-primary: #2563eb;
+            --pay-primary-dark: #1d4ed8;
+            --pay-primary-soft: #eff6ff;
 
-    --sb-purple: #8b5cf6;
-    --sb-purple-light: #f5f3ff;
+            --pay-indigo: #4f46e5;
+            --pay-indigo-soft: #eef2ff;
 
-    --sb-bg: #f5f7fb;
-    --sb-card: #ffffff;
-    --sb-card-soft: #fbfcfe;
+            --pay-green: #16a34a;
+            --pay-green-soft: #ecfdf3;
 
-    --sb-text: #111827;
-    --sb-text-2: #334155;
-    --sb-muted: #64748b;
-    --sb-muted-2: #94a3b8;
+            --pay-orange: #f59e0b;
+            --pay-orange-soft: #fff7e6;
 
-    --sb-border: #e7ebf0;
+            --pay-red: #ef4444;
+            --pay-red-soft: #fff1f2;
 
-    --sb-shadow:
-        0 10px 35px rgba(15,23,42,.07);
+            --pay-purple: #8b5cf6;
+            --pay-purple-soft: #f5f3ff;
 
-    --sb-shadow-hover:
-        0 18px 45px rgba(15,23,42,.11);
-}
+            --pay-bg: #f4f7fb;
+            --pay-card: rgba(255,255,255,.96);
 
+            --pay-text: #0f172a;
+            --pay-text-2: #334155;
+            --pay-muted: #64748b;
+            --pay-muted-2: #94a3b8;
 
-/* =========================================================
-   GLOBAL
-========================================================= */
+            --pay-border: #e2e8f0;
+            --pay-border-soft: #edf1f5;
 
-* {
-    box-sizing: border-box;
-}
+            --pay-shadow:
+                0 10px 30px rgba(15,23,42,.055);
 
-html {
-    min-height: 100%;
-    background: var(--sb-bg);
-}
+            --pay-shadow-hover:
+                0 18px 42px rgba(37,99,235,.12);
 
-body {
+            position: relative;
 
-    margin: 0;
+            width: 100%;
+            max-width: none;
 
-    min-height: 100vh;
+            min-height: calc(100vh - 1px);
 
-    color: var(--sb-text);
+            margin: 0;
 
-    background:
+            padding:
+                clamp(16px, 1.8vw, 28px)
+                clamp(12px, 1.8vw, 32px)
+                55px;
 
-        radial-gradient(
-            circle at 5% 0%,
-            rgba(0,184,107,.07),
-            transparent 27%
-        ),
+            color: var(--pay-text);
 
-        radial-gradient(
-            circle at 95% 8%,
-            rgba(37,99,235,.055),
-            transparent 25%
-        ),
+            overflow: hidden;
 
-        linear-gradient(
-            135deg,
-            #f8fafc 0%,
-            #f4f7fb 52%,
-            #f8fafc 100%
-        );
+            isolation: isolate;
 
-    font-family:
-        Inter,
-        ui-sans-serif,
-        system-ui,
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        sans-serif;
-}
+            background:
+                radial-gradient(
+                    circle at 0% 0%,
+                    rgba(37,99,235,.07),
+                    transparent 23%
+                ),
+                radial-gradient(
+                    circle at 100% 0%,
+                    rgba(79,70,229,.065),
+                    transparent 22%
+                ),
+                linear-gradient(
+                    135deg,
+                    #f8fafc 0%,
+                    #f3f6fb 50%,
+                    #f8fafc 100%
+                );
+        }
 
 
-/* =========================================================
-   PAGE
-========================================================= */
+        .payment-page::before {
 
-.payment-page {
+            content: "";
 
-    width: min(
-        1180px,
-        calc(100% - 36px)
-    );
+            position: absolute;
 
-    margin: 0 auto;
+            width: 430px;
+            height: 430px;
 
-    padding:
-        38px 0 75px;
-}
+            right: -230px;
+            top: 250px;
 
+            border-radius: 50%;
 
-/* =========================================================
-   TOP HEADER
-========================================================= */
+            background:
+                radial-gradient(
+                    circle,
+                    rgba(37,99,235,.045),
+                    transparent 70%
+                );
 
-.payment-header {
+            pointer-events: none;
 
-    display: flex;
+            z-index: -1;
+        }
 
-    align-items: center;
 
-    justify-content: space-between;
+        .payment-page::after {
 
-    gap: 24px;
+            content: "";
 
-    margin-bottom: 30px;
-}
+            position: absolute;
 
+            width: 350px;
+            height: 350px;
 
-.payment-heading-wrap {
-    min-width: 0;
-}
+            left: -230px;
+            bottom: 50px;
 
+            border-radius: 50%;
 
-.payment-title {
+            background:
+                radial-gradient(
+                    circle,
+                    rgba(79,70,229,.035),
+                    transparent 70%
+                );
 
-    display: flex;
+            pointer-events: none;
 
-    align-items: center;
+            z-index: -1;
+        }
 
-    gap: 12px;
 
-    margin: 0;
+        /* =========================================================
+           MAIN HEADER
+        ========================================================= */
 
-    color: #111827;
+        .payment-header {
 
-    font-size: 31px;
+            position: relative;
 
-    line-height: 1.15;
+            width: 100%;
 
-    font-weight: 850;
+            min-height: 128px;
 
-    letter-spacing: -.8px;
-}
+            display: flex;
+            align-items: center;
 
+            padding:
+                clamp(20px, 2vw, 28px)
+                clamp(18px, 2.2vw, 34px);
 
-.payment-title-icon {
+            margin-bottom: 16px;
 
-    width: 48px;
+            overflow: hidden;
 
-    height: 48px;
+            border:
+                1px solid rgba(191,219,254,.85);
 
-    display: inline-flex;
+            border-radius: 22px;
 
-    align-items: center;
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(255,255,255,.98),
+                    rgba(248,251,255,.98) 55%,
+                    rgba(239,246,255,.96)
+                );
 
-    justify-content: center;
+            box-shadow:
+                0 12px 38px rgba(15,23,42,.065);
+        }
 
-    flex-shrink: 0;
 
-    border-radius: 15px;
+        .payment-header::before {
 
-    background:
-        linear-gradient(
-            145deg,
-            #eafff5,
-            #f5fffb
-        );
+            content: "";
 
-    border:
-        1px solid rgba(0,184,107,.16);
+            position: absolute;
 
-    color: var(--sb-green);
+            left: 0;
+            top: 0;
+            bottom: 0;
 
-    box-shadow:
-        0 8px 24px rgba(0,184,107,.09);
+            width: 5px;
 
-    font-size: 18px;
-}
+            background:
+                linear-gradient(
+                    180deg,
+                    var(--pay-primary),
+                    var(--pay-indigo)
+                );
+        }
 
 
-.payment-title-text {
-    display: flex;
-    flex-direction: column;
-}
+        .payment-header::after {
 
+            content: "";
 
-.payment-title-main {
-    color: #111827;
-}
+            position: absolute;
 
+            width: 310px;
+            height: 310px;
 
-.payment-title-main span {
-    color: var(--sb-green-dark);
-}
+            right: -120px;
+            top: -155px;
 
+            border-radius: 50%;
 
-.payment-subtitle {
+            background:
+                radial-gradient(
+                    circle,
+                    rgba(37,99,235,.12),
+                    transparent 68%
+                );
 
-    margin: 8px 0 0 60px;
+            pointer-events: none;
+        }
 
-    color: var(--sb-muted);
 
-    font-size: 13px;
+        .payment-heading-wrap {
 
-    line-height: 1.6;
-}
+            position: relative;
 
+            z-index: 2;
 
-.payment-subtitle strong {
-    color: #334155;
-    font-weight: 800;
-}
+            width: 100%;
 
+            min-width: 0;
 
-/* =========================================================
-   DASHBOARD BUTTON
-========================================================= */
+            display: flex;
+            align-items: center;
 
-.premium-btn {
+            gap: 17px;
+        }
 
-    display: inline-flex;
 
-    align-items: center;
+        /* =========================================================
+           HEADER ICON
+        ========================================================= */
 
-    justify-content: center;
+        .payment-title-icon {
 
-    gap: 8px;
+            width: 60px;
+            height: 60px;
 
-    min-height: 44px;
+            flex: 0 0 60px;
 
-    padding:
-        0 17px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
 
-    border-radius: 12px;
+            border-radius: 17px;
 
-    text-decoration: none;
+            color: #fff;
 
-    font-size: 12px;
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--pay-primary),
+                    var(--pay-indigo)
+                );
 
-    font-weight: 800;
+            box-shadow:
+                0 11px 26px rgba(37,99,235,.23);
 
-    white-space: nowrap;
+            font-size: 21px;
+        }
 
-    transition:
-        transform .22s ease,
-        box-shadow .22s ease,
-        background .22s ease,
-        border-color .22s ease;
-}
 
+        .payment-title-content {
 
-.btn-outline-premium {
+            min-width: 0;
+        }
 
-    color: #334155;
 
-    background: #ffffff;
+        .payment-title {
 
-    border:
-        1px solid #dfe5ec;
+            margin: 0;
 
-    box-shadow:
-        0 6px 20px rgba(15,23,42,.05);
-}
+            color: var(--pay-text);
 
+            font-size:
+                clamp(25px, 2.2vw, 35px);
 
-.btn-outline-premium i {
-    color: var(--sb-green-dark);
-}
+            line-height: 1.08;
 
+            font-weight: 900;
 
-.btn-outline-premium:hover {
+            letter-spacing: -.9px;
+        }
 
-    color: #0f172a;
 
-    background: #ffffff;
+        .payment-title span {
 
-    border-color:
-        rgba(0,184,107,.38);
+            color: var(--pay-primary);
+        }
 
-    transform:
-        translateY(-2px);
 
-    box-shadow:
-        0 12px 28px rgba(15,23,42,.09),
-        0 0 0 4px rgba(0,184,107,.055);
-}
+        .payment-subtitle {
 
+            margin:
+                8px 0 0;
 
-/* =========================================================
-   SUMMARY GRID
-========================================================= */
+            color: var(--pay-muted);
 
-.summary-grid {
+            font-size: 11px;
 
-    display: grid;
+            line-height: 1.5;
 
-    grid-template-columns:
-        1.45fr
-        repeat(4, 1fr);
+            font-weight: 600;
+        }
 
-    gap: 15px;
 
-    margin-bottom: 22px;
-}
+        .payment-subtitle strong {
 
+            color: var(--pay-text-2);
 
-/* =========================================================
-   SUMMARY CARD
-========================================================= */
+            font-weight: 800;
+        }
 
-.summary-card {
 
-    position: relative;
+        /* =========================================================
+           SUMMARY
+        ========================================================= */
 
-    overflow: hidden;
+        .summary-grid {
 
-    min-height: 126px;
+            width: 100%;
 
-    padding: 20px;
+            display: grid;
 
-    border:
-        1px solid var(--sb-border);
+            grid-template-columns:
+                1.35fr
+                repeat(4, minmax(0, 1fr));
 
-    border-radius: 18px;
+            gap: 12px;
 
-    background:
-        rgba(255,255,255,.96);
+            margin-bottom: 15px;
+        }
 
-    box-shadow:
-        var(--sb-shadow);
 
-    transition:
-        transform .25s ease,
-        box-shadow .25s ease,
-        border-color .25s ease;
-}
+        .summary-card {
 
+            position: relative;
 
-.summary-card:hover {
+            min-width: 0;
 
-    transform:
-        translateY(-4px);
+            min-height: 112px;
 
-    border-color:
-        #dce4ec;
+            padding: 18px;
 
-    box-shadow:
-        var(--sb-shadow-hover);
-}
+            overflow: hidden;
 
+            border:
+                1px solid var(--pay-border);
 
-.summary-card::after {
+            border-radius: 16px;
 
-    content: "";
+            background:
+                rgba(255,255,255,.96);
 
-    position: absolute;
+            box-shadow:
+                var(--pay-shadow);
 
-    right: -45px;
+            transition:
+                transform .22s ease,
+                box-shadow .22s ease,
+                border-color .22s ease;
+        }
 
-    bottom: -55px;
 
-    width: 120px;
+        .summary-card:hover {
 
-    height: 120px;
+            transform: translateY(-3px);
 
-    border-radius: 50%;
+            border-color:
+                rgba(37,99,235,.24);
 
-    background:
-        rgba(0,184,107,.055);
+            box-shadow:
+                var(--pay-shadow-hover);
+        }
 
-    filter:
-        blur(20px);
 
-    pointer-events: none;
-}
+        .summary-card::after {
 
+            content: "";
 
-/* RECEIVED */
+            position: absolute;
 
-.summary-card.received {
+            width: 120px;
+            height: 120px;
 
-    background:
-        linear-gradient(
-            145deg,
-            #ffffff,
-            #f1fff8
-        );
+            right: -50px;
+            bottom: -55px;
 
-    border-color:
-        rgba(0,184,107,.22);
+            border-radius: 50%;
 
-    box-shadow:
-        0 12px 35px rgba(0,184,107,.08);
-}
+            background:
+                rgba(37,99,235,.055);
 
+            filter: blur(10px);
 
-.summary-label {
+            pointer-events: none;
+        }
 
-    display: block;
 
-    color: var(--sb-muted);
+        .summary-card.received {
 
-    font-size: 10px;
+            border-color:
+                rgba(37,99,235,.20);
 
-    font-weight: 850;
+            background:
+                linear-gradient(
+                    145deg,
+                    #ffffff,
+                    #f7faff 55%,
+                    #eff6ff
+                );
+        }
 
-    text-transform: uppercase;
 
-    letter-spacing: .08em;
-}
+        .summary-card.received::before {
 
+            content: "";
 
-.summary-value {
+            position: absolute;
 
-    position: relative;
+            left: 0;
+            top: 0;
+            bottom: 0;
 
-    z-index: 1;
+            width: 4px;
 
-    display: block;
+            background:
+                linear-gradient(
+                    180deg,
+                    var(--pay-primary),
+                    var(--pay-indigo)
+                );
+        }
 
-    margin-top: 8px;
 
-    color: #111827;
+        .summary-label {
 
-    font-size: 23px;
+            position: relative;
+            z-index: 2;
 
-    line-height: 1;
+            display: block;
 
-    font-weight: 850;
+            color: var(--pay-muted);
 
-    letter-spacing: -.5px;
-}
+            font-size: 9px;
 
+            font-weight: 850;
 
-.received .summary-value {
+            text-transform: uppercase;
 
-    color:
-        var(--sb-green-dark);
+            letter-spacing: .09em;
+        }
 
-    font-size: 27px;
-}
 
+        .summary-value {
 
-.summary-icon {
+            position: relative;
+            z-index: 2;
 
-    position: absolute;
+            display: block;
 
-    z-index: 1;
+            margin-top: 9px;
 
-    right: 18px;
+            color: var(--pay-text);
 
-    top: 18px;
+            font-size: 23px;
 
-    color:
-        rgba(15,23,42,.075);
+            line-height: 1;
 
-    font-size: 25px;
-}
+            font-weight: 900;
 
+            letter-spacing: -.6px;
+        }
 
-.received .summary-icon {
 
-    color:
-        rgba(0,184,107,.13);
-}
+        .received .summary-value {
 
+            color: var(--pay-primary);
 
-/* =========================================================
-   FILTER CARD
-========================================================= */
+            font-size: 27px;
+        }
 
-.filter-card {
 
-    padding: 18px;
+        .summary-icon {
 
-    margin-bottom: 22px;
+            position: absolute;
 
-    border:
-        1px solid var(--sb-border);
+            z-index: 1;
 
-    border-radius: 19px;
+            right: 17px;
+            top: 16px;
 
-    background:
-        rgba(255,255,255,.96);
+            color:
+                rgba(37,99,235,.09);
 
-    box-shadow:
-        var(--sb-shadow);
-}
+            font-size: 23px;
+        }
 
 
-.filter-top {
+        .received .summary-icon {
 
-    display: flex;
+            color:
+                rgba(37,99,235,.15);
+        }
 
-    align-items: center;
 
-    justify-content: space-between;
+        /* =========================================================
+           FILTER CARD
+        ========================================================= */
 
-    margin-bottom: 13px;
-}
+        .filter-card {
 
+            position: relative;
 
-.filter-title {
+            width: 100%;
 
-    display: flex;
+            margin-bottom: 15px;
 
-    align-items: center;
+            padding: 16px;
 
-    gap: 8px;
+            overflow: hidden;
 
-    color: #1e293b;
+            border:
+                1px solid var(--pay-border);
 
-    font-size: 12px;
+            border-radius: 17px;
 
-    font-weight: 850;
-}
+            background:
+                rgba(255,255,255,.97);
 
+            box-shadow:
+                var(--pay-shadow);
+        }
 
-.filter-title i {
-    color: var(--sb-green);
-}
 
+        .filter-card::before {
 
-.filter-hint {
+            content: "";
 
-    color: var(--sb-muted-2);
+            position: absolute;
 
-    font-size: 10px;
-}
+            left: 0;
+            right: 0;
+            top: 0;
 
+            height: 3px;
 
-.form-control,
-.form-select {
+            background:
+                linear-gradient(
+                    90deg,
+                    var(--pay-primary),
+                    var(--pay-indigo)
+                );
+        }
 
-    min-height: 44px;
 
-    color: #1e293b !important;
+        .filter-top {
 
-    background:
-        #f8fafc !important;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
 
-    border:
-        1px solid #e2e8f0 !important;
+            gap: 12px;
 
-    border-radius: 11px !important;
+            margin-bottom: 11px;
+        }
 
-    box-shadow:
-        inset 0 1px 2px rgba(15,23,42,.02);
 
-    font-size: 12px !important;
+        .filter-title {
 
-    transition:
-        border-color .2s ease,
-        box-shadow .2s ease,
-        background .2s ease;
-}
+            display: flex;
+            align-items: center;
 
+            gap: 8px;
 
-.form-control::placeholder {
-    color: #94a3b8 !important;
-}
+            color: var(--pay-text-2);
 
+            font-size: 11px;
 
-.form-control:hover,
-.form-select:hover {
+            font-weight: 850;
+        }
 
-    border-color:
-        #cbd5e1 !important;
 
-    background:
-        #ffffff !important;
-}
+        .filter-title i {
 
+            width: 28px;
+            height: 28px;
 
-.form-control:focus,
-.form-select:focus {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
 
-    color: #0f172a !important;
+            border-radius: 8px;
 
-    background:
-        #ffffff !important;
+            color: var(--pay-primary);
 
-    border-color:
-        rgba(0,184,107,.65) !important;
+            background:
+                var(--pay-primary-soft);
 
-    box-shadow:
-        0 0 0 4px rgba(0,184,107,.08) !important;
+            font-size: 10px;
+        }
 
-    outline: none !important;
-}
 
+        .filter-hint {
 
-.form-select option {
+            color: var(--pay-muted-2);
 
-    color: #111827;
+            font-size: 9px;
 
-    background: #ffffff;
-}
+            font-weight: 600;
+        }
 
 
-input[type="date"] {
-    color-scheme: light;
-}
+        /* =========================================================
+           FORM CONTROLS
+        ========================================================= */
 
+        .payment-page .form-control,
+        .payment-page .form-select {
 
-/* FILTER BUTTON */
+            min-height: 43px;
 
-.filter-btn {
+            color: var(--pay-text-2) !important;
 
-    width: 100%;
+            background: #f8fafc !important;
 
-    min-height: 44px;
+            border:
+                1px solid #dfe6ef !important;
 
-    border: 0;
+            border-radius: 10px !important;
 
-    border-radius: 11px;
+            font-size: 11px !important;
 
-    background:
-        linear-gradient(
-            135deg,
-            #00c878,
-            #00a965
-        );
+            font-weight: 600;
 
-    color: #ffffff;
+            box-shadow:
+                inset 0 1px 2px rgba(15,23,42,.015);
 
-    font-size: 12px;
+            transition:
+                border-color .2s ease,
+                box-shadow .2s ease,
+                background .2s ease;
+        }
 
-    font-weight: 850;
 
-    box-shadow:
-        0 8px 20px rgba(0,184,107,.15);
+        .payment-page .form-control::placeholder {
 
-    transition:
-        transform .22s ease,
-        box-shadow .22s ease;
-}
+            color: #94a3b8 !important;
 
+            font-weight: 500;
+        }
 
-.filter-btn:hover {
 
-    color: #ffffff;
+        .payment-page .form-control:hover,
+        .payment-page .form-select:hover {
 
-    transform:
-        translateY(-2px);
+            border-color:
+                #cbd5e1 !important;
 
-    box-shadow:
-        0 13px 28px rgba(0,184,107,.22);
-}
+            background:
+                #ffffff !important;
+        }
 
 
-/* =========================================================
-   PAYMENTS CONTAINER
-========================================================= */
+        .payment-page .form-control:focus,
+        .payment-page .form-select:focus {
 
-.payments-card {
+            color: var(--pay-text) !important;
 
-    overflow: hidden;
+            background:
+                #ffffff !important;
 
-    border:
-        1px solid var(--sb-border);
+            border-color:
+                rgba(37,99,235,.65) !important;
 
-    border-radius: 22px;
+            box-shadow:
+                0 0 0 4px rgba(37,99,235,.08) !important;
 
-    background:
-        rgba(255,255,255,.98);
+            outline: none !important;
+        }
 
-    box-shadow:
-        0 15px 50px rgba(15,23,42,.075);
-}
 
+        .payment-page .form-select option {
 
-/* =========================================================
-   PAYMENT ROW
-========================================================= */
+            color: #111827;
 
-.payment-row {
+            background: #ffffff;
+        }
 
-    position: relative;
 
-    padding: 23px 24px;
+        .payment-page input[type="date"] {
 
-    border-bottom:
-        1px solid #edf0f4;
+            color-scheme: light;
+        }
 
-    transition:
-        background .22s ease;
-}
 
+        /* =========================================================
+           FILTER BUTTON
+        ========================================================= */
 
-.payment-row:last-child {
-    border-bottom: 0;
-}
+        .filter-btn {
 
+            width: 100%;
 
-.payment-row:hover {
+            min-height: 43px;
 
-    background:
-        linear-gradient(
-            90deg,
-            #ffffff,
-            #fbfffd
-        );
-}
+            display: inline-flex;
 
+            align-items: center;
+            justify-content: center;
 
-.payment-row-top {
-    min-height: 58px;
-}
+            gap: 5px;
 
+            border: 0;
 
-/* =========================================================
-   CUSTOMER
-========================================================= */
+            border-radius: 10px;
 
-.customer-name {
+            color: #ffffff;
 
-    color: #111827;
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--pay-primary),
+                    var(--pay-primary-dark)
+                );
 
-    font-size: 15px;
+            font-size: 11px;
 
-    font-weight: 850;
-}
+            font-weight: 850;
 
+            box-shadow:
+                0 8px 20px rgba(37,99,235,.17);
 
-.customer-icon {
+            transition:
+                transform .2s ease,
+                box-shadow .2s ease;
+        }
 
-    margin-right: 6px;
 
-    color: var(--sb-green-dark);
-}
+        .filter-btn:hover {
 
+            color: #ffffff;
 
-.customer-uid {
+            transform: translateY(-2px);
 
-    margin-top: 5px;
+            box-shadow:
+                0 12px 27px rgba(37,99,235,.24);
+        }
 
-    color: var(--sb-blue);
 
-    font-size: 11px;
+        /* =========================================================
+           PAYMENT LIST
+        ========================================================= */
 
-    font-weight: 650;
-}
+        .payments-card {
 
+            width: 100%;
 
-.order-meta {
+            overflow: hidden;
 
-    margin-top: 5px;
+            border:
+                1px solid var(--pay-border);
 
-    color: #94a3b8;
+            border-radius: 20px;
 
-    font-size: 11px;
-}
+            background:
+                rgba(255,255,255,.98);
 
+            box-shadow:
+                0 13px 42px rgba(15,23,42,.065);
+        }
 
-.order-meta i {
-    color: #64748b;
-}
 
+        /* =========================================================
+           PAYMENT ROW
+        ========================================================= */
 
-/* =========================================================
-   PAYMENT AMOUNT
-========================================================= */
+        .payment-row {
 
-.payment-amount-box {
-    min-width: 150px;
-}
+            position: relative;
 
+            width: 100%;
 
-.payment-amount {
+            min-width: 0;
 
-    color:
-        var(--sb-green-dark);
+            padding:
+                20px clamp(15px, 2vw, 26px);
 
-    font-size: 21px;
+            border-bottom:
+                1px solid var(--pay-border-soft);
 
-    font-weight: 900;
+            background:
+                rgba(255,255,255,.98);
 
-    letter-spacing: -.3px;
-}
+            transition:
+                background .2s ease,
+                box-shadow .2s ease;
+        }
 
 
-.payment-status {
+        .payment-row:last-child {
 
-    display: inline-flex;
+            border-bottom: 0;
+        }
 
-    align-items: center;
 
-    justify-content: center;
+        .payment-row::before {
 
-    gap: 5px;
+            content: "";
 
-    margin-top: 6px;
+            position: absolute;
 
-    padding:
-        5px 10px;
+            left: 0;
 
-    border-radius: 999px;
+            top: 0;
+            bottom: 0;
 
-    font-size: 10px;
+            width: 3px;
 
-    font-weight: 850;
+            opacity: 0;
 
-    letter-spacing: .02em;
-}
+            background:
+                linear-gradient(
+                    180deg,
+                    var(--pay-primary),
+                    var(--pay-indigo)
+                );
 
+            transition: opacity .2s ease;
+        }
 
-/* STATUS */
 
-.status-successful {
+        .payment-row:hover {
 
-    color: #008a51;
+            background:
+                linear-gradient(
+                    90deg,
+                    #ffffff,
+                    #f9fbff
+                );
 
-    background:
-        #eafff4;
+            box-shadow:
+                inset 0 0 35px rgba(37,99,235,.018);
+        }
 
-    border:
-        1px solid #b9f2d5;
-}
 
+        .payment-row:hover::before {
 
-.status-pending {
+            opacity: 1;
+        }
 
-    color: #b56a00;
 
-    background:
-        #fff7e5;
+        .payment-row-top {
 
-    border:
-        1px solid #f7dca2;
-}
+            min-height: 53px;
+        }
 
 
-.status-failed {
+        /* =========================================================
+           CUSTOMER
+        ========================================================= */
 
-    color: #d52f3d;
+        .customer-name {
 
-    background:
-        #fff0f1;
+            color: var(--pay-text);
 
-    border:
-        1px solid #ffc8cd;
-}
+            font-size: 14px;
 
+            font-weight: 850;
 
-.status-refunded {
+            letter-spacing: -.15px;
+        }
 
-    color: #7443c5;
 
-    background:
-        #f4efff;
+        .customer-icon {
 
-    border:
-        1px solid #ded0ff;
-}
+            margin-right: 5px;
 
+            color: var(--pay-primary);
+        }
 
-/* =========================================================
-   PRODUCT LINE
-========================================================= */
 
-.product-section {
+        .customer-uid {
 
-    margin-top: 16px;
+            margin-top: 4px;
 
-    padding:
-        13px 14px;
+            color: var(--pay-primary);
 
-    border:
-        1px solid #edf0f4;
+            font-size: 10px;
 
-    border-radius: 13px;
+            font-weight: 700;
 
-    background:
-        #fafbfc;
-}
+            overflow-wrap: anywhere;
+        }
 
 
-.product-line {
+        .order-meta {
 
-    display: flex;
+            margin-top: 4px;
 
-    align-items: center;
+            color: var(--pay-muted-2);
 
-    gap: 11px;
+            font-size: 10px;
 
-    min-width: 0;
+            font-weight: 500;
 
-    margin-top: 8px;
+            overflow-wrap: anywhere;
+        }
 
-    color: #334155;
 
-    font-size: 12px;
+        .order-meta i {
 
-    font-weight: 600;
-}
+            color: var(--pay-muted);
+        }
 
 
-.product-line:first-child {
-    margin-top: 0;
-}
+        /* =========================================================
+           AMOUNT
+        ========================================================= */
 
+        .payment-amount-box {
 
-.product-line span {
+            min-width: 150px;
 
-    overflow: hidden;
+            flex-shrink: 0;
+        }
 
-    text-overflow: ellipsis;
 
-    white-space: nowrap;
-}
+        .payment-amount {
 
+            color: var(--pay-primary);
 
-.product-line img,
-.product-placeholder {
+            font-size: 21px;
 
-    width: 43px;
+            font-weight: 900;
 
-    height: 43px;
+            letter-spacing: -.5px;
+        }
 
-    flex-shrink: 0;
 
-    object-fit: cover;
+        .payment-status {
 
-    border-radius: 10px;
+            display: inline-flex;
 
-    border:
-        1px solid #e2e8f0;
+            align-items: center;
+            justify-content: center;
 
-    background:
-        #ffffff;
-}
+            gap: 5px;
 
+            margin-top: 6px;
 
-.product-placeholder {
+            padding:
+                4px 10px;
 
-    display: flex;
+            border-radius: 999px;
 
-    align-items: center;
+            font-size: 9px;
 
-    justify-content: center;
+            font-weight: 850;
 
-    color: #94a3b8;
+            letter-spacing: .02em;
+        }
 
-    font-size: 14px;
-}
 
+        /* =========================================================
+           STATUS
+        ========================================================= */
 
-/* =========================================================
-   PAYMENT METHOD
-========================================================= */
+        .status-successful {
 
-.payment-method {
+            color: #15803d;
 
-    display: flex;
+            background:
+                var(--pay-green-soft);
 
-    align-items: center;
+            border:
+                1px solid #bbf7d0;
+        }
 
-    flex-wrap: wrap;
 
-    gap: 3px;
+        .status-pending {
 
-    margin-top: 12px;
+            color: #b45309;
 
-    color: #64748b;
+            background:
+                var(--pay-orange-soft);
 
-    font-size: 11px;
+            border:
+                1px solid #f7dca2;
+        }
 
-    font-weight: 600;
-}
 
+        .status-failed {
 
-.payment-method > i {
+            color: #dc2626;
 
-    color:
-        var(--sb-green-dark);
-}
+            background:
+                var(--pay-red-soft);
 
+            border:
+                1px solid #fecdd3;
+        }
 
-.transaction-text {
-    color: #94a3b8;
-}
 
+        .status-refunded {
 
-/* =========================================================
-   ACTION BUTTONS
-========================================================= */
+            color: #7c3aed;
 
-.payment-actions {
+            background:
+                var(--pay-purple-soft);
 
-    display: flex;
+            border:
+                1px solid #ddd6fe;
+        }
 
-    flex-wrap: wrap;
 
-    gap: 8px;
+        /* =========================================================
+           PRODUCT SECTION
+        ========================================================= */
 
-    margin-top: 15px;
-}
+        .product-section {
 
+            margin-top: 14px;
 
-.action-btn {
+            padding:
+                13px 14px;
 
-    display: inline-flex;
+            border:
+                1px solid #e3ebf5;
 
-    align-items: center;
+            border-radius: 13px;
 
-    justify-content: center;
+            background:
+                linear-gradient(
+                    135deg,
+                    #f8fbff,
+                    #fbfdff
+                );
+        }
 
-    gap: 6px;
 
-    min-height: 35px;
+        .product-section::before {
 
-    padding:
-        0 12px;
+            content: "ORDER ITEMS";
 
-    border-radius: 9px;
+            display: block;
 
-    text-decoration: none;
+            margin-bottom: 8px;
 
-    font-size: 10px;
+            color: #94a3b8;
 
-    font-weight: 850;
+            font-size: 7px;
 
-    transition:
-        transform .2s ease,
-        background .2s ease,
-        border-color .2s ease,
-        box-shadow .2s ease;
-}
+            font-weight: 850;
 
+            letter-spacing: .12em;
+        }
 
-.action-btn:hover {
-    transform:
-        translateY(-1px);
-}
 
+        .product-line {
 
-/* VIEW */
+            display: flex;
 
-.view-btn {
+            align-items: center;
 
-    color: #2563eb;
+            gap: 10px;
 
-    background:
-        #eff6ff;
+            min-width: 0;
 
-    border:
-        1px solid #bfdbfe;
-}
+            margin-top: 7px;
 
+            color: var(--pay-text-2);
 
-.view-btn:hover {
+            font-size: 11px;
 
-    color: #1d4ed8;
+            font-weight: 650;
+        }
 
-    background:
-        #dbeafe;
 
-    border-color:
-        #93c5fd;
-}
+        .product-line:first-of-type {
 
+            margin-top: 0;
+        }
 
-/* RECEIPT */
 
-.receipt-btn {
+        .product-line span {
 
-    color:
-        #008a51;
+            min-width: 0;
 
-    background:
-        #edfff6;
+            overflow: hidden;
 
-    border:
-        1px solid #b9efd4;
-}
+            text-overflow: ellipsis;
 
+            white-space: nowrap;
+        }
 
-.receipt-btn:hover {
 
-    color: #ffffff;
+        .product-line img,
+        .product-placeholder {
 
-    background:
-        var(--sb-green-dark);
+            width: 43px;
+            height: 43px;
 
-    border-color:
-        var(--sb-green-dark);
+            flex-shrink: 0;
 
-    box-shadow:
-        0 7px 18px rgba(0,184,107,.17);
-}
+            object-fit: cover;
 
+            border-radius: 10px;
 
-/* =========================================================
-   EMPTY STATE
-========================================================= */
+            border:
+                1px solid #dfe7f1;
 
-.empty-payment {
+            background:
+                #ffffff;
 
-    padding:
-        85px 25px;
+            box-shadow:
+                0 3px 9px rgba(15,23,42,.04);
+        }
 
-    text-align: center;
 
-    background:
-        linear-gradient(
-            180deg,
-            #ffffff,
-            #fbfcfd
-        );
-}
+        .product-placeholder {
 
+            display: flex;
 
-.empty-payment-icon {
+            align-items: center;
+            justify-content: center;
 
-    width: 70px;
+            color: var(--pay-primary);
 
-    height: 70px;
+            background:
+                var(--pay-primary-soft);
 
-    display: flex;
+            font-size: 13px;
+        }
 
-    align-items: center;
 
-    justify-content: center;
+        /* =========================================================
+           PAYMENT METHOD
+        ========================================================= */
 
-    margin:
-        0 auto 18px;
+        .payment-method {
 
-    border-radius: 21px;
+            display: flex;
 
-    background:
-        #edfff6;
+            align-items: center;
 
-    border:
-        1px solid #c5f3db;
+            flex-wrap: wrap;
 
-    color:
-        var(--sb-green-dark);
+            gap: 4px;
 
-    font-size: 27px;
+            margin-top: 10px;
 
-    box-shadow:
-        0 10px 25px rgba(0,184,107,.07);
-}
+            color: var(--pay-muted);
 
+            font-size: 10px;
 
-.empty-payment h5 {
+            font-weight: 650;
+        }
 
-    margin: 0;
 
-    color: #1e293b;
+        .payment-method > i {
 
-    font-size: 18px;
+            color: var(--pay-primary);
+        }
 
-    font-weight: 850;
-}
 
+        .transaction-text {
 
-.empty-payment p {
+            color: var(--pay-muted-2);
+        }
 
-    margin-top: 7px;
 
-    color: #94a3b8;
+        /* =========================================================
+           ACTION BUTTONS
+        ========================================================= */
 
-    font-size: 12px;
-}
+        .payment-actions {
 
+            display: flex;
 
-/* =========================================================
-   RESPONSIVE — TABLET
-========================================================= */
+            flex-wrap: wrap;
 
-@media (max-width: 1050px) {
+            gap: 8px;
 
-    .summary-grid {
+            margin-top: 13px;
+        }
 
-        grid-template-columns:
-            repeat(2, 1fr);
-    }
 
+        .action-btn {
 
-    .summary-card.received {
+            display: inline-flex;
 
-        grid-column:
-            span 2;
-    }
+            align-items: center;
+            justify-content: center;
 
-}
+            gap: 6px;
 
+            min-height: 36px;
 
-/* =========================================================
-   RESPONSIVE — MOBILE
-========================================================= */
+            padding:
+                0 13px;
 
-@media (max-width: 700px) {
+            border-radius: 9px;
 
-    .payment-page {
+            text-decoration: none;
 
-        width:
-            calc(100% - 24px);
+            font-size: 9px;
 
-        padding:
-            22px 0 55px;
-    }
+            font-weight: 850;
 
+            transition:
+                transform .18s ease,
+                background .18s ease,
+                border-color .18s ease,
+                color .18s ease,
+                box-shadow .18s ease;
+        }
 
-    .payment-header {
 
-        align-items:
-            flex-start;
+        .action-btn:hover {
 
-        flex-direction:
-            column;
+            transform: translateY(-2px);
+        }
 
-        gap: 15px;
-    }
 
+        .view-btn {
 
-    .payment-title {
+            color: var(--pay-primary);
 
-        font-size: 25px;
-    }
+            background:
+                var(--pay-primary-soft);
 
+            border:
+                1px solid #bfdbfe;
+        }
 
-    .payment-title-icon {
 
-        width: 43px;
+        .view-btn:hover {
 
-        height: 43px;
+            color: #ffffff;
 
-        border-radius: 13px;
-    }
+            background:
+                var(--pay-primary);
 
+            border-color:
+                var(--pay-primary);
 
-    .payment-subtitle {
+            box-shadow:
+                0 7px 17px rgba(37,99,235,.18);
+        }
 
-        margin-left: 0;
 
-        font-size: 11px;
-    }
+        .receipt-btn {
 
+            color: var(--pay-indigo);
 
-    .payment-header .premium-btn {
+            background:
+                var(--pay-indigo-soft);
 
-        width: 100%;
-    }
+            border:
+                1px solid #c7d2fe;
+        }
 
 
-    .summary-grid {
+        .receipt-btn:hover {
 
-        grid-template-columns:
-            1fr 1fr;
+            color: #ffffff;
 
-        gap: 10px;
-    }
+            background:
+                var(--pay-indigo);
 
+            border-color:
+                var(--pay-indigo);
 
-    .summary-card {
+            box-shadow:
+                0 7px 17px rgba(79,70,229,.18);
+        }
 
-        min-height: 112px;
 
-        padding: 16px;
-    }
+        /* =========================================================
+           EMPTY STATE
+        ========================================================= */
 
+        .empty-payment {
 
-    .summary-card.received {
+            width: 100%;
 
-        grid-column:
-            span 2;
-    }
+            padding:
+                75px 25px;
 
+            text-align: center;
 
-    .received .summary-value {
+            background:
+                linear-gradient(
+                    180deg,
+                    #ffffff,
+                    #fbfcfe
+                );
+        }
 
-        font-size: 24px;
-    }
 
+        .empty-payment-icon {
 
-    .summary-value {
+            width: 74px;
+            height: 74px;
 
-        font-size: 20px;
-    }
+            display: flex;
 
+            align-items: center;
+            justify-content: center;
 
-    .summary-icon {
+            margin:
+                0 auto 16px;
 
-        right: 13px;
+            border-radius: 21px;
 
-        top: 13px;
+            background:
+                linear-gradient(
+                    145deg,
+                    #eff6ff,
+                    #f5f7ff
+                );
 
-        font-size: 19px;
-    }
+            border:
+                1px solid #bfdbfe;
 
+            color: var(--pay-primary);
 
-    .filter-card {
+            font-size: 27px;
 
-        padding: 14px;
-    }
+            box-shadow:
+                0 10px 25px rgba(37,99,235,.08);
+        }
 
 
-    .filter-hint {
+        .empty-payment h5 {
 
-        display: none;
-    }
+            margin: 0;
 
+            color: var(--pay-text-2);
 
-    .payment-row {
+            font-size: 18px;
 
-        padding:
-            18px 15px;
-    }
+            font-weight: 850;
+        }
 
 
-    .payment-row-top {
+        .empty-payment p {
 
-        flex-direction:
-            column;
+            margin-top: 7px;
 
-        gap: 13px;
-    }
+            color: var(--pay-muted-2);
 
+            font-size: 11px;
+        }
 
-    .payment-amount-box {
 
-        min-width: 0;
+        /* =========================================================
+           LARGE DESKTOP
+        ========================================================= */
 
-        text-align:
-            left !important;
-    }
+        @media (min-width: 1600px) {
 
+            .payment-page {
 
-    .payment-amount {
+                padding-left: 38px;
+                padding-right: 38px;
+            }
 
-        font-size: 20px;
-    }
+            .summary-grid {
 
+                gap: 15px;
+            }
 
-    .product-section {
+            .payment-row {
 
-        padding:
-            11px;
-    }
+                padding-left: 30px;
+                padding-right: 30px;
+            }
+        }
 
-}
 
+        /* =========================================================
+           TABLET
+        ========================================================= */
 
-/* =========================================================
-   VERY SMALL MOBILE
-========================================================= */
+        @media (max-width: 1200px) {
 
-@media (max-width: 430px) {
+            .summary-grid {
 
-    .payment-title {
+                grid-template-columns:
+                    repeat(4, minmax(0, 1fr));
+            }
 
-        font-size: 22px;
-    }
 
+            .summary-card.received {
 
-    .payment-title-icon {
+                grid-column:
+                    span 2;
+            }
+        }
 
-        width: 40px;
 
-        height: 40px;
+        @media (max-width: 950px) {
 
-        font-size: 15px;
-    }
+            .payment-page {
 
+                padding:
+                    18px
+                    15px
+                    45px;
+            }
 
-    .summary-card {
 
-        padding: 14px;
+            .summary-grid {
 
-        border-radius: 15px;
-    }
+                grid-template-columns:
+                    repeat(2, minmax(0, 1fr));
+            }
 
 
-    .summary-label {
+            .summary-card.received {
 
-        font-size: 9px;
-    }
+                grid-column:
+                    span 2;
+            }
+        }
 
 
-    .summary-value {
+        /* =========================================================
+           MOBILE
+        ========================================================= */
 
-        font-size: 18px;
-    }
+        @media (max-width: 700px) {
 
+            .payment-page {
 
-    .received .summary-value {
+                padding:
+                    14px
+                    10px
+                    40px;
+            }
 
-        font-size: 22px;
-    }
 
+            .payment-header {
 
-    .payment-actions {
+                min-height: auto;
 
-        display: grid;
+                padding:
+                    17px 15px;
 
-        grid-template-columns:
-            1fr 1fr;
-    }
+                margin-bottom: 12px;
 
+                border-radius: 17px;
+            }
 
-    .action-btn {
 
-        width: 100%;
-    }
+            .payment-heading-wrap {
 
-}
+                align-items: flex-start;
 
+                gap: 12px;
+            }
 
-/* =========================================================
-   REDUCED MOTION
-========================================================= */
 
-@media (prefers-reduced-motion: reduce) {
+            .payment-title-icon {
 
-    *,
-    *::before,
-    *::after {
+                width: 46px;
+                height: 46px;
 
-        transition:
-            none !important;
+                flex-basis: 46px;
 
-        animation:
-            none !important;
-    }
+                border-radius: 13px;
 
-}
+                font-size: 17px;
+            }
+
+
+            .payment-title {
+
+                font-size: 22px;
+
+                letter-spacing: -.55px;
+            }
+
+
+            .payment-subtitle {
+
+                margin-top: 6px;
+
+                font-size: 9px;
+            }
+
+
+            .summary-grid {
+
+                grid-template-columns:
+                    1fr 1fr;
+
+                gap: 9px;
+
+                margin-bottom: 12px;
+            }
+
+
+            .summary-card {
+
+                min-height: 98px;
+
+                padding: 14px;
+
+                border-radius: 14px;
+            }
+
+
+            .summary-card.received {
+
+                grid-column:
+                    span 2;
+            }
+
+
+            .summary-label {
+
+                font-size: 8px;
+            }
+
+
+            .summary-value {
+
+                font-size: 19px;
+            }
+
+
+            .received .summary-value {
+
+                font-size: 23px;
+            }
+
+
+            .summary-icon {
+
+                right: 12px;
+                top: 12px;
+
+                font-size: 18px;
+            }
+
+
+            .filter-card {
+
+                padding: 13px;
+
+                border-radius: 14px;
+
+                margin-bottom: 12px;
+            }
+
+
+            .filter-top {
+
+                margin-bottom: 9px;
+            }
+
+
+            .filter-hint {
+
+                display: none;
+            }
+
+
+            .payment-page .form-control,
+            .payment-page .form-select,
+            .filter-btn {
+
+                min-height: 42px;
+            }
+
+
+            .payments-card {
+
+                border-radius: 16px;
+            }
+
+
+            .payment-row {
+
+                padding:
+                    17px 14px;
+            }
+
+
+            .payment-row-top {
+
+                flex-direction: column;
+
+                gap: 12px;
+            }
+
+
+            .payment-amount-box {
+
+                width: 100%;
+
+                min-width: 0;
+
+                text-align: left !important;
+            }
+
+
+            .payment-amount {
+
+                font-size: 19px;
+            }
+
+
+            .product-section {
+
+                padding:
+                    11px;
+            }
+
+
+            .payment-actions {
+
+                width: 100%;
+            }
+
+
+            .action-btn {
+
+                min-height: 36px;
+
+                font-size: 9px;
+            }
+        }
+
+
+        /* =========================================================
+           SMALL MOBILE
+        ========================================================= */
+
+        @media (max-width: 430px) {
+
+            .payment-page {
+
+                padding-left: 8px;
+                padding-right: 8px;
+            }
+
+
+            .payment-header {
+
+                padding:
+                    14px;
+
+                border-radius: 15px;
+            }
+
+
+            .payment-heading-wrap {
+
+                gap: 10px;
+            }
+
+
+            .payment-title-icon {
+
+                width: 41px;
+                height: 41px;
+
+                flex-basis: 41px;
+
+                border-radius: 11px;
+
+                font-size: 15px;
+            }
+
+
+            .payment-title {
+
+                font-size: 19px;
+            }
+
+
+            .payment-subtitle {
+
+                font-size: 8px;
+            }
+
+
+            .summary-card {
+
+                padding: 12px;
+
+                min-height: 93px;
+            }
+
+
+            .summary-value {
+
+                font-size: 17px;
+            }
+
+
+            .received .summary-value {
+
+                font-size: 21px;
+            }
+
+
+            .payment-actions {
+
+                display: grid;
+
+                grid-template-columns:
+                    1fr 1fr;
+
+                width: 100%;
+            }
+
+
+            .action-btn {
+
+                width: 100%;
+
+                padding:
+                    0 7px;
+
+                font-size: 8px;
+            }
+
+
+            .customer-name {
+
+                font-size: 13px;
+            }
+
+
+            .customer-uid,
+            .order-meta,
+            .payment-method {
+
+                font-size: 9px;
+            }
+
+
+            .product-line {
+
+                font-size: 10px;
+            }
+        }
+
+
+        /* =========================================================
+           REDUCED MOTION
+        ========================================================= */
+
+        @media (prefers-reduced-motion: reduce) {
+
+            .payment-page *,
+            .payment-page *::before,
+            .payment-page *::after {
+
+                transition: none !important;
+
+                animation: none !important;
+            }
+        }
 
     </style>
 
@@ -1475,693 +1827,726 @@ input[type="date"] {
 <body>
 
 
-<main class="payment-page">
+    {{-- =====================================================
+         COMMON SELLER TASKBAR / TOPBAR
+         DO NOT CHANGE
+    ====================================================== --}}
+
+    @include('seller.partials.topbar')
 
 
     {{-- =====================================================
-         HEADER
+         COMMON SELLER MENU
+         DO NOT CHANGE
     ====================================================== --}}
 
-    <header class="payment-header">
+    @include('seller.partials.seller-menu')
 
-        <div class="payment-heading-wrap">
 
-            <h1 class="payment-title">
+    {{-- =====================================================
+         MAIN PAYMENT PAGE
+    ====================================================== --}}
+
+    <main class="payment-page">
+
+
+        {{-- =====================================================
+             PREMIUM PAGE HEADER
+        ====================================================== --}}
+
+        <header class="payment-header">
+
+            <div class="payment-heading-wrap">
 
                 <span class="payment-title-icon">
+
                     <i class="fa-solid fa-wallet"></i>
-                </span>
-
-                <span class="payment-title-text">
-
-                    <span class="payment-title-main">
-                        Payment <span>History</span>
-                    </span>
 
                 </span>
 
-            </h1>
+
+                <div class="payment-title-content">
+
+                    <h1 class="payment-title">
+
+                        Payment
+                        <span>History</span>
+
+                    </h1>
 
 
-            <p class="payment-subtitle">
+                    <p class="payment-subtitle">
 
-                Customer payments for
+                        Customer payments for
 
-                <strong>
-                    {{ $seller->shop_name ?: $seller->seller_name }}
+                        <strong>
+                            {{ $seller->shop_name ?: $seller->seller_name }}
+                        </strong>
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        {{-- =====================================================
+             PAYMENT SUMMARY
+        ====================================================== --}}
+
+        <section class="summary-grid">
+
+
+            {{-- TOTAL RECEIVED --}}
+
+            <div class="summary-card received">
+
+                <span class="summary-label">
+                    Total Received
+                </span>
+
+                <strong class="summary-value">
+
+                    ₹{{ number_format($summary['received'], 2) }}
+
                 </strong>
 
-            </p>
+                <i
+                    class="fa-solid fa-money-bill-trend-up summary-icon"
+                ></i>
 
-        </div>
+            </div>
 
 
-        <a
-            href="{{ route('seller.dashboard') }}"
-            class="premium-btn btn-outline-premium"
+            {{-- SUCCESSFUL --}}
+
+            <div class="summary-card">
+
+                <span class="summary-label">
+                    Successful
+                </span>
+
+                <strong class="summary-value">
+                    {{ $summary['successful'] }}
+                </strong>
+
+                <i
+                    class="fa-solid fa-circle-check summary-icon"
+                ></i>
+
+            </div>
+
+
+            {{-- PENDING --}}
+
+            <div class="summary-card">
+
+                <span class="summary-label">
+                    Pending
+                </span>
+
+                <strong class="summary-value">
+                    {{ $summary['pending'] }}
+                </strong>
+
+                <i
+                    class="fa-solid fa-clock summary-icon"
+                ></i>
+
+            </div>
+
+
+            {{-- FAILED --}}
+
+            <div class="summary-card">
+
+                <span class="summary-label">
+                    Failed
+                </span>
+
+                <strong class="summary-value">
+                    {{ $summary['failed'] }}
+                </strong>
+
+                <i
+                    class="fa-solid fa-circle-xmark summary-icon"
+                ></i>
+
+            </div>
+
+
+            {{-- REFUNDED --}}
+
+            <div class="summary-card">
+
+                <span class="summary-label">
+                    Refunded
+                </span>
+
+                <strong class="summary-value">
+                    {{ $summary['refunded'] }}
+                </strong>
+
+                <i
+                    class="fa-solid fa-rotate-left summary-icon"
+                ></i>
+
+            </div>
+
+
+        </section>
+
+
+        {{-- =====================================================
+             FILTERS
+        ====================================================== --}}
+
+        <form
+            class="filter-card"
+            method="GET"
         >
 
-            <i class="fa-solid fa-arrow-left"></i>
+            <div class="filter-top">
 
-            Dashboard
+                <div class="filter-title">
 
-        </a>
+                    <i class="fa-solid fa-sliders"></i>
 
-    </header>
-
-
-
-    {{-- =====================================================
-         SUMMARY
-    ====================================================== --}}
-
-    <section class="summary-grid">
-
-
-        {{-- TOTAL RECEIVED --}}
-
-        <div class="summary-card received">
-
-            <span class="summary-label">
-                Total Received
-            </span>
-
-            <strong class="summary-value">
-                ₹{{ number_format($summary['received'], 2) }}
-            </strong>
-
-            <i
-                class="fa-solid fa-money-bill-trend-up summary-icon"
-            ></i>
-
-        </div>
-
-
-        {{-- SUCCESSFUL --}}
-
-        <div class="summary-card">
-
-            <span class="summary-label">
-                Successful
-            </span>
-
-            <strong class="summary-value">
-                {{ $summary['successful'] }}
-            </strong>
-
-            <i
-                class="fa-solid fa-circle-check summary-icon"
-            ></i>
-
-        </div>
-
-
-        {{-- PENDING --}}
-
-        <div class="summary-card">
-
-            <span class="summary-label">
-                Pending
-            </span>
-
-            <strong class="summary-value">
-                {{ $summary['pending'] }}
-            </strong>
-
-            <i
-                class="fa-solid fa-clock summary-icon"
-            ></i>
-
-        </div>
-
-
-        {{-- FAILED --}}
-
-        <div class="summary-card">
-
-            <span class="summary-label">
-                Failed
-            </span>
-
-            <strong class="summary-value">
-                {{ $summary['failed'] }}
-            </strong>
-
-            <i
-                class="fa-solid fa-circle-xmark summary-icon"
-            ></i>
-
-        </div>
-
-
-        {{-- REFUNDED --}}
-
-        <div class="summary-card">
-
-            <span class="summary-label">
-                Refunded
-            </span>
-
-            <strong class="summary-value">
-                {{ $summary['refunded'] }}
-            </strong>
-
-            <i
-                class="fa-solid fa-rotate-left summary-icon"
-            ></i>
-
-        </div>
-
-
-    </section>
-
-
-
-    {{-- =====================================================
-         FILTERS
-    ====================================================== --}}
-
-    <form
-        class="filter-card"
-        method="GET"
-    >
-
-        <div class="filter-top">
-
-            <div class="filter-title">
-
-                <i class="fa-solid fa-sliders"></i>
-
-                Payment Filters
-
-            </div>
-
-            <div class="filter-hint">
-                Refine your payment history
-            </div>
-
-        </div>
-
-
-        <div class="row g-2">
-
-
-            {{-- SEARCH --}}
-
-            <div class="col-lg-4 col-md-6">
-
-                <input
-                    class="form-control"
-                    name="search"
-                    value="{{ request('search') }}"
-                    placeholder="Customer, UID, order or product"
-                >
-
-            </div>
-
-
-            {{-- STATUS --}}
-
-            <div class="col-lg-2 col-md-3">
-
-                <select
-                    class="form-select"
-                    name="status"
-                >
-
-                    <option value="">
-                        All statuses
-                    </option>
-
-                    @foreach([
-                        'Successful',
-                        'Pending',
-                        'Failed',
-                        'Refunded'
-                    ] as $value)
-
-                        <option
-                            value="{{ $value }}"
-                            @selected(request('status') === $value)
-                        >
-                            {{ $value }}
-                        </option>
-
-                    @endforeach
-
-                </select>
-
-            </div>
-
-
-            {{-- METHOD --}}
-
-            <div class="col-lg-2 col-md-3">
-
-                <select
-                    class="form-select"
-                    name="method"
-                >
-
-                    <option value="">
-                        All methods
-                    </option>
-
-                    @foreach([
-                        'COD',
-                        'UPI',
-                        'Card',
-                        'Google Pay',
-                        'PhonePe',
-                        'Net Banking'
-                    ] as $value)
-
-                        <option
-                            value="{{ $value }}"
-                            @selected(request('method') === $value)
-                        >
-                            {{ $value }}
-                        </option>
-
-                    @endforeach
-
-                </select>
-
-            </div>
-
-
-            {{-- DATE --}}
-
-            <div class="col-lg-2 col-md-6">
-
-                <input
-                    class="form-control"
-                    type="date"
-                    name="from"
-                    value="{{ request('from') }}"
-                >
-
-            </div>
-
-
-            {{-- FILTER --}}
-
-            <div class="col-lg-2 col-md-6">
-
-                <button
-                    class="filter-btn"
-                    type="submit"
-                >
-
-                    <i class="fa-solid fa-filter me-1"></i>
-
-                    Filter
-
-                </button>
-
-            </div>
-
-
-        </div>
-
-    </form>
-
-
-
-    {{-- =====================================================
-         PAYMENT LIST
-    ====================================================== --}}
-
-    <section class="payments-card">
-
-
-        @forelse($orders as $order)
-
-
-            @php
-
-                $status =
-                    app(
-                        \App\Http\Controllers\SellerPaymentController::class
-                    )->status($order);
-
-                $customer =
-                    $order->user;
-
-            @endphp
-
-
-            {{-- PAYMENT ROW --}}
-
-            <article class="payment-row">
-
-
-                {{-- TOP INFORMATION --}}
-
-                <div
-                    class="
-                        d-flex
-                        justify-content-between
-                        gap-4
-                        payment-row-top
-                    "
-                >
-
-
-                    {{-- CUSTOMER --}}
-
-                    <div>
-
-                        <div class="customer-name">
-
-                            <i
-                                class="
-                                    fa-solid
-                                    fa-user
-                                    customer-icon
-                                "
-                            ></i>
-
-                            {{ $customer?->name ?: $order->name }}
-
-                        </div>
-
-
-                        <div class="customer-uid">
-
-                            Customer UID:
-
-                            {{ $customer?->customer_uid ?: 'Guest checkout — no customer UID' }}
-
-                        </div>
-
-
-                        <div class="order-meta">
-
-                            <i class="fa-solid fa-receipt me-1"></i>
-
-                            Order #SB-{{ $order->id }}
-
-                            <span class="mx-1">
-                                ·
-                            </span>
-
-                            {{ $order->created_at?->format('d M Y · h:i A') }}
-
-                        </div>
-
-                    </div>
-
-
-
-                    {{-- AMOUNT --}}
-
-                    <div class="payment-amount-box text-end">
-
-                        <div class="payment-amount">
-
-                            ₹{{ number_format($order->total, 2) }}
-
-                        </div>
-
-
-                        @if($status === 'Successful')
-
-                            <span
-                                class="
-                                    payment-status
-                                    status-successful
-                                "
-                            >
-
-                                <i
-                                    class="
-                                        fa-solid
-                                        fa-circle-check
-                                    "
-                                ></i>
-
-                                Successful
-
-                            </span>
-
-
-                        @elseif($status === 'Pending')
-
-                            <span
-                                class="
-                                    payment-status
-                                    status-pending
-                                "
-                            >
-
-                                <i
-                                    class="
-                                        fa-solid
-                                        fa-clock
-                                    "
-                                ></i>
-
-                                Pending
-
-                            </span>
-
-
-                        @elseif($status === 'Refunded')
-
-                            <span
-                                class="
-                                    payment-status
-                                    status-refunded
-                                "
-                            >
-
-                                <i
-                                    class="
-                                        fa-solid
-                                        fa-rotate-left
-                                    "
-                                ></i>
-
-                                Refunded
-
-                            </span>
-
-
-                        @else
-
-                            <span
-                                class="
-                                    payment-status
-                                    status-failed
-                                "
-                            >
-
-                                <i
-                                    class="
-                                        fa-solid
-                                        fa-circle-xmark
-                                    "
-                                ></i>
-
-                                {{ $status }}
-
-                            </span>
-
-                        @endif
-
-                    </div>
+                    Payment Filters
 
                 </div>
 
 
+                <div class="filter-hint">
+
+                    Refine your payment history
+
+                </div>
+
+            </div>
+
+
+            <div class="row g-2">
+
+
+                {{-- SEARCH --}}
+
+                <div class="col-lg-4 col-md-6">
+
+                    <input
+                        class="form-control"
+                        name="search"
+                        value="{{ request('search') }}"
+                        placeholder="Customer, UID, order or product"
+                    >
+
+                </div>
+
+
+                {{-- STATUS --}}
+
+                <div class="col-lg-2 col-md-3">
+
+                    <select
+                        class="form-select"
+                        name="status"
+                    >
+
+                        <option value="">
+                            All statuses
+                        </option>
+
+
+                        @foreach([
+                            'Successful',
+                            'Pending',
+                            'Failed',
+                            'Refunded'
+                        ] as $value)
+
+                            <option
+                                value="{{ $value }}"
+                                @selected(request('status') === $value)
+                            >
+                                {{ $value }}
+                            </option>
+
+                        @endforeach
+
+                    </select>
+
+                </div>
+
+
+                {{-- METHOD --}}
+
+                <div class="col-lg-2 col-md-3">
+
+                    <select
+                        class="form-select"
+                        name="method"
+                    >
+
+                        <option value="">
+                            All methods
+                        </option>
+
+
+                        @foreach([
+                            'COD',
+                            'UPI',
+                            'Card',
+                            'Google Pay',
+                            'PhonePe',
+                            'Net Banking'
+                        ] as $value)
+
+                            <option
+                                value="{{ $value }}"
+                                @selected(request('method') === $value)
+                            >
+                                {{ $value }}
+                            </option>
+
+                        @endforeach
+
+                    </select>
+
+                </div>
+
+
+                {{-- DATE --}}
+
+                <div class="col-lg-2 col-md-6">
+
+                    <input
+                        class="form-control"
+                        type="date"
+                        name="from"
+                        value="{{ request('from') }}"
+                    >
+
+                </div>
+
+
+                {{-- FILTER --}}
+
+                <div class="col-lg-2 col-md-6">
+
+                    <button
+                        class="filter-btn"
+                        type="submit"
+                    >
+
+                        <i class="fa-solid fa-filter"></i>
+
+                        Filter
+
+                    </button>
+
+                </div>
+
+
+            </div>
+
+        </form>
+
+
+        {{-- =====================================================
+             PAYMENT LIST
+        ====================================================== --}}
+
+        <section class="payments-card">
+
+
+            @forelse($orders as $order)
+
+
+                @php
+
+                    $status =
+                        app(
+                            \App\Http\Controllers\SellerPaymentController::class
+                        )->status($order);
+
+                    $customer =
+                        $order->user;
+
+                @endphp
+
 
                 {{-- =================================================
-                     PRODUCTS
+                     PAYMENT ITEM
                 ================================================== --}}
 
-                <div class="product-section">
-
-                    @forelse($order->seller_items as $item)
-
-                        @php
-
-                            $product =
-                                $order->seller_products[
-                                    $item['product_id'] ?? null
-                                ] ?? null;
-
-                        @endphp
+                <article class="payment-row">
 
 
-                        <div class="product-line">
+                    {{-- CUSTOMER + AMOUNT --}}
+
+                    <div
+                        class="
+                            d-flex
+                            justify-content-between
+                            gap-4
+                            payment-row-top
+                        "
+                    >
 
 
-                            @if($product?->image)
+                        {{-- CUSTOMER --}}
 
-                                <img
-                                    src="{{ asset('products/'.$product->image) }}"
-                                    alt="{{ $item['name'] ?? 'Product' }}"
-                                    loading="lazy"
+                        <div>
+
+                            <div class="customer-name">
+
+                                <i
+                                    class="
+                                        fa-solid
+                                        fa-user
+                                        customer-icon
+                                    "
+                                ></i>
+
+                                {{ $customer?->name ?: $order->name ?: 'Guest Customer' }}
+
+                            </div>
+
+
+                            <div class="customer-uid">
+
+                                Customer UID:
+
+                                {{ $customer?->customer_uid ?: 'Guest checkout — no customer UID' }}
+
+                            </div>
+
+
+                            <div class="order-meta">
+
+                                <i
+                                    class="
+                                        fa-solid
+                                        fa-receipt
+                                        me-1
+                                    "
+                                ></i>
+
+                                Order #SB-{{ $order->id }}
+
+                                <span class="mx-1">
+                                    ·
+                                </span>
+
+
+                                @if($order->created_at)
+
+                                    {{ \Illuminate\Support\Carbon::parse($order->created_at)->format('d M Y · h:i A') }}
+
+                                @else
+
+                                    Not available
+
+                                @endif
+
+                            </div>
+
+                        </div>
+
+
+                        {{-- AMOUNT --}}
+
+                        <div class="payment-amount-box text-end">
+
+                            <div class="payment-amount">
+
+                                ₹{{ number_format((float) $order->total, 2) }}
+
+                            </div>
+
+
+                            @if($status === 'Successful')
+
+                                <span
+                                    class="
+                                        payment-status
+                                        status-successful
+                                    "
                                 >
+
+                                    <i
+                                        class="
+                                            fa-solid
+                                            fa-circle-check
+                                        "
+                                    ></i>
+
+                                    Successful
+
+                                </span>
+
+
+                            @elseif($status === 'Pending')
+
+                                <span
+                                    class="
+                                        payment-status
+                                        status-pending
+                                    "
+                                >
+
+                                    <i
+                                        class="
+                                            fa-solid
+                                            fa-clock
+                                        "
+                                    ></i>
+
+                                    Pending
+
+                                </span>
+
+
+                            @elseif($status === 'Refunded')
+
+                                <span
+                                    class="
+                                        payment-status
+                                        status-refunded
+                                    "
+                                >
+
+                                    <i
+                                        class="
+                                            fa-solid
+                                            fa-rotate-left
+                                        "
+                                    ></i>
+
+                                    Refunded
+
+                                </span>
+
 
                             @else
 
-                                <div class="product-placeholder">
+                                <span
+                                    class="
+                                        payment-status
+                                        status-failed
+                                    "
+                                >
 
                                     <i
-                                        class="fa-solid fa-box"
+                                        class="
+                                            fa-solid
+                                            fa-circle-xmark
+                                        "
                                     ></i>
 
-                                </div>
+                                    {{ $status }}
+
+                                </span>
 
                             @endif
-
-
-                            <span>
-
-                                {{ $item['name'] ?? $product?->name ?? 'Product' }}
-
-                                ×
-
-                                {{ $item['quantity'] ?? 1 }}
-
-                            </span>
-
 
                         </div>
 
 
-                    @empty
+                    </div>
 
-                        <span
+
+                    {{-- =================================================
+                         PRODUCTS
+                    ================================================== --}}
+
+                    <div class="product-section">
+
+
+                        @forelse($order->seller_items as $item)
+
+
+                            @php
+
+                                $product =
+                                    $order->seller_products[
+                                        $item['product_id'] ?? null
+                                    ] ?? null;
+
+                            @endphp
+
+
+                            <div class="product-line">
+
+
+                                @if($product?->image)
+
+                                    <img
+                                        src="{{ asset('products/'.$product->image) }}"
+                                        alt="{{ $item['name'] ?? 'Product' }}"
+                                        loading="lazy"
+                                    >
+
+                                @else
+
+                                    <div class="product-placeholder">
+
+                                        <i class="fa-solid fa-box"></i>
+
+                                    </div>
+
+                                @endif
+
+
+                                <span>
+
+                                    {{ $item['name'] ?? $product?->name ?? 'Product' }}
+
+                                    ×
+
+                                    {{ $item['quantity'] ?? 1 }}
+
+                                </span>
+
+
+                            </div>
+
+
+                        @empty
+
+
+                            <span class="transaction-text small">
+
+                                Product details unavailable for this order.
+
+                            </span>
+
+
+                        @endforelse
+
+
+                    </div>
+
+
+                    {{-- =================================================
+                         PAYMENT METHOD
+                    ================================================== --}}
+
+                    <div class="payment-method">
+
+                        <i
                             class="
-                                small
-                                transaction-text
+                                fa-solid
+                                fa-credit-card
+                                me-1
                             "
-                        >
+                        ></i>
 
-                            Product details unavailable for this order.
+                        {{ $order->payment_method ?: 'Not recorded' }}
+
+
+                        <span class="transaction-text">
+
+                            · Payment status:
+
+                            {{ $status }}
 
                         </span>
 
-                    @endforelse
+                    </div>
 
-                </div>
 
+                    {{-- =================================================
+                         CURRENT PAGE ACTIONS
+                    ================================================== --}}
+
+                    <div class="payment-actions">
+
+
+                        {{-- VIEW PAYMENT --}}
+
+                        <a
+                            class="
+                                action-btn
+                                view-btn
+                            "
+                            href="{{ route('seller.payments.show', $order) }}"
+                        >
+
+                            <i class="fa-solid fa-eye"></i>
+
+                            View Payment
+
+                        </a>
+
+
+                        {{-- PAYMENT RECEIPT --}}
+
+                        <a
+                            class="
+                                action-btn
+                                receipt-btn
+                            "
+                            href="{{ route('seller.payments.receipt', $order) }}"
+                        >
+
+                            <i class="fa-solid fa-file-pdf"></i>
+
+                            Payment Receipt
+
+                        </a>
+
+
+                    </div>
+
+
+                </article>
+
+
+            @empty
 
 
                 {{-- =================================================
-                     PAYMENT METHOD
+                     EMPTY STATE
                 ================================================== --}}
 
-                <div class="payment-method">
-
-                    <i
-                        class="
-                            fa-solid
-                            fa-credit-card
-                            me-1
-                        "
-                    ></i>
-
-                    {{ $order->payment_method ?: 'Not recorded' }}
-
-                    <span class="transaction-text">
-
-                        · Payment status:
-
-                        {{ $status }}
-
-                    </span>
-
-                </div>
+                <div class="empty-payment">
 
 
+                    <div class="empty-payment-icon">
 
-                {{-- =================================================
-                     ACTIONS
-                ================================================== --}}
+                        <i class="fa-solid fa-wallet"></i>
 
-                <div class="payment-actions">
-
-
-                    <a
-                        class="
-                            action-btn
-                            view-btn
-                        "
-                        href="{{ route('seller.payments.show', $order) }}"
-                    >
-
-                        <i class="fa-solid fa-eye"></i>
-
-                        View Payment
-
-                    </a>
+                    </div>
 
 
-                    <a
-                        class="
-                            action-btn
-                            receipt-btn
-                        "
-                        href="{{ route('seller.payments.receipt', $order) }}"
-                    >
+                    <h5>
+                        No Customer Payments
+                    </h5>
 
-                        <i class="fa-solid fa-file-pdf"></i>
 
-                        Payment Receipt
+                    <p class="mb-0">
 
-                    </a>
+                        No customer payment records
+                        match these filters.
+
+                    </p>
 
 
                 </div>
 
 
-            </article>
+            @endforelse
 
 
-        @empty
+        </section>
 
 
-            {{-- EMPTY --}}
-
-            <div class="empty-payment">
-
-                <div class="empty-payment-icon">
-
-                    <i class="fa-solid fa-wallet"></i>
-
-                </div>
-
-
-                <h5>
-                    No Customer Payments
-                </h5>
-
-
-                <p class="mb-0">
-
-                    No customer payment records
-                    match these filters.
-
-                </p>
-
-            </div>
-
-
-        @endforelse
-
-
-    </section>
-
-
-</main>
+    </main>
 
 
 </body>
-
-    @include('seller.partials.seller-menu')
 
 </html>

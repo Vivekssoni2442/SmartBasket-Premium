@@ -388,15 +388,12 @@
     |--------------------------------------------------------------------------
     */
 
-    $customerUser =
-        $order->user;
-
+    $customerUser = $order->user;
 
     $customerName =
         $customerUser?->name
         ?: $order->name
         ?: 'Guest Customer';
-
 
     $customerUid =
         $customerUser?->customer_uid
@@ -460,12 +457,10 @@
                 <td>
 
                     <div class="brand">
-
                         SMART
                         <span class="brand-green">
                             BASKET
                         </span>
-
                     </div>
 
                     <div class="receipt-subtitle">
@@ -473,7 +468,6 @@
                     </div>
 
                 </td>
-
 
                 <td>
 
@@ -507,32 +501,28 @@
         <div class="status-box {{ $statusClass }}">
 
             @if(
-                strtolower($currentPaymentStatus)
-                === 'successful'
+                strtolower($currentPaymentStatus) === 'successful'
                 ||
-                strtolower($currentPaymentStatus)
-                === 'paid'
+                strtolower($currentPaymentStatus) === 'paid'
             )
 
-                ✓ Payment Successful
+                Payment Successful
 
             @elseif(
-                strtolower($currentPaymentStatus)
-                === 'failed'
+                strtolower($currentPaymentStatus) === 'failed'
             )
 
-                ✕ Payment Failed
+                Payment Failed
 
             @elseif(
-                strtolower($currentPaymentStatus)
-                === 'refunded'
+                strtolower($currentPaymentStatus) === 'refunded'
             )
 
-                ↻ Payment Refunded
+                Payment Refunded
 
             @else
 
-                ◷ Payment {{ $currentPaymentStatus }}
+                Payment {{ $currentPaymentStatus }}
 
             @endif
 
@@ -554,12 +544,7 @@
             </div>
 
             <div class="amount">
-
-                ₹{{ number_format(
-                    $receiptTotal,
-                    2
-                ) }}
-
+                Rs. {{ number_format($receiptTotal, 2) }}
             </div>
 
             <div class="amount-note">
@@ -783,9 +768,7 @@
                     {{ $order->address ?: 'Not available' }}
 
                     @if($order->city)
-
                         , {{ $order->city }}
-
                     @endif
 
                 </td>
@@ -866,9 +849,7 @@
                     @if($receiptSeller->email)
 
                         <div class="seller-meta">
-
                             {{ $receiptSeller->email }}
-
                         </div>
 
                     @endif
@@ -877,9 +858,7 @@
                     @if($receiptSeller->phone)
 
                         <div class="seller-meta">
-
                             {{ $receiptSeller->phone }}
-
                         </div>
 
                     @endif
@@ -952,9 +931,7 @@
             <tbody>
 
                 @php
-
                     $itemsTotal = 0;
-
                 @endphp
 
 
@@ -1024,29 +1001,17 @@
 
 
                         <td class="qty">
-
                             {{ $quantity }}
-
                         </td>
 
 
                         <td class="price">
-
-                            ₹{{ number_format(
-                                $price,
-                                2
-                            ) }}
-
+                            Rs. {{ number_format($price, 2) }}
                         </td>
 
 
                         <td class="price">
-
-                            ₹{{ number_format(
-                                $lineTotal,
-                                2
-                            ) }}
-
+                            Rs. {{ number_format($lineTotal, 2) }}
                         </td>
 
                     </tr>
@@ -1088,12 +1053,7 @@
                 </td>
 
                 <td class="total-value">
-
-                    ₹{{ number_format(
-                        $itemsTotal,
-                        2
-                    ) }}
-
+                    Rs. {{ number_format($itemsTotal, 2) }}
                 </td>
 
             </tr>
@@ -1102,18 +1062,11 @@
             <tr class="total-highlight">
 
                 <td class="total-label">
-
                     TOTAL PAYMENT
-
                 </td>
 
                 <td class="total-value">
-
-                    ₹{{ number_format(
-                        $receiptTotal,
-                        2
-                    ) }}
-
+                    Rs. {{ number_format($receiptTotal, 2) }}
                 </td>
 
             </tr>
@@ -1134,7 +1087,7 @@
         </div>
 
         <div class="footer-divider">
-            ─────────────────────────────
+            --------------------------------
         </div>
 
         <div class="secure">

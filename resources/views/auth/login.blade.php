@@ -516,6 +516,118 @@ button:hover{
 
 
 /* =========================================================
+   ADMIN LOGIN BUTTON
+========================================================= */
+
+.admin-login{
+
+    width:100%;
+
+    margin-top:12px;
+
+    padding:0;
+
+    text-align:center;
+
+    background:rgb(20,21,24) !important;
+
+    background-color:rgb(20,21,24) !important;
+
+    background-image:none !important;
+
+    border:1px solid rgba(147,51,234,.25) !important;
+
+    border-radius:20px !important;
+
+    overflow:hidden;
+
+    box-shadow:
+        0 8px 25px rgba(0,0,0,.35);
+
+    transition:
+        background .25s ease,
+        border-color .25s ease,
+        box-shadow .25s ease;
+}
+
+
+/* Admin Login Link */
+
+.admin-login a{
+
+    display:flex !important;
+
+    width:100%;
+
+    min-height:55px;
+
+    align-items:center;
+
+    justify-content:center;
+
+    padding:10px 20px;
+
+    background:rgb(20,21,24) !important;
+
+    background-color:rgb(20,21,24) !important;
+
+    background-image:none !important;
+
+    color:#ffffff !important;
+
+    border:none !important;
+
+    border-radius:20px;
+
+    font-size:14px;
+
+    font-weight:700;
+
+    text-decoration:none !important;
+
+    cursor:pointer;
+
+    transition:
+        background .25s ease,
+        color .25s ease,
+        box-shadow .25s ease;
+}
+
+
+/* Admin Login Hover */
+
+.admin-login:hover{
+
+    background:rgb(147,51,234) !important;
+
+    background-color:rgb(147,51,234) !important;
+
+    background-image:none !important;
+
+    border-color:rgb(168,85,247) !important;
+
+    box-shadow:
+        0 0 30px rgba(147,51,234,.45) !important;
+}
+
+
+.admin-login:hover a{
+
+    background:rgb(147,51,234) !important;
+
+    background-color:rgb(147,51,234) !important;
+
+    background-image:none !important;
+
+    color:#ffffff !important;
+
+    box-shadow:none !important;
+
+    transform:none !important;
+}
+
+
+/* =========================================================
    SESSION ERROR
 ========================================================= */
 
@@ -726,6 +838,17 @@ button:hover{
 
                 <a href="{{ url('/seller-login') }}">
                     🛒 Seller Login
+                </a>
+
+            </div>
+
+
+            <!-- ADMIN LOGIN -->
+
+            <div class="admin-login">
+
+                <a href="{{ route('admin.login') }}">
+                    👑 Admin Login
                 </a>
 
             </div>

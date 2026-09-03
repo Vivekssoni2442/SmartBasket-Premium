@@ -2104,6 +2104,14 @@
     $paymentSellers =
         collect($checkoutItems)
         ->map(
+
+
+
+
+
+
+
+        
             fn($item) =>
                 $item['product']
                 ?? $item->product
@@ -2977,10 +2985,23 @@
 
 
                                                     <img
-                                                        src="{{ asset(
-                                                            'storage/' .
-                                                            $paymentSeller->payment_qr
-                                                        ) }}"
+                                                       @php
+    $paymentQrPath = ltrim($paymentSeller->payment_qr, '/');
+
+    if (str_starts_with($paymentQrPath, 'storage/')) {
+        $paymentQrPath = substr($paymentQrPath, strlen('storage/'));
+    }
+
+    $paymentQrUrl = \Illuminate\Support\Facades\Storage::disk('public')->url(
+        $paymentQrPath
+    );
+@endphp
+
+<img
+    src="{{ $paymentQrUrl }}"
+    alt="Seller Payment QR"
+    loading="lazy"
+>
                                                         alt="Seller Payment QR"
                                                     >
 

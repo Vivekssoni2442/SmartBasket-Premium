@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,188 +17,289 @@
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     >
 
-    <link rel="stylesheet" href="{{ asset('css/premium-dark-theme.css') }}">
-
     <style>
         /* =========================================================
-           SMART BASKET — SELLER ORDER MANAGEMENT
-           PREMIUM LIGHT THEME
+           SMART BASKET
+           PREMIUM SELLER ORDER CENTER
+           FULL-WIDTH DISPLAY DESIGN
+           TASKBAR IS NOT MODIFIED
         ========================================================= */
+
+        :root {
+            --sb-blue: #2563eb;
+            --sb-blue-dark: #1d4ed8;
+            --sb-blue-deep: #1e3a8a;
+            --sb-blue-light: #60a5fa;
+            --sb-cyan: #06b6d4;
+
+            --sb-bg: #f5f8fc;
+            --sb-bg-2: #eef4fb;
+            --sb-card: rgba(255, 255, 255, .96);
+            --sb-card-solid: #ffffff;
+
+            --sb-text: #172033;
+            --sb-text-2: #475569;
+            --sb-muted: #8490a3;
+
+            --sb-border: #e3eaf4;
+            --sb-border-soft: #edf2f7;
+
+            --sb-green: #059669;
+            --sb-green-soft: #ecfdf5;
+            --sb-green-border: #c8efdf;
+
+            --sb-orange: #d97706;
+            --sb-orange-soft: #fff7e8;
+            --sb-orange-border: #f4dfad;
+
+            --sb-red: #dc3545;
+            --sb-red-soft: #fff1f2;
+            --sb-red-border: #ffd0d7;
+
+            --sb-shadow:
+                0 20px 60px rgba(15, 23, 42, .065),
+                0 5px 18px rgba(37, 99, 235, .025);
+
+            --sb-shadow-hover:
+                0 28px 75px rgba(15, 23, 42, .11),
+                0 8px 25px rgba(37, 99, 235, .055);
+        }
 
         * {
             box-sizing: border-box;
         }
 
-        :root {
-            --sb-bg: #f5f7fb;
-            --sb-card: #ffffff;
-            --sb-card-soft: #f8fafc;
-            --sb-border: #e5e7eb;
-
-            --sb-text: #111827;
-            --sb-text-2: #334155;
-            --sb-muted: #64748b;
-
-            --sb-green: #00a86b;
-            --sb-green-dark: #00875a;
-            --sb-green-soft: rgba(0, 168, 107, .09);
-
-            --sb-blue: #2563eb;
-            --sb-blue-soft: rgba(37, 99, 235, .09);
-
-            --sb-yellow: #d97706;
-            --sb-yellow-soft: rgba(245, 158, 11, .10);
-
-            --sb-red: #dc2626;
-            --sb-red-soft: rgba(220, 38, 38, .09);
-
-            --sb-shadow:
-                0 12px 35px rgba(15, 23, 42, .08),
-                0 3px 10px rgba(15, 23, 42, .035);
+        html {
+            scroll-behavior: smooth;
         }
 
         body {
             margin: 0;
             min-height: 100vh;
 
-            font-family: 'Poppins', sans-serif;
+            font-family:
+                Inter,
+                Poppins,
+                system-ui,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
 
             color: var(--sb-text);
 
             background:
                 radial-gradient(
-                    circle at top left,
-                    rgba(0, 168, 107, .07),
-                    transparent 32%
+                    circle at 0% 0%,
+                    rgba(37, 99, 235, .075),
+                    transparent 24%
                 ),
                 radial-gradient(
-                    circle at bottom right,
-                    rgba(37, 99, 235, .055),
-                    transparent 32%
+                    circle at 100% 0%,
+                    rgba(6, 182, 212, .06),
+                    transparent 23%
                 ),
                 linear-gradient(
-                    135deg,
-                    #f8fafc,
-                    #f5f7fb,
-                    #eef2f7
+                    180deg,
+                    #f9fbff 0%,
+                    #f4f7fb 55%,
+                    #f8fafc 100%
                 );
+
+            overflow-x: hidden;
         }
 
         /* =========================================================
-           PAGE
+           FULL WIDTH PAGE
         ========================================================= */
 
         .orders-page {
-            min-height: 100vh;
-            padding: 42px 20px 70px;
+            width: 100%;
+            max-width: none;
+            min-height: calc(100vh - 70px);
+
+            margin: 0;
+            padding:
+                clamp(14px, 1.45vw, 26px)
+                clamp(10px, 1.55vw, 28px)
+                55px;
         }
 
         .orders-container {
             width: 100%;
-            max-width: 1450px;
-            margin: auto;
+            max-width: none;
+            margin: 0;
         }
 
         /* =========================================================
-           HEADER
+           PREMIUM HEADER
         ========================================================= */
 
         .orders-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 20px;
+            position: relative;
 
-            margin-bottom: 28px;
+            width: 100%;
+            min-height: 148px;
+
+            display: flex;
+            align-items: center;
+
+            margin-bottom: 16px;
+            padding:
+                clamp(22px, 2vw, 34px)
+                clamp(20px, 2.1vw, 38px);
+
+            overflow: hidden;
+
+            border: 1px solid rgba(215, 226, 241, .95);
+            border-radius: 24px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #ffffff 0%,
+                    #ffffff 48%,
+                    #f2f7ff 100%
+                );
+
+            box-shadow: var(--sb-shadow);
         }
 
-        .header-left small {
-            display: inline-block;
+        .orders-header::before {
+            content: "";
 
-            margin-bottom: 8px;
+            position: absolute;
 
-            color: var(--sb-green);
+            width: 520px;
+            height: 520px;
 
-            font-size: 11px;
-            font-weight: 800;
+            top: -380px;
+            right: -80px;
 
-            letter-spacing: 2px;
+            border-radius: 50%;
+
+            background:
+                radial-gradient(
+                    circle,
+                    rgba(37, 99, 235, .14),
+                    rgba(37, 99, 235, 0)
+                );
+
+            pointer-events: none;
+        }
+
+        .orders-header::after {
+            content: "";
+
+            position: absolute;
+
+            width: 420px;
+            height: 110px;
+
+            left: 24%;
+            bottom: -85px;
+
+            border-radius: 50%;
+
+            background: rgba(6, 182, 212, .075);
+
+            filter: blur(28px);
+
+            pointer-events: none;
+        }
+
+        .header-left {
+            position: relative;
+            z-index: 2;
+
+            width: 100%;
+            min-width: 0;
+        }
+
+        .header-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+
+            margin-bottom: 9px;
+
+            color: var(--sb-blue);
+
+            font-size: 9px;
+            font-weight: 900;
+
+            letter-spacing: 1.8px;
+            text-transform: uppercase;
+        }
+
+        .eyebrow-dot {
+            width: 7px;
+            height: 7px;
+
+            border-radius: 50%;
+
+            background: var(--sb-blue);
+
+            box-shadow:
+                0 0 0 5px rgba(37, 99, 235, .09);
         }
 
         .header-left h1 {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+
             margin: 0;
 
-            color: var(--sb-text);
+            color: #162033;
 
-            font-size: 34px;
-            line-height: 1.2;
-            font-weight: 800;
+            font-size: clamp(25px, 2.35vw, 37px);
+            line-height: 1.12;
 
-            letter-spacing: -.7px;
+            font-weight: 900;
+
+            letter-spacing: -1.15px;
         }
 
-        .header-left h1 i {
-            margin-right: 8px;
-            color: var(--sb-green);
-        }
+        .header-icon {
+            width: 53px;
+            height: 53px;
 
-        .header-left p {
-            margin: 9px 0 0;
+            flex: 0 0 53px;
 
-            color: var(--sb-muted);
-
-            font-size: 14px;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        /* =========================================================
-           BUTTON
-        ========================================================= */
-
-        .premium-btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 4px;
 
-            border-radius: 13px;
+            color: #ffffff;
 
-            padding: 11px 18px;
+            border-radius: 16px;
 
-            font-size: 13px;
-            font-weight: 700;
-
-            text-decoration: none;
-
-            transition: .25s ease;
-        }
-
-        .premium-btn-dashboard {
-            color: var(--sb-text);
-
-            border: 1px solid var(--sb-border);
-
-            background: rgba(255,255,255,.85);
+            background:
+                linear-gradient(
+                    135deg,
+                    #3b82f6,
+                    #1d4ed8 70%,
+                    #1e3a8a
+                );
 
             box-shadow:
-                0 5px 15px rgba(15,23,42,.05);
+                0 12px 27px rgba(37, 99, 235, .22);
+
+            font-size: 18px;
         }
 
-        .premium-btn-dashboard:hover {
-            color: var(--sb-green-dark);
+        .header-left p {
+            max-width: 850px;
 
-            border-color: rgba(0,168,107,.35);
+            margin:
+                10px 0 0
+                67px;
 
-            background: #fff;
+            color: var(--sb-muted);
 
-            transform: translateY(-2px);
-
-            box-shadow:
-                0 9px 22px rgba(15,23,42,.09);
+            font-size: 12px;
+            line-height: 1.65;
         }
 
         /* =========================================================
@@ -205,170 +307,293 @@
         ========================================================= */
 
         .premium-alert {
-            margin-bottom: 20px;
+            position: relative;
 
-            padding: 14px 18px;
+            display: flex;
+            align-items: flex-start;
+
+            width: 100%;
+
+            margin-bottom: 13px;
+            padding: 13px 16px;
 
             color: var(--sb-text-2);
 
-            border-radius: 15px;
+            background: rgba(255, 255, 255, .94);
+
             border: 1px solid var(--sb-border);
+            border-radius: 14px;
 
-            background: rgba(255,255,255,.9);
+            box-shadow:
+                0 5px 16px rgba(15, 23, 42, .035);
 
-            box-shadow: 0 5px 18px rgba(15,23,42,.04);
+            font-size: 11px;
+            line-height: 1.55;
         }
 
         .premium-alert.success {
-            color: #087f55;
+            color: #087f52;
 
-            border-color: rgba(0,168,107,.20);
+            background:
+                linear-gradient(
+                    135deg,
+                    #f7fffb,
+                    #ecfdf5
+                );
 
-            background: rgba(0,168,107,.055);
+            border-color: var(--sb-green-border);
         }
 
         .premium-alert.error {
-            color: #b91c1c;
+            color: #b42335;
 
-            border-color: rgba(220,38,38,.20);
+            background:
+                linear-gradient(
+                    135deg,
+                    #fffafb,
+                    #fff1f2
+                );
 
-            background: rgba(220,38,38,.055);
+            border-color: var(--sb-red-border);
+        }
+
+        .premium-alert i {
+            margin-top: 1px;
+            font-size: 13px;
+        }
+
+        .premium-alert strong {
+            font-weight: 850;
+        }
+
+        .premium-alert ul {
+            padding-left: 19px;
         }
 
         /* =========================================================
-           MAIN CARD
+           ORDER CENTER
         ========================================================= */
 
         .orders-card {
+            width: 100%;
+
             overflow: hidden;
 
-            border-radius: 24px;
+            background: var(--sb-card);
 
-            border: 1px solid rgba(15,23,42,.075);
-
-            background: rgba(255,255,255,.94);
+            border: 1px solid var(--sb-border);
+            border-radius: 23px;
 
             box-shadow: var(--sb-shadow);
+
+            transition:
+                box-shadow .25s ease,
+                transform .25s ease;
         }
 
+        .orders-card:hover {
+            box-shadow: var(--sb-shadow-hover);
+        }
+
+        /* =========================================================
+           ORDER CARD HEADER
+        ========================================================= */
+
         .orders-card-header {
+            min-height: 76px;
+
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
 
-            padding: 21px 24px;
+            gap: 18px;
 
-            border-bottom: 1px solid var(--sb-border);
+            padding:
+                14px
+                clamp(16px, 1.55vw, 25px);
 
             background:
                 linear-gradient(
                     180deg,
-                    rgba(248,250,252,.95),
-                    rgba(255,255,255,.95)
+                    #ffffff 0%,
+                    #fafdff 100%
                 );
+
+            border-bottom: 1px solid var(--sb-border);
         }
 
         .orders-card-title {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 11px;
 
             color: var(--sb-text);
 
-            font-size: 17px;
-            font-weight: 750;
+            font-size: 15px;
+            font-weight: 900;
         }
 
         .orders-card-title-icon {
-            width: 40px;
-            height: 40px;
+            width: 41px;
+            height: 41px;
 
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
 
+            color: #ffffff;
+
             border-radius: 12px;
 
-            color: var(--sb-green);
+            background:
+                linear-gradient(
+                    135deg,
+                    #2563eb,
+                    #1e40af
+                );
 
-            background: var(--sb-green-soft);
+            box-shadow:
+                0 8px 19px rgba(37, 99, 235, .18);
 
-            border: 1px solid rgba(0,168,107,.15);
+            font-size: 13px;
         }
 
         .order-count {
-            padding: 7px 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
 
-            border-radius: 20px;
+            padding: 8px 13px;
 
-            color: var(--sb-green-dark);
+            color: var(--sb-blue-deep);
 
-            background: var(--sb-green-soft);
+            background:
+                linear-gradient(
+                    135deg,
+                    #f1f6ff,
+                    #eaf3ff
+                );
 
-            border: 1px solid rgba(0,168,107,.14);
+            border: 1px solid #d7e6fc;
+            border-radius: 999px;
 
-            font-size: 12px;
-            font-weight: 700;
+            font-size: 9px;
+            font-weight: 900;
+
+            white-space: nowrap;
+        }
+
+        .order-count::before {
+            content: "";
+
+            width: 6px;
+            height: 6px;
+
+            border-radius: 50%;
+
+            background: var(--sb-blue);
+
+            box-shadow:
+                0 0 0 4px rgba(37, 99, 235, .08);
+        }
+
+        /* =========================================================
+           TABLE WRAPPER
+        ========================================================= */
+
+        .table-wrapper {
+            width: 100%;
+
+            overflow-x: auto;
+            overflow-y: hidden;
+
+            scrollbar-width: thin;
+            scrollbar-color: #bcc9da transparent;
+        }
+
+        .table-wrapper::-webkit-scrollbar {
+            height: 7px;
+        }
+
+        .table-wrapper::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .table-wrapper::-webkit-scrollbar-thumb {
+            background: #c4d0df;
+            border-radius: 999px;
         }
 
         /* =========================================================
            TABLE
         ========================================================= */
 
-        .table-wrapper {
-            overflow-x: auto;
-        }
-
         .seller-order-table {
             width: 100%;
-            min-width: 1150px;
+            min-width: 1120px;
 
             margin: 0;
 
-            color: var(--sb-text);
-
             border-collapse: separate;
             border-spacing: 0;
+
+            color: var(--sb-text);
         }
 
         .seller-order-table thead th {
-            padding: 16px 20px;
+            padding:
+                13px
+                clamp(12px, 1.15vw, 18px);
 
-            color: #64748b;
+            color: #748197;
 
-            background: #f8fafc;
+            background:
+                linear-gradient(
+                    180deg,
+                    #fafcff,
+                    #f5f8fc
+                );
 
             border-bottom: 1px solid var(--sb-border);
 
-            font-size: 11px;
-            font-weight: 800;
+            font-size: 8px;
+            font-weight: 900;
 
+            letter-spacing: .95px;
             text-transform: uppercase;
-            letter-spacing: .8px;
 
             white-space: nowrap;
         }
 
         .seller-order-table tbody td {
-            padding: 18px 20px;
+            padding:
+                16px
+                clamp(12px, 1.15vw, 18px);
 
             color: var(--sb-text-2);
 
-            background: #fff;
+            background: #ffffff;
 
-            border-bottom: 1px solid #eef2f7;
+            border-bottom: 1px solid var(--sb-border-soft);
 
             vertical-align: middle;
 
-            font-size: 13px;
+            font-size: 11px;
         }
 
         .seller-order-table tbody tr {
-            transition: .22s ease;
+            transition:
+                background .18s ease,
+                transform .18s ease;
         }
 
         .seller-order-table tbody tr:hover td {
-            background: #f9fdfb;
+            background:
+                linear-gradient(
+                    90deg,
+                    #ffffff,
+                    #f7fbff
+                );
         }
 
         .seller-order-table tbody tr:last-child td {
@@ -376,20 +601,60 @@
         }
 
         /* =========================================================
-           ORDER
+           ORDER ID
         ========================================================= */
 
+        .order-id-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .order-mini-icon {
+            width: 37px;
+            height: 37px;
+
+            flex: 0 0 37px;
+
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            color: #ffffff;
+
+            border-radius: 11px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #3b82f6,
+                    #1e40af
+                );
+
+            box-shadow:
+                0 7px 16px rgba(37, 99, 235, .15);
+
+            font-size: 10px;
+        }
+
         .order-number {
-            color: var(--sb-text);
-            font-weight: 800;
+            color: #182235;
+
+            font-weight: 900;
+
+            letter-spacing: .15px;
         }
 
         .order-date {
             margin-top: 4px;
 
-            color: var(--sb-muted);
+            color: #8b96a8;
 
-            font-size: 11px;
+            font-size: 9px;
+        }
+
+        .order-date i {
+            color: var(--sb-blue);
         }
 
         /* =========================================================
@@ -397,127 +662,147 @@
         ========================================================= */
 
         .customer-name {
-            color: var(--sb-text);
-            font-weight: 700;
+            color: #1e293b;
+
+            font-weight: 800;
         }
 
         .customer-address {
-            max-width: 220px;
+            max-width: 250px;
 
             margin-top: 4px;
 
-            color: var(--sb-muted);
+            color: #8994a5;
 
-            font-size: 11px;
+            font-size: 9px;
+            line-height: 1.5;
+        }
+
+        .customer-address i {
+            color: var(--sb-blue);
         }
 
         /* =========================================================
-           PRODUCT
+           PRODUCT LIST
         ========================================================= */
 
+        .product-list {
+            max-width: 330px;
+        }
+
         .product-line {
-            margin-bottom: 4px;
+            display: flex;
+            align-items: flex-start;
+
+            gap: 7px;
+
+            margin-bottom: 6px;
 
             color: #475569;
 
-            font-size: 12px;
+            font-size: 10px;
+            line-height: 1.5;
+        }
+
+        .product-line:last-child {
+            margin-bottom: 0;
         }
 
         .product-line i {
-            color: var(--sb-green);
+            margin-top: 3px;
+
+            color: var(--sb-blue);
+
+            font-size: 8px;
         }
 
         /* =========================================================
            PAYMENT
         ========================================================= */
 
-        .payment-pill {
+        .payment-pill,
+        .status-pill {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
 
-            padding: 7px 11px;
+            padding: 6px 9px;
 
-            border-radius: 20px;
+            border-radius: 999px;
 
-            font-size: 11px;
-            font-weight: 700;
+            font-size: 9px;
+            font-weight: 900;
 
             white-space: nowrap;
         }
 
         .payment-paid {
-            color: #087f55;
+            color: #087f52;
 
-            background: rgba(0,168,107,.09);
+            background: var(--sb-green-soft);
 
-            border: 1px solid rgba(0,168,107,.22);
+            border: 1px solid var(--sb-green-border);
         }
 
         .payment-pending {
-            color: #b45309;
+            color: #9a6700;
 
-            background: rgba(245,158,11,.10);
+            background: var(--sb-orange-soft);
 
-            border: 1px solid rgba(245,158,11,.23);
+            border: 1px solid var(--sb-orange-border);
         }
 
         .payment-failed {
-            color: #b91c1c;
+            color: #b42335;
 
-            background: rgba(220,38,38,.09);
+            background: var(--sb-red-soft);
 
-            border: 1px solid rgba(220,38,38,.20);
+            border: 1px solid var(--sb-red-border);
         }
 
         .payment-cod {
-            color: #1d4ed8;
+            color: #1d5db9;
 
-            background: rgba(37,99,235,.09);
+            background: #eff6ff;
 
-            border: 1px solid rgba(37,99,235,.19);
+            border: 1px solid #d6e6ff;
         }
 
         .payment-method-small {
             display: block;
 
-            margin-top: 5px;
+            margin-top: 4px;
 
-            color: var(--sb-muted);
+            color: #8994a5;
 
-            font-size: 10px;
+            font-size: 8px;
+            font-weight: 650;
+
+            letter-spacing: .1px;
         }
 
-        .payment-verified {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-
-            margin-top: 5px;
-
-            color: var(--sb-green-dark);
-
-            font-size: 9px;
-            font-weight: 800;
-
-            text-transform: uppercase;
-            letter-spacing: .5px;
-        }
-
+        .payment-verified,
         .payment-warning {
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
 
-            margin-top: 5px;
+            margin-top: 4px;
 
-            color: #b45309;
+            font-size: 7px;
+            font-weight: 900;
 
-            font-size: 9px;
-            font-weight: 800;
+            letter-spacing: .35px;
 
             text-transform: uppercase;
-            letter-spacing: .5px;
+        }
+
+        .payment-verified {
+            color: #159669;
+        }
+
+        .payment-warning {
+            color: #ad7305;
         }
 
         /* =========================================================
@@ -525,53 +810,40 @@
         ========================================================= */
 
         .status-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
+            color: #1d4ed8;
 
-            padding: 7px 12px;
+            background: #eff6ff;
 
-            border-radius: 20px;
-
-            color: var(--sb-green-dark);
-
-            background: var(--sb-green-soft);
-
-            border: 1px solid rgba(0,168,107,.18);
-
-            font-size: 11px;
-            font-weight: 700;
-
-            white-space: nowrap;
+            border: 1px solid #d6e5ff;
         }
 
         .status-dot {
-            width: 7px;
-            height: 7px;
+            width: 5px;
+            height: 5px;
 
-            flex: 0 0 7px;
+            flex: 0 0 5px;
 
             border-radius: 50%;
 
-            background: var(--sb-green);
+            background: var(--sb-blue);
 
             box-shadow:
-                0 0 8px rgba(0,168,107,.35);
+                0 0 0 3px rgba(37, 99, 235, .08);
         }
 
         .status-pending {
-            color: #b45309;
+            color: #9a6700;
 
-            background: rgba(245,158,11,.08);
+            background: var(--sb-orange-soft);
 
-            border-color: rgba(245,158,11,.20);
+            border-color: var(--sb-orange-border);
         }
 
         .status-pending .status-dot {
-            background: #f59e0b;
+            background: #e0a000;
 
             box-shadow:
-                0 0 8px rgba(245,158,11,.35);
+                0 0 0 3px rgba(224, 160, 0, .09);
         }
 
         /* =========================================================
@@ -580,21 +852,30 @@
 
         .order-actions {
             display: flex;
+            align-items: center;
             flex-wrap: wrap;
-            gap: 7px;
+            gap: 6px;
         }
 
         .action-btn {
-            border-radius: 10px;
+            min-height: 34px;
 
-            padding: 8px 11px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
 
-            border: 1px solid var(--sb-border);
+            padding: 6px 10px;
 
-            font-size: 11px;
-            font-weight: 700;
+            border-radius: 9px;
 
-            transition: .2s ease;
+            font-size: 9px;
+            font-weight: 900;
+
+            transition:
+                transform .18s ease,
+                box-shadow .18s ease,
+                background .18s ease,
+                border-color .18s ease;
         }
 
         .action-btn:hover {
@@ -602,37 +883,60 @@
         }
 
         .action-delivery {
-            color: var(--sb-green-dark);
+            color: #ffffff;
 
-            background: rgba(0,168,107,.07);
+            background:
+                linear-gradient(
+                    135deg,
+                    #2563eb,
+                    #1e40af
+                );
 
-            border-color: rgba(0,168,107,.18);
+            border: 1px solid #2563eb;
+
+            box-shadow:
+                0 6px 14px rgba(37, 99, 235, .14);
         }
 
         .action-delivery:hover {
-            color: var(--sb-green-dark);
+            color: #ffffff;
 
-            background: rgba(0,168,107,.13);
+            background:
+                linear-gradient(
+                    135deg,
+                    #1d4ed8,
+                    #1e3a8a
+                );
+
+            box-shadow:
+                0 9px 20px rgba(37, 99, 235, .21);
         }
 
         .action-view {
             color: #475569;
 
-            background: #f8fafc;
+            background: #ffffff;
+
+            border: 1px solid #dce4ef;
         }
 
         .action-view:hover {
-            color: var(--sb-text);
+            color: var(--sb-blue);
 
-            background: #eef2f7;
+            background: #eff6ff;
+
+            border-color: #c9dcfb;
+
+            box-shadow:
+                0 5px 13px rgba(37, 99, 235, .07);
         }
 
         /* =========================================================
-           EMPTY
+           EMPTY ORDERS
         ========================================================= */
 
         .empty-orders {
-            padding: 80px 30px;
+            padding: 88px 25px;
 
             text-align: center;
 
@@ -640,156 +944,309 @@
         }
 
         .empty-orders-icon {
-            width: 75px;
-            height: 75px;
+            width: 78px;
+            height: 78px;
 
             display: flex;
             align-items: center;
             justify-content: center;
 
-            margin: 0 auto 18px;
+            margin: 0 auto 17px;
+
+            color: var(--sb-blue);
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #f1f6ff,
+                    #e9f2ff
+                );
+
+            border: 1px solid #d8e7ff;
 
             border-radius: 22px;
 
-            background: #f8fafc;
+            box-shadow:
+                0 12px 28px rgba(37, 99, 235, .075);
 
-            border: 1px solid var(--sb-border);
-
-            color: #94a3b8;
-
-            font-size: 30px;
+            font-size: 28px;
         }
 
         .empty-orders h3 {
+            margin-bottom: 6px;
+
             color: var(--sb-text);
 
             font-size: 18px;
-            font-weight: 700;
+            font-weight: 900;
+        }
+
+        .empty-orders p {
+            max-width: 470px;
+
+            margin-left: auto;
+            margin-right: auto;
+
+            color: var(--sb-muted);
+
+            font-size: 11px;
+            line-height: 1.65;
         }
 
         /* =========================================================
-           MODAL
+           MODALS
         ========================================================= */
+
+        .modal-backdrop.show {
+            opacity: .5;
+        }
 
         .premium-modal {
             overflow: hidden;
 
             color: var(--sb-text);
 
-            border: 1px solid #e2e8f0;
+            background: #ffffff;
+
+            border: 1px solid var(--sb-border);
 
             border-radius: 22px;
 
-            background: #fff;
-
             box-shadow:
-                0 30px 90px rgba(15,23,42,.20);
+                0 35px 100px rgba(15, 23, 42, .23);
         }
 
         .premium-modal .modal-header {
-            padding: 20px 24px;
+            position: relative;
 
-            background: #f8fafc;
+            padding: 18px 21px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #ffffff,
+                    #f3f8ff
+                );
 
             border-bottom: 1px solid var(--sb-border);
         }
 
-        .premium-modal .modal-header .modal-title {
+        .premium-modal .modal-header::after {
+            content: "";
+
+            position: absolute;
+
+            left: 0;
+            right: 0;
+            bottom: -1px;
+
+            height: 2px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    var(--sb-blue),
+                    var(--sb-cyan),
+                    transparent
+                );
+
+            opacity: .8;
+        }
+
+        .premium-modal .modal-title {
             color: var(--sb-text);
 
-            font-weight: 750;
+            font-size: 15px;
+            font-weight: 900;
+        }
+
+        .premium-modal .modal-title i {
+            color: var(--sb-blue) !important;
+        }
+
+        .premium-modal .modal-body {
+            padding: 23px;
+
+            background:
+                linear-gradient(
+                    180deg,
+                    #fbfdff,
+                    #f7f9fc
+                );
         }
 
         .premium-modal .modal-footer {
-            padding: 16px 24px;
+            padding: 13px 21px;
 
-            background: #f8fafc;
+            background: #ffffff;
 
             border-top: 1px solid var(--sb-border);
         }
 
-        .premium-modal .modal-body {
-            padding: 24px;
+        .premium-modal .btn-close {
+            opacity: .5;
 
-            background: #fff;
+            transition: opacity .15s ease;
         }
 
+        .premium-modal .btn-close:hover {
+            opacity: 1;
+        }
+
+        /* =========================================================
+           MODAL FORM
+        ========================================================= */
+
         .premium-modal .form-label {
+            margin-bottom: 6px;
+
             color: #475569;
 
-            font-size: 12px;
-            font-weight: 700;
+            font-size: 9px;
+            font-weight: 900;
+
+            letter-spacing: .55px;
+
+            text-transform: uppercase;
         }
 
         .premium-modal .form-control,
         .premium-modal .form-select {
+            min-height: 43px;
+
             color: var(--sb-text);
 
-            background: #fff;
+            background: #ffffff;
 
-            border: 1px solid #dbe2ea;
+            border: 1px solid #dce4ee;
 
-            border-radius: 11px;
+            border-radius: 10px;
 
-            padding: 11px 13px;
+            padding: 8px 11px;
+
+            font-size: 11px;
+
+            box-shadow:
+                0 2px 6px rgba(16, 24, 40, .025);
+
+            transition:
+                border-color .18s ease,
+                box-shadow .18s ease;
+        }
+
+        .premium-modal textarea.form-control {
+            min-height: auto;
+            resize: vertical;
         }
 
         .premium-modal .form-control::placeholder {
-            color: #94a3b8;
+            color: #a0a9b7;
+        }
+
+        .premium-modal .form-control:hover,
+        .premium-modal .form-select:hover {
+            border-color: #c8d7eb;
         }
 
         .premium-modal .form-control:focus,
         .premium-modal .form-select:focus {
             color: var(--sb-text);
 
-            background: #fff;
+            background: #ffffff;
 
-            border-color: var(--sb-green);
+            border-color: #7aa7f8;
 
             box-shadow:
-                0 0 0 .18rem rgba(0,168,107,.10);
-        }
-
-        .premium-modal .form-select option {
-            background: #fff;
-            color: var(--sb-text);
-        }
-
-        .premium-modal .btn-close {
-            filter: none;
+                0 0 0 .18rem rgba(37, 99, 235, .09);
         }
 
         .premium-modal .text-muted {
-            color: #64748b !important;
+            color: #8a95a5 !important;
         }
 
         .premium-modal hr {
-            border-color: #e2e8f0 !important;
+            border-color: var(--sb-border) !important;
             opacity: 1;
         }
 
+        /* =========================================================
+           MODAL ALERTS
+        ========================================================= */
+
+        .premium-modal .alert {
+            padding: 11px 13px;
+
+            margin-bottom: 19px;
+
+            border-radius: 10px;
+
+            font-size: 10px;
+            line-height: 1.5;
+        }
+
+        .premium-modal .alert-success {
+            color: #087f52;
+
+            background: var(--sb-green-soft);
+
+            border: 1px solid var(--sb-green-border) !important;
+        }
+
+        .premium-modal .alert-primary {
+            color: #1d5db9;
+
+            background: #eff6ff;
+
+            border: 1px solid #d6e5ff !important;
+        }
+
+        .premium-modal .alert-warning {
+            color: #a36a00;
+
+            background: var(--sb-orange-soft);
+
+            border: 1px solid var(--sb-orange-border) !important;
+        }
+
+        /* =========================================================
+           DELIVERY PROFILE
+        ========================================================= */
+
         .delivery-profile {
-            padding: 20px;
+            height: 100%;
+
+            padding: 21px;
 
             text-align: center;
 
-            border-radius: 18px;
-
-            background: #f8fafc;
+            background:
+                linear-gradient(
+                    180deg,
+                    #ffffff,
+                    #fafdff
+                );
 
             border: 1px solid var(--sb-border);
+
+            border-radius: 16px;
+
+            box-shadow:
+                0 8px 22px rgba(15, 23, 42, .04);
         }
 
         .delivery-profile img,
         .delivery-placeholder {
-            width: 115px;
-            height: 115px;
+            width: 110px;
+            height: 110px;
 
             object-fit: cover;
 
             border-radius: 50%;
 
-            border: 2px solid rgba(0,168,107,.25);
+            border: 3px solid #d7e7ff;
+
+            box-shadow:
+                0 10px 25px rgba(37, 99, 235, .13);
         }
 
         .delivery-placeholder {
@@ -799,85 +1256,506 @@
 
             margin: auto;
 
-            background: #f1f5f9;
+            color: #7890ae;
 
-            color: #94a3b8;
+            background:
+                linear-gradient(
+                    135deg,
+                    #f1f6ff,
+                    #eaf3ff
+                );
 
-            font-size: 40px;
+            font-size: 33px;
         }
 
         .delivery-profile h5 {
             color: var(--sb-text);
+
+            font-size: 15px;
+            font-weight: 900;
         }
+
+        /* =========================================================
+           INFO BOX
+        ========================================================= */
 
         .info-box {
             height: 100%;
 
-            padding: 15px;
+            padding: 13px;
 
-            border-radius: 14px;
-
-            background: #f8fafc;
+            background: #ffffff;
 
             border: 1px solid var(--sb-border);
+
+            border-radius: 10px;
+
+            transition:
+                border-color .18s ease,
+                box-shadow .18s ease,
+                transform .18s ease;
+        }
+
+        .info-box:hover {
+            border-color: #cbdcf5;
+
+            box-shadow:
+                0 7px 17px rgba(37, 99, 235, .055);
+
+            transform: translateY(-1px);
         }
 
         .info-label {
             margin-bottom: 4px;
 
-            color: #64748b;
+            color: #8a95a5;
 
-            font-size: 10px;
-            font-weight: 800;
+            font-size: 7px;
+            font-weight: 900;
+
+            letter-spacing: .8px;
 
             text-transform: uppercase;
-            letter-spacing: .7px;
         }
 
         .info-value {
-            color: #1e293b;
+            color: #344054;
 
-            font-size: 13px;
-            font-weight: 600;
+            font-size: 11px;
+            font-weight: 700;
+
+            line-height: 1.55;
 
             word-break: break-word;
+        }
+
+        .payment-status-paid {
+            color: #087f52;
+        }
+
+        .payment-status-cod {
+            color: #1d5db9;
+        }
+
+        .payment-status-pending {
+            color: #a36a00;
+        }
+
+        /* =========================================================
+           MODAL BUTTONS
+        ========================================================= */
+
+        .premium-modal .btn {
+            min-height: 39px;
+
+            padding: 7px 13px;
+
+            border-radius: 9px;
+
+            font-size: 10px;
+            font-weight: 850;
+
+            transition:
+                transform .18s ease,
+                box-shadow .18s ease,
+                background .18s ease;
+        }
+
+        .premium-modal .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .premium-modal .btn-outline-secondary {
+            color: #475569;
+
+            background: #ffffff;
+
+            border-color: #dce4ee;
+        }
+
+        .premium-modal .btn-outline-secondary:hover {
+            color: var(--sb-blue);
+
+            background: #eff6ff;
+
+            border-color: #c8daf4;
+        }
+
+        .premium-modal .btn-success {
+            color: #ffffff;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--sb-blue),
+                    var(--sb-blue-deep)
+                );
+
+            border-color: var(--sb-blue);
+
+            box-shadow:
+                0 7px 17px rgba(37, 99, 235, .17);
+        }
+
+        .premium-modal .btn-success:hover {
+            color: #ffffff;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--sb-blue-dark),
+                    var(--sb-blue-deep)
+                );
+
+            border-color: var(--sb-blue-dark);
+
+            box-shadow:
+                0 10px 22px rgba(37, 99, 235, .2);
+        }
+
+        .premium-modal .btn-warning {
+            color: #1d5db9;
+
+            background: #eff6ff;
+
+            border-color: #cfe0fb;
+        }
+
+        .premium-modal .btn-warning:hover {
+            color: #ffffff;
+
+            background: var(--sb-blue);
+
+            border-color: var(--sb-blue);
+        }
+
+        .premium-modal .btn-danger {
+            color: #ffffff;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #ef4444,
+                    #dc3545
+                );
+
+            border-color: var(--sb-red);
+
+            box-shadow:
+                0 6px 14px rgba(220, 53, 69, .12);
+        }
+
+        .premium-modal .btn-danger:hover {
+            color: #ffffff;
+
+            box-shadow:
+                0 9px 19px rgba(220, 53, 69, .18);
+        }
+
+        /* =========================================================
+           MODAL SECTION TITLE
+        ========================================================= */
+
+        .modal-section-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            margin-bottom: 13px;
+
+            color: var(--sb-blue-deep);
+
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+        .modal-section-title i {
+            color: var(--sb-blue);
+        }
+
+        /* =========================================================
+           DARK THEME SUPPORT
+           SCOPED ONLY TO ORDERS PAGE
+        ========================================================= */
+
+        [data-sb-theme="dark"] .orders-page,
+        [data-theme="dark"] .orders-page,
+        [data-seller-theme="dark"] .orders-page {
+
+            --sb-bg: #080d18;
+            --sb-bg-2: #0d1422;
+
+            --sb-card: rgba(15, 23, 42, .94);
+            --sb-card-solid: #0f172a;
+
+            --sb-text: #f1f5f9;
+            --sb-text-2: #cbd5e1;
+            --sb-muted: #8d9bb0;
+
+            --sb-border: #1e2b40;
+            --sb-border-soft: #1a2638;
+
+            background:
+                radial-gradient(
+                    circle at 0% 0%,
+                    rgba(37, 99, 235, .12),
+                    transparent 28%
+                ),
+                radial-gradient(
+                    circle at 100% 0%,
+                    rgba(6, 182, 212, .08),
+                    transparent 25%
+                ),
+                linear-gradient(
+                    180deg,
+                    #080d18,
+                    #0b1220
+                );
+        }
+
+        [data-sb-theme="dark"] .orders-page .orders-header,
+        [data-theme="dark"] .orders-page .orders-header,
+        [data-seller-theme="dark"] .orders-page .orders-header {
+            background:
+                linear-gradient(
+                    135deg,
+                    #101a2b,
+                    #0d1727
+                );
+
+            border-color: #1e2b40;
+        }
+
+        [data-sb-theme="dark"] .orders-page .header-left h1,
+        [data-theme="dark"] .orders-page .header-left h1,
+        [data-seller-theme="dark"] .orders-page .header-left h1,
+        [data-sb-theme="dark"] .orders-page .orders-card-title,
+        [data-theme="dark"] .orders-page .orders-card-title,
+        [data-seller-theme="dark"] .orders-page .orders-card-title {
+            color: #f8fafc;
+        }
+
+        [data-sb-theme="dark"] .orders-page .orders-card,
+        [data-theme="dark"] .orders-page .orders-card,
+        [data-seller-theme="dark"] .orders-page .orders-card {
+            background: #0f172a;
+            border-color: #1e2b40;
+        }
+
+        [data-sb-theme="dark"] .orders-page .orders-card-header,
+        [data-theme="dark"] .orders-page .orders-card-header,
+        [data-seller-theme="dark"] .orders-page .orders-card-header {
+            background:
+                linear-gradient(
+                    180deg,
+                    #111c2e,
+                    #0e1828
+                );
+
+            border-color: #1e2b40;
+        }
+
+        [data-sb-theme="dark"] .orders-page .seller-order-table thead th,
+        [data-theme="dark"] .orders-page .seller-order-table thead th,
+        [data-seller-theme="dark"] .orders-page .seller-order-table thead th {
+            color: #91a0b5;
+            background:
+                linear-gradient(
+                    180deg,
+                    #101b2d,
+                    #0d1727
+                );
+
+            border-color: #1e2b40;
+        }
+
+        [data-sb-theme="dark"] .orders-page .seller-order-table tbody td,
+        [data-theme="dark"] .orders-page .seller-order-table tbody td,
+        [data-seller-theme="dark"] .orders-page .seller-order-table tbody td {
+            color: #cbd5e1;
+            background: #0f172a;
+            border-color: #1a2638;
+        }
+
+        [data-sb-theme="dark"] .orders-page .seller-order-table tbody tr:hover td,
+        [data-theme="dark"] .orders-page .seller-order-table tbody tr:hover td,
+        [data-seller-theme="dark"] .orders-page .seller-order-table tbody tr:hover td {
+            background:
+                linear-gradient(
+                    90deg,
+                    #111d30,
+                    #101b2d
+                );
+        }
+
+        [data-sb-theme="dark"] .orders-page .order-number,
+        [data-theme="dark"] .orders-page .order-number,
+        [data-seller-theme="dark"] .orders-page .order-number,
+        [data-sb-theme="dark"] .orders-page .customer-name,
+        [data-theme="dark"] .orders-page .customer-name,
+        [data-seller-theme="dark"] .orders-page .customer-name {
+            color: #f1f5f9;
+        }
+
+        [data-sb-theme="dark"] .orders-page .action-view,
+        [data-theme="dark"] .orders-page .action-view,
+        [data-seller-theme="dark"] .orders-page .action-view {
+            color: #cbd5e1;
+            background: #111c2e;
+            border-color: #29384e;
+        }
+
+        [data-sb-theme="dark"] .orders-page .action-view:hover,
+        [data-theme="dark"] .orders-page .action-view:hover,
+        [data-seller-theme="dark"] .orders-page .action-view:hover {
+            color: #ffffff;
+            background: #172b4b;
+            border-color: #315d9d;
+        }
+
+        /* =========================================================
+           ACCESSIBILITY
+        ========================================================= */
+
+        button:focus-visible,
+        a:focus-visible,
+        input:focus-visible,
+        select:focus-visible,
+        textarea:focus-visible {
+            outline: 3px solid rgba(37, 99, 235, .2);
+            outline-offset: 2px;
+        }
+
+        /* =========================================================
+           LARGE DESKTOP
+        ========================================================= */
+
+        @media (min-width: 1600px) {
+
+            .orders-page {
+                padding-left: 30px;
+                padding-right: 30px;
+            }
+
+            .seller-order-table {
+                min-width: 0;
+            }
+
+            .seller-order-table thead th,
+            .seller-order-table tbody td {
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+        }
+
+        /* =========================================================
+           DESKTOP / TABLET
+        ========================================================= */
+
+        @media (max-width: 1200px) {
+
+            .orders-page {
+                padding-left: 18px;
+                padding-right: 18px;
+            }
+
+            .orders-header {
+                padding: 25px;
+            }
+
+            .seller-order-table {
+                min-width: 1080px;
+            }
+
+            .seller-order-table tbody td {
+                padding-left: 13px;
+                padding-right: 13px;
+            }
+        }
+
+        @media (max-width: 992px) {
+
+            .orders-header {
+                min-height: 135px;
+            }
+
+            .header-left p {
+                margin-left: 0;
+            }
+
+            .orders-card-header {
+                padding: 15px 18px;
+            }
         }
 
         /* =========================================================
            MOBILE
         ========================================================= */
 
-        @media(max-width: 768px) {
+        @media (max-width: 768px) {
 
             .orders-page {
-                padding: 25px 12px 50px;
+                padding:
+                    14px
+                    9px
+                    40px;
             }
 
             .orders-header {
-                align-items: flex-start;
-                flex-direction: column;
+                min-height: auto;
+
+                padding: 20px 17px;
+
+                border-radius: 19px;
+            }
+
+            .header-eyebrow {
+                font-size: 8px;
+                letter-spacing: 1.35px;
             }
 
             .header-left h1 {
-                font-size: 27px;
+                gap: 10px;
+
+                font-size: 24px;
+
+                letter-spacing: -.7px;
             }
 
-            .header-actions {
-                width: 100%;
+            .header-icon {
+                width: 43px;
+                height: 43px;
+
+                flex-basis: 43px;
+
+                border-radius: 13px;
+
+                font-size: 14px;
             }
 
-            .premium-btn {
-                width: 100%;
+            .header-left p {
+                margin-top: 10px;
+                margin-left: 0;
+
+                font-size: 11px;
+            }
+
+            .orders-card {
+                border-radius: 19px;
             }
 
             .orders-card-header {
                 align-items: flex-start;
-                gap: 12px;
+
                 flex-direction: column;
+
+                gap: 11px;
+
+                padding: 15px;
             }
 
-            .orders-card {
-                border-radius: 18px;
+            .order-count {
+                align-self: flex-start;
             }
 
             .premium-modal .modal-body {
@@ -886,7 +1764,126 @@
 
             .premium-modal .modal-header,
             .premium-modal .modal-footer {
-                padding: 16px 18px;
+                padding: 14px 16px;
+            }
+
+            .premium-modal .modal-title {
+                padding-right: 24px;
+
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 576px) {
+
+            .premium-alert {
+                font-size: 10px;
+            }
+
+            .empty-orders {
+                padding: 70px 18px;
+            }
+
+            .empty-orders-icon {
+                width: 70px;
+                height: 70px;
+
+                border-radius: 19px;
+
+                font-size: 25px;
+            }
+
+            .empty-orders h3 {
+                font-size: 16px;
+            }
+
+            .delivery-profile {
+                padding: 17px;
+            }
+
+            .delivery-profile img,
+            .delivery-placeholder {
+                width: 92px;
+                height: 92px;
+            }
+
+            .premium-modal .modal-footer {
+                gap: 6px;
+            }
+
+            .premium-modal .modal-footer .btn {
+                flex: 1 1 auto;
+            }
+        }
+
+        @media (max-width: 480px) {
+
+            .orders-page {
+                padding-top: 10px;
+            }
+
+            .orders-header {
+                padding: 17px 14px;
+            }
+
+            .header-left h1 {
+                align-items: flex-start;
+
+                font-size: 21px;
+
+                letter-spacing: -.5px;
+            }
+
+            .header-icon {
+                width: 38px;
+                height: 38px;
+
+                flex-basis: 38px;
+
+                border-radius: 11px;
+
+                font-size: 12px;
+            }
+
+            .header-left p {
+                font-size: 10px;
+            }
+
+            .orders-card-title {
+                font-size: 13px;
+            }
+
+            .orders-card-title-icon {
+                width: 37px;
+                height: 37px;
+
+                border-radius: 10px;
+            }
+
+            .order-count {
+                font-size: 8px;
+            }
+
+            .premium-modal .modal-title {
+                font-size: 12px !important;
+            }
+        }
+
+        /* =========================================================
+           REDUCED MOTION
+        ========================================================= */
+
+        @media (prefers-reduced-motion: reduce) {
+
+            html {
+                scroll-behavior: auto !important;
+            }
+
+            *,
+            *::before,
+            *::after {
+                transition: none !important;
+                animation: none !important;
             }
         }
     </style>
@@ -894,91 +1891,110 @@
 
 <body>
 
-    {{-- =========================================================
-         GLOBAL SELLER 3-DOTS MENU
-         Same menu used on Seller Dashboard
-    ========================================================= --}}
-    @include('seller.partials.seller-menu')
+{{-- =========================================================
+     GLOBAL SELLER TOPBAR
+     KEEP AS-IS
+========================================================= --}}
+
+@include('seller.partials.topbar')
 
 
-    <main class="orders-page">
+{{-- =========================================================
+     GLOBAL SELLER MENU
+     KEEP AS-IS
+========================================================= --}}
 
-        <div class="orders-container">
+@include('seller.partials.seller-menu')
 
-            {{-- =====================================================
-                 HEADER
-            ====================================================== --}}
 
-            <div class="orders-header">
+<main class="orders-page">
 
-                <div class="header-left">
+    <div class="orders-container">
 
-                    <small>
-                        SMART BASKET • SELLER PANEL
-                    </small>
+        {{-- =====================================================
+             PREMIUM PAGE HEADER
+        ====================================================== --}}
 
-                    <h1>
+        <header class="orders-header">
+
+            <div class="header-left">
+
+                <div class="header-eyebrow">
+                    <span class="eyebrow-dot"></span>
+                    Smart Basket • Seller Workspace
+                </div>
+
+                <h1>
+
+                    <span class="header-icon">
                         <i class="fa-solid fa-box-open"></i>
-                        Order Management
-                    </h1>
+                    </span>
 
-                    <p>
-                        Manage customer orders, payments and delivery partners.
-                    </p>
+                    Order Management
 
-                </div>
+                </h1>
 
-                <div class="header-actions">
-
-                    <a
-                        href="{{ route('seller.dashboard') }}"
-                        class="premium-btn premium-btn-dashboard"
-                    >
-                        <i class="fa-solid fa-arrow-left"></i>
-                        Dashboard
-                    </a>
-
-                </div>
+                <p>
+                    Manage customer orders, verify payment status and coordinate
+                    delivery operations from one professional seller workspace.
+                </p>
 
             </div>
 
+        </header>
 
-            {{-- =====================================================
-                 ALERTS
-            ====================================================== --}}
 
-            @if(session('success'))
+        {{-- =====================================================
+             SUCCESS ALERT
+        ====================================================== --}}
 
-                <div class="premium-alert success">
+        @if(session('success'))
 
-                    <i class="fa-solid fa-circle-check me-2"></i>
+            <div class="premium-alert success">
 
+                <i class="fa-solid fa-circle-check me-2"></i>
+
+                <span>
                     {{ session('success') }}
+                </span>
 
-                </div>
+            </div>
 
-            @endif
+        @endif
 
 
-            @if(session('error'))
+        {{-- =====================================================
+             ERROR ALERT
+        ====================================================== --}}
 
-                <div class="premium-alert error">
+        @if(session('error'))
 
-                    <i class="fa-solid fa-triangle-exclamation me-2"></i>
+            <div class="premium-alert error">
 
+                <i class="fa-solid fa-triangle-exclamation me-2"></i>
+
+                <span>
                     {{ session('error') }}
+                </span>
 
-                </div>
+            </div>
 
-            @endif
+        @endif
 
 
-            @if($errors->any())
+        {{-- =====================================================
+             VALIDATION ERRORS
+        ====================================================== --}}
 
-                <div class="premium-alert error">
+        @if($errors->any())
+
+            <div class="premium-alert error">
+
+                <i class="fa-solid fa-triangle-exclamation me-2"></i>
+
+                <div>
 
                     <strong>
-                        <i class="fa-solid fa-triangle-exclamation me-2"></i>
                         Please fix the following:
                     </strong>
 
@@ -994,711 +2010,442 @@
 
                 </div>
 
-            @endif
+            </div>
+
+        @endif
 
 
-            {{-- =====================================================
-                 ORDERS CARD
-            ====================================================== --}}
+        {{-- =====================================================
+             ORDER CENTER
+        ====================================================== --}}
 
-            <section class="orders-card">
+        <section class="orders-card">
 
-                <div class="orders-card-header">
+            <div class="orders-card-header">
 
-                    <div class="orders-card-title">
+                <div class="orders-card-title">
 
-                        <span class="orders-card-title-icon">
-                            <i class="fa-solid fa-cart-shopping"></i>
-                        </span>
+                    <span class="orders-card-title-icon">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                    </span>
 
-                        <span>
-                            Seller Orders
-                        </span>
-
-                    </div>
-
-                    <span class="order-count">
-                        {{ $orders->count() }} Orders
+                    <span>
+                        Seller Orders
                     </span>
 
                 </div>
 
-
-                <div class="table-wrapper">
-
-                    <table class="seller-order-table">
-
-                        <thead>
-
-                            <tr>
-                                <th>Order</th>
-                                <th>Customer</th>
-                                <th>Products</th>
-                                <th>Payment</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-
-                        </thead>
-
-
-                        <tbody>
-
-                            @forelse($orders as $order)
-
-                                @php
-
-                                    $delivery = $order->deliveryDetail;
-                                    $partner = $delivery?->deliveryPartner;
-
-                                    $paymentStatus = strtolower(
-                                        trim((string) ($order->payment_status ?? 'pending'))
-                                    );
-
-                                    $paymentMethod = strtoupper(
-                                        trim((string) ($order->payment_method ?? 'COD'))
-                                    );
-
-                                    $isPaid = in_array(
-                                        $paymentStatus,
-                                        [
-                                            'paid',
-                                            'captured',
-                                            'completed',
-                                            'success',
-                                            'successful'
-                                        ],
-                                        true
-                                    );
-
-                                    $isFailed = in_array(
-                                        $paymentStatus,
-                                        [
-                                            'failed',
-                                            'failure',
-                                            'cancelled',
-                                            'canceled'
-                                        ],
-                                        true
-                                    );
-
-                                    $isCod = $paymentMethod === 'COD';
-
-                                @endphp
-
-
-                                <tr>
-
-                                    {{-- ORDER --}}
-
-                                    <td>
-
-                                        <div class="order-number">
-                                            #{{ $order->id }}
-                                        </div>
-
-                                        <div class="order-date">
-
-                                            <i class="fa-regular fa-calendar me-1"></i>
-
-                                            {{ $order->created_at?->format('d M Y') }}
-
-                                        </div>
-
-                                    </td>
-
-
-                                    {{-- CUSTOMER --}}
-
-                                    <td>
-
-                                        <div class="customer-name">
-                                            {{ $order->name }}
-                                        </div>
-
-                                        <div class="customer-address">
-
-                                            <i class="fa-solid fa-location-dot me-1"></i>
-
-                                            {{ $order->address }}, {{ $order->city }}
-
-                                        </div>
-
-                                    </td>
-
-
-                                    {{-- PRODUCTS --}}
-
-                                    <td>
-
-                                        @foreach($order->seller_items ?? [] as $item)
-
-                                            <div class="product-line">
-
-                                                <i class="fa-solid fa-box me-1"></i>
-
-                                                {{ $item['name'] ?? ($products[$item['product_id'] ?? null]?->name ?? 'Product') }}
-
-                                                × {{ $item['quantity'] ?? 1 }}
-
-                                            </div>
-
-                                        @endforeach
-
-                                    </td>
-
-
-                                    {{-- PAYMENT --}}
-
-                                    <td>
-
-                                        @if($isPaid)
-
-                                            <span class="payment-pill payment-paid">
-
-                                                <i class="fa-solid fa-circle-check"></i>
-
-                                                Paid
-
-                                            </span>
-
-                                            <span class="payment-verified">
-
-                                                <i class="fa-solid fa-shield-check"></i>
-
-                                                Payment Verified
-
-                                            </span>
-
-                                        @elseif($isFailed)
-
-                                            <span class="payment-pill payment-failed">
-
-                                                <i class="fa-solid fa-circle-xmark"></i>
-
-                                                Failed
-
-                                            </span>
-
-                                            <span class="payment-warning">
-
-                                                <i class="fa-solid fa-triangle-exclamation"></i>
-
-                                                Payment Failed
-
-                                            </span>
-
-                                        @elseif($isCod)
-
-                                            <span class="payment-pill payment-cod">
-
-                                                <i class="fa-solid fa-money-bill-wave"></i>
-
-                                                COD
-
-                                            </span>
-
-                                            <span class="payment-method-small">
-                                                Pay on delivery
-                                            </span>
-
-                                        @else
-
-                                            <span class="payment-pill payment-pending">
-
-                                                <i class="fa-solid fa-clock"></i>
-
-                                                Pending
-
-                                            </span>
-
-                                            <span class="payment-warning">
-
-                                                <i class="fa-solid fa-lock"></i>
-
-                                                Payment Pending
-
-                                            </span>
-
-                                        @endif
-
-                                        <span class="payment-method-small">
-                                            {{ $paymentMethod }}
-                                        </span>
-
-                                    </td>
-
-
-                                    {{-- STATUS --}}
-
-                                    <td>
-
-                                        @php
-
-                                            $displayStatus =
-                                                $delivery?->status
-                                                ?? $order->order_status
-                                                ?? $order->status
-                                                ?? 'Order Placed';
-
-                                        @endphp
-
-                                        <span
-                                            class="status-pill
-                                            {{ strtolower($displayStatus) === 'pending' ? 'status-pending' : '' }}"
-                                        >
-
-                                            <span class="status-dot"></span>
-
-                                            {{ $displayStatus }}
-
-                                        </span>
-
-                                    </td>
-
-
-                                    {{-- ACTIONS --}}
-
-                                    <td>
-
-                                        <div class="order-actions">
-
-                                            @if($isPaid || $isCod)
-
-                                                <button
-                                                    type="button"
-                                                    class="action-btn action-delivery"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#deliveryModal{{ $order->id }}"
-                                                >
-
-                                                    <i class="fa-solid fa-truck me-1"></i>
-
-                                                    Delivery
-
-                                                </button>
-
-                                            @endif
-
-
-                                            <button
-                                                type="button"
-                                                class="action-btn action-view"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#viewModal{{ $order->id }}"
-                                            >
-
-                                                <i class="fa-solid fa-eye me-1"></i>
-
-                                                View
-
-                                            </button>
-
-                                        </div>
-
-                                    </td>
-
-                                </tr>
-
-                            @empty
-
-                                <tr>
-
-                                    <td colspan="6">
-
-                                        <div class="empty-orders">
-
-                                            <div class="empty-orders-icon">
-
-                                                <i class="fa-solid fa-box-open"></i>
-
-                                            </div>
-
-                                            <h3>
-                                                No Orders Yet
-                                            </h3>
-
-                                            <p class="mb-0">
-                                                Customer orders will appear here.
-                                            </p>
-
-                                        </div>
-
-                                    </td>
-
-                                </tr>
-
-                            @endforelse
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-            </section>
-
-        </div>
-
-    </main>
-
-
-    {{-- =========================================================
-         MODALS
-    ========================================================= --}}
-
-    @foreach($orders as $order)
-
-        @php
-
-            $delivery = $order->deliveryDetail;
-            $partner = $delivery?->deliveryPartner;
-
-            $paymentStatus = strtolower(
-                trim((string) ($order->payment_status ?? 'pending'))
-            );
-
-            $paymentMethod = strtoupper(
-                trim((string) ($order->payment_method ?? 'COD'))
-            );
-
-            $isPaid = in_array(
-                $paymentStatus,
-                [
-                    'paid',
-                    'captured',
-                    'completed',
-                    'success',
-                    'successful'
-                ],
-                true
-            );
-
-            $isCod = $paymentMethod === 'COD';
-
-        @endphp
-
-
-        {{-- =====================================================
-             DELIVERY FORM MODAL
-        ====================================================== --}}
-
-        <div
-            class="modal fade"
-            id="deliveryModal{{ $order->id }}"
-            tabindex="-1"
-            aria-hidden="true"
-        >
-
-            <div class="modal-dialog modal-lg modal-dialog-centered">
-
-                <form
-                    action="{{ route('seller.orders.delivery.store', $order) }}"
-                    method="POST"
-                    enctype="multipart/form-data"
-                >
-
-                    @csrf
-
-                    <div class="modal-content premium-modal">
-
-                        <div class="modal-header">
-
-                            <h5 class="modal-title">
-
-                                <i class="fa-solid fa-truck text-success me-2"></i>
-
-                                Delivery Boy Details
-
-                                <small class="text-muted ms-2">
-                                    Order {{ $order->id }}
-                                </small>
-
-                            </h5>
-
-                            <button
-                                type="button"
-                                class="btn-close"
-                                data-bs-dismiss="modal"
-                                aria-label="Close"
-                            ></button>
-
-                        </div>
-
-
-                        <div class="modal-body">
-
-                            @if($isPaid)
-
-                                <div class="alert alert-success bg-transparent border-success text-success">
-
-                                    <i class="fa-solid fa-shield-check me-2"></i>
-
-                                    <strong>Payment Verified</strong>
-
-                                    — Online payment has been successfully verified.
-
-                                </div>
-
-                            @elseif($isCod)
-
-                                <div class="alert alert-primary bg-transparent border-primary text-primary">
-
-                                    <i class="fa-solid fa-money-bill-wave me-2"></i>
-
-                                    <strong>Cash on Delivery</strong>
-
-                                    — Customer will pay at delivery.
-
-                                </div>
-
-                            @else
-
-                                <div class="alert alert-warning bg-transparent border-warning text-warning">
-
-                                    <i class="fa-solid fa-triangle-exclamation me-2"></i>
-
-                                    <strong>Payment Pending</strong>
-
-                                    — Do not dispatch this order until payment is confirmed.
-
-                                </div>
-
-                            @endif
-
-
-                            <div class="row g-3">
-
-                                <div class="col-md-6">
-
-                                    <label class="form-label">
-                                        Delivery Boy Photo
-                                    </label>
-
-                                    <input
-                                        type="file"
-                                        name="image"
-                                        class="form-control"
-                                        accept="image/jpeg,image/png,image/webp"
-                                    >
-
-                                </div>
-
-
-                                <div class="col-md-6">
-
-                                    <label class="form-label">
-                                        Name *
-                                    </label>
-
-                                    <input
-                                        type="text"
-                                        name="name"
-                                        class="form-control"
-                                        value="{{ old('name', $partner?->name) }}"
-                                        required
-                                    >
-
-                                </div>
-
-
-                                <div class="col-md-6">
-
-                                    <label class="form-label">
-                                        Mobile Number *
-                                    </label>
-
-                                    <input
-                                        type="text"
-                                        name="phone"
-                                        class="form-control"
-                                        value="{{ old('phone', $partner?->phone) }}"
-                                        required
-                                    >
-
-                                </div>
-
-
-                                <div class="col-md-6">
-
-                                    <label class="form-label">
-                                        Email
-                                    </label>
-
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        class="form-control"
-                                        value="{{ old('email', $partner?->email) }}"
-                                    >
-
-                                </div>
-
-
-                                <div class="col-md-6">
-
-                                    <label class="form-label">
-                                        Vehicle Type
-                                    </label>
-
-                                    <input
-                                        type="text"
-                                        name="vehicle_type"
-                                        class="form-control"
-                                        value="{{ old('vehicle_type', $partner?->vehicle_type) }}"
-                                        placeholder="Bike / Scooter / Van"
-                                    >
-
-                                </div>
-
-
-                                <div class="col-md-6">
-
-                                    <label class="form-label">
-                                        Vehicle Number
-                                    </label>
-
-                                    <input
-                                        type="text"
-                                        name="vehicle_number"
-                                        class="form-control"
-                                        value="{{ old('vehicle_number', $partner?->vehicle_number) }}"
-                                    >
-
-                                </div>
-
-
-                                <div class="col-md-6">
-
-                                    <label class="form-label">
-                                        Delivery Date
-                                    </label>
-
-                                    <input
-                                        type="date"
-                                        name="delivery_date"
-                                        class="form-control"
-                                        value="{{ old('delivery_date', $partner?->delivery_date?->format('Y-m-d')) }}"
-                                    >
-
-                                </div>
-
-
-                                <div class="col-md-6">
-
-                                    <label class="form-label">
-                                        Expected Delivery Time
-                                    </label>
-
-                                    <input
-                                        type="time"
-                                        name="expected_time"
-                                        class="form-control"
-                                        value="{{ old('expected_time', $partner?->expected_time) }}"
-                                    >
-
-                                </div>
-
-
-                                <div class="col-md-6">
-
-                                    <label class="form-label">
-                                        Current Delivery Status
-                                    </label>
-
-                                    <select
-                                        name="status"
-                                        class="form-select"
-                                    >
-
-                                        @foreach([
-                                            'Order Placed',
-                                            'Seller Confirmed',
-                                            'Packed',
-                                            'Picked By Delivery Partner',
-                                            'Out For Delivery',
-                                            'Near Customer',
-                                            'Delivered'
-                                        ] as $status)
-
-                                            <option
-                                                value="{{ $status }}"
-                                                {{ old('status', $delivery?->status ?? 'Order Placed') == $status ? 'selected' : '' }}
-                                            >
-                                                {{ $status }}
-                                            </option>
-
-                                        @endforeach
-
-                                    </select>
-
-                                </div>
-
-
-                                <div class="col-12">
-
-                                    <label class="form-label">
-                                        Notes
-                                    </label>
-
-                                    <textarea
-                                        name="notes"
-                                        class="form-control"
-                                        rows="3"
-                                        placeholder="Any special instructions..."
-                                    >{{ old('notes', $partner?->notes) }}</textarea>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-
-                        <div class="modal-footer">
-
-                            <button
-                                type="button"
-                                class="btn btn-outline-secondary"
-                                data-bs-dismiss="modal"
-                            >
-                                Close
-                            </button>
-
-                            <button
-                                type="submit"
-                                class="btn btn-success"
-                            >
-
-                                <i class="fa-solid fa-floppy-disk me-1"></i>
-
-                                Save Details
-
-                            </button>
-
-                        </div>
-
-                    </div>
-
-                </form>
+                <span class="order-count">
+                    {{ $orders->count() }} Orders
+                </span>
 
             </div>
 
-        </div>
+
+            <div class="table-wrapper">
+
+                <table class="seller-order-table">
+
+                    <thead>
+
+                        <tr>
+                            <th>Order</th>
+                            <th>Customer</th>
+                            <th>Products</th>
+                            <th>Payment</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @forelse($orders as $order)
+
+                            @php
+
+                                $delivery = $order->deliveryDetail;
+                                $partner = $delivery?->deliveryPartner;
+
+                                $paymentStatus = strtolower(
+                                    trim((string) ($order->payment_status ?? 'pending'))
+                                );
+
+                                $paymentMethod = strtoupper(
+                                    trim((string) ($order->payment_method ?? 'COD'))
+                                );
+
+                                $isPaid = in_array(
+                                    $paymentStatus,
+                                    [
+                                        'paid',
+                                        'captured',
+                                        'completed',
+                                        'success',
+                                        'successful'
+                                    ],
+                                    true
+                                );
+
+                                $isFailed = in_array(
+                                    $paymentStatus,
+                                    [
+                                        'failed',
+                                        'failure',
+                                        'cancelled',
+                                        'canceled'
+                                    ],
+                                    true
+                                );
+
+                                $isCod = $paymentMethod === 'COD';
+
+                                $displayStatus =
+                                    $delivery?->status
+                                    ?? $order->order_status
+                                    ?? $order->status
+                                    ?? 'Order Placed';
+
+                            @endphp
 
 
-        {{-- =====================================================
-             VIEW DELIVERY MODAL
-        ====================================================== --}}
+                            <tr>
 
-        <div
-            class="modal fade"
-            id="viewModal{{ $order->id }}"
-            tabindex="-1"
-            aria-hidden="true"
-        >
+                                {{-- ORDER --}}
 
-            <div class="modal-dialog modal-lg modal-dialog-centered">
+                                <td>
+
+                                    <div class="order-id-box">
+
+                                        <span class="order-mini-icon">
+                                            <i class="fa-solid fa-receipt"></i>
+                                        </span>
+
+                                        <div>
+
+                                            <div class="order-number">
+                                                #{{ $order->id }}
+                                            </div>
+
+                                            <div class="order-date">
+
+                                                <i class="fa-regular fa-calendar me-1"></i>
+
+                                                {{ $order->created_at?->format('d M Y') }}
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                {{-- CUSTOMER --}}
+
+                                <td>
+
+                                    <div class="customer-name">
+                                        {{ $order->name }}
+                                    </div>
+
+                                    <div class="customer-address">
+
+                                        <i class="fa-solid fa-location-dot me-1"></i>
+
+                                        {{ $order->address }}, {{ $order->city }}
+
+                                    </div>
+
+                                </td>
+
+
+                                {{-- PRODUCTS --}}
+
+                                <td>
+
+                                    <div class="product-list">
+
+                                        @forelse($order->seller_items ?? [] as $item)
+
+                                            <div class="product-line">
+
+                                                <i class="fa-solid fa-box"></i>
+
+                                                <span>
+
+                                                    {{ $item['name'] ?? ($products[$item['product_id'] ?? null]?->name ?? 'Product') }}
+
+                                                    × {{ $item['quantity'] ?? 1 }}
+
+                                                </span>
+
+                                            </div>
+
+                                        @empty
+
+                                            <div class="product-line">
+
+                                                <i class="fa-solid fa-box-open"></i>
+
+                                                <span>
+                                                    No product details
+                                                </span>
+
+                                            </div>
+
+                                        @endforelse
+
+                                    </div>
+
+                                </td>
+
+
+                                {{-- PAYMENT --}}
+
+                                <td>
+
+                                    @if($isPaid)
+
+                                        <span class="payment-pill payment-paid">
+
+                                            <i class="fa-solid fa-circle-check"></i>
+
+                                            Paid
+
+                                        </span>
+
+                                        <span class="payment-verified">
+
+                                            <i class="fa-solid fa-shield-halved"></i>
+
+                                            Payment Verified
+
+                                        </span>
+
+                                    @elseif($isFailed)
+
+                                        <span class="payment-pill payment-failed">
+
+                                            <i class="fa-solid fa-circle-xmark"></i>
+
+                                            Failed
+
+                                        </span>
+
+                                        <span class="payment-warning">
+
+                                            <i class="fa-solid fa-triangle-exclamation"></i>
+
+                                            Payment Failed
+
+                                        </span>
+
+                                    @elseif($isCod)
+
+                                        <span class="payment-pill payment-cod">
+
+                                            <i class="fa-solid fa-money-bill-wave"></i>
+
+                                            COD
+
+                                        </span>
+
+                                        <span class="payment-method-small">
+                                            Pay on delivery
+                                        </span>
+
+                                    @else
+
+                                        <span class="payment-pill payment-pending">
+
+                                            <i class="fa-solid fa-clock"></i>
+
+                                            Pending
+
+                                        </span>
+
+                                        <span class="payment-warning">
+
+                                            <i class="fa-solid fa-lock"></i>
+
+                                            Payment Pending
+
+                                        </span>
+
+                                    @endif
+
+                                    <span class="payment-method-small">
+                                        {{ $paymentMethod }}
+                                    </span>
+
+                                </td>
+
+
+                                {{-- STATUS --}}
+
+                                <td>
+
+                                    <span
+                                        class="status-pill
+                                        {{ strtolower(trim((string) $displayStatus)) === 'pending' ? 'status-pending' : '' }}"
+                                    >
+
+                                        <span class="status-dot"></span>
+
+                                        {{ $displayStatus }}
+
+                                    </span>
+
+                                </td>
+
+
+                                {{-- ACTIONS --}}
+
+                                <td>
+
+                                    <div class="order-actions">
+
+                                        @if($isPaid || $isCod)
+
+                                            <button
+                                                type="button"
+                                                class="action-btn action-delivery"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#deliveryModal{{ $order->id }}"
+                                            >
+
+                                                <i class="fa-solid fa-truck me-1"></i>
+
+                                                Delivery
+
+                                            </button>
+
+                                        @endif
+
+
+                                        <button
+                                            type="button"
+                                            class="action-btn action-view"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#viewModal{{ $order->id }}"
+                                        >
+
+                                            <i class="fa-solid fa-eye me-1"></i>
+
+                                            View
+
+                                        </button>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+
+                        @empty
+
+                            <tr>
+
+                                <td colspan="6">
+
+                                    <div class="empty-orders">
+
+                                        <div class="empty-orders-icon">
+
+                                            <i class="fa-solid fa-box-open"></i>
+
+                                        </div>
+
+                                        <h3>
+                                            No Orders Yet
+                                        </h3>
+
+                                        <p class="mb-0">
+                                            Customer orders will appear here once
+                                            your store receives its first order.
+                                        </p>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        @endforelse
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </div>
+
+</main>
+
+
+{{-- =========================================================
+     ORDER MODALS
+========================================================= --}}
+
+@foreach($orders as $order)
+
+    @php
+
+        $delivery = $order->deliveryDetail;
+        $partner = $delivery?->deliveryPartner;
+
+        $paymentStatus = strtolower(
+            trim((string) ($order->payment_status ?? 'pending'))
+        );
+
+        $paymentMethod = strtoupper(
+            trim((string) ($order->payment_method ?? 'COD'))
+        );
+
+        $isPaid = in_array(
+            $paymentStatus,
+            [
+                'paid',
+                'captured',
+                'completed',
+                'success',
+                'successful'
+            ],
+            true
+        );
+
+        $isCod = $paymentMethod === 'COD';
+
+    @endphp
+
+
+    {{-- =====================================================
+         DELIVERY FORM MODAL
+    ====================================================== --}}
+
+    <div
+        class="modal fade"
+        id="deliveryModal{{ $order->id }}"
+        tabindex="-1"
+        aria-hidden="true"
+    >
+
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+
+            <form
+                action="{{ route('seller.orders.delivery.store', $order) }}"
+                method="POST"
+                enctype="multipart/form-data"
+            >
+
+                @csrf
 
                 <div class="modal-content premium-modal">
 
@@ -1706,9 +2453,9 @@
 
                         <h5 class="modal-title">
 
-                            <i class="fa-solid fa-truck text-success me-2"></i>
+                            <i class="fa-solid fa-truck me-2"></i>
 
-                            Delivery Details
+                            Delivery Partner Details
 
                             <small class="text-muted ms-2">
                                 Order #{{ $order->id }}
@@ -1728,387 +2475,225 @@
 
                     <div class="modal-body">
 
-                        @if($partner)
+                        @if($isPaid)
 
-                            <div class="row g-4">
+                            <div class="alert alert-success">
 
-                                <div class="col-md-4">
+                                <i class="fa-solid fa-shield-halved me-2"></i>
 
-                                    <div class="delivery-profile">
+                                <strong>Payment Verified</strong>
 
-                                        @if($partner->image)
+                                — Online payment has been successfully verified.
 
-                                            <img
-                                                src="{{ asset('delivery-partners/'.$partner->image) }}"
-                                                alt="Delivery Boy"
-                                            >
+                            </div>
 
-                                        @else
+                        @elseif($isCod)
 
-                                            <div class="delivery-placeholder">
+                            <div class="alert alert-primary">
 
-                                                <i class="fa-solid fa-user"></i>
+                                <i class="fa-solid fa-money-bill-wave me-2"></i>
 
-                                            </div>
+                                <strong>Cash on Delivery</strong>
 
-                                        @endif
-
-
-                                        <h5 class="mt-3 mb-1">
-                                            {{ $partner->name }}
-                                        </h5>
-
-                                        <span class="status-pill">
-
-                                            <span class="status-dot"></span>
-
-                                            {{ $delivery?->status ?? 'Order Placed' }}
-
-                                        </span>
-
-                                    </div>
-
-                                </div>
-
-
-                                <div class="col-md-8">
-
-                                    <h6 class="text-success fw-bold mb-3">
-
-                                        <i class="fa-solid fa-id-card me-1"></i>
-
-                                        Delivery Partner Information
-
-                                    </h6>
-
-
-                                    <div class="row g-2">
-
-                                        <div class="col-md-6">
-
-                                            <div class="info-box">
-
-                                                <div class="info-label">
-                                                    Mobile
-                                                </div>
-
-                                                <div class="info-value">
-                                                    {{ $partner->phone ?? '—' }}
-                                                </div>
-
-                                            </div>
-
-                                        </div>
-
-
-                                        <div class="col-md-6">
-
-                                            <div class="info-box">
-
-                                                <div class="info-label">
-                                                    Email
-                                                </div>
-
-                                                <div class="info-value">
-                                                    {{ $partner->email ?? '—' }}
-                                                </div>
-
-                                            </div>
-
-                                        </div>
-
-
-                                        <div class="col-md-6">
-
-                                            <div class="info-box">
-
-                                                <div class="info-label">
-                                                    Vehicle Type
-                                                </div>
-
-                                                <div class="info-value">
-                                                    {{ $partner->vehicle_type ?? '—' }}
-                                                </div>
-
-                                            </div>
-
-                                        </div>
-
-
-                                        <div class="col-md-6">
-
-                                            <div class="info-box">
-
-                                                <div class="info-label">
-                                                    Vehicle Number
-                                                </div>
-
-                                                <div class="info-value">
-                                                    {{ $partner->vehicle_number ?? '—' }}
-                                                </div>
-
-                                            </div>
-
-                                        </div>
-
-
-                                        <div class="col-md-6">
-
-                                            <div class="info-box">
-
-                                                <div class="info-label">
-                                                    Delivery Date
-                                                </div>
-
-                                                <div class="info-value">
-                                                    {{ $partner->delivery_date?->format('d M Y') ?? '—' }}
-                                                </div>
-
-                                            </div>
-
-                                        </div>
-
-
-                                        <div class="col-md-6">
-
-                                            <div class="info-box">
-
-                                                <div class="info-label">
-                                                    Expected Time
-                                                </div>
-
-                                                <div class="info-value">
-                                                    {{ $partner->expected_time ?? '—' }}
-                                                </div>
-
-                                            </div>
-
-                                        </div>
-
-
-                                        @if($partner->notes)
-
-                                            <div class="col-12">
-
-                                                <div class="info-box">
-
-                                                    <div class="info-label">
-                                                        Notes
-                                                    </div>
-
-                                                    <div class="info-value">
-                                                        {{ $partner->notes }}
-                                                    </div>
-
-                                                </div>
-
-                                            </div>
-
-                                        @endif
-
-                                    </div>
-
-                                </div>
+                                — Customer will pay at delivery.
 
                             </div>
 
                         @else
 
-                            <div class="empty-orders py-5">
+                            <div class="alert alert-warning">
 
-                                <div class="empty-orders-icon">
+                                <i class="fa-solid fa-triangle-exclamation me-2"></i>
 
-                                    <i class="fa-solid fa-truck-ramp-box"></i>
+                                <strong>Payment Pending</strong>
 
-                                </div>
-
-                                <h3>
-                                    No Delivery Partner Assigned
-                                </h3>
-
-                                <p>
-                                    Delivery details have not been added for this order yet.
-                                </p>
+                                — Do not dispatch this order until payment is confirmed.
 
                             </div>
 
                         @endif
 
 
-                        <hr class="my-4">
-
-
-                        {{-- PAYMENT INFORMATION --}}
-
-                        <h6 class="text-success fw-bold mb-3">
-
-                            <i class="fa-solid fa-credit-card me-1"></i>
-
-                            Payment Information
-
-                        </h6>
-
-
-                        <div class="row g-2">
-
-                            <div class="col-md-4">
-
-                                <div class="info-box">
-
-                                    <div class="info-label">
-                                        Payment Method
-                                    </div>
-
-                                    <div class="info-value">
-                                        {{ $order->payment_method ?? 'COD' }}
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-
-                            <div class="col-md-4">
-
-                                <div class="info-box">
-
-                                    <div class="info-label">
-                                        Payment Status
-                                    </div>
-
-                                    <div class="info-value">
-
-                                        @if($isPaid)
-
-                                            <span class="text-success">
-                                                <i class="fa-solid fa-circle-check me-1"></i>
-                                                Paid / Verified
-                                            </span>
-
-                                        @elseif($isCod)
-
-                                            <span class="text-primary">
-                                                <i class="fa-solid fa-money-bill-wave me-1"></i>
-                                                Cash on Delivery
-                                            </span>
-
-                                        @else
-
-                                            <span class="text-warning">
-                                                <i class="fa-solid fa-clock me-1"></i>
-                                                Pending
-                                            </span>
-
-                                        @endif
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-
-                            <div class="col-md-4">
-
-                                <div class="info-box">
-
-                                    <div class="info-label">
-                                        Order Amount
-                                    </div>
-
-                                    <div class="info-value">
-
-                                        ₹{{ number_format((float) ($order->amount ?? $order->total ?? 0), 2) }}
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-
-                        <hr class="my-4">
-
-
-                        {{-- CUSTOMER INFORMATION --}}
-
-                        <h6 class="text-primary fw-bold mb-3">
-
-                            <i class="fa-solid fa-user me-1"></i>
-
-                            Customer Information
-
-                        </h6>
-
-
-                        <div class="row g-2">
+                        <div class="row g-3">
 
                             <div class="col-md-6">
 
-                                <div class="info-box">
+                                <label class="form-label">
+                                    Delivery Boy Photo
+                                </label>
 
-                                    <div class="info-label">
-                                        Order Number
-                                    </div>
-
-                                    <div class="info-value">
-                                        #{{ $order->id }}
-                                    </div>
-
-                                </div>
+                                <input
+                                    type="file"
+                                    name="image"
+                                    class="form-control"
+                                    accept="image/jpeg,image/png,image/webp"
+                                >
 
                             </div>
 
 
                             <div class="col-md-6">
 
-                                <div class="info-box">
+                                <label class="form-label">
+                                    Name *
+                                </label>
 
-                                    <div class="info-label">
-                                        Customer Name
-                                    </div>
-
-                                    <div class="info-value">
-                                        {{ $order->name }}
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-
-                            <div class="col-md-6">
-
-                                <div class="info-box">
-
-                                    <div class="info-label">
-                                        Customer Mobile
-                                    </div>
-
-                                    <div class="info-value">
-                                        {{ $order->mobile }}
-                                    </div>
-
-                                </div>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    class="form-control"
+                                    value="{{ old('name', $partner?->name) }}"
+                                    required
+                                >
 
                             </div>
 
 
                             <div class="col-md-6">
 
-                                <div class="info-box">
+                                <label class="form-label">
+                                    Mobile Number *
+                                </label>
 
-                                    <div class="info-label">
-                                        Customer Address
-                                    </div>
+                                <input
+                                    type="text"
+                                    name="phone"
+                                    class="form-control"
+                                    value="{{ old('phone', $partner?->phone) }}"
+                                    required
+                                >
 
-                                    <div class="info-value">
-                                        {{ $order->address }}, {{ $order->city }}
-                                    </div>
+                            </div>
 
-                                </div>
+
+                            <div class="col-md-6">
+
+                                <label class="form-label">
+                                    Email
+                                </label>
+
+                                <input
+                                    type="email"
+                                    name="email"
+                                    class="form-control"
+                                    value="{{ old('email', $partner?->email) }}"
+                                >
+
+                            </div>
+
+
+                            <div class="col-md-6">
+
+                                <label class="form-label">
+                                    Vehicle Type
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="vehicle_type"
+                                    class="form-control"
+                                    value="{{ old('vehicle_type', $partner?->vehicle_type) }}"
+                                    placeholder="Bike / Scooter / Van"
+                                >
+
+                            </div>
+
+
+                            <div class="col-md-6">
+
+                                <label class="form-label">
+                                    Vehicle Number
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="vehicle_number"
+                                    class="form-control"
+                                    value="{{ old('vehicle_number', $partner?->vehicle_number) }}"
+                                >
+
+                            </div>
+
+
+                            <div class="col-md-6">
+
+                                <label class="form-label">
+                                    Delivery Date
+                                </label>
+
+                                <input
+                                    type="date"
+                                    name="delivery_date"
+                                    class="form-control"
+                                    value="{{ old('delivery_date', $partner?->delivery_date?->format('Y-m-d')) }}"
+                                >
+
+                            </div>
+
+
+                            <div class="col-md-6">
+
+                                <label class="form-label">
+                                    Expected Delivery Time
+                                </label>
+
+                                <input
+                                    type="time"
+                                    name="expected_time"
+                                    class="form-control"
+                                    value="{{ old('expected_time', $partner?->expected_time) }}"
+                                >
+
+                            </div>
+
+
+                            <div class="col-md-6">
+
+                                <label class="form-label">
+                                    Current Delivery Status
+                                </label>
+
+                                <select
+                                    name="status"
+                                    class="form-select"
+                                >
+
+                                    @foreach([
+                                        'Order Placed',
+                                        'Seller Confirmed',
+                                        'Packed',
+                                        'Picked By Delivery Partner',
+                                        'Out For Delivery',
+                                        'Near Customer',
+                                        'Delivered'
+                                    ] as $status)
+
+                                        <option
+                                            value="{{ $status }}"
+                                            {{ old('status', $delivery?->status ?? 'Order Placed') == $status ? 'selected' : '' }}
+                                        >
+                                            {{ $status }}
+                                        </option>
+
+                                    @endforeach
+
+                                </select>
+
+                            </div>
+
+
+                            <div class="col-12">
+
+                                <label class="form-label">
+                                    Delivery Notes
+                                </label>
+
+                                <textarea
+                                    name="notes"
+                                    class="form-control"
+                                    rows="3"
+                                    placeholder="Add special instructions, delivery notes or customer instructions..."
+                                >{{ old('notes', $partner?->notes) }}</textarea>
 
                             </div>
 
@@ -2128,49 +2713,522 @@
                         </button>
 
 
-                        @if($isPaid || $isCod)
+                        <button
+                            type="submit"
+                            class="btn btn-success"
+                        >
+
+                            <i class="fa-solid fa-floppy-disk me-1"></i>
+
+                            Save Delivery Details
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    {{-- =====================================================
+         VIEW DELIVERY MODAL
+    ====================================================== --}}
+
+    <div
+        class="modal fade"
+        id="viewModal{{ $order->id }}"
+        tabindex="-1"
+        aria-hidden="true"
+    >
+
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+
+            <div class="modal-content premium-modal">
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+
+                        <i class="fa-solid fa-truck me-2"></i>
+
+                        Order & Delivery Details
+
+                        <small class="text-muted ms-2">
+                            #{{ $order->id }}
+                        </small>
+
+                    </h5>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                    ></button>
+
+                </div>
+
+
+                <div class="modal-body">
+
+                    {{-- DELIVERY PARTNER --}}
+
+                    @if($partner)
+
+                        <div class="row g-4">
+
+                            <div class="col-md-4">
+
+                                <div class="delivery-profile">
+
+                                    @if($partner->image)
+
+                                        <img
+                                            src="{{ asset('delivery-partners/'.$partner->image) }}"
+                                            alt="Delivery Boy"
+                                        >
+
+                                    @else
+
+                                        <div class="delivery-placeholder">
+
+                                            <i class="fa-solid fa-user"></i>
+
+                                        </div>
+
+                                    @endif
+
+
+                                    <h5 class="mt-3 mb-2">
+                                        {{ $partner->name }}
+                                    </h5>
+
+
+                                    <span class="status-pill">
+
+                                        <span class="status-dot"></span>
+
+                                        {{ $delivery?->status ?? 'Order Placed' }}
+
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="col-md-8">
+
+                                <h6 class="modal-section-title">
+
+                                    <i class="fa-solid fa-id-card"></i>
+
+                                    Delivery Partner Information
+
+                                </h6>
+
+
+                                <div class="row g-2">
+
+                                    <div class="col-md-6">
+
+                                        <div class="info-box">
+
+                                            <div class="info-label">
+                                                Mobile
+                                            </div>
+
+                                            <div class="info-value">
+                                                {{ $partner->phone ?? '—' }}
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <div class="col-md-6">
+
+                                        <div class="info-box">
+
+                                            <div class="info-label">
+                                                Email
+                                            </div>
+
+                                            <div class="info-value">
+                                                {{ $partner->email ?? '—' }}
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <div class="col-md-6">
+
+                                        <div class="info-box">
+
+                                            <div class="info-label">
+                                                Vehicle Type
+                                            </div>
+
+                                            <div class="info-value">
+                                                {{ $partner->vehicle_type ?? '—' }}
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <div class="col-md-6">
+
+                                        <div class="info-box">
+
+                                            <div class="info-label">
+                                                Vehicle Number
+                                            </div>
+
+                                            <div class="info-value">
+                                                {{ $partner->vehicle_number ?? '—' }}
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <div class="col-md-6">
+
+                                        <div class="info-box">
+
+                                            <div class="info-label">
+                                                Delivery Date
+                                            </div>
+
+                                            <div class="info-value">
+                                                {{ $partner->delivery_date?->format('d M Y') ?? '—' }}
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <div class="col-md-6">
+
+                                        <div class="info-box">
+
+                                            <div class="info-label">
+                                                Expected Time
+                                            </div>
+
+                                            <div class="info-value">
+                                                {{ $partner->expected_time ?? '—' }}
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    @if($partner->notes)
+
+                                        <div class="col-12">
+
+                                            <div class="info-box">
+
+                                                <div class="info-label">
+                                                    Notes
+                                                </div>
+
+                                                <div class="info-value">
+                                                    {{ $partner->notes }}
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                    @endif
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    @else
+
+                        <div class="empty-orders py-5">
+
+                            <div class="empty-orders-icon">
+
+                                <i class="fa-solid fa-truck-ramp-box"></i>
+
+                            </div>
+
+                            <h3>
+                                No Delivery Partner Assigned
+                            </h3>
+
+                            <p>
+                                Delivery details have not been added for this order yet.
+                            </p>
+
+                        </div>
+
+                    @endif
+
+
+                    <hr class="my-4">
+
+
+                    {{-- PAYMENT INFORMATION --}}
+
+                    <h6 class="modal-section-title">
+
+                        <i class="fa-solid fa-credit-card"></i>
+
+                        Payment Information
+
+                    </h6>
+
+
+                    <div class="row g-2">
+
+                        <div class="col-md-4">
+
+                            <div class="info-box">
+
+                                <div class="info-label">
+                                    Payment Method
+                                </div>
+
+                                <div class="info-value">
+                                    {{ $order->payment_method ?? 'COD' }}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-4">
+
+                            <div class="info-box">
+
+                                <div class="info-label">
+                                    Payment Status
+                                </div>
+
+                                <div class="info-value">
+
+                                    @if($isPaid)
+
+                                        <span class="payment-status-paid">
+
+                                            <i class="fa-solid fa-circle-check me-1"></i>
+
+                                            Paid / Verified
+
+                                        </span>
+
+                                    @elseif($isCod)
+
+                                        <span class="payment-status-cod">
+
+                                            <i class="fa-solid fa-money-bill-wave me-1"></i>
+
+                                            Cash on Delivery
+
+                                        </span>
+
+                                    @else
+
+                                        <span class="payment-status-pending">
+
+                                            <i class="fa-solid fa-clock me-1"></i>
+
+                                            Pending
+
+                                        </span>
+
+                                    @endif
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-4">
+
+                            <div class="info-box">
+
+                                <div class="info-label">
+                                    Order Amount
+                                </div>
+
+                                <div class="info-value">
+
+                                    ₹{{ number_format((float) ($order->amount ?? $order->total ?? 0), 2) }}
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <hr class="my-4">
+
+
+                    {{-- CUSTOMER INFORMATION --}}
+
+                    <h6 class="modal-section-title">
+
+                        <i class="fa-solid fa-user"></i>
+
+                        Customer Information
+
+                    </h6>
+
+
+                    <div class="row g-2">
+
+                        <div class="col-md-6">
+
+                            <div class="info-box">
+
+                                <div class="info-label">
+                                    Order Number
+                                </div>
+
+                                <div class="info-value">
+                                    #{{ $order->id }}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-6">
+
+                            <div class="info-box">
+
+                                <div class="info-label">
+                                    Customer Name
+                                </div>
+
+                                <div class="info-value">
+                                    {{ $order->name }}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-6">
+
+                            <div class="info-box">
+
+                                <div class="info-label">
+                                    Customer Mobile
+                                </div>
+
+                                <div class="info-value">
+                                    {{ $order->mobile }}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-6">
+
+                            <div class="info-box">
+
+                                <div class="info-label">
+                                    Customer Address
+                                </div>
+
+                                <div class="info-value">
+                                    {{ $order->address }}, {{ $order->city }}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal"
+                    >
+                        Close
+                    </button>
+
+
+                    @if($isPaid || $isCod)
+
+                        <button
+                            type="button"
+                            class="btn btn-warning edit-delivery-btn"
+                            data-view="#viewModal{{ $order->id }}"
+                            data-edit="#deliveryModal{{ $order->id }}"
+                        >
+
+                            <i class="fa-solid fa-pen me-1"></i>
+
+                            Edit Delivery
+
+                        </button>
+
+
+                        <form
+                            action="{{ route('seller.orders.delivery.destroy', $order) }}"
+                            method="POST"
+                            class="d-inline"
+                            onsubmit="return confirm('Delete delivery details for order #{{ $order->id }}?');"
+                        >
+
+                            @csrf
+
+                            @method('DELETE')
 
                             <button
-                                type="button"
-                                class="btn btn-warning edit-delivery-btn"
-                                data-view="#viewModal{{ $order->id }}"
-                                data-edit="#deliveryModal{{ $order->id }}"
+                                type="submit"
+                                class="btn btn-danger"
                             >
 
-                                <i class="fa-solid fa-pen me-1"></i>
+                                <i class="fa-solid fa-trash me-1"></i>
 
-                                Edit
+                                Delete
 
                             </button>
 
+                        </form>
 
-                            <form
-                                action="{{ route('seller.orders.delivery.destroy', $order) }}"
-                                method="POST"
-                                class="d-inline"
-                                onsubmit="return confirm('Delete delivery details for order #{{ $order->id }}?');"
-                            >
-
-                                @csrf
-
-                                @method('DELETE')
-
-                                <button
-                                    type="submit"
-                                    class="btn btn-danger"
-                                >
-
-                                    <i class="fa-solid fa-trash me-1"></i>
-
-                                    Delete
-
-                                </button>
-
-                            </form>
-
-                        @endif
-
-                    </div>
+                    @endif
 
                 </div>
 
@@ -2178,49 +3236,59 @@
 
         </div>
 
-    @endforeach
+    </div>
+
+@endforeach
 
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+{{-- =========================================================
+     BOOTSTRAP
+========================================================= --}}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 
-    <script>
-        document.querySelectorAll('.edit-delivery-btn').forEach(function (btn) {
+{{-- =========================================================
+     DELIVERY MODAL SWITCH
+========================================================= --}}
 
-            btn.addEventListener('click', function () {
+<script>
+    document.querySelectorAll('.edit-delivery-btn').forEach(function (btn) {
 
-                const viewModal =
-                    document.querySelector(btn.dataset.view);
+        btn.addEventListener('click', function () {
 
-                const editModal =
-                    document.querySelector(btn.dataset.edit);
+            const viewModal =
+                document.querySelector(btn.dataset.view);
 
-                if (viewModal) {
+            const editModal =
+                document.querySelector(btn.dataset.edit);
 
-                    const vm =
-                        bootstrap.Modal.getInstance(viewModal);
+            if (viewModal) {
 
-                    if (vm) {
-                        vm.hide();
-                    }
+                const vm =
+                    bootstrap.Modal.getInstance(viewModal);
+
+                if (vm) {
+                    vm.hide();
                 }
+            }
 
-                if (editModal) {
+            if (editModal) {
 
-                    setTimeout(function () {
+                setTimeout(function () {
 
-                        const em =
-                            bootstrap.Modal.getOrCreateInstance(editModal);
+                    const em =
+                        bootstrap.Modal.getOrCreateInstance(editModal);
 
-                        em.show();
+                    em.show();
 
-                    }, 250);
-                }
-
-            });
+                }, 250);
+            }
 
         });
-    </script>
+
+    });
+</script>
 
 </body>
 </html>

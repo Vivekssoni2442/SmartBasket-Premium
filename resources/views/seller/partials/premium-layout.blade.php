@@ -1,437 +1,882 @@
 <!DOCTYPE html>
-<html lang="en">
+
+<html lang="en" data-theme="light" data-sb-theme="light" data-seller-theme="light">
 
 <head>
 
-    <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+<meta charset="UTF-8">
 
-    <meta
-        name="csrf-token"
-        content="{{ csrf_token() }}"
-    >
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
-    <title>
-        @yield('title', 'Seller Partner Program') | SMART BASKET
-    </title>
+<meta
+    name="csrf-token"
+    content="{{ csrf_token() }}"
+>
 
+<title>
+    @yield('title', 'Seller Panel') | SMART BASKET
+</title>
 
-    {{-- =========================================================
-         FONT
-    ========================================================== --}}
+{{-- =========================================================
+     FONTS
+========================================================== --}}
 
-    <link
-        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet"
-    >
+<link rel="preconnect" href="https://fonts.googleapis.com">
 
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    {{-- =========================================================
-         FONT AWESOME
-    ========================================================== --}}
+<link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+>
 
-    <link
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-        rel="stylesheet"
-    >
+{{-- =========================================================
+     FONT AWESOME
+========================================================== --}}
 
+<link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+>
 
-    {{-- =========================================================
-         SMART BASKET GLOBAL THEME
-    ========================================================== --}}
+{{-- =========================================================
+     GLOBAL SELLER CSS
+========================================================== --}}
 
-    <link
-        rel="stylesheet"
-        href="{{ asset('css/premium-dark-theme.css') }}"
-    >
+<link
+    rel="stylesheet"
+    href="{{ asset('css/premium-dark-theme.css') }}"
+>
 
+<link
+    rel="stylesheet"
+    href="{{ asset('css/seller-premium.css') }}"
+>
 
-    {{-- =========================================================
-         SELLER PREMIUM CSS
-    ========================================================== --}}
+{{-- =========================================================
+     THEME MANAGER
+========================================================== --}}
 
-    <link
-        rel="stylesheet"
-        href="{{ asset('css/seller-premium.css') }}"
-    >
+<script>
 
+    window.SellerThemeManager = (function () {
 
-    <script>
-        window.SellerThemeManager = (function () {
-            const STORAGE_KEY = 'smartbasket_seller_theme';
+        const STORAGE_KEY = 'smartbasket_seller_theme';
 
-            function normalize(theme) {
-                return theme === 'dark' || theme === 'light' || theme === 'system'
-                    ? theme
-                    : 'light';
+        function normalize(theme) {
+
+            return (
+                theme === 'dark' ||
+                theme === 'light' ||
+                theme === 'system'
+            )
+                ? theme
+                : 'light';
+
+        }
+
+        function getSystemTheme() {
+
+            if (!window.matchMedia) {
+                return 'light';
             }
 
-            function getSystemTheme() {
-                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            return window.matchMedia(
+                '(prefers-color-scheme: dark)'
+            ).matches
+                ? 'dark'
+                : 'light';
+
+        }
+
+        function resolve(theme) {
+
+            const normalized = normalize(theme);
+
+            return normalized === 'system'
+                ? getSystemTheme()
+                : normalized;
+
+        }
+
+        function apply(theme, persist = true) {
+
+            const selected = normalize(theme);
+
+            const finalTheme = resolve(selected);
+
+            document.documentElement.setAttribute(
+                'data-theme',
+                finalTheme
+            );
+
+            document.documentElement.setAttribute(
+                'data-sb-theme',
+                finalTheme
+            );
+
+            document.documentElement.setAttribute(
+                'data-seller-theme',
+                selected
+            );
+
+            if (persist) {
+
+                try {
+
+                    localStorage.setItem(
+                        STORAGE_KEY,
+                        selected
+                    );
+
+                } catch (error) {}
+
             }
 
-            function resolve(theme) {
-                const normalized = normalize(theme);
-                return normalized === 'system' ? getSystemTheme() : normalized;
+            return selected;
+
+        }
+
+        function setTheme(theme) {
+
+            return apply(theme, true);
+
+        }
+
+        function initialize(savedTheme) {
+
+            const preferred =
+                normalize(
+                    savedTheme || 'light'
+                );
+
+            apply(
+                preferred,
+                true
+            );
+
+            if (!window.matchMedia) {
+                return;
             }
 
-            function apply(theme, persist = true) {
-                const selected = normalize(theme);
-                const finalTheme = resolve(selected);
+            const mediaQuery =
+                window.matchMedia(
+                    '(prefers-color-scheme: dark)'
+                );
 
-                document.documentElement.setAttribute('data-theme', finalTheme);
-                document.documentElement.setAttribute('data-sb-theme', finalTheme);
-                document.documentElement.setAttribute('data-seller-theme', selected);
+            const handler = function () {
 
-                if (persist) {
-                    localStorage.setItem(STORAGE_KEY, selected);
+                let current = preferred;
+
+                try {
+
+                    current =
+                        normalize(
+                            localStorage.getItem(
+                                STORAGE_KEY
+                            ) || preferred
+                        );
+
+                } catch (error) {}
+
+                if (current === 'system') {
+
+                    apply(
+                        'system',
+                        false
+                    );
+
                 }
 
-                return selected;
-            }
-
-            function setTheme(theme) {
-                apply(theme, true);
-            }
-
-            function initialize(savedTheme) {
-                const preferred = normalize(savedTheme || 'light');
-                apply(preferred, true);
-
-                const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
-                const handler = function () {
-                    if (normalize(localStorage.getItem(STORAGE_KEY) || preferred) === 'system') {
-                        apply('system', false);
-                    }
-                };
-
-                if (mediaQuery.addEventListener) {
-                    mediaQuery.addEventListener('change', handler);
-                } else {
-                    mediaQuery.addListener(handler);
-                }
-            }
-
-            return {
-                normalize,
-                resolve,
-                apply,
-                setTheme,
-                initialize,
-                getSystemTheme,
             };
-        })();
 
-        (function () {
-            try {
-                const savedDatabaseTheme = @json($seller->theme ?? 'light');
-                const initialTheme = savedDatabaseTheme || 'light';
-                window.SellerThemeManager.apply(initialTheme, false);
-            } catch (error) {
-                document.documentElement.setAttribute('data-theme', 'light');
+            if (mediaQuery.addEventListener) {
+
+                mediaQuery.addEventListener(
+                    'change',
+                    handler
+                );
+
+            } else if (mediaQuery.addListener) {
+
+                mediaQuery.addListener(
+                    handler
+                );
+
             }
-        })();
-    </script>
-
-
-    <style>
-        :root {
-            --sb-bg: #f8fafc;
-            --sb-bg-secondary: #eef2ff;
-            --sb-card: rgba(255,255,255,0.9);
-            --sb-card-hover: rgba(241,245,249,0.92);
-            --sb-text: #111827;
-            --sb-text-secondary: #475569;
-            --sb-border: rgba(148,163,184,0.35);
-            --sb-primary: #2563eb;
-            --sb-primary-hover: #1d4ed8;
-            --sb-shadow: 0 20px 45px rgba(15,23,42,0.08);
-            --sb-input-bg: #ffffff;
-            --sb-input-border: #dfe7f1;
-            --sb-success: #16a34a;
-            --sb-danger: #dc2626;
-        }
-
-        html[data-theme="dark"],
-        html[data-sb-theme="dark"],
-        html[data-seller-theme="dark"] {
-            --sb-bg: #0b1120;
-            --sb-bg-secondary: #111827;
-            --sb-card: rgba(17,24,39,0.9);
-            --sb-card-hover: rgba(31,41,55,0.92);
-            --sb-text: #f8fafc;
-            --sb-text-secondary: #cbd5e1;
-            --sb-border: rgba(148,163,184,0.22);
-            --sb-primary: #60a5fa;
-            --sb-primary-hover: #93c5fd;
-            --sb-shadow: 0 24px 60px rgba(2,6,23,0.45);
-            --sb-input-bg: rgba(2,6,23,0.7);
-            --sb-input-border: rgba(148,163,184,0.25);
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-
-        html {
-
-            scroll-behavior: smooth;
-
-            background:
-                var(--sb-bg) !important;
-
-            color:
-                var(--sb-text) !important;
 
         }
 
+        return {
+            normalize,
+            resolve,
+            apply,
+            setTheme,
+            initialize,
+            getSystemTheme
+        };
 
-        body {
+    })();
 
-            margin: 0;
 
-            min-height: 100vh;
+    /* =========================================================
+       DATABASE THEME
+    ========================================================= */
 
-            font-family:
-                'Poppins',
-                sans-serif;
+    (function () {
 
-            background:
-                radial-gradient(
-                    circle at 10% 10%,
-                    color-mix(
-                        in srgb,
-                        var(--sb-primary) 7%,
-                        transparent
-                    ),
-                    transparent 30%
-                ),
-                radial-gradient(
-                    circle at 90% 90%,
-                    color-mix(
-                        in srgb,
-                        var(--sb-primary) 7%,
-                        transparent
-                    ),
-                    transparent 30%
-                ),
-                var(--sb-bg) !important;
+        try {
 
-            color:
-                var(--sb-text) !important;
+            const databaseTheme =
+                @json($seller->theme ?? 'light');
 
-            overflow-x: hidden;
+            window.SellerThemeManager.apply(
+                databaseTheme,
+                false
+            );
 
-            transition:
-                background-color .25s ease,
-                color .25s ease;
+        } catch (error) {
+
+            window.SellerThemeManager.apply(
+                'light',
+                false
+            );
 
         }
 
+    })();
 
-        a {
+</script>
 
-            text-decoration: none;
+{{-- =========================================================
+     SELLER LAYOUT MASTER CSS
+========================================================== --}}
 
-            color:
-                var(--sb-primary);
+<style>
 
-        }
+    :root {
+
+        --seller-font:
+            'Poppins',
+            sans-serif;
+
+        --seller-bg:
+            #f8fafc;
+
+        --seller-bg-secondary:
+            #f1f5f9;
+
+        --seller-card:
+            #ffffff;
+
+        --seller-text:
+            #0f172a;
+
+        --seller-text-secondary:
+            #64748b;
+
+        --seller-border:
+            rgba(15, 23, 42, .08);
+
+        --seller-primary:
+            #16a34a;
+
+        --seller-primary-dark:
+            #15803d;
+
+        --seller-danger:
+            #dc2626;
+
+        --seller-radius:
+            16px;
+
+        --seller-shadow:
+            0 20px 50px rgba(15, 23, 42, .08);
+
+    }
 
 
-        a:hover {
+    html[data-theme="dark"] {
 
-            color:
-                var(--sb-primary-hover);
+        --seller-bg:
+            #070b12;
 
-        }
+        --seller-bg-secondary:
+            #0d131d;
+
+        --seller-card:
+            #111827;
+
+        --seller-text:
+            #f8fafc;
+
+        --seller-text-secondary:
+            #94a3b8;
+
+        --seller-border:
+            rgba(255, 255, 255, .08);
+
+        --seller-shadow:
+            0 20px 60px rgba(0, 0, 0, .35);
+
+    }
 
 
-        button,
-        input,
-        select,
-        textarea {
+    *,
+    *::before,
+    *::after {
 
-            font-family:
-                inherit;
+        box-sizing:
+            border-box;
 
-        }
+    }
 
+
+    html,
+    body {
+
+        width:
+            100%;
+
+        min-height:
+            100%;
+
+        margin:
+            0;
+
+        padding:
+            0;
+
+    }
+
+
+    html {
+
+        scroll-behavior:
+            smooth;
+
+        background:
+            var(--seller-bg);
+
+    }
+
+
+    body {
+
+        min-height:
+            100vh;
+
+        margin:
+            0;
+
+        padding:
+            0;
+
+        font-family:
+            var(--seller-font);
+
+        font-size:
+            14px;
+
+        line-height:
+            1.5;
+
+        color:
+            var(--seller-text);
+
+        background:
+            var(--seller-bg);
+
+        overflow-x:
+            hidden;
+
+        -webkit-font-smoothing:
+            antialiased;
+
+        -moz-osx-font-smoothing:
+            grayscale;
+
+    }
+
+
+    body input,
+    body textarea,
+    body select,
+    body button {
+
+        font-family:
+            var(--seller-font) !important;
+
+    }
+
+
+    body a {
+
+        font-family:
+            var(--seller-font);
+
+    }
+
+
+    /* =========================================================
+       SINGLE GLOBAL TOPBAR HOLDER
+
+       IMPORTANT:
+       Every seller page receives the same topbar through
+       premium-layout only.
+    ========================================================= */
+
+    .seller-layout-topbar {
+
+        position:
+            relative;
+
+        z-index:
+            99999;
+
+        width:
+            100%;
+
+        margin:
+            0;
+
+        padding:
+            0;
+
+    }
+
+
+    /*
+     * DO NOT FORCE POPPINS ON ICON ELEMENTS.
+     */
+
+    .seller-layout-topbar
+    i.fa-solid,
+    .seller-layout-topbar
+    i.fas {
+
+        font-family:
+            "Font Awesome 6 Free" !important;
+
+        font-weight:
+            900 !important;
+
+        font-style:
+            normal !important;
+
+    }
+
+
+    .seller-layout-topbar
+    i.fa-regular,
+    .seller-layout-topbar
+    i.far {
+
+        font-family:
+            "Font Awesome 6 Free" !important;
+
+        font-weight:
+            400 !important;
+
+        font-style:
+            normal !important;
+
+    }
+
+
+    .seller-layout-topbar
+    i.fa-brands,
+    .seller-layout-topbar
+    i.fab {
+
+        font-family:
+            "Font Awesome 6 Brands" !important;
+
+        font-weight:
+            400 !important;
+
+        font-style:
+            normal !important;
+
+    }
+
+
+    /* =========================================================
+       PAGE CONTENT
+    ========================================================= */
+
+    .seller-layout-content {
+
+        position:
+            relative;
+
+        width:
+            100%;
+
+        min-height:
+            calc(100vh - 76px);
+
+        margin:
+            0;
+
+        padding:
+            0;
+
+        color:
+            var(--seller-text);
+
+        background:
+            transparent;
+
+    }
+
+
+    /*
+     * PAGE CONTENT MUST NEVER CREATE ANOTHER TOPBAR.
+     */
+
+    .seller-layout-content
+    > .seller-global-topbar {
+
+        display:
+            none !important;
+
+    }
+
+
+    img {
+
+        max-width:
+            100%;
+
+    }
+
+
+    button:focus-visible,
+    a:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible,
+    select:focus-visible {
+
+        outline:
+            2px solid var(--seller-primary);
+
+        outline-offset:
+            3px;
+
+    }
+
+
+    html.theme-transition,
+    html.theme-transition body,
+    html.theme-transition .seller-layout-content,
+    html.theme-transition .seller-layout-topbar {
+
+        transition:
+            background-color .25s ease,
+            color .25s ease,
+            border-color .25s ease,
+            box-shadow .25s ease;
+
+    }
+
+
+    @media (max-width: 760px) {
 
         .seller-layout-content {
 
-            width: 100%;
-
-            min-height: 100vh;
-
-            background:
-                transparent !important;
-
-            color:
-                var(--sb-text) !important;
+            min-height:
+                calc(100vh - 68px);
 
         }
 
+    }
 
-        /*
-        |--------------------------------------------------------------------------
-        | THEME TRANSITION
-        |--------------------------------------------------------------------------
-        */
 
-        html.theme-transition,
-        html.theme-transition body,
-        html.theme-transition .seller-layout-content,
-        html.theme-transition .seller-menu,
-        html.theme-transition .seller-sidebar,
-        html.theme-transition .sidebar,
-        html.theme-transition .seller-settings-page {
+    @media (prefers-reduced-motion: reduce) {
+
+        *,
+        *::before,
+        *::after {
+
+            scroll-behavior:
+                auto !important;
+
+            animation:
+                none !important;
 
             transition:
-                background-color .25s ease,
-                color .25s ease,
-                border-color .25s ease,
-                box-shadow .25s ease !important;
+                none !important;
 
         }
 
+    }
 
-        @media(max-width:768px) {
+</style>
 
-            .seller-layout-content {
+@stack('styles')
 
-                padding-bottom: 20px;
-
-            }
-
-        }
-
-    </style>
-
-
-    @stack('styles')
 
 </head>
-
 
 <body>
 
 
-    {{-- =========================================================
-         SELLER MENU
-    ========================================================== --}}
+{{-- =========================================================
+     ONE AND ONLY SELLER GLOBAL TASKBAR
 
-    @include('seller.partials.seller-menu')
+     DO NOT PUT THIS INCLUDE INSIDE INDIVIDUAL PAGES.
+========================================================== --}}
 
+<div class="seller-layout-topbar">
 
-    {{-- =========================================================
-         PAGE CONTENT
-    ========================================================== --}}
+    @include('seller.partials.topbar')
 
-    <div class="seller-layout-content">
-
-        @yield('content')
-
-    </div>
+</div>
 
 
-    {{-- =========================================================
-         GLOBAL SMART BASKET THEME SYSTEM
-    ========================================================== --}}
+{{-- =========================================================
+     PAGE CONTENT ONLY
+========================================================== --}}
 
-    <script>
+<main class="seller-layout-content">
 
-        document.addEventListener(
-            'DOMContentLoaded',
-            function () {
+    @yield('content')
 
-
-                const html =
-                    document.documentElement;
+</main>
 
 
-                /*
-                |--------------------------------------------------------------------------
-                | GET SAVED THEME
-                |--------------------------------------------------------------------------
-                */
+{{-- =========================================================
+     THEME SYNCHRONIZATION
+========================================================== --}}
 
-                let sellerTheme = @json($seller->theme ?? 'light');
-                const localTheme = localStorage.getItem('smartbasket_seller_theme');
+<script>
 
-                if (localTheme) {
-                    sellerTheme = localTheme;
-                }
+    document.addEventListener(
+        'DOMContentLoaded',
+        function () {
 
-                if (!['dark', 'light', 'system'].includes(sellerTheme)) {
-                    sellerTheme = 'light';
-                }
+            const html =
+                document.documentElement;
 
-                function applySellerTheme(selectedTheme, saveLocal = true) {
-                    const normalized = selectedTheme === 'dark' || selectedTheme === 'light' || selectedTheme === 'system'
+            let sellerTheme =
+                @json($seller->theme ?? 'light');
+
+            let localTheme = null;
+
+            try {
+
+                localTheme =
+                    localStorage.getItem(
+                        'smartbasket_seller_theme'
+                    );
+
+            } catch (error) {}
+
+            if (localTheme) {
+
+                sellerTheme =
+                    localTheme;
+
+            }
+
+            if (
+                ![
+                    'dark',
+                    'light',
+                    'system'
+                ].includes(sellerTheme)
+            ) {
+
+                sellerTheme =
+                    'light';
+
+            }
+
+            function applySellerTheme(
+                selectedTheme,
+                saveLocal = true
+            ) {
+
+                const normalized =
+                    [
+                        'dark',
+                        'light',
+                        'system'
+                    ].includes(selectedTheme)
                         ? selectedTheme
                         : 'light';
 
-                    const finalTheme = normalized === 'system'
-                        ? window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+                const finalTheme =
+                    normalized === 'system'
+                        ? (
+                            window.matchMedia &&
+                            window.matchMedia(
+                                '(prefers-color-scheme: dark)'
+                            ).matches
+                                ? 'dark'
+                                : 'light'
+                        )
                         : normalized;
 
-                    html.setAttribute('data-theme', finalTheme);
-                    html.setAttribute('data-sb-theme', finalTheme);
-                    html.setAttribute('data-seller-theme', normalized);
+                html.setAttribute(
+                    'data-theme',
+                    finalTheme
+                );
 
-                    if (saveLocal) {
-                        localStorage.setItem('smartbasket_seller_theme', normalized);
-                    }
+                html.setAttribute(
+                    'data-sb-theme',
+                    finalTheme
+                );
 
-                    html.classList.add('theme-transition');
-                    setTimeout(() => html.classList.remove('theme-transition'), 280);
+                html.setAttribute(
+                    'data-seller-theme',
+                    normalized
+                );
+
+                if (saveLocal) {
+
+                    try {
+
+                        localStorage.setItem(
+                            'smartbasket_seller_theme',
+                            normalized
+                        );
+
+                    } catch (error) {}
+
                 }
-
-                applySellerTheme(sellerTheme, false);
-
-                if (window.matchMedia) {
-                    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-                    const systemThemeChanged = function () {
-                        if (localStorage.getItem('smartbasket_seller_theme') === 'system' || sellerTheme === 'system') {
-                            applySellerTheme('system', false);
-                        }
-                    };
-
-                    if (mediaQuery.addEventListener) {
-                        mediaQuery.addEventListener('change', systemThemeChanged);
-                    } else {
-                        mediaQuery.addListener(systemThemeChanged);
-                    }
-                }
-
-                window.addEventListener('smartbasket-theme-changed', function (event) {
-                    if (event.detail && event.detail.theme) {
-                        sellerTheme = event.detail.theme;
-                        applySellerTheme(sellerTheme, true);
-                    }
-                });
-
-                window.addEventListener('storage', function (event) {
-                    if (event.key === 'smartbasket_seller_theme' && event.newValue) {
-                        sellerTheme = event.newValue;
-                        applySellerTheme(sellerTheme, false);
-                    }
-                });
 
             }
-        );
 
-    </script>
+            applySellerTheme(
+                sellerTheme,
+                false
+            );
 
 
-    @stack('scripts')
+            /* SYSTEM THEME */
+
+            if (window.matchMedia) {
+
+                const mediaQuery =
+                    window.matchMedia(
+                        '(prefers-color-scheme: dark)'
+                    );
+
+                const systemThemeChanged =
+                    function () {
+
+                        let savedTheme = null;
+
+                        try {
+
+                            savedTheme =
+                                localStorage.getItem(
+                                    'smartbasket_seller_theme'
+                                );
+
+                        } catch (error) {}
+
+                        if (
+                            savedTheme === 'system'
+                        ) {
+
+                            applySellerTheme(
+                                'system',
+                                false
+                            );
+
+                        }
+
+                    };
+
+                if (
+                    mediaQuery.addEventListener
+                ) {
+
+                    mediaQuery.addEventListener(
+                        'change',
+                        systemThemeChanged
+                    );
+
+                } else if (
+                    mediaQuery.addListener
+                ) {
+
+                    mediaQuery.addListener(
+                        systemThemeChanged
+                    );
+
+                }
+
+            }
+
+
+            /* CUSTOM THEME EVENT */
+
+            window.addEventListener(
+                'smartbasket-theme-changed',
+                function (event) {
+
+                    if (
+                        event.detail &&
+                        event.detail.theme
+                    ) {
+
+                        sellerTheme =
+                            event.detail.theme;
+
+                        applySellerTheme(
+                            sellerTheme,
+                            true
+                        );
+
+                    }
+
+                }
+            );
+
+
+            /* STORAGE SYNC */
+
+            window.addEventListener(
+                'storage',
+                function (event) {
+
+                    if (
+                        event.key ===
+                            'smartbasket_seller_theme' &&
+                        event.newValue
+                    ) {
+
+                        sellerTheme =
+                            event.newValue;
+
+                        applySellerTheme(
+                            sellerTheme,
+                            false
+                        );
+
+                    }
+
+                }
+            );
+
+        }
+    );
+
+</script>
+
+
+@stack('scripts')
+
 
 </body>
 

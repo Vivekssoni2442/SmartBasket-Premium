@@ -140,6 +140,661 @@
 
 
         /* =====================================================
+           COMMON SELLER TASKBAR
+        ===================================================== */
+
+        .sb-seller-taskbar {
+
+            position: sticky;
+
+            top: 12px;
+
+            z-index: 1000;
+
+            width: min(1150px, calc(100% - 20px));
+
+            margin: 12px auto 22px;
+
+            padding: 9px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+            border-radius: 18px;
+
+            background:
+                rgba(8, 18, 31, .88);
+
+            border:
+                1px solid
+                rgba(148, 163, 184, .16);
+
+            box-shadow:
+                0 18px 45px
+                rgba(0, 0, 0, .22);
+
+            backdrop-filter:
+                blur(22px);
+
+            -webkit-backdrop-filter:
+                blur(22px);
+
+        }
+
+
+        .sb-seller-taskbar-brand {
+
+            flex: 0 0 auto;
+
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 9px;
+
+            padding: 7px 10px;
+
+            color: #f8fafc;
+
+            text-decoration: none;
+
+            border-radius: 13px;
+
+            transition: .2s ease;
+
+        }
+
+
+        .sb-seller-taskbar-brand:hover {
+
+            color: #ffffff;
+
+            background:
+                rgba(255,255,255,.045);
+
+        }
+
+
+        .sb-seller-taskbar-logo {
+
+            width: 34px;
+
+            height: 34px;
+
+            flex: 0 0 34px;
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            border-radius: 11px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #63e6b3,
+                    #00c982
+                );
+
+            color: #042016;
+
+            box-shadow:
+                0 8px 20px
+                rgba(0, 201, 130, .18);
+
+            font-size: 14px;
+
+        }
+
+
+        .sb-seller-taskbar-brand-text {
+
+            display: flex;
+
+            flex-direction: column;
+
+            line-height: 1.05;
+
+        }
+
+
+        .sb-seller-taskbar-brand-name {
+
+            font-size: 12px;
+
+            font-weight: 900;
+
+            letter-spacing: -.01em;
+
+        }
+
+
+        .sb-seller-taskbar-brand-subtitle {
+
+            margin-top: 3px;
+
+            color: #7f968f;
+
+            font-size: 7px;
+
+            font-weight: 700;
+
+            letter-spacing: .10em;
+
+            text-transform: uppercase;
+
+        }
+
+
+        .sb-seller-taskbar-nav {
+
+            flex: 1 1 auto;
+
+            min-width: 0;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 4px;
+
+            overflow-x: auto;
+
+            scrollbar-width: none;
+
+        }
+
+
+        .sb-seller-taskbar-nav::-webkit-scrollbar {
+
+            display: none;
+
+        }
+
+
+        .sb-seller-taskbar-link {
+
+            flex: 0 0 auto;
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 6px;
+
+            min-height: 36px;
+
+            padding: 0 10px;
+
+            border-radius: 10px;
+
+            color: #8fa6a0;
+
+            text-decoration: none;
+
+            font-size: 9px;
+
+            font-weight: 800;
+
+            white-space: nowrap;
+
+            transition:
+                color .18s ease,
+                background .18s ease,
+                transform .18s ease;
+
+        }
+
+
+        .sb-seller-taskbar-link i {
+
+            font-size: 10px;
+
+        }
+
+
+        .sb-seller-taskbar-link:hover {
+
+            color: #e8f0ee;
+
+            background:
+                rgba(255,255,255,.055);
+
+            transform:
+                translateY(-1px);
+
+        }
+
+
+        .sb-seller-taskbar-link.active {
+
+            color: #63e6b3;
+
+            background:
+                rgba(0, 200, 130, .10);
+
+            box-shadow:
+                inset 0 0 0 1px
+                rgba(0, 200, 130, .12);
+
+        }
+
+
+        .sb-seller-taskbar-add {
+
+            flex: 0 0 auto;
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 6px;
+
+            min-height: 36px;
+
+            padding: 0 12px;
+
+            border-radius: 10px;
+
+            color: #052016;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #63e6b3,
+                    #00c982
+                );
+
+            text-decoration: none;
+
+            font-size: 9px;
+
+            font-weight: 900;
+
+            box-shadow:
+                0 7px 18px
+                rgba(0, 200, 130, .15);
+
+            transition:
+                transform .18s ease,
+                filter .18s ease;
+
+        }
+
+
+        .sb-seller-taskbar-add:hover {
+
+            color: #052016;
+
+            transform:
+                translateY(-1px);
+
+            filter:
+                brightness(1.05);
+
+        }
+
+
+        /* =====================================================
+           THREE DOT MENU
+        ===================================================== */
+
+        .sb-seller-taskbar-more {
+
+            position: relative;
+
+            flex: 0 0 auto;
+
+        }
+
+
+        .sb-seller-taskbar-more-btn {
+
+            width: 36px;
+
+            height: 36px;
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            border: 1px solid
+                rgba(148, 163, 184, .15);
+
+            border-radius: 10px;
+
+            background:
+                rgba(255,255,255,.035);
+
+            color: #a8bbb5;
+
+            cursor: pointer;
+
+            transition: .18s ease;
+
+        }
+
+
+        .sb-seller-taskbar-more-btn:hover {
+
+            color: #63e6b3;
+
+            border-color:
+                rgba(0, 200, 130, .25);
+
+            background:
+                rgba(0, 200, 130, .07);
+
+        }
+
+
+        .sb-seller-taskbar-dropdown {
+
+            position: absolute;
+
+            top: calc(100% + 9px);
+
+            right: 0;
+
+            width: 225px;
+
+            padding: 7px;
+
+            border-radius: 15px;
+
+            background:
+                rgba(9, 20, 33, .98);
+
+            border:
+                1px solid
+                rgba(148, 163, 184, .16);
+
+            box-shadow:
+                0 22px 55px
+                rgba(0,0,0,.34);
+
+            backdrop-filter:
+                blur(20px);
+
+            -webkit-backdrop-filter:
+                blur(20px);
+
+            opacity: 0;
+
+            visibility: hidden;
+
+            transform:
+                translateY(-6px);
+
+            transition:
+                opacity .18s ease,
+                visibility .18s ease,
+                transform .18s ease;
+
+        }
+
+
+        .sb-seller-taskbar-more.open
+        .sb-seller-taskbar-dropdown {
+
+            opacity: 1;
+
+            visibility: visible;
+
+            transform:
+                translateY(0);
+
+        }
+
+
+        .sb-taskbar-dropdown-title {
+
+            padding:
+                8px 10px 6px;
+
+            color: #647b74;
+
+            font-size: 7px;
+
+            font-weight: 900;
+
+            letter-spacing: .13em;
+
+            text-transform: uppercase;
+
+        }
+
+
+        .sb-taskbar-dropdown-link {
+
+            width: 100%;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 9px;
+
+            padding: 10px;
+
+            border-radius: 10px;
+
+            color: #a8bbb5;
+
+            text-decoration: none;
+
+            font-size: 9px;
+
+            font-weight: 750;
+
+            transition: .16s ease;
+
+        }
+
+
+        .sb-taskbar-dropdown-link i {
+
+            width: 17px;
+
+            text-align: center;
+
+            color: #63e6b3;
+
+        }
+
+
+        .sb-taskbar-dropdown-link:hover {
+
+            color: #f1f7f5;
+
+            background:
+                rgba(0, 200, 130, .07);
+
+        }
+
+
+        .sb-taskbar-dropdown-divider {
+
+            height: 1px;
+
+            margin: 6px 4px;
+
+            background:
+                rgba(148,163,184,.10);
+
+        }
+
+
+        .sb-taskbar-dropdown-logout {
+
+            color: #fca5a5;
+
+            background: transparent;
+
+            border: 0;
+
+            width: 100%;
+
+            text-align: left;
+
+            cursor: pointer;
+
+        }
+
+
+        .sb-taskbar-dropdown-logout i {
+
+            color: #f87171;
+
+        }
+
+
+        /* =====================================================
+           LIGHT THEME TASKBAR
+        ===================================================== */
+
+        html.light .sb-seller-taskbar,
+        body.light .sb-seller-taskbar {
+
+            background:
+                rgba(255,255,255,.90);
+
+            border-color:
+                rgba(15,23,42,.10);
+
+            box-shadow:
+                0 18px 45px
+                rgba(15,23,42,.10);
+
+        }
+
+
+        html.light .sb-seller-taskbar-brand,
+        body.light .sb-seller-taskbar-brand {
+
+            color: #111827;
+
+        }
+
+
+        html.light .sb-seller-taskbar-brand:hover,
+        body.light .sb-seller-taskbar-brand:hover {
+
+            color: #111827;
+
+            background:
+                rgba(15,23,42,.035);
+
+        }
+
+
+        html.light .sb-seller-taskbar-brand-subtitle,
+        body.light .sb-seller-taskbar-brand-subtitle {
+
+            color: #718096;
+
+        }
+
+
+        html.light .sb-seller-taskbar-link,
+        body.light .sb-seller-taskbar-link {
+
+            color: #64748b;
+
+        }
+
+
+        html.light .sb-seller-taskbar-link:hover,
+        body.light .sb-seller-taskbar-link:hover {
+
+            color: #111827;
+
+            background:
+                rgba(15,23,42,.045);
+
+        }
+
+
+        html.light .sb-seller-taskbar-link.active,
+        body.light .sb-seller-taskbar-link.active {
+
+            color: #00865a;
+
+            background:
+                rgba(0,200,130,.09);
+
+        }
+
+
+        html.light .sb-seller-taskbar-more-btn,
+        body.light .sb-seller-taskbar-more-btn {
+
+            color: #64748b;
+
+            background:
+                rgba(15,23,42,.035);
+
+            border-color:
+                rgba(15,23,42,.10);
+
+        }
+
+
+        html.light .sb-seller-taskbar-dropdown,
+        body.light .sb-seller-taskbar-dropdown {
+
+            background:
+                rgba(255,255,255,.98);
+
+            border-color:
+                rgba(15,23,42,.10);
+
+            box-shadow:
+                0 22px 55px
+                rgba(15,23,42,.15);
+
+        }
+
+
+        html.light .sb-taskbar-dropdown-title,
+        body.light .sb-taskbar-dropdown-title {
+
+            color: #94a3b8;
+
+        }
+
+
+        html.light .sb-taskbar-dropdown-link,
+        body.light .sb-taskbar-dropdown-link {
+
+            color: #475569;
+
+        }
+
+
+        html.light .sb-taskbar-dropdown-link:hover,
+        body.light .sb-taskbar-dropdown-link:hover {
+
+            color: #111827;
+
+            background:
+                rgba(0,200,130,.07);
+
+        }
+
+
+        /* =====================================================
            MAIN WRAPPER
         ===================================================== */
 
@@ -149,7 +804,7 @@
 
             width: 100%;
 
-            padding: 30px 16px 50px;
+            padding: 0 16px 50px;
 
         }
 
@@ -164,20 +819,13 @@
 
 
         /* =====================================================
-           TOP NAV
+           OLD TOP NAV
+           Kept for compatibility with existing layout.
         ===================================================== */
 
         .seller-verification-topbar {
 
-            display: flex;
-
-            align-items: center;
-
-            justify-content: space-between;
-
-            gap: 20px;
-
-            margin-bottom: 18px;
+            display: none;
 
         }
 
@@ -1118,12 +1766,129 @@
            RESPONSIVE
         ===================================================== */
 
+        @media (max-width: 950px) {
+
+            .sb-seller-taskbar-brand-text {
+
+                display: none;
+
+            }
+
+            .sb-seller-taskbar-brand {
+
+                padding:
+                    7px;
+
+            }
+
+            .sb-seller-taskbar-link {
+
+                padding:
+                    0 9px;
+
+            }
+
+            .sb-seller-taskbar-add span {
+
+                display: none;
+
+            }
+
+            .sb-seller-taskbar-add {
+
+                width: 36px;
+
+                padding: 0;
+
+            }
+
+        }
+
+
         @media (max-width: 768px) {
 
             .seller-verification-page {
 
                 padding:
-                    18px 10px 35px;
+                    0 10px 35px;
+
+            }
+
+
+            .sb-seller-taskbar {
+
+                position:
+                    sticky;
+
+                top:
+                    7px;
+
+                width:
+                    calc(100% - 10px);
+
+                margin:
+                    7px auto 16px;
+
+                padding:
+                    7px;
+
+                border-radius:
+                    15px;
+
+            }
+
+
+            .sb-seller-taskbar-nav {
+
+                gap:
+                    2px;
+
+            }
+
+
+            .sb-seller-taskbar-link {
+
+                min-height:
+                    34px;
+
+                padding:
+                    0 9px;
+
+                font-size:
+                    8px;
+
+            }
+
+
+            .sb-seller-taskbar-link i {
+
+                font-size:
+                    9px;
+
+            }
+
+
+            .sb-seller-taskbar-add {
+
+                min-height:
+                    34px;
+
+                width:
+                    34px;
+
+                height:
+                    34px;
+
+            }
+
+
+            .sb-seller-taskbar-more-btn {
+
+                width:
+                    34px;
+
+                height:
+                    34px;
 
             }
 
@@ -1211,12 +1976,71 @@
         }
 
 
-        @media (max-width: 480px) {
+        @media (max-width: 560px) {
+
+            .sb-seller-taskbar {
+
+                gap:
+                    5px;
+
+            }
+
+
+            .sb-seller-taskbar-brand {
+
+                display:
+                    none;
+
+            }
+
+
+            .sb-seller-taskbar-nav {
+
+                flex:
+                    1 1 auto;
+
+            }
+
+
+            .sb-seller-taskbar-link {
+
+                min-width:
+                    37px;
+
+                padding:
+                    0 8px;
+
+            }
+
+
+            .sb-seller-taskbar-link span {
+
+                display:
+                    none;
+
+            }
+
+
+            .sb-seller-taskbar-link i {
+
+                font-size:
+                    11px;
+
+            }
+
+
+            .sb-seller-taskbar-add {
+
+                display:
+                    inline-flex;
+
+            }
+
 
             .seller-verification-page {
 
                 padding:
-                    10px 7px 25px;
+                    0 7px 25px;
 
             }
 
@@ -1241,6 +2065,43 @@
 
         }
 
+
+        @media (max-width: 380px) {
+
+            .sb-seller-taskbar-link {
+
+                min-width:
+                    33px;
+
+                padding:
+                    0 6px;
+
+            }
+
+
+            .sb-seller-taskbar-more-btn {
+
+                width:
+                    32px;
+
+                height:
+                    32px;
+
+            }
+
+
+            .sb-seller-taskbar-add {
+
+                width:
+                    32px;
+
+                height:
+                    32px;
+
+            }
+
+        }
+
     </style>
 
 
@@ -1251,13 +2112,377 @@
 
 <body>
 
+
+{{-- =========================================================
+     COMMON SELLER TASKBAR
+========================================================== --}}
+
+@php
+
+    $sellerCurrentRoute = Route::currentRouteName();
+
+    $sellerProductsActive =
+        in_array(
+            $sellerCurrentRoute,
+            [
+                'seller.products.index',
+                'seller.products',
+                'seller.product.add',
+                'seller.product.edit',
+            ],
+            true
+        );
+
+    $sellerOrdersActive =
+        in_array(
+            $sellerCurrentRoute,
+            [
+                'seller.orders.index',
+                'seller.orders.show',
+            ],
+            true
+        );
+
+    $sellerPaymentsActive =
+        in_array(
+            $sellerCurrentRoute,
+            [
+                'seller.payments.index',
+                'seller.payments.show',
+                'seller.payments.receipt',
+                'seller.payments.premium-receipt',
+            ],
+            true
+        );
+
+    $sellerVerificationActive =
+        is_string($sellerCurrentRoute)
+        && str_starts_with(
+            $sellerCurrentRoute,
+            'seller.verification.'
+        );
+
+@endphp
+
+
+<nav
+    class="sb-seller-taskbar"
+    aria-label="Seller Navigation"
+>
+
+    {{-- BRAND --}}
+
+    <a
+        href="{{ route('seller.dashboard') }}"
+        class="sb-seller-taskbar-brand"
+        title="Seller Dashboard"
+    >
+
+        <span class="sb-seller-taskbar-logo">
+            <i class="fa-solid fa-basket-shopping"></i>
+        </span>
+
+        <span class="sb-seller-taskbar-brand-text">
+
+            <span class="sb-seller-taskbar-brand-name">
+                SmartBasket
+            </span>
+
+            <span class="sb-seller-taskbar-brand-subtitle">
+                Seller Panel
+            </span>
+
+        </span>
+
+    </a>
+
+
+    {{-- MAIN NAVIGATION --}}
+
+    <div class="sb-seller-taskbar-nav">
+
+        {{-- DASHBOARD --}}
+
+        <a
+            href="{{ route('seller.dashboard') }}"
+            class="sb-seller-taskbar-link
+                {{ $sellerCurrentRoute === 'seller.dashboard' ? 'active' : '' }}"
+            title="Dashboard"
+        >
+
+            <i class="fa-solid fa-chart-line"></i>
+
+            <span>
+                Dashboard
+            </span>
+
+        </a>
+
+
+        {{-- PRODUCTS --}}
+
+        <a
+            href="{{ route('seller.products.index') }}"
+            class="sb-seller-taskbar-link
+                {{ $sellerProductsActive ? 'active' : '' }}"
+            title="Products"
+        >
+
+            <i class="fa-solid fa-box-open"></i>
+
+            <span>
+                Products
+            </span>
+
+        </a>
+
+
+        {{-- ORDERS --}}
+
+        <a
+            href="{{ route('seller.orders.index') }}"
+            class="sb-seller-taskbar-link
+                {{ $sellerOrdersActive ? 'active' : '' }}"
+            title="Orders"
+        >
+
+            <i class="fa-solid fa-cart-shopping"></i>
+
+            <span>
+                Orders
+            </span>
+
+        </a>
+
+
+        {{-- PAYMENTS --}}
+
+        <a
+            href="{{ route('seller.payments.index') }}"
+            class="sb-seller-taskbar-link
+                {{ $sellerPaymentsActive ? 'active' : '' }}"
+            title="Payments"
+        >
+
+            <i class="fa-solid fa-credit-card"></i>
+
+            <span>
+                Payments
+            </span>
+
+        </a>
+
+
+        {{-- PROFILE --}}
+
+        <a
+            href="{{ route('seller.profile') }}"
+            class="sb-seller-taskbar-link
+                {{ $sellerCurrentRoute === 'seller.profile' ? 'active' : '' }}"
+            title="Profile"
+        >
+
+            <i class="fa-solid fa-user"></i>
+
+            <span>
+                Profile
+            </span>
+
+        </a>
+
+
+        {{-- SETTINGS --}}
+
+        <a
+            href="{{ route('seller.settings') }}"
+            class="sb-seller-taskbar-link
+                {{ $sellerCurrentRoute === 'seller.settings' ? 'active' : '' }}"
+            title="Settings"
+        >
+
+            <i class="fa-solid fa-gear"></i>
+
+            <span>
+                Settings
+            </span>
+
+        </a>
+
+
+        {{-- VERIFICATION --}}
+
+        <a
+            href="{{ route('seller.verification.index') }}"
+            class="sb-seller-taskbar-link
+                {{ $sellerVerificationActive ? 'active' : '' }}"
+            title="Seller Verification"
+        >
+
+            <i class="fa-solid fa-shield-halved"></i>
+
+            <span>
+                Verification
+            </span>
+
+        </a>
+
+    </div>
+
+
+    {{-- ADD PRODUCT --}}
+
+    <a
+        href="{{ route('seller.product.add') }}"
+        class="sb-seller-taskbar-add"
+        title="Add Product"
+    >
+
+        <i class="fa-solid fa-plus"></i>
+
+        <span>
+            Add Product
+        </span>
+
+    </a>
+
+
+    {{-- THREE DOT MENU --}}
+
+    <div
+        class="sb-seller-taskbar-more"
+        id="sellerTaskbarMore"
+    >
+
+        <button
+            type="button"
+            class="sb-seller-taskbar-more-btn"
+            id="sellerTaskbarMoreButton"
+            aria-label="More Seller Options"
+            aria-expanded="false"
+            title="More"
+        >
+
+            <i class="fa-solid fa-ellipsis-vertical"></i>
+
+        </button>
+
+
+        <div
+            class="sb-seller-taskbar-dropdown"
+            id="sellerTaskbarDropdown"
+        >
+
+            <div class="sb-taskbar-dropdown-title">
+                Seller Quick Menu
+            </div>
+
+
+            {{-- ADD PRODUCT --}}
+
+            <a
+                href="{{ route('seller.product.add') }}"
+                class="sb-taskbar-dropdown-link"
+            >
+
+                <i class="fa-solid fa-plus"></i>
+
+                <span>
+                    Add New Product
+                </span>
+
+            </a>
+
+
+            {{-- VERIFICATION --}}
+
+            <a
+                href="{{ route('seller.verification.index') }}"
+                class="sb-taskbar-dropdown-link"
+            >
+
+                <i class="fa-solid fa-shield-halved"></i>
+
+                <span>
+                    Seller Verification
+                </span>
+
+            </a>
+
+
+            {{-- PROFILE --}}
+
+            <a
+                href="{{ route('seller.profile') }}"
+                class="sb-taskbar-dropdown-link"
+            >
+
+                <i class="fa-solid fa-user"></i>
+
+                <span>
+                    My Profile
+                </span>
+
+            </a>
+
+
+            {{-- SETTINGS --}}
+
+            <a
+                href="{{ route('seller.settings') }}"
+                class="sb-taskbar-dropdown-link"
+            >
+
+                <i class="fa-solid fa-gear"></i>
+
+                <span>
+                    Seller Settings
+                </span>
+
+            </a>
+
+
+            <div class="sb-taskbar-dropdown-divider"></div>
+
+
+            {{-- LOGOUT --}}
+
+            <form
+                method="POST"
+                action="{{ route('seller.logout') }}"
+            >
+
+                @csrf
+
+                <button
+                    type="submit"
+                    class="sb-taskbar-dropdown-link sb-taskbar-dropdown-logout"
+                >
+
+                    <i class="fa-solid fa-right-from-bracket"></i>
+
+                    <span>
+                        Logout
+                    </span>
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</nav>
+
+
 <div class="seller-verification-page">
 
     <div class="seller-verification-container">
 
 
         {{-- =====================================================
-             TOP BAR
+             OLD TOP BAR
+             Hidden because common Seller taskbar is now used.
         ====================================================== --}}
 
         <div class="seller-verification-topbar">
@@ -1423,6 +2648,77 @@
 <script
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
 ></script>
+
+
+{{-- =========================================================
+     SELLER TASKBAR 3-DOTS MENU
+========================================================== --}}
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    const moreWrapper =
+        document.getElementById('sellerTaskbarMore');
+
+    const moreButton =
+        document.getElementById('sellerTaskbarMoreButton');
+
+
+    if (!moreWrapper || !moreButton) {
+        return;
+    }
+
+
+    moreButton.addEventListener('click', function (event) {
+
+        event.stopPropagation();
+
+        const isOpen =
+            moreWrapper.classList.toggle('open');
+
+        moreButton.setAttribute(
+            'aria-expanded',
+            isOpen ? 'true' : 'false'
+        );
+
+    });
+
+
+    document.addEventListener('click', function (event) {
+
+        if (!moreWrapper.contains(event.target)) {
+
+            moreWrapper.classList.remove('open');
+
+            moreButton.setAttribute(
+                'aria-expanded',
+                'false'
+            );
+
+        }
+
+    });
+
+
+    document.addEventListener('keydown', function (event) {
+
+        if (event.key === 'Escape') {
+
+            moreWrapper.classList.remove('open');
+
+            moreButton.setAttribute(
+                'aria-expanded',
+                'false'
+            );
+
+        }
+
+    });
+
+});
+
+</script>
 
 
 {{-- =========================================================
