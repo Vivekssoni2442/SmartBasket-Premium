@@ -1,0 +1,180 @@
+(function () {
+
+    'use strict';
+
+    const STORAGE_KEY = 'smartbasket-theme';
+
+    function getSavedTheme() {
+
+        const saved = localStorage.getItem(STORAGE_KEY);
+
+        if (
+            saved === 'light' ||
+            saved === 'dark' ||
+            saved === 'system'
+        ) {
+            return saved;
+        }
+
+        return 'system';
+    }
+
+
+    function getSystemTheme() {
+
+        return window.matchMedia &&
+            window.matchMedia(
+                '(prefers-color-scheme: dark)'
+            ).matches
+            ? 'dark'
+            : 'light';
+    }
+
+
+    function applyTheme(theme, animate = false) {
+
+        if (
+            theme !== 'light' &&
+            theme !== 'dark' &&
+            theme !== 'system'
+        ) {
+            theme = 'system';
+        }
+
+
+        const finalTheme =
+            theme === 'system'
+                ? getSystemTheme()
+                : theme;
+
+
+        if (animate) {
+            document.documentElement.classList.add(
+                'theme-transition'
+            );
+
+            setTimeout(function () {
+
+                document.documentElement.classList.remove(
+                    'theme-transition'
+                );
+
+            }, 300);
+        }
+
+
+        document.documentElement.setAttribute(
+            'data-theme',
+            finalTheme
+        );
+
+        document.documentElement.setAttribute(
+            'data-sb-theme',
+            finalTheme
+        );
+
+
+        if (document.body) {
+
+            document.body.setAttribute(
+                'data-theme',
+                finalTheme
+            );
+
+            document.body.setAttribute(
+                'data-sb-theme',
+                finalTheme
+            );
+
+        }
+    }
+
+
+    function setTheme(theme) {
+
+        if (
+            !['light', 'dark', 'system'].includes(theme)
+        ) {
+            theme = 'system';
+        }
+
+
+        localStorage.setItem(
+            STORAGE_KEY,
+            theme
+        );
+
+
+        applyTheme(theme, true);
+
+
+        window.dispatchEvent(
+            new CustomEvent(
+                'smartbasket:theme-changed',
+                {
+                    detail: {
+                        theme: theme
+                    }
+                }
+            )
+        );
+    }
+
+
+    window.SmartBasketTheme = {
+
+        set: setTheme,
+
+        get: getSavedTheme,
+
+        apply: function (theme) {
+            applyTheme(theme, true);
+        }
+
+    };
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | APPLY IMMEDIATELY
+    |--------------------------------------------------------------------------
+    */
+
+    applyTheme(
+        getSavedTheme(),
+        false
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | SYSTEM THEME CHANGE
+    |--------------------------------------------------------------------------
+    */
+
+    if (window.matchMedia) {
+
+        const media = window.matchMedia(
+            '(prefers-color-scheme: dark)'
+        );
+
+
+        media.addEventListener(
+            'change',
+            function () {
+
+                if (
+                    getSavedTheme() === 'system'
+                ) {
+
+                    applyTheme('system');
+
+                }
+
+            }
+        );
+
+    }
+
+
+})();

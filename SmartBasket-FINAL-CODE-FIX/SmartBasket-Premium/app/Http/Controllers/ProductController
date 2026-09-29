@@ -1,0 +1,46 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Product;
+use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+
+class ProductController extends Controller
+{
+    public function index(Request $request)
+    {
+        // Show all active products (seller-added products with status=active)
+        // Also includes legacy products (where status is null, treated as active)
+        $query = Product::where(function ($q) {
+            $q->where('status', 'active')->orWhereNull('status');
+        })->latest();
+
+        $search = trim((string) $request->get('search', ''));
+        $category = trim((string) $request->get('category', ''));
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                  ->orWhere('category', 'LIKE', "%{$search}%")
+                  ->orWhere('brand', 'LIKE', "%{$search}%");
+            });
+        }
+
+        if ($category !== '') {
+            $query->where('category', $category);
+        }
+
+        $pagedProducts = $query->paginate(8);
+
+        $categories = Product::query()
+            ->select('category')
+            ->distinct()
+            ->pluck('category')
+            ->filter()
+            ->sort()
+            ->values();
+
+        return view('products.index', compact('pagedProducts', 'categories', 'search', 'category'));
+    }
+}

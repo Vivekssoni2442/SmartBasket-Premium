@@ -1,0 +1,328 @@
+/* ==========================================================================
+   AI Camera Shopping Assistant - Styles
+   SmartBasket-Premium
+   ==========================================================================
+
+   This stylesheet is fully self-contained and scoped under #aiCameraModal.
+   It does NOT affect any existing product card, button, or layout styles.
+   ========================================================================== */
+
+#aiCameraModal .modal-dialog {
+    max-width: 920px;
+    width: 95%;
+}
+
+#aiCameraModal .modal-content {
+    border: 0;
+    border-radius: 1.25rem;
+    overflow: hidden;
+    box-shadow: 0 25px 60px rgba(15, 23, 42, 0.25);
+}
+
+#aiCameraModal .modal-header {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: #fff;
+    border-bottom: 0;
+}
+
+#aiCameraModal .modal-header .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+#aiCameraModal .modal-title {
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+/* ---- Camera stage ---- */
+.ai-camera-stage {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    background: #0f172a;
+    border-radius: 1rem;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ai-camera-stage video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1); /* mirror for natural selfie view */
+}
+
+.ai-camera-stage canvas.ai-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.ai-camera-placeholder {
+    color: #94a3b8;
+    text-align: center;
+    padding: 2rem;
+}
+
+.ai-camera-placeholder i {
+    font-size: 3.5rem;
+    margin-bottom: 0.75rem;
+    display: block;
+}
+
+/* ---- Status / scan line ---- */
+.ai-scan-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #22d3ee, transparent);
+    box-shadow: 0 0 12px #22d3ee;
+    top: 0;
+    animation: aiScan 2s linear infinite;
+    display: none;
+}
+
+.ai-scan-line.active {
+    display: block;
+}
+
+@keyframes aiScan {
+    0%   { top: 0; }
+    50%  { top: 100%; }
+    100% { top: 0; }
+}
+
+/* ---- Status badge ---- */
+.ai-status-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(15, 23, 42, 0.7);
+    color: #e2e8f0;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    backdrop-filter: blur(4px);
+}
+
+.ai-status-badge.live   { background: rgba(34, 197, 94, 0.85); color: #fff; }
+.ai-status-badge.detect { background: rgba(99, 102, 241, 0.85); color: #fff; }
+.ai-status-badge.error  { background: rgba(239, 68, 68, 0.85); color: #fff; }
+
+/* ---- Preference chips ---- */
+.ai-pref-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.ai-pref-chips .ai-chip {
+    border: 1px solid #cbd5e1;
+    background: #fff;
+    color: #475569;
+    border-radius: 999px;
+    padding: 0.3rem 0.85rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.ai-pref-chips .ai-chip:hover {
+    border-color: #6366f1;
+    color: #6366f1;
+}
+
+.ai-pref-chips .ai-chip.active {
+    background: #6366f1;
+    border-color: #6366f1;
+    color: #fff;
+}
+
+/* ---- Analysis summary ---- */
+.ai-analysis-summary {
+    background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 100%);
+    border: 1px solid #c7d2fe;
+    border-radius: 0.85rem;
+    padding: 1rem 1.25rem;
+}
+
+.ai-analysis-summary .ai-tag {
+    display: inline-block;
+    background: #fff;
+    border: 1px solid #c7d2fe;
+    color: #4338ca;
+    border-radius: 999px;
+    padding: 0.2rem 0.7rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin: 0.15rem;
+}
+
+/* ---- Recommendation cards ---- */
+.ai-rec-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+}
+
+.ai-rec-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 0.9rem;
+    overflow: hidden;
+    background: #fff;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.ai-rec-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+}
+
+.ai-rec-card img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    background: #f1f5f9;
+}
+
+.ai-rec-card .ai-rec-body {
+    padding: 0.75rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.ai-rec-card .ai-rec-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 0.15rem;
+    color: #0f172a;
+}
+
+.ai-rec-card .ai-rec-cat {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-bottom: 0.4rem;
+}
+
+.ai-rec-card .ai-rec-price {
+    font-weight: 800;
+    color: #4338ca;
+    margin-bottom: 0.5rem;
+}
+
+.ai-rec-card .ai-rec-reasons {
+    font-size: 0.72rem;
+    color: #475569;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0.6rem 0;
+}
+
+.ai-rec-card .ai-rec-reasons li {
+    padding: 0.15rem 0;
+    line-height: 1.3;
+}
+
+.ai-rec-card .ai-rec-reasons li::before {
+    content: "✓ ";
+    color: #22c55e;
+    font-weight: 700;
+}
+
+.ai-rec-card .ai-rec-link {
+    margin-top: auto;
+    display: inline-block;
+    text-align: center;
+    background: #6366f1;
+    color: #fff;
+    border-radius: 999px;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s ease;
+}
+
+.ai-rec-card .ai-rec-link:hover {
+    background: #4f46e5;
+}
+
+/* ---- Loading spinner ---- */
+.ai-loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 1rem;
+    color: #6366f1;
+}
+
+.ai-loader .spinner-border {
+    width: 3rem;
+    height: 3rem;
+    margin-bottom: 1rem;
+}
+
+/* ---- Privacy note ---- */
+.ai-privacy-note {
+    font-size: 0.75rem;
+    color: #64748b;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 0.6rem;
+    padding: 0.6rem 0.85rem;
+}
+
+.ai-privacy-note i {
+    color: #22c55e;
+}
+
+/* ---- Trigger button (added to products page) ---- */
+.btn-ai-camera {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: #fff;
+    border: 0;
+    border-radius: 999px;
+    padding: 0.6rem 1.4rem;
+    font-weight: 700;
+    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.35);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-ai-camera:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(99, 102, 241, 0.45);
+    color: #fff;
+}
+
+.btn-ai-camera i {
+    margin-right: 0.4rem;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 640px) {
+    #aiCameraModal .modal-dialog {
+        max-width: 98%;
+        margin: 0.5rem;
+    }
+
+    .ai-rec-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
+
+    .ai-camera-stage {
+        aspect-ratio: 3 / 4;
+    }
+}

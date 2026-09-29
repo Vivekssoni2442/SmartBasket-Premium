@@ -1,0 +1,810 @@
+/* =========================================================
+   SMART BASKET AI HUB
+   PREMIUM LIGHT / DARK THEME
+   Uses global --sb-* theme variables
+   ========================================================= */
+
+
+/* =========================================================
+   AI HUB VARIABLES
+   ========================================================= */
+
+:root {
+    --hub-accent: var(--sb-primary);
+    --hub-accent-hover: var(--sb-primary-hover);
+
+    --hub-bg: var(--sb-bg);
+    --hub-panel: var(--sb-bg-secondary);
+    --hub-card: var(--sb-card);
+    --hub-card-hover: var(--sb-card-hover);
+
+    --hub-text: var(--sb-text);
+    --hub-muted: var(--sb-text-secondary);
+    --hub-border: var(--sb-border);
+
+    --hub-shadow: var(--sb-shadow);
+}
+
+
+/* =========================================================
+   MAIN AI HUB PAGE
+   ========================================================= */
+
+.ai-hub-full-page,
+.ai-hub-layout {
+    min-height: 100vh;
+
+    background:
+        radial-gradient(
+            circle at 100% 0%,
+            color-mix(
+                in srgb,
+                var(--hub-accent) 15%,
+                transparent
+            ),
+            transparent 34%
+        ),
+        radial-gradient(
+            circle at 0% 100%,
+            color-mix(
+                in srgb,
+                var(--hub-accent) 8%,
+                transparent
+            ),
+            transparent 30%
+        ),
+        var(--hub-bg) !important;
+
+    color: var(--hub-text);
+
+    transition:
+        background .25s ease,
+        color .25s ease;
+}
+
+
+.ai-hub-main {
+    min-height: 100vh;
+    padding: 46px clamp(20px, 5vw, 72px);
+}
+
+
+/* =========================================================
+   HEADING
+   ========================================================= */
+
+.ai-hub-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+
+    margin-bottom: 34px;
+}
+
+
+.ai-hub-eyebrow {
+    display: inline-block;
+
+    color: var(--hub-accent);
+
+    font-size: .76rem;
+    font-weight: 800;
+
+    letter-spacing: .16em;
+    text-transform: uppercase;
+
+    margin-bottom: 5px;
+}
+
+
+.ai-hub-heading h1 {
+    margin: 4px 0 8px;
+
+    color: var(--hub-text);
+
+    font-size: clamp(2rem, 3vw, 2.8rem);
+    font-weight: 800;
+
+    letter-spacing: -.035em;
+}
+
+
+.ai-hub-heading p {
+    margin: 0;
+
+    color: var(--hub-muted);
+
+    font-size: .95rem;
+}
+
+
+/* =========================================================
+   BROWSE PRODUCTS BUTTON
+   ========================================================= */
+
+.ai-hub-heading .btn {
+    border-radius: 12px;
+
+    padding: 10px 17px;
+
+    font-weight: 700;
+
+    transition:
+        transform .2s ease,
+        background .2s ease,
+        color .2s ease,
+        border-color .2s ease;
+}
+
+
+.ai-hub-heading .btn:hover {
+    transform: translateY(-2px);
+}
+
+
+/* =========================================================
+   AI TOOL GRID
+   ========================================================= */
+
+.ai-hub-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(235px, 1fr)
+        );
+
+    gap: 19px;
+}
+
+
+/* =========================================================
+   AI TOOL CARD
+   ========================================================= */
+
+.ai-tool-card {
+    min-height: 215px;
+
+    position: relative;
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 24px;
+
+    text-decoration: none;
+
+    color: var(--hub-text) !important;
+
+    background:
+        linear-gradient(
+            145deg,
+            color-mix(
+                in srgb,
+                var(--hub-card) 96%,
+                var(--hub-accent)
+            ),
+            var(--hub-card)
+        ) !important;
+
+    border: 1px solid var(--hub-border);
+
+    border-radius: 20px;
+
+    box-shadow: var(--hub-shadow);
+
+    transition:
+        transform .25s ease,
+        border-color .25s ease,
+        box-shadow .25s ease,
+        background .25s ease;
+}
+
+
+.ai-tool-card:hover {
+    transform: translateY(-7px);
+
+    color: var(--hub-text) !important;
+
+    border-color:
+        color-mix(
+            in srgb,
+            var(--hub-accent) 60%,
+            var(--hub-border)
+        );
+
+    box-shadow:
+        0 20px 50px
+        color-mix(
+            in srgb,
+            var(--hub-accent) 17%,
+            transparent
+        );
+}
+
+
+/* =========================================================
+   CARD DECORATIVE GLOW
+   ========================================================= */
+
+.ai-tool-card::before {
+    content: "";
+
+    position: absolute;
+
+    width: 170px;
+    height: 170px;
+
+    right: -80px;
+    top: -80px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            color-mix(
+                in srgb,
+                var(--hub-accent) 18%,
+                transparent
+            ),
+            transparent 70%
+        );
+
+    pointer-events: none;
+}
+
+
+.ai-tool-card::after {
+    content: "";
+
+    position: absolute;
+
+    width: 130px;
+    height: 130px;
+
+    right: -55px;
+    bottom: -65px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            color-mix(
+                in srgb,
+                var(--hub-accent) 13%,
+                transparent
+            ),
+            transparent 70%
+        );
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   AI TOOL ICON
+   ========================================================= */
+
+.ai-tool-icon {
+    width: 52px;
+    height: 52px;
+
+    display: grid;
+    place-items: center;
+
+    flex-shrink: 0;
+
+    border-radius: 15px;
+
+    background:
+        color-mix(
+            in srgb,
+            var(--hub-accent) 11%,
+            var(--hub-panel)
+        );
+
+    border: 1px solid
+        color-mix(
+            in srgb,
+            var(--hub-accent) 20%,
+            var(--hub-border)
+        );
+
+    color: var(--hub-accent);
+
+    font-size: 1.35rem;
+
+    margin-bottom: auto;
+
+    box-shadow:
+        inset 0 1px 0
+        rgba(255,255,255,.08);
+
+    transition:
+        transform .25s ease,
+        background .25s ease;
+}
+
+
+.ai-tool-card:hover .ai-tool-icon {
+    transform: scale(1.08) rotate(-3deg);
+
+    background:
+        color-mix(
+            in srgb,
+            var(--hub-accent) 17%,
+            var(--hub-panel)
+        );
+}
+
+
+/* =========================================================
+   CARD TITLE
+   ========================================================= */
+
+.ai-tool-card h2 {
+    position: relative;
+    z-index: 2;
+
+    color: var(--hub-text);
+
+    font-size: 1.08rem;
+    font-weight: 750;
+
+    margin: 22px 0 7px;
+
+    letter-spacing: -.01em;
+}
+
+
+/* =========================================================
+   CARD DESCRIPTION
+   ========================================================= */
+
+.ai-tool-card p {
+    position: relative;
+    z-index: 2;
+
+    color: var(--hub-muted);
+
+    font-size: .87rem;
+
+    line-height: 1.55;
+
+    margin: 0;
+
+    padding-right: 18px;
+}
+
+
+/* =========================================================
+   CARD ARROW
+   ========================================================= */
+
+.ai-tool-arrow {
+    position: absolute;
+
+    right: 22px;
+    bottom: 21px;
+
+    z-index: 3;
+
+    color: var(--hub-accent);
+
+    font-size: .9rem;
+
+    transition:
+        transform .25s ease;
+}
+
+
+.ai-tool-card:hover .ai-tool-arrow {
+    transform: translateX(5px);
+}
+
+
+/* =========================================================
+   COMMON AI PANELS
+   ========================================================= */
+
+.ai-panel {
+    background:
+        var(--hub-card) !important;
+
+    color:
+        var(--hub-text) !important;
+
+    border:
+        1px solid var(--hub-border);
+
+    border-radius: 20px;
+
+    padding: 24px;
+
+    box-shadow:
+        var(--hub-shadow);
+
+    transition:
+        background .25s ease,
+        color .25s ease,
+        border-color .25s ease;
+}
+
+
+/* =========================================================
+   PRODUCT GRID
+   ========================================================= */
+
+.ai-product-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fill,
+            minmax(210px, 1fr)
+        );
+
+    gap: 18px;
+}
+
+
+/* =========================================================
+   PRODUCT CARD
+   ========================================================= */
+
+.ai-product-card {
+    overflow: hidden;
+
+    background:
+        var(--hub-card) !important;
+
+    color:
+        var(--hub-text) !important;
+
+    border:
+        1px solid var(--hub-border);
+
+    border-radius: 16px;
+
+    box-shadow:
+        0 10px 30px
+        color-mix(
+            in srgb,
+            var(--hub-text) 5%,
+            transparent
+        );
+
+    transition:
+        transform .2s ease,
+        border-color .2s ease,
+        box-shadow .2s ease;
+}
+
+
+.ai-product-card:hover {
+    transform: translateY(-4px);
+
+    border-color:
+        color-mix(
+            in srgb,
+            var(--hub-accent) 50%,
+            var(--hub-border)
+        );
+}
+
+
+.ai-product-card img {
+    width: 100%;
+    height: 160px;
+
+    object-fit: cover;
+
+    background:
+        var(--hub-panel);
+}
+
+
+.ai-product-card-body {
+    padding: 15px;
+}
+
+
+.ai-product-card h3 {
+    color: var(--hub-text);
+
+    font-size: 1rem;
+
+    margin: 0 0 5px;
+}
+
+
+.ai-product-card p {
+    margin: 0 0 12px;
+
+    color: var(--hub-muted);
+
+    font-size: .84rem;
+}
+
+
+.ai-price {
+    color: var(--sb-success);
+
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+.ai-empty {
+    padding: 42px 20px;
+
+    text-align: center;
+
+    color: var(--hub-muted);
+}
+
+
+.ai-empty i {
+    display: block;
+
+    font-size: 2.3rem;
+
+    color: var(--hub-accent);
+
+    margin-bottom: 12px;
+}
+
+
+/* =========================================================
+   UPLOAD ZONE
+   ========================================================= */
+
+.ai-upload-zone {
+    min-height: 220px;
+
+    display: grid;
+    place-items: center;
+
+    border:
+        2px dashed
+        color-mix(
+            in srgb,
+            var(--hub-muted) 45%,
+            var(--hub-border)
+        );
+
+    border-radius: 18px;
+
+    background:
+        var(--hub-panel);
+
+    color:
+        var(--hub-text);
+
+    text-align: center;
+
+    cursor: pointer;
+
+    transition:
+        border-color .2s ease,
+        background .2s ease;
+}
+
+
+.ai-upload-zone:hover {
+    border-color:
+        var(--hub-accent);
+
+    background:
+        color-mix(
+            in srgb,
+            var(--hub-accent) 5%,
+            var(--hub-panel)
+        );
+}
+
+
+.ai-upload-zone i {
+    color: var(--hub-accent);
+
+    font-size: 2.4rem;
+}
+
+
+/* =========================================================
+   AI PREVIEW
+   ========================================================= */
+
+.ai-preview {
+    display: none;
+
+    width: 100%;
+    max-height: 300px;
+
+    object-fit: contain;
+
+    border-radius: 15px;
+
+    background:
+        var(--hub-panel);
+}
+
+
+/* =========================================================
+   COMPARE TABLE
+   ========================================================= */
+
+.ai-compare-table {
+    --bs-table-bg: transparent;
+    --bs-table-color: var(--hub-text);
+    --bs-table-border-color: var(--hub-border);
+
+    color: var(--hub-text) !important;
+}
+
+
+.ai-compare-table th,
+.ai-compare-table td {
+    color: var(--hub-text) !important;
+
+    border-color:
+        var(--hub-border) !important;
+}
+
+
+.ai-compare-table img {
+    width: 100px;
+    height: 100px;
+
+    object-fit: cover;
+
+    border-radius: 12px;
+}
+
+
+/* =========================================================
+   OCCASION BUTTON
+   ========================================================= */
+
+.ai-occasion-btn {
+    min-width: 130px;
+
+    border-radius: 12px;
+
+    transition:
+        transform .2s ease,
+        background .2s ease;
+}
+
+
+.ai-occasion-btn:hover {
+    transform: translateY(-2px);
+}
+
+
+/* =========================================================
+   BOOTSTRAP BUTTON THEME SUPPORT
+   ========================================================= */
+
+.ai-hub-layout .btn-outline-primary {
+    color: var(--hub-accent);
+
+    border-color:
+        var(--hub-accent);
+}
+
+
+.ai-hub-layout .btn-outline-primary:hover {
+    color: #fff;
+
+    background:
+        var(--hub-accent);
+
+    border-color:
+        var(--hub-accent);
+}
+
+
+/* =========================================================
+   DARK MODE
+   ========================================================= */
+
+html[data-theme="dark"] {
+
+    color-scheme: dark;
+
+}
+
+
+/* =========================================================
+   LIGHT MODE
+   ========================================================= */
+
+html[data-theme="light"] {
+
+    color-scheme: light;
+
+}
+
+
+/* =========================================================
+   THEME TRANSITION
+   ========================================================= */
+
+html.theme-transition .ai-hub-layout,
+html.theme-transition .ai-tool-card,
+html.theme-transition .ai-panel,
+html.theme-transition .ai-product-card,
+html.theme-transition .ai-upload-zone,
+html.theme-transition .ai-tool-icon {
+
+    transition:
+        background .25s ease,
+        color .25s ease,
+        border-color .25s ease,
+        box-shadow .25s ease,
+        transform .25s ease !important;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 850px) {
+
+    .ai-hub-full-page,
+    .ai-hub-main {
+        padding: 30px 18px;
+    }
+
+    .ai-hub-heading {
+        display: block;
+
+        margin-bottom: 26px;
+    }
+
+    .ai-hub-heading .btn {
+        margin-top: 16px;
+    }
+
+}
+
+
+@media (max-width: 520px) {
+
+    .ai-hub-main {
+        padding: 24px 14px;
+    }
+
+    .ai-hub-heading h1 {
+        font-size: 1.9rem;
+    }
+
+    .ai-hub-heading p {
+        font-size: .88rem;
+    }
+
+    .ai-hub-grid {
+        grid-template-columns: 1fr;
+
+        gap: 14px;
+    }
+
+    .ai-tool-card {
+        min-height: 200px;
+
+        padding: 20px;
+
+        border-radius: 17px;
+    }
+
+}

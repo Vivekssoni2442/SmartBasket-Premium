@@ -1,0 +1,1133 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\SellerProfile;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+
+class SellerVerificationController extends Controller
+{
+    private const MAX_ATTEMPTS = 5;
+
+    private const CODE_EXPIRY_MINUTES = 10;
+
+    /*
+    |--------------------------------------------------------------------------
+    | Current Seller
+    |--------------------------------------------------------------------------
+    |
+    | NEVER use a fixed seller ID.
+    | Every verification operation belongs to session('seller_id').
+    |
+    */
+
+    private function currentSeller(): SellerProfile
+    {
+        abort_unless(
+            session()->has('seller_login')
+            && session()->has('seller_id'),
+            403,
+            'Please login as seller first.'
+        );
+
+        $sellerId = (int) session('seller_id');
+
+        abort_if(
+            $sellerId <= 0,
+            403,
+            'Invalid seller session.'
+        );
+
+        return SellerProfile::findOrFail($sellerId);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | STEP 1 - EMAIL
+    |--------------------------------------------------------------------------
+    */
+
+    public function emailForm()
+    {
+        $seller = $this->currentSeller();
+
+        /*
+         * If this seller already verified email,
+         * do not show email step again.
+         */
+        if (
+            $seller->email_verified_at
+            && $seller->verification_status !== SellerProfile::STATUS_PENDING_EMAIL
+        ) {
+            return $this->redirectToCurrentStep($seller);
+        }
+
+        return view(
+            'seller.verification.email',
+            compact('seller')
+        );
+    }
+
+    /**
+     * Send 16 digit email verification code.
+     */
+    public function sendEmailCode(Request $request)
+    {
+        $seller = $this->currentSeller();
+
+        /*
+         * Do not send email verification for another seller.
+         */
+        if ($seller->email_verified_at) {
+            return $this->redirectToCurrentStep($seller)
+                ->with('info', 'Your email is already verified.');
+        }
+
+        /*
+         * 16 digit numeric code.
+         */
+        $code = '';
+
+        for ($i = 0; $i < 16; $i++) {
+            $code .= random_int(0, 9);
+        }
+
+        $seller->forceFill([
+            'email_code_hash' => Hash::make($code),
+            'email_code_expires_at' => now()->addMinutes(
+                self::CODE_EXPIRY_MINUTES
+            ),
+            'email_code_attempts' => 0,
+            'email_code_sent_at' => now(),
+            'verification_status' => SellerProfile::STATUS_PENDING_EMAIL,
+            'onboarding_step' => 1,
+        ])->save();
+
+        /*
+         * Send only to THIS seller's registered email.
+         */
+        try {
+            Mail::raw(
+                "SMART BASKET PREMIUM\n\n"
+                . "Seller Email Verification\n\n"
+                . "Hello {$seller->seller_name},\n\n"
+                . "Your seller verification code is:\n\n"
+                . "{$code}\n\n"
+                . "This code is valid for "
+                . self::CODE_EXPIRY_MINUTES
+                . " minutes.\n\n"
+                . "Do not share this code with anyone.",
+                function ($message) use ($seller) {
+                    $message
+                        ->to($seller->email)
+                        ->subject(
+                            'SMART BASKET - Seller Email Verification Code'
+                        );
+                }
+            );
+        } catch (\Throwable $e) {
+            $seller->forceFill([
+                'email_code_hash' => null,
+                'email_code_expires_at' => null,
+                'email_code_sent_at' => null,
+            ])->save();
+
+            report($e);
+
+            return back()->with(
+                'error',
+                'Unable to send verification email. Please try again.'
+            );
+        }
+
+        return back()->with(
+            'success',
+            'A 16-digit verification code has been sent to your registered email.'
+        );
+    }
+
+    /**
+     * Verify email code.
+     */
+    public function verifyEmailCode(Request $request)
+    {
+        $seller = $this->currentSeller();
+
+        $validated = $request->validate([
+            'code' => [
+                'required',
+                'digits:16',
+            ],
+        ]);
+
+        if ($seller->email_verified_at) {
+            return $this->redirectToCurrentStep($seller)
+                ->with('info', 'Email is already verified.');
+        }
+
+        if (
+            ! $seller->email_code_hash
+            || ! $seller->email_code_expires_at
+            || now()->greaterThan($seller->email_code_expires_at)
+        ) {
+            $seller->forceFill([
+                'email_code_hash' => null,
+                'email_code_expires_at' => null,
+                'email_code_attempts' => 0,
+            ])->save();
+
+            return back()->with(
+                'error',
+                'Verification code expired. Please request a new code.'
+            );
+        }
+
+        if (
+            (int) $seller->email_code_attempts
+            >= self::MAX_ATTEMPTS
+        ) {
+            $seller->forceFill([
+                'email_code_hash' => null,
+                'email_code_expires_at' => null,
+                'email_code_attempts' => 0,
+            ])->save();
+
+            return back()->with(
+                'error',
+                'Too many invalid attempts. Please request a new code.'
+            );
+        }
+
+        if (
+            ! Hash::check(
+                (string) $validated['code'],
+                (string) $seller->email_code_hash
+            )
+        ) {
+            $seller->increment('email_code_attempts');
+
+            return back()->with(
+                'error',
+                'Invalid verification code.'
+            );
+        }
+
+        /*
+         * SUCCESS.
+         *
+         * Code becomes one-time use because hash is deleted.
+         */
+        $seller->forceFill([
+            'email_verified_at' => now(),
+            'email_code_hash' => null,
+            'email_code_expires_at' => null,
+            'email_code_attempts' => 0,
+            'onboarding_step' => 2,
+            'verification_status' =>
+                SellerProfile::STATUS_EMAIL_VERIFIED,
+        ])->save();
+
+        return redirect()
+            ->route('seller.documents')
+            ->with(
+                'success',
+                'Email verified successfully. Now upload your documents.'
+            );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | STEP 2 - DOCUMENTS
+    |--------------------------------------------------------------------------
+    */
+
+    public function documentsForm()
+    {
+        $seller = $this->currentSeller();
+
+        /*
+         * Email must be verified first.
+         */
+        if (! $seller->email_verified_at) {
+            return redirect()
+                ->route('seller.verification.email')
+                ->with(
+                    'error',
+                    'Please verify your email first.'
+                );
+        }
+
+        /*
+         * If application is already submitted, status page.
+         */
+        if (
+            $seller->verification_status
+            === SellerProfile::STATUS_PENDING_ADMIN_REVIEW
+        ) {
+            return redirect()
+                ->route('seller.verification.status');
+        }
+
+       return view(
+    'seller.documents',
+    compact('seller')
+);
+    }
+
+    /**
+     * Upload seller documents.
+     */
+    public function uploadDocument(Request $request)
+    {
+        $seller = $this->currentSeller();
+
+        if (! $seller->email_verified_at) {
+            return redirect()
+                ->route('seller.verification.email')
+                ->with(
+                    'error',
+                    'Please verify your email first.'
+                );
+        }
+
+        $validated = $request->validate([
+            'business_certificate' => [
+                'required',
+                'file',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:5120',
+            ],
+
+            'aadhaar_document' => [
+                'required',
+                'file',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:5120',
+            ],
+
+            'business_type' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+
+            'pan_number' => [
+                'nullable',
+                'string',
+                'max:30',
+            ],
+
+            'udyam_number' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
+        ]);
+
+        /*
+         * Seller-specific storage directories.
+         *
+         * Seller 1:
+         * seller-certificates/1/...
+         *
+         * Seller 2:
+         * seller-certificates/2/...
+         *
+         * Therefore documents can NEVER be mixed.
+         */
+
+        $certificatePath = $request
+            ->file('business_certificate')
+            ->store(
+                "seller-certificates/{$seller->id}",
+                'public'
+            );
+
+        $aadhaarPath = $request
+            ->file('aadhaar_document')
+            ->store(
+                "seller-aadhaar-documents/{$seller->id}",
+                'public'
+            );
+
+        /*
+         * Delete old files belonging to THIS seller only.
+         */
+        if (
+            $seller->business_certificate_path
+            && Storage::disk('public')->exists(
+                $seller->business_certificate_path
+            )
+        ) {
+            Storage::disk('public')->delete(
+                $seller->business_certificate_path
+            );
+        }
+
+        if (
+            $seller->aadhaar_document_path
+            && Storage::disk('public')->exists(
+                $seller->aadhaar_document_path
+            )
+        ) {
+            Storage::disk('public')->delete(
+                $seller->aadhaar_document_path
+            );
+        }
+
+        $seller->forceFill([
+            'business_certificate_path' => $certificatePath,
+            'business_certificate_uploaded_at' => now(),
+
+            'aadhaar_document_path' => $aadhaarPath,
+            'aadhaar_document_uploaded_at' => now(),
+
+            'business_type' => $validated['business_type'],
+
+            'pan_number' => $validated['pan_number'] ?? null,
+            'udyam_number' => $validated['udyam_number'] ?? null,
+
+            'onboarding_step' => 3,
+
+            'verification_status' =>
+                SellerProfile::STATUS_DOCUMENTS_PENDING,
+        ])->save();
+
+        return redirect()
+            ->route('seller.verification.aadhaar')
+            ->with(
+                'success',
+                'Documents uploaded successfully. Continue with Aadhaar verification.'
+            );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | STEP 3 - AADHAAR
+    |--------------------------------------------------------------------------
+    */
+
+    public function aadhaarForm()
+    {
+        $seller = $this->currentSeller();
+
+        if (! $seller->email_verified_at) {
+            return redirect()
+                ->route('seller.verification.email');
+        }
+
+        if (! $seller->business_certificate_path) {
+            return redirect()
+                ->route('seller.documents')
+                ->with(
+                    'error',
+                    'Please upload your business certificate first.'
+                );
+        }
+
+        if (! $seller->aadhaar_document_path) {
+            return redirect()
+                ->route('seller.documents')
+                ->with(
+                    'error',
+                    'Please upload your Aadhaar document first.'
+                );
+        }
+
+        return view(
+            'seller.verification.aadhaar',
+            compact('seller')
+        );
+    }
+
+    /**
+     * Start Aadhaar verification.
+     *
+     * This keeps the existing Aadhaar flow compatible.
+     */
+    public function startAadhaar(Request $request)
+    {
+        $seller = $this->currentSeller();
+
+        if (! $seller->aadhaar_document_path) {
+            return back()->with(
+                'error',
+                'Please upload Aadhaar document first.'
+            );
+        }
+
+        $referenceId = 'SB-AADHAAR-' .
+            strtoupper(Str::random(12));
+
+        $seller->forceFill([
+            'verification_reference_id' => $referenceId,
+            'verification_status' =>
+                SellerProfile::STATUS_AADHAAR_PENDING,
+            'onboarding_step' => 3,
+        ])->save();
+
+        return back()->with(
+            'success',
+            'Aadhaar verification started. Enter your verification details.'
+        );
+    }
+
+    /**
+     * Verify Aadhaar.
+     *
+     * This project does not call a real government Aadhaar API here.
+     * It marks the uploaded Aadhaar verification as complete after
+     * the seller passes the application's verification step.
+     */
+    public function verifyAadhaar(Request $request)
+    {
+        $seller = $this->currentSeller();
+
+        $request->validate([
+            'aadhaar_number' => [
+                'required',
+                'digits:12',
+            ],
+        ]);
+
+        if (! $seller->aadhaar_document_path) {
+            return redirect()
+                ->route('seller.documents')
+                ->with(
+                    'error',
+                    'Please upload Aadhaar document first.'
+                );
+        }
+
+        $seller->forceFill([
+            'aadhaar_verified_at' => now(),
+            'verification_status' =>
+                SellerProfile::STATUS_DOCUMENTS_PENDING,
+            'onboarding_step' => 4,
+        ])->save();
+
+        return redirect()
+            ->route('seller.verification.status')
+            ->with(
+                'success',
+                'Aadhaar verification completed. Your application is ready for submission.'
+            );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | SUBMIT APPLICATION
+    |--------------------------------------------------------------------------
+    */
+
+    public function submitApplication(Request $request)
+    {
+        $seller = $this->currentSeller();
+
+        /*
+         * Required conditions.
+         */
+        if (! $seller->email_verified_at) {
+            return redirect()
+                ->route('seller.verification.email')
+                ->with(
+                    'error',
+                    'Please verify your email first.'
+                );
+        }
+
+        if (
+            ! $seller->business_certificate_path
+            || ! $seller->aadhaar_document_path
+        ) {
+            return redirect()
+                ->route('seller.documents')
+                ->with(
+                    'error',
+                    'Please upload all required documents.'
+                );
+        }
+
+        /*
+         * If Aadhaar verification was requested but not completed,
+         * send seller to Aadhaar step.
+         */
+        if (
+            ! $seller->aadhaar_verified_at
+        ) {
+            return redirect()
+                ->route('seller.verification.aadhaar')
+                ->with(
+                    'error',
+                    'Please complete Aadhaar verification first.'
+                );
+        }
+
+        /*
+         * Submit THIS seller's application.
+         */
+        $seller->forceFill([
+            'verification_status' =>
+                SellerProfile::STATUS_PENDING_ADMIN_REVIEW,
+
+            'verification_submitted_at' => now(),
+
+            'admin_reviewed_at' => null,
+            'admin_reviewed_by' => null,
+            'rejection_reason' => null,
+            'approved_at' => null,
+
+            'onboarding_step' => 5,
+        ])->save();
+
+        /*
+         * Notify admin.
+         */
+        $this->notifyAdmin($seller);
+
+        return redirect()
+            ->route('seller.verification.status')
+            ->with(
+                'success',
+                'Application submitted successfully. Admin will review your application.'
+            );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | STATUS
+    |--------------------------------------------------------------------------
+    */
+
+    public function status()
+    {
+        $seller = $this->currentSeller();
+
+        return view(
+            'seller.verification.status',
+            compact('seller')
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | ACTIVATION
+    |--------------------------------------------------------------------------
+    */
+
+    public function activationForm()
+    {
+        $seller = $this->currentSeller();
+
+        if (
+            $seller->verification_status
+            !== SellerProfile::STATUS_APPROVED
+        ) {
+            return redirect()
+                ->route('seller.verification.status')
+                ->with(
+                    'error',
+                    'Your seller application has not been approved yet.'
+                );
+        }
+
+        return view(
+            'seller.verification.activation',
+            compact('seller')
+        );
+    }
+
+    /**
+     * Verify seller activation code.
+     */
+    public function verifyActivation(Request $request)
+    {
+        $seller = $this->currentSeller();
+
+        $request->validate([
+            'code' => [
+                'required',
+                'digits:16',
+            ],
+        ]);
+
+        if (
+            ! $seller->activation_code_hash
+            || ! $seller->activation_code_expires_at
+            || now()->greaterThan(
+                $seller->activation_code_expires_at
+            )
+        ) {
+            return back()->with(
+                'error',
+                'Activation code expired. Please request a new code.'
+            );
+        }
+
+        if (
+            (int) $seller->activation_attempts
+            >= self::MAX_ATTEMPTS
+        ) {
+            return back()->with(
+                'error',
+                'Too many invalid attempts. Please request a new activation code.'
+            );
+        }
+
+        if (
+            ! Hash::check(
+                (string) $request->code,
+                (string) $seller->activation_code_hash
+            )
+        ) {
+            $seller->increment('activation_attempts');
+
+            return back()->with(
+                'error',
+                'Invalid activation code.'
+            );
+        }
+
+        $seller->forceFill([
+            'activation_code_hash' => null,
+            'activation_code_expires_at' => null,
+            'activation_attempts' => 0,
+            'activation_verified_at' => now(),
+            'onboarding_step' => 6,
+        ])->save();
+
+        /*
+         * Seller remains identified by their own seller ID.
+         */
+        session([
+            'seller_login' => true,
+            'seller_email' => $seller->email,
+            'seller_id' => (int) $seller->id,
+        ]);
+
+        return redirect()
+            ->route('seller.dashboard')
+            ->with(
+                'success',
+                'Seller account activated successfully.'
+            );
+    }
+
+    /**
+     * Resend activation code.
+     */
+    public function resendActivationCode(Request $request)
+    {
+        $seller = $this->currentSeller();
+
+        if (
+            $seller->verification_status
+            !== SellerProfile::STATUS_APPROVED
+        ) {
+            return back()->with(
+                'error',
+                'Activation is not available for this seller.'
+            );
+        }
+
+        $code = '';
+
+        for ($i = 0; $i < 16; $i++) {
+            $code .= random_int(0, 9);
+        }
+
+        $seller->forceFill([
+            'activation_code_hash' => Hash::make($code),
+            'activation_code_expires_at' =>
+                now()->addMinutes(self::CODE_EXPIRY_MINUTES),
+            'activation_attempts' => 0,
+            'activation_code_sent_at' => now(),
+        ])->save();
+
+        try {
+            Mail::raw(
+                "SMART BASKET PREMIUM\n\n"
+                . "Seller Account Activation\n\n"
+                . "Hello {$seller->seller_name},\n\n"
+                . "Your activation code is:\n\n"
+                . "{$code}\n\n"
+                . "This code is valid for "
+                . self::CODE_EXPIRY_MINUTES
+                . " minutes.",
+                function ($message) use ($seller) {
+                    $message
+                        ->to($seller->email)
+                        ->subject(
+                            'SMART BASKET - Seller Activation Code'
+                        );
+                }
+            );
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with(
+                'error',
+                'Unable to send activation code.'
+            );
+        }
+
+        return back()->with(
+            'success',
+            'Activation code sent to your registered email.'
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | APPLICATION / ONBOARDING PAGES
+    |--------------------------------------------------------------------------
+    */
+
+    public function onboarding()
+    {
+        $seller = $this->currentSeller();
+
+        return view(
+            'seller.onboarding',
+            compact('seller')
+        );
+    }
+
+    public function applicationSummary()
+    {
+        $seller = $this->currentSeller();
+
+        return view(
+            'seller.application-summary',
+            compact('seller')
+        );
+    }
+
+    public function application()
+    {
+        $seller = $this->currentSeller();
+
+        return view(
+            'seller.application',
+            compact('seller')
+        );
+    }
+
+    public function review()
+    {
+        $seller = $this->currentSeller();
+
+        return view(
+            'seller.application-review',
+            compact('seller')
+        );
+    }
+
+    public function documentChecklist()
+    {
+        $seller = $this->currentSeller();
+
+        return view(
+            'seller.documents',
+            compact('seller')
+        );
+    }
+
+    public function businessDetails()
+    {
+        $seller = $this->currentSeller();
+
+        return view(
+            'seller.business-details',
+            compact('seller')
+        );
+    }
+
+    public function updateBusinessDetails(Request $request)
+    {
+        $seller = $this->currentSeller();
+
+        $data = $request->validate([
+            'business_type' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+            'gst_number' => [
+                'nullable',
+                'string',
+                'max:50',
+            ],
+            'pan_number' => [
+                'nullable',
+                'string',
+                'max:30',
+            ],
+            'udyam_number' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
+        ]);
+
+        $seller->update($data);
+
+        return back()->with(
+            'success',
+            'Business details updated successfully.'
+        );
+    }
+
+    public function bankDetails()
+    {
+        $seller = $this->currentSeller();
+
+        return view(
+            'seller.bank-details',
+            compact('seller')
+        );
+    }
+
+    public function updateBankDetails(Request $request)
+    {
+        $seller = $this->currentSeller();
+
+        $data = $request->validate([
+            'bank_account_holder' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+            'bank_account_number' => [
+                'required',
+                'string',
+                'max:50',
+            ],
+            'bank_ifsc' => [
+                'required',
+                'string',
+                'max:20',
+            ],
+            'bank_name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+        ]);
+
+        $seller->update($data);
+
+        return back()->with(
+            'success',
+            'Bank details updated successfully.'
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN NOTIFICATION
+    |--------------------------------------------------------------------------
+    */
+
+    private function notifyAdmin(SellerProfile $seller): void
+    {
+        $adminEmail = config(
+            'mail.admin_address',
+            env(
+                'SELLER_ADMIN_EMAIL',
+                'smartbasket2442@gmail.com'
+            )
+        );
+
+        try {
+            Mail::send(
+                'emails.seller-application',
+                [
+                    'seller' => $seller,
+                ],
+                function ($message) use ($seller, $adminEmail) {
+                    $message
+                        ->to($adminEmail)
+                        ->subject(
+                            'SMART BASKET - New Seller Application #'
+                            . $seller->id
+                        );
+
+                    /*
+                     * Attach THIS seller's documents only.
+                     */
+                    if (
+                        $seller->business_certificate_path
+                        && Storage::disk('public')->exists(
+                            $seller->business_certificate_path
+                        )
+                    ) {
+                        $message->attach(
+                            Storage::disk('public')
+                                ->path(
+                                    $seller->business_certificate_path
+                                ),
+                            [
+                                'as' =>
+                                    'seller-' .
+                                    $seller->id .
+                                    '-business-certificate.' .
+                                    pathinfo(
+                                        $seller->business_certificate_path,
+                                        PATHINFO_EXTENSION
+                                    ),
+                            ]
+                        );
+                    }
+
+                    if (
+                        $seller->aadhaar_document_path
+                        && Storage::disk('public')->exists(
+                            $seller->aadhaar_document_path
+                        )
+                    ) {
+                        $message->attach(
+                            Storage::disk('public')
+                                ->path(
+                                    $seller->aadhaar_document_path
+                                ),
+                            [
+                                'as' =>
+                                    'seller-' .
+                                    $seller->id .
+                                    '-aadhaar.' .
+                                    pathinfo(
+                                        $seller->aadhaar_document_path,
+                                        PATHINFO_EXTENSION
+                                    ),
+                            ]
+                        );
+                    }
+                }
+            );
+
+            $seller->forceFill([
+                'admin_notification_status' => 'sent',
+                'admin_notification_sent_at' => now(),
+                'admin_notification_failed_at' => null,
+            ])->save();
+        } catch (\Throwable $e) {
+            report($e);
+
+            $seller->forceFill([
+                'admin_notification_status' => 'failed',
+                'admin_notification_failed_at' => now(),
+            ])->save();
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | STEP ROUTER
+    |--------------------------------------------------------------------------
+    */
+
+    private function redirectToCurrentStep(SellerProfile $seller)
+    {
+        /*
+         * Active seller.
+         */
+        if ($seller->isActive()) {
+            return redirect()->route('seller.dashboard');
+        }
+
+        /*
+         * Rejected.
+         */
+        if (
+            $seller->verification_status
+            === SellerProfile::STATUS_REJECTED
+        ) {
+            return redirect()->route(
+                'seller.verification.status'
+            );
+        }
+
+        /*
+         * Suspended.
+         */
+        if (
+            $seller->verification_status
+            === SellerProfile::STATUS_SUSPENDED
+        ) {
+            return redirect()->route(
+                'seller.verification.status'
+            );
+        }
+
+        /*
+         * Email.
+         */
+        if (
+            ! $seller->email_verified_at
+            || $seller->verification_status
+            === SellerProfile::STATUS_PENDING_EMAIL
+        ) {
+            return redirect()->route(
+                'seller.verification.email'
+            );
+        }
+
+        /*
+         * Documents.
+         */
+        if (
+            ! $seller->business_certificate_path
+            || ! $seller->aadhaar_document_path
+        ) {
+            return redirect()->route(
+                'seller.documents'
+            );
+        }
+
+        /*
+         * Aadhaar.
+         */
+        if (
+            ! $seller->aadhaar_verified_at
+        ) {
+            return redirect()->route(
+                'seller.verification.aadhaar'
+            );
+        }
+
+        /*
+         * Admin review.
+         */
+        if (
+            $seller->verification_status
+            === SellerProfile::STATUS_PENDING_ADMIN_REVIEW
+        ) {
+            return redirect()->route(
+                'seller.verification.status'
+            );
+        }
+
+        /*
+         * Approval.
+         */
+        if (
+            $seller->verification_status
+            === SellerProfile::STATUS_APPROVED
+        ) {
+            return redirect()->route(
+                'seller.activation'
+            );
+        }
+
+        return redirect()->route(
+            'seller.verification.status'
+        );
+    }
+}

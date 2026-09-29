@@ -1,0 +1,32 @@
+/* Smart Basket customer theme foundation. Page-specific styles can consume these tokens. */
+:root {
+    --sb-bg-primary:#f5f7fb;
+    --sb-bg-secondary:#eef3f9;
+    --sb-card-bg:#ffffff;
+    --sb-text-primary:#14213d;
+    --sb-text-secondary:#64748b;
+    --sb-border-color:#dbe4ef;
+    --sb-primary-color:#2563eb;
+    --sb-shadow:0 16px 42px rgba(15,23,42,.10);
+    color-scheme:light;
+}
+html[data-theme="dark"],html[data-sb-theme="dark"] {
+    --sb-bg-primary:#07111f;
+    --sb-bg-secondary:#0d1b2d;
+    --sb-card-bg:#101d30;
+    --sb-text-primary:#f1f5f9;
+    --sb-text-secondary:#a8b6c9;
+    --sb-border-color:#26364c;
+    --sb-primary-color:#60a5fa;
+    --sb-shadow:0 18px 48px rgba(0,0,0,.35);
+    color-scheme:dark;
+}
+html,body{background-color:var(--sb-bg-primary);color:var(--sb-text-primary);transition:background-color .25s ease,color .25s ease,border-color .25s ease}
+body :where(.card,.modal-content,.dropdown-menu,.offcanvas,.table-responsive){border-color:var(--sb-border-color)}
+html[data-theme="dark"] body :where(.card,.modal-content,.dropdown-menu,.offcanvas){background-color:var(--sb-card-bg);color:var(--sb-text-primary)}
+html[data-theme="dark"] body :where(.form-control,.form-select){background-color:var(--sb-bg-secondary);border-color:var(--sb-border-color);color:var(--sb-text-primary)}
+html[data-theme="dark"] body :where(.form-control,.form-select)::placeholder{color:var(--sb-text-secondary)}
+html[data-theme="dark"] body :where(.table){--bs-table-bg:transparent;--bs-table-color:var(--sb-text-primary);--bs-table-border-color:var(--sb-border-color)}
+body :where(button,a,.card,.form-control,.form-select){transition:background-color .25s ease,color .25s ease,border-color .25s ease,box-shadow .25s ease,transform .25s ease}
+body :where(button,a,input,select,textarea):focus-visible{outline:3px solid color-mix(in srgb,var(--sb-primary-color) 42%,transparent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important}}
