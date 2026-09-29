@@ -258,6 +258,9 @@ class ProductController extends Controller
     /** Display the selected real product with its own images and seller. */
     public function show(Product $product)
     {
+        // A guessed product URL must not expose listings the seller has hidden.
+        abort_if($product->status !== null && $product->status !== 'active', 404);
+
         $product->load([
             'images',
             'seller',

@@ -212,7 +212,7 @@
         {{-- AI HUB --}}
         @if(Route::has('ai.hub'))
             <a
-                href="{{ route('ai.hub') }}"
+                href="{{ route('ai-hub') }}"
                 class="sb-menu-item"
             >
                 <i class="fa-solid fa-wand-magic-sparkles"></i>

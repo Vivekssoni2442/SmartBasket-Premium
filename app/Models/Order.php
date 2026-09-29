@@ -40,6 +40,16 @@ class Order extends Model
         return $this->belongsTo(SellerProfile::class, 'seller_id');
     }
 
+    public function payments()
+    {
+        return $this->belongsToMany(Payment::class)->withTimestamps();
+    }
+
+    public function refunds()
+    {
+        return $this->hasMany(Refund::class);
+    }
+
     public function scopeForSeller($query, int $sellerId)
     {
         return $query->where(function ($orders) use ($sellerId) {

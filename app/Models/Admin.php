@@ -61,6 +61,7 @@ class Admin extends Model
         'timezone',
         'language',
         'dark_mode',
+        'notification_preferences',
         'mfa_enabled',
         'mfa_secret',
         'mfa_recovery_codes',
@@ -85,6 +86,7 @@ class Admin extends Model
      */
     protected $casts = [
         'mfa_enabled' => 'boolean',
+        'notification_preferences' => 'array',
         'mfa_recovery_codes' => 'array',
         'last_login_at' => 'datetime',
         'last_activity_at' => 'datetime',

@@ -165,9 +165,13 @@ return [
 
     'razorpay' => [
 
-        'key' => env('RAZORPAY_KEY'),
+        'mode' => env('RAZORPAY_MODE', 'test'),
 
-        'secret' => env('RAZORPAY_SECRET'),
+        // Prefer Razorpay's documented variable names while retaining the
+        // legacy names already used by existing deployments.
+        'key' => env('RAZORPAY_KEY_ID', env('RAZORPAY_KEY')),
+
+        'secret' => env('RAZORPAY_KEY_SECRET', env('RAZORPAY_SECRET')),
 
         'webhook_secret' => env('RAZORPAY_WEBHOOK_SECRET'),
     ],

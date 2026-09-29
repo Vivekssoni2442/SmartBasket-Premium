@@ -1,0 +1,7129 @@
+﻿
+==================== C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\app\Http\Controllers\SellerController.php ====================
+
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\Product;
+use App\Models\Order;
+use App\Models\SellerProfile;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\Rule;
+
+class SellerController extends Controller
+{
+    /** Show the existing seller login page. */
+    public function showLogin()
+    {
+        return view('auth.seller-login');
+    }
+
+    /** Authenticate a registered seller while preserving seller session keys. */
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        $seller = SellerProfile::where('email', $credentials['email'])->first();
+
+        if (! $seller || ! Hash::check($credentials['password'], $seller->password)) {
+            return back()->withInput($request->only('email'))
+                ->with('error', 'Invalid Seller Login');
+        }
+
+        $request->session()->regenerate();
+        $request->session()->put([
+            'seller_login' => true,
+            'seller_email' => $seller->email,
+            'seller_id' => $seller->id,
+        ]);
+
+        return redirect()->route('seller.dashboard');
+    }
+
+    /** Show the seller account registration page. */
+    public function showRegistration()
+    {
+        return view('auth.seller-register');
+    }
+
+    /** Create a seller profile with a securely hashed password. */
+    public function register(Request $request)
+    {
+        $validated = $request->validate([
+            'seller_name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:seller_profiles,email'],
+            'mobile_number' => ['required', 'string', 'max:20'],
+            'password' => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()->symbols()],
+        ]);
+
+        SellerProfile::create([
+            'seller_name' => $validated['seller_name'],
+            // The existing schema requires a shop name; use the seller name
+            // until the existing profile workflow supplies a separate one.
+            'shop_name' => $validated['seller_name'],
+            'email' => $validated['email'],
+            'mobile_number' => $validated['mobile_number'],
+            'password' => Hash::make($validated['password']),
+        ]);
+
+        return redirect()->route('seller.login')
+            ->with('success', 'Seller account created. Please login.');
+    }
+
+    // Seller Dashboard
+   public function dashboard()
+{
+    if(!session()->has('seller_login'))
+    {
+        return redirect()
+        ->route('seller.login')
+        ->with('error','Please login first');
+    }
+
+
+    $seller = $this->currentSeller();
+    $sellerId = $seller->id;
+
+
+    $products = Product::where(
+        'seller_id',
+        $sellerId
+    )
+    ->latest()
+    ->get();
+
+
+    $totalProducts = $products->count();
+
+
+    $sellerOrders = Order::forSeller($sellerId);
+    $totalOrders = (clone $sellerOrders)->count();
+    $pendingOrders = (clone $sellerOrders)->where('status', 'Pending')->count();
+    // Earnings are cash actually recorded as paid, never the value of pending
+    // orders or products merely listed by this seller.
+    $totalRevenue = (clone $sellerOrders)
+        ->whereIn('payment_status', ['Paid', 'Successful'])
+        ->sum('total');
+
+
+    return view(
+        'seller.dashboard',
+        compact(
+            'products',
+            'totalProducts',
+            'totalOrders',
+            'pendingOrders',
+            'totalRevenue',
+            'seller'
+        )
+    );
+
+}
+
+    /** Display only the profile associated with the authenticated seller session. */
+    public function profile()
+    {
+        $seller = $this->currentSeller();
+
+        return view('seller.profile', compact('seller'));
+    }
+
+    /** Update permitted fields for the authenticated seller only. */
+    public function updateProfile(Request $request)
+    {
+        $seller = $this->currentSeller();
+        $validated = $request->validate([
+            'seller_name' => ['required', 'string', 'max:255'],
+            'shop_name' => ['required', 'string', 'max:255'],
+            'mobile_number' => ['required', 'string', 'max:20'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('seller_profiles', 'email')->ignore($seller->id)],
+            'shop_logo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
+        ]);
+
+        if ($request->hasFile('shop_logo')) {
+            $validated['shop_logo'] = $request->file('shop_logo')->store('seller-logos', 'public');
+        }
+
+        $seller->update($validated);
+        session(['seller_email' => $seller->email]);
+
+        return redirect()->route('seller.profile')->with('success', 'Seller profile updated successfully.');
+    }
+
+    /** Show only products owned by the authenticated seller. */
+    public function myProducts()
+    {
+        $seller = $this->currentSeller();
+        $products = Product::where('seller_id', $seller->id)->with('images')->latest()->get();
+
+        return view('seller.my-products', compact('products'));
+    }
+
+    private function currentSeller(): SellerProfile
+    {
+        abort_unless(session('seller_login') && session('seller_id'), 403);
+
+        return SellerProfile::findOrFail((int) session('seller_id'));
+    }
+
+    // Show Add Product Form
+    public function create()
+    {
+        if (!session()->has('seller_login')) {
+            return redirect()->route('seller.login');
+        }
+
+        $this->currentSeller();
+
+        return view('seller.add-product');
+    }
+
+    // Store Product
+    public function store(Request $request)
+    {
+        if (!session('seller_login')) {
+            return redirect('/seller-login');
+        }
+
+        $sellerId = $this->currentSeller()->id;
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'category' => 'required|string|max:255',
+            'brand' => 'nullable|string|max:255',
+            'price' => 'required|numeric|min:0',
+            'discount_price' => 'nullable|numeric|min:0',
+            'description' => 'nullable|string',
+            'image' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'rating' => 'nullable|numeric|min:0|max:5',
+            'stock' => 'required|integer|min:0',
+            'size' => 'nullable|string|max:255',
+            'color' => 'nullable|string|max:255',
+            'status' => 'nullable|in:active,inactive',
+        ]);
+
+        $imageName = time() . '.' . $request->image->extension();
+        $request->image->move(public_path('products'), $imageName);
+
+        $product = Product::create([
+            // Ownership always comes from the authenticated seller session,
+            // never from form input or a fallback/default seller.
+            'seller_id' => $sellerId,
+            'name' => $request->name,
+            'category' => $request->category,
+            'brand' => $request->brand,
+            'description' => $request->description,
+            'image' => $imageName,
+            'price' => $request->price,
+            'discount_price' => $request->discount_price,
+            'rating' => $request->rating ?? 4.5,
+            'stock' => $request->stock,
+            'size' => $request->size,
+            'color' => $request->color,
+            'status' => $request->status ?? 'active',
+        ]);
+
+        $this->storeAdditionalImages($request, $product);
+
+        return redirect('/seller-dashboard')->with('success', 'Product Added Successfully ðŸš€');
+    }
+
+    // Show Edit Product Form
+    public function edit($id)
+    {
+        if (!session('seller_login')) {
+            return redirect('/seller-login');
+        }
+
+        $product = Product::where('seller_id', $this->currentSeller()->id)->with('images')->findOrFail($id);
+
+        return view('seller.edit-product', compact('product'));
+    }
+
+    // Update Product
+    public function update(Request $request, $id)
+    {
+        if (!session('seller_login')) {
+            return redirect('/seller-login');
+        }
+
+        $product = Product::where('seller_id', $this->currentSeller()->id)->findOrFail($id);
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'category' => 'required|string|max:255',
+            'brand' => 'nullable|string|max:255',
+            'price' => 'required|numeric|min:0',
+            'discount_price' => 'nullable|numeric|min:0',
+            'description' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'rating' => 'nullable|numeric|min:0|max:5',
+            'stock' => 'required|integer|min:0',
+            'size' => 'nullable|string|max:255',
+            'color' => 'nullable|string|max:255',
+            'status' => 'nullable|in:active,inactive',
+        ]);
+
+        $data = [
+            'name' => $request->name,
+            'category' => $request->category,
+            'brand' => $request->brand,
+            'description' => $request->description,
+            'price' => $request->price,
+            'discount_price' => $request->discount_price,
+            'rating' => $request->rating ?? 4.5,
+            'stock' => $request->stock,
+            'size' => $request->size,
+            'color' => $request->color,
+            'status' => $request->status ?? 'active',
+        ];
+
+        if ($request->hasFile('image')) {
+            $imageName = time() . '.' . $request->image->extension();
+            $request->image->move(public_path('products'), $imageName);
+            $data['image'] = $imageName;
+        }
+
+        $product->update($data);
+        $this->storeAdditionalImages($request, $product);
+
+        return redirect('/seller-dashboard')->with('success', 'Product Updated Successfully âœ…');
+    }
+
+    // Delete Product
+    public function destroy($id)
+    {
+        if (!session('seller_login')) {
+            return redirect('/seller-login');
+        }
+
+        $product = Product::where('seller_id', $this->currentSeller()->id)->findOrFail($id);
+
+        $product->delete();
+
+        return redirect('/seller-dashboard')->with('success', 'Product Deleted Successfully ðŸ—‘ï¸');
+    }
+
+    public function updateOrderStatus(Request $request, Order $order)
+    {
+        if (!session('seller_login')) {
+            return redirect('/seller-login');
+        }
+
+        $this->currentSeller();
+        abort_unless($order->belongsToSeller((int) session('seller_id')), 404);
+        $request->validate(['order_status' => 'required|in:Placed,Confirmed,Packed,Picked By Delivery Partner,Out For Delivery,Near Customer,Delivered,Cancelled']);
+
+        $order->update([
+            'order_status' => $request->order_status,
+            'status' => $request->order_status,
+            'delivery_status' => $request->order_status,
+        ]);
+
+        return back()->with('success', 'Order status updated.');
+    }
+
+    public function settings()
+    {
+        return view('seller.settings', ['seller' => $this->currentSeller()]);
+    }
+
+    public function updateSettings(Request $request)
+    {
+        $data = $request->validate([
+            'theme' => ['required', 'in:light,dark,system'],
+            'notifications_enabled' => ['required', 'boolean'],
+            'online_payments_enabled' => ['required', 'boolean'],
+        ]);
+        $this->currentSeller()->update($data);
+        return back()->with('success', 'Settings saved successfully.');
+    }
+
+    public function updatePaymentQr(Request $request)
+    {
+        $data = $request->validate(['payment_qr' => ['required', 'image', 'mimes:jpeg,jpg,png,webp', 'max:2048']]);
+        $seller = $this->currentSeller();
+        $seller->payment_qr = $data['payment_qr']->store('seller-payment-qr', 'public');
+        $seller->save();
+        return back()->with('success', 'Payment QR updated successfully.');
+    }
+
+    public function deletePaymentQr()
+    {
+        $this->currentSeller()->update(['payment_qr' => null]);
+
+        return back()->with('success', 'Payment QR removed successfully.');
+    }
+
+    private function storeAdditionalImages(Request $request, Product $product): void
+    {
+        $request->validate(['images' => ['nullable', 'array', 'max:8'], 'images.*' => ['image', 'mimes:jpeg,jpg,png,webp', 'max:2048']]);
+        foreach ($request->file('images', []) as $index => $image) {
+            $product->images()->create(['path' => $image->store('product-images', 'public'), 'sort_order' => $index]);
+        }
+    }
+}
+
+
+==================== C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\app\Http\Controllers\SellerVerificationController.php ====================
+
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\SellerProfile;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+
+class SellerVerificationController extends Controller
+{
+    private const MAX_ATTEMPTS = 5;
+    private const CODE_EXPIRY_MINUTES = 10;
+
+    /*
+    |--------------------------------------------------------------------------
+    | CURRENT SELLER
+    |--------------------------------------------------------------------------
+    */
+
+    private function currentSeller(): SellerProfile
+    {
+        abort_unless(
+            session('seller_login') && session('seller_id'),
+            403,
+            'Please login as seller first.'
+        );
+
+        return SellerProfile::findOrFail(
+            (int) session('seller_id')
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | EDIT MODE
+    |--------------------------------------------------------------------------
+    */
+
+    private function isEditMode(): bool
+    {
+        return session('seller_verification_edit_mode') === true;
+    }
+
+    private function enableEditMode(Request $request): void
+    {
+        if ($request->boolean('edit')) {
+            session([
+                'seller_verification_edit_mode' => true,
+            ]);
+        }
+    }
+
+    private function clearEditMode(): void
+    {
+        session()->forget('seller_verification_edit_mode');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | STEP DEFINITIONS
+    |--------------------------------------------------------------------------
+    */
+
+    private function stepForSeller(SellerProfile $seller): int
+    {
+        if (!$seller->email_verified_at) {
+            return 1;
+        }
+
+        if (
+            empty($seller->business_certificate_path) ||
+            empty($seller->aadhaar_document_path)
+        ) {
+            return 2;
+        }
+
+        if (!$seller->aadhaar_verified_at) {
+            return 3;
+        }
+
+        if (
+            empty($seller->business_type) ||
+            empty($seller->pan_number) ||
+            empty($seller->udyam_number)
+        ) {
+            return 4;
+        }
+
+        if (
+            empty($seller->bank_account_holder) ||
+            empty($seller->bank_account_number) ||
+            empty($seller->bank_ifsc) ||
+            empty($seller->bank_name)
+        ) {
+            return 5;
+        }
+
+        return 6;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | CURRENT STEP REDIRECT
+    |--------------------------------------------------------------------------
+    */
+
+    private function redirectToCurrentStep(SellerProfile $seller)
+    {
+        if ($seller->isActive()) {
+            return redirect()->route('seller.dashboard');
+        }
+
+        if (
+            in_array(
+                $seller->verification_status,
+                [
+                    SellerProfile::STATUS_REJECTED,
+                    SellerProfile::STATUS_SUSPENDED,
+                ],
+                true
+            )
+        ) {
+            return redirect()->route(
+                'seller.verification.status'
+            );
+        }
+
+        return match ($this->stepForSeller($seller)) {
+            1 => redirect()->route(
+                'seller.verification.email'
+            ),
+
+            2 => redirect()->route(
+                'seller.verification.documents'
+            ),
+
+            3 => redirect()->route(
+                'seller.verification.aadhaar'
+            ),
+
+            4 => redirect()->route(
+                'seller.business-details'
+            ),
+
+            5 => redirect()->route(
+                'seller.bank-details'
+            ),
+
+            default => redirect()->route(
+                'seller.application.review'
+            ),
+        };
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | STEP DATA
+    |--------------------------------------------------------------------------
+    */
+
+    private function stepData(
+        SellerProfile $seller,
+        int $step
+    ): array {
+        return [
+            'seller' => $seller,
+            'currentStep' => $step,
+            'totalSteps' => 6,
+        ];
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | STEP 1 - EMAIL
+    |--------------------------------------------------------------------------
+    */
+
+    public function emailForm(Request $request)
+    {
+        $seller = $this->currentSeller();
+
+        $this->enableEditMode($request);
+
+        if ($seller->isActive()) {
+            return redirect()->route('seller.dashboard');
+        }
+
+        return view(
+            'seller.verification.email',
+            $this->stepData($seller, 1)
+        );
+    }
+
+    public function sendEmailCode(Request $request)
+    {
+        $seller = $this->currentSeller();
+
+        if ($seller->email_verified_at) {
+            return back()->with(
+                'info',
+                'Your email is already verified.'
+            );
+        }
+
+        if (empty($seller->email)) {
+            Log::error(
+                'SELLER EMAIL VERIFICATION FAILED: EMAIL EMPTY',
+                ['seller_id' => $seller->id]
+            );
+
+            return back()->with(
+                'error',
+                'Seller email address is missing.'
+            );
+        }
+
+        $code = '';
+
+        for ($i = 0; $i < 16; $i++) {
+            $code .= (string) random_int(0, 9);
+        }
+
+        try {
+            Mail::raw(
+                "SMART BASKET PREMIUM\n\n"
+                . "SELLER PARTNER PROGRAM\n"
+                . "EMAIL VERIFICATION\n\n"
+                . "Hello {$seller->seller_name},\n\n"
+                . "Your 16-digit seller verification code is:\n\n"
+                . "{$code}\n\n"
+                . "This code is valid for "
+                . self::CODE_EXPIRY_MINUTES
+                . " minutes.\n\n"
+                . "Please do not share this code with anyone.\n\n"
+                . "SMART BASKET PREMIUM",
+                function ($message) use ($seller) {
+                    $message
+                        ->from(
+                            config(
+                                'mail.from.address',
+                                'smartbasket2442@gmail.com'
+                            ),
+                            config(
+                                'mail.from.name',
+                                'SMART BASKET PREMIUM'
+                            )
+                        )
+                        ->to($seller->email)
+                        ->subject(
+                            'SMART BASKET - Seller Email Verification Code'
+                        );
+                }
+            );
+
+            $seller->forceFill([
+                'email_code_hash' => Hash::make($code),
+                'email_code_expires_at' =>
+                    now()->addMinutes(
+                        self::CODE_EXPIRY_MINUTES
+                    ),
+                'email_code_attempts' => 0,
+                'email_code_sent_at' => now(),
+                'verification_status' =>
+                    SellerProfile::STATUS_PENDING_EMAIL,
+                'onboarding_step' => 1,
+            ])->save();
+
+            return back()->with(
+                'success',
+                'A 16-digit verification code has been sent to '
+                . $seller->email
+                . '. Please check your inbox and spam folder.'
+            );
+        } catch (\Throwable $e) {
+            Log::error(
+                'SELLER VERIFICATION MAIL FAILED',
+                [
+                    'seller_id' => $seller->id,
+                    'seller_email' => $seller->email,
+                    'error' => $e->getMessage(),
+                ]
+            );
+
+            return back()->with(
+                'error',
+                'Unable to send verification email. Please check your email configuration.'
+            );
+        }
+    }
+
+    public function verifyEmailCode(Request $request)
+    {
+        $seller = $this->currentSeller();
+
+        $validated = $request->validate([
+            'code' => [
+                'required',
+                'digits:16',
+            ],
+        ]);
+
+        if ($seller->email_verified_at) {
+            if ($this->isEditMode()) {
+                $this->clearEditMode();
+
+                return redirect()
+                    ->route('seller.application.review')
+                    ->with(
+                        'info',
+                        'Email is already verified.'
+                    );
+            }
+
+            return redirect()
+                ->route('seller.verification.documents')
+                ->with(
+                    'info',
+                    'Email is already verified.'
+                );
+        }
+
+        if (
+            !$seller->email_code_hash ||
+            !$seller->email_code_expires_at ||
+            now()->greaterThan($seller->email_code_expires_at)
+        ) {
+            $seller->forceFill([
+                'email_code_hash' => null,
+                'email_code_expires_at' => null,
+                'email_code_attempts' => 0,
+            ])->save();
+
+            return back()->with(
+                'error',
+                'Verification code expired. Please request a new code.'
+            );
+        }
+
+        if (
+            (int) $seller->email_code_attempts >=
+            self::MAX_ATTEMPTS
+        ) {
+            $seller->forceFill([
+                'email_code_hash' => null,
+                'email_code_expires_at' => null,
+                'email_code_attempts' => 0,
+            ])->save();
+
+            return back()->with(
+                'error',
+                'Too many invalid attempts. Please request a new code.'
+            );
+        }
+
+        if (
+            !Hash::check(
+                (string) $validated['code'],
+                (string) $seller->email_code_hash
+            )
+        ) {
+            $seller->increment('email_code_attempts');
+
+            return back()->with(
+                'error',
+                'Invalid verification code.'
+            );
+        }
+
+        $seller->forceFill([
+            'email_verified_at' => now(),
+            'email_code_hash' => null,
+            'email_code_expires_at' => null,
+            'email_code_attempts' => 0,
+            'onboarding_step' => 2,
+            'verification_status' =>
+                SellerProfile::STATUS_EMAIL_VERIFIED,
+        ])->save();
+
+        session([
+            'seller_email_verified' => true,
+        ]);
+
+        if ($this->isEditMode()) {
+            $this->clearEditMode();
+
+            return redirect()
+                ->route('seller.application.review')
+                ->with(
+                    'success',
+                    'Email updated and verified successfully.'
+                );
+        }
+
+        return redirect()
+            ->route('seller.verification.documents')
+            ->with(
+                'success',
+                'Email verified successfully. Please complete Step 2.'
+            );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | STEP 2 - DOCUMENTS
+    |--------------------------------------------------------------------------
+    */
+
+    public function documentsForm(Request $request)
+    {
+        $seller = $this->currentSeller();
+
+        $this->enableEditMode($request);
+
+        if (!$seller->email_verified_at) {
+            return redirect()
+                ->route('seller.verification.email')
+                ->with(
+                    'error',
+                    'Please verify your email first.'
+                );
+        }
+
+        return view(
+            'seller.documents',
+            $this->stepData($seller, 2)
+        );
+    }
+
+    public function uploadDocument(Request $request)
+    {
+        $seller = $this->currentSeller();
+
+        if (!$seller->email_verified_at) {
+            return redirect()
+                ->route('seller.verification.email')
+                ->with(
+                    'error',
+                    'Please verify your email first.'
+                );
+        }
+
+        $validated = $request->validate([
+            'business_certificate' => [
+                'nullable',
+                'file',
+                'mimes:pdf,jpg,jpeg,png,webp',
+                'max:5120',
+            ],
+
+            'aadhaar_document' => [
+                'nullable',
+                'file',
+                'mimes:pdf,jpg,jpeg,png,webp',
+                'max:5120',
+            ],
+        ]);
+
+        $hasBusinessCertificate =
+            $request->hasFile('business_certificate') ||
+            !empty($seller->business_certificate_path);
+
+        $hasAadhaar =
+            $request->hasFile('aadhaar_document') ||
+            !empty($seller->aadhaar_document_path);
+
+        if (
+            !$hasBusinessCertificate ||
+            !$hasAadhaar
+        ) {
+            return back()
+                ->withInput()
+                ->with(
+                    'error',
+                    'Both Business Certificate and Aadhaar Card are required.'
+                );
+        }
+
+        $data = [];
+
+        if ($request->hasFile('business_certificate')) {
+            if (
+                $seller->business_certificate_path &&
+                Storage::disk('public')->exists(
+                    $seller->business_certificate_path
+                )
+            ) {
+                Storage::disk('public')->delete(
+                    $seller->business_certificate_path
+                );
+            }
+
+            $data['business_certificate_path'] =
+                $request
+                    ->file('business_certificate')
+                    ->store(
+                        "seller-certificates/{$seller->id}",
+                        'public'
+                    );
+
+            $data['business_certificate_uploaded_at'] = now();
+        }
+
+        if ($request->hasFile('aadhaar_document')) {
+            if (
+                $seller->aadhaar_document_path &&
+                Storage::disk('public')->exists(
+                    $seller->aadhaar_document_path
+                )
+            ) {
+                Storage::disk('public')->delete(
+                    $seller->aadhaar_document_path
+                );
+            }
+
+            $data['aadhaar_document_path'] =
+                $request
+                    ->file('aadhaar_document')
+                    ->store(
+                        "seller-aadhaar-documents/{$seller->id}",
+                        'public'
+                    );
+
+            $data['aadhaar_document_uploaded_at'] = now();
+        }
+
+        if (empty($seller->aadhaar_verified_at)) {
+            $data['onboarding_step'] = 3;
+            $data['verification_status'] =
+                SellerProfile::STATUS_DOCUMENTS_PENDING;
+        }
+
+        $seller->forceFill($data)->save();
+
+        $seller->refresh();
+
+        if (
+            empty($seller->business_certificate_path) ||
+            empty($seller->aadhaar_document_path)
+        ) {
+            return back()->with(
+                'error',
+                'Both documents are required.'
+            );
+        }
+
+        if ($this->isEditMode()) {
+            $this->clearEditMode();
+
+            return redirect()
+                ->route('seller.application.review')
+                ->with(
+                    'success',
+                    'Documents updated successfully.'
+                );
+        }
+
+        return redirect()
+            ->route('seller.verification.aadhaar')
+            ->with(
+                'success',
+                'Documents saved successfully.'
+            );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | STEP 3 - AADHAAR
+    |--------------------------------------------------------------------------
+    */
+
+    public function aadhaarForm(Request $request)
+    {
+        $seller = $this->currentSeller();
+
+        $this->enableEditMode($request);
+
+        if (!$seller->email_verified_at) {
+            return redirect()
+                ->route('seller.verification.email')
+                ->with(
+                    'error',
+                    'Please complete Step 1 Email Verification first.'
+                );
+        }
+
+        if (
+            empty($seller->business_certificate_path) ||
+            empty($seller->aadhaar_document_path)
+        ) {
+            return redirect()
+                ->route('seller.verification.documents')
+                ->with(
+                    'error',
+                    'Please complete Step 2 Documents first.'
+                );
+        }
+
+        return view(
+            'seller.verification.aadhaar',
+            $this->stepData($seller, 3)
+        );
+    }
+
+    public function startAadhaar(Request $request)
+    {
+        $seller = $this->currentSeller();
+
+        if (!$seller->email_verified_at) {
+            return redirect()
+                ->route('seller.verification.email')
+                ->with(
+                    'error',
+                    'Please complete Step 1 first.'
+                );
+        }
+
+        if (
+            empty($seller->business_certificate_path) ||
+            empty($seller->aadhaar_document_path)
+        ) {
+            return redirect()
+                ->route('seller.verification.documents')
+                ->with(
+                    'error',
+                    'Please complete Step 2 Documents first.'
+                );
+        }
+
+        $referenceId =
+            $seller->verification_reference_id
+            ?: 'SB-AADHAAR-' .
+            strtoupper(Str::random(12));
+
+        $seller->forceFill([
+            'verification_reference_id' => $referenceId,
+            'verification_status' =>
+                SellerProfile::STATUS_AADHAAR_PENDING,
+            'onboarding_step' => 3,
+        ])->save();
+
+        return back()->with(
+            'success',
+            'Aadhaar verification started.'
+        );
+    }
+
+    public function verifyAadhaar(Request $request)
+    {
+        $seller = $this->currentSeller();
+
+        $validated = $request->validate([
+            'aadhaar_number' => [
+                'required',
+                'digits:12',
+            ],
+        ]);
+
+        if (!$seller->email_verified_at) {
+            return redirect()
+                ->route('seller.verification.email')
+                ->with(
+                    'error',
+                    'Please complete Step 1 first.'
+                );
+        }
+
+        if (
+            empty($seller->business_certificate_path) ||
+            empty($seller->aadhaar_document_path)
+        ) {
+            return redirect()
+                ->route('seller.verification.documents')
+                ->with(
+                    'error',
+                    'Please complete Step 2 Documents first.'
+                );
+        }
+
+        $data = [
+            'aadhaar_verified_at' => now(),
+            'verification_status' =>
+                SellerProfile::STATUS_DOCUMENTS_PENDING,
+            'onboarding_step' => 4,
+        ];
+
+        if (
+            Schema::hasColumn(
+                'seller_profiles',
+                'aadhaar_number'
+            )
+        ) {
+            $data['aadhaar_number'] =
+                $validated['aadhaar_number'];
+        }
+
+        $seller->forceFill($data)->save();
+
+        if ($this->isEditMode()) {
+            $this->clearEditMode();
+
+            return redirect()
+                ->route('seller.application.review')
+                ->with(
+                    'success',
+                    'Aadhaar verification updated successfully.'
+                );
+        }
+
+        return redirect()
+            ->route('seller.business-details')
+            ->with(
+                'success',
+                'Aadhaar verification completed successfully.'
+            );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | STEP 4 - BUSINESS DETAILS
+    |--------------------------------------------------------------------------
+    */
+
+    public function businessDetails(Request $request)
+    {
+        $seller = $this->currentSeller();
+
+        $this->enableEditMode($request);
+
+        if (!$seller->email_verified_at) {
+            return redirect()
+                ->route('seller.verification.email')
+                ->with(
+                    'error',
+                    'Please complete Step 1 first.'
+                );
+        }
+
+        if (
+            empty($seller->business_certificate_path) ||
+            empty($seller->aadhaar_document_path)
+        ) {
+            return redirect()
+                ->route('seller.verification.documents')
+                ->with(
+                    'error',
+                    'Please complete Step 2 first.'
+                );
+        }
+
+        if (!$seller->aadhaar_verified_at) {
+            return redirect()
+                ->route('seller.verification.aadhaar')
+                ->with(
+                    'error',
+                    'Please complete Step 3 first.'
+                );
+        }
+
+        return view(
+            'seller.business-details',
+            $this->stepData($seller, 4)
+        );
+    }
+
+    public function updateBusinessDetails(Request $request)
+    {
+        $seller = $this->currentSeller();
+
+        if (!$seller->email_verified_at) {
+            return redirect()
+                ->route('seller.verification.email');
+        }
+
+        if (
+            empty($seller->business_certificate_path) ||
+            empty($seller->aadhaar_document_path)
+        ) {
+            return redirect()
+                ->route('seller.verification.documents');
+        }
+
+        if (!$seller->aadhaar_verified_at) {
+            return redirect()
+                ->route('seller.verification.aadhaar');
+        }
+
+        $data = $request->validate([
+            'business_type' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+
+            'gst_number' => [
+                'nullable',
+                'string',
+                'max:50',
+            ],
+
+            'pan_number' => [
+                'required',
+                'string',
+                'max:30',
+            ],
+
+            'udyam_number' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+        ]);
+
+        $seller->forceFill([
+            'business_type' =>
+                $data['business_type'],
+
+            'gst_number' =>
+                $data['gst_number'] ?? null,
+
+            'pan_number' =>
+                strtoupper(
+                    trim($data['pan_number'])
+                ),
+
+            'udyam_number' =>
+                strtoupper(
+                    trim($data['udyam_number'])
+                ),
+
+            'onboarding_step' => 5,
+        ])->save();
+
+        if ($this->isEditMode()) {
+            $this->clearEditMode();
+
+            return redirect()
+                ->route('seller.application.review')
+                ->with(
+                    'success',
+                    'Business details updated successfully.'
+                );
+        }
+
+        return redirect()
+            ->route('seller.bank-details')
+            ->with(
+                'success',
+                'Business details saved successfully.'
+            );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | STEP 5 - BANK DETAILS
+    |--------------------------------------------------------------------------
+    */
+
+    public function bankDetails(Request $request)
+    {
+        $seller = $this->currentSeller();
+
+        $this->enableEditMode($request);
+
+        if (!$seller->email_verified_at) {
+            return redirect()
+                ->route('seller.verification.email');
+        }
+
+        if (
+            empty($seller->business_certificate_path) ||
+            empty($seller->aadhaar_document_path)
+        ) {
+            return redirect()
+                ->route('seller.verification.documents');
+        }
+
+        if (!$seller->aadhaar_verified_at) {
+            return redirect()
+                ->route('seller.verification.aadhaar');
+        }
+
+        if (
+            empty($seller->business_type) ||
+            empty($seller->pan_number) ||
+            empty($seller->udyam_number)
+        ) {
+            return redirect()
+                ->route('seller.business-details');
+        }
+
+        return view(
+            'seller.bank-details',
+            $this->stepData($seller, 5)
+        );
+    }
+
+    public function updateBankDetails(Request $request)
+    {
+        $seller = $this->currentSeller();
+
+        if (!$seller->email_verified_at) {
+            return redirect()
+                ->route('seller.verification.email');
+        }
+
+        if (
+            empty($seller->business_certificate_path) ||
+            empty($seller->aadhaar_document_path)
+        ) {
+            return redirect()
+                ->route('seller.verification.documents');
+        }
+
+        if (!$seller->aadhaar_verified_at) {
+            return redirect()
+                ->route('seller.verification.aadhaar');
+        }
+
+        if (
+            empty($seller->business_type) ||
+            empty($seller->pan_number) ||
+            empty($seller->udyam_number)
+        ) {
+            return redirect()
+                ->route('seller.business-details');
+        }
+
+        $data = $request->validate([
+            'bank_account_holder' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+
+            'bank_account_number' => [
+                'required',
+                'string',
+                'max:50',
+            ],
+
+            'bank_ifsc' => [
+                'required',
+                'string',
+                'max:20',
+            ],
+
+            'bank_name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+        ]);
+
+        $seller->forceFill([
+            'bank_account_holder' =>
+                trim($data['bank_account_holder']),
+
+            'bank_account_number' =>
+                trim($data['bank_account_number']),
+
+            'bank_ifsc' =>
+                strtoupper(
+                    trim($data['bank_ifsc'])
+                ),
+
+            'bank_name' =>
+                trim($data['bank_name']),
+
+            'onboarding_step' => 6,
+        ])->save();
+
+        $this->clearEditMode();
+
+        return redirect()
+            ->route('seller.application.review')
+            ->with(
+                'success',
+                'Bank details saved successfully.'
+            );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | STEP 6 - REVIEW
+    |--------------------------------------------------------------------------
+    */
+
+    public function review()
+    {
+        $seller = $this->currentSeller();
+
+        if (!$seller->email_verified_at) {
+            return redirect()
+                ->route('seller.verification.email')
+                ->with(
+                    'error',
+                    'Please complete Step 1 first.'
+                );
+        }
+
+        if (
+            empty($seller->business_certificate_path) ||
+            empty($seller->aadhaar_document_path)
+        ) {
+            return redirect()
+                ->route('seller.verification.documents')
+                ->with(
+                    'error',
+                    'Please complete Step 2 first.'
+                );
+        }
+
+        if (!$seller->aadhaar_verified_at) {
+            return redirect()
+                ->route('seller.verification.aadhaar')
+                ->with(
+                    'error',
+                    'Please complete Step 3 first.'
+                );
+        }
+
+        if (
+            empty($seller->business_type) ||
+            empty($seller->pan_number) ||
+            empty($seller->udyam_number)
+        ) {
+            return redirect()
+                ->route('seller.business-details')
+                ->with(
+                    'error',
+                    'Please complete Step 4 first.'
+                );
+        }
+
+        if (
+            empty($seller->bank_account_holder) ||
+            empty($seller->bank_account_number) ||
+            empty($seller->bank_ifsc) ||
+            empty($seller->bank_name)
+        ) {
+            return redirect()
+                ->route('seller.bank-details')
+                ->with(
+                    'error',
+                    'Please complete Step 5 first.'
+                );
+        }
+
+        $this->clearEditMode();
+
+        return view(
+            'seller.application-review',
+            $this->stepData($seller, 6)
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | SUBMIT APPLICATION
+    |--------------------------------------------------------------------------
+    */
+
+    public function submitApplication(Request $request)
+    {
+        $seller = $this->currentSeller();
+
+        $errors = [];
+
+        if (!$seller->email_verified_at) {
+            $errors[] = 'Email verification is incomplete.';
+        }
+
+        if (!$seller->business_certificate_path) {
+            $errors[] = 'Business certificate is missing.';
+        }
+
+        if (!$seller->aadhaar_document_path) {
+            $errors[] = 'Aadhaar document is missing.';
+        }
+
+        if (!$seller->aadhaar_verified_at) {
+            $errors[] = 'Aadhaar verification is incomplete.';
+        }
+
+        if (empty($seller->business_type)) {
+            $errors[] = 'Business type is required.';
+        }
+
+        if (empty($seller->pan_number)) {
+            $errors[] = 'PAN number is required.';
+        }
+
+        if (empty($seller->udyam_number)) {
+            $errors[] = 'Udyam number is required.';
+        }
+
+        if (empty($seller->bank_account_holder)) {
+            $errors[] = 'Bank account holder is required.';
+        }
+
+        if (empty($seller->bank_account_number)) {
+            $errors[] = 'Bank account number is required.';
+        }
+
+        if (empty($seller->bank_ifsc)) {
+            $errors[] = 'Bank IFSC is required.';
+        }
+
+        if (empty($seller->bank_name)) {
+            $errors[] = 'Bank name is required.';
+        }
+
+        if (count($errors) > 0) {
+            return back()->with(
+                'error',
+                implode(' ', $errors)
+            );
+        }
+
+        $seller->forceFill([
+            'verification_status' =>
+                SellerProfile::STATUS_PENDING_ADMIN_REVIEW,
+
+            'verification_submitted_at' => now(),
+
+            'admin_reviewed_at' => null,
+            'admin_reviewed_by' => null,
+            'rejection_reason' => null,
+            'approved_at' => null,
+
+            'onboarding_step' => 6,
+        ])->save();
+
+        $this->notifyAdmin($seller);
+
+        return redirect()
+            ->route('seller.verification.status')
+            ->with(
+                'success',
+                'Your Seller Partner application has been submitted successfully.'
+            );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | STATUS
+    |--------------------------------------------------------------------------
+    */
+
+    public function status()
+    {
+        $seller = $this->currentSeller();
+
+        return view(
+            'seller.verification.status',
+            compact('seller')
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | ACTIVATION
+    |--------------------------------------------------------------------------
+    */
+
+    public function activationForm()
+    {
+        $seller = $this->currentSeller();
+
+        if (
+            $seller->verification_status !==
+            SellerProfile::STATUS_APPROVED
+        ) {
+            return redirect()
+                ->route('seller.verification.status')
+                ->with(
+                    'error',
+                    'Your seller application has not been approved yet.'
+                );
+        }
+
+        return view(
+            'seller.verification.activation',
+            compact('seller')
+        );
+    }
+
+    public function verifyActivation(Request $request)
+    {
+        $seller = $this->currentSeller();
+
+        if (
+            $seller->verification_status !==
+            SellerProfile::STATUS_APPROVED
+        ) {
+            return redirect()
+                ->route('seller.verification.status')
+                ->with(
+                    'error',
+                    'Your seller application has not been approved.'
+                );
+        }
+
+        $validated = $request->validate([
+            'code' => [
+                'required',
+                'digits:16',
+            ],
+        ]);
+
+        if (
+            !$seller->activation_code_hash ||
+            !$seller->activation_code_expires_at ||
+            now()->greaterThan(
+                $seller->activation_code_expires_at
+            )
+        ) {
+            $seller->forceFill([
+                'activation_code_hash' => null,
+                'activation_code_expires_at' => null,
+                'activation_attempts' => 0,
+            ])->save();
+
+            return back()->with(
+                'error',
+                'Activation code expired. Please request a new code.'
+            );
+        }
+
+        if (
+            (int) $seller->activation_attempts >=
+            self::MAX_ATTEMPTS
+        ) {
+            return back()->with(
+                'error',
+                'Too many invalid attempts. Please request a new code.'
+            );
+        }
+
+        if (
+            !Hash::check(
+                (string) $validated['code'],
+                (string) $seller->activation_code_hash
+            )
+        ) {
+            $seller->increment('activation_attempts');
+
+            return back()->with(
+                'error',
+                'Invalid activation code.'
+            );
+        }
+
+        $seller->forceFill([
+            'activation_code_hash' => null,
+            'activation_code_expires_at' => null,
+            'activation_attempts' => 0,
+            'activation_verified_at' => now(),
+            'onboarding_step' => 8,
+        ])->save();
+
+        session([
+            'seller_login' => true,
+            'seller_email' => $seller->email,
+            'seller_id' => (int) $seller->id,
+        ]);
+
+        return redirect()
+            ->route('seller.dashboard')
+            ->with(
+                'success',
+                'Seller account activated successfully.'
+            );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | RESEND ACTIVATION CODE
+    |--------------------------------------------------------------------------
+    */
+
+    public function resendActivationCode(Request $request)
+    {
+        $seller = $this->currentSeller();
+
+        if (
+            $seller->verification_status !==
+            SellerProfile::STATUS_APPROVED
+        ) {
+            return back()->with(
+                'error',
+                'Activation is not available.'
+            );
+        }
+
+        $code = '';
+
+        for ($i = 0; $i < 16; $i++) {
+            $code .= (string) random_int(0, 9);
+        }
+
+        try {
+            Mail::raw(
+                "SMART BASKET PREMIUM\n\n"
+                . "SELLER ACCOUNT ACTIVATION\n\n"
+                . "Hello {$seller->seller_name},\n\n"
+                . "Your 16-digit activation code is:\n\n"
+                . "{$code}\n\n"
+                . "This code is valid for "
+                . self::CODE_EXPIRY_MINUTES
+                . " minutes.\n\n"
+                . "SMART BASKET PREMIUM",
+                function ($message) use ($seller) {
+                    $message
+                        ->from(
+                            config(
+                                'mail.from.address',
+                                'smartbasket2442@gmail.com'
+                            ),
+                            config(
+                                'mail.from.name',
+                                'SMART BASKET PREMIUM'
+                            )
+                        )
+                        ->to($seller->email)
+                        ->subject(
+                            'SMART BASKET - Seller Activation Code'
+                        );
+                }
+            );
+
+            $seller->forceFill([
+                'activation_code_hash' =>
+                    Hash::make($code),
+
+                'activation_code_expires_at' =>
+                    now()->addMinutes(
+                        self::CODE_EXPIRY_MINUTES
+                    ),
+
+                'activation_attempts' => 0,
+
+                'activation_code_sent_at' => now(),
+            ])->save();
+        } catch (\Throwable $e) {
+            Log::error(
+                'SELLER ACTIVATION EMAIL FAILED',
+                [
+                    'seller_id' => $seller->id,
+                    'seller_email' => $seller->email,
+                    'error' => $e->getMessage(),
+                ]
+            );
+
+            return back()->with(
+                'error',
+                'Unable to send activation code.'
+            );
+        }
+
+        return back()->with(
+            'success',
+            'Activation code sent successfully.'
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | ONBOARDING
+    |--------------------------------------------------------------------------
+    */
+
+    public function onboarding()
+    {
+        $seller = $this->currentSeller();
+
+        return $this->redirectToCurrentStep($seller);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | APPLICATION SUMMARY
+    |--------------------------------------------------------------------------
+    */
+
+    public function applicationSummary()
+    {
+        $seller = $this->currentSeller();
+
+        /*
+        |--------------------------------------------------------------------------
+        | IMPORTANT
+        |--------------------------------------------------------------------------
+        | application-summary.blade.php missing àª¹à«‹àª¯ àª¤à«‹ application-review
+        | àªªàª° fallback àª•àª°àªµàª¾àª®àª¾àª‚ àª†àªµàª¶à«‡.
+        */
+
+        $summaryView = resource_path(
+            'views/seller/application-summary.blade.php'
+        );
+
+        if (is_file($summaryView)) {
+            return view(
+                'seller.application-summary',
+                compact('seller')
+            );
+        }
+
+        return view(
+            'seller.application-review',
+            $this->stepData($seller, 6)
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | APPLICATION
+    |--------------------------------------------------------------------------
+    */
+
+    public function application()
+    {
+        $seller = $this->currentSeller();
+
+        return view(
+            'seller.application',
+            compact('seller')
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | DOCUMENT CHECKLIST
+    |--------------------------------------------------------------------------
+    */
+
+    public function documentChecklist()
+    {
+        $seller = $this->currentSeller();
+
+        if (!$seller->email_verified_at) {
+            return redirect()
+                ->route('seller.verification.email')
+                ->with(
+                    'error',
+                    'Please verify your email first.'
+                );
+        }
+
+        return view(
+            'seller.documents',
+            $this->stepData($seller, 2)
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN NOTIFICATION
+    |--------------------------------------------------------------------------
+    */
+
+    private function notifyAdmin(
+        SellerProfile $seller
+    ): bool {
+        $adminEmail = 'smartbasket2442@gmail.com';
+
+        try {
+            $seller->refresh();
+
+            $view = resource_path(
+                'views/emails/seller-application.blade.php'
+            );
+
+            if (!is_file($view)) {
+                Log::error(
+                    'SELLER ADMIN MAIL FAILED: EMAIL VIEW NOT FOUND',
+                    [
+                        'seller_id' => $seller->id,
+                        'view' => $view,
+                    ]
+                );
+
+                $seller->forceFill([
+                    'admin_notification_status' => 'failed',
+                    'admin_notification_failed_at' => now(),
+                ])->save();
+
+                return false;
+            }
+
+            Mail::send(
+                'emails.seller-application',
+                [
+                    'seller' => $seller,
+                ],
+                function ($message) use (
+                    $seller,
+                    $adminEmail
+                ) {
+                    $message
+                        ->from(
+                            config(
+                                'mail.from.address',
+                                'smartbasket2442@gmail.com'
+                            ),
+                            config(
+                                'mail.from.name',
+                                'SMART BASKET PREMIUM'
+                            )
+                        )
+                        ->to($adminEmail)
+                        ->subject(
+                            'SMART BASKET - New Seller Application #'
+                            . $seller->id
+                        );
+
+                    $attachments = [
+                        'business_certificate_path' =>
+                            'business-certificate',
+
+                        'aadhaar_document_path' =>
+                            'aadhaar',
+
+                        'pan_document_path' =>
+                            'pan',
+
+                        'shop_proof_path' =>
+                            'shop-proof',
+
+                        'bank_proof_path' =>
+                            'bank-proof',
+                    ];
+
+                    foreach (
+                        $attachments as $field => $label
+                    ) {
+                        if (
+                            !empty($seller->{$field}) &&
+                            Storage::disk('public')->exists(
+                                $seller->{$field}
+                            )
+                        ) {
+                            $file = Storage::disk('public')->path(
+                                $seller->{$field}
+                            );
+
+                            $extension = pathinfo(
+                                $file,
+                                PATHINFO_EXTENSION
+                            );
+
+                            $message->attach(
+                                $file,
+                                [
+                                    'as' =>
+                                        'seller-' .
+                                        $seller->id .
+                                        '-' .
+                                        $label .
+                                        '.' .
+                                        $extension,
+                                ]
+                            );
+                        }
+                    }
+                }
+            );
+
+            $seller->forceFill([
+                'admin_notification_status' => 'sent',
+                'admin_notification_sent_at' => now(),
+                'admin_notification_failed_at' => null,
+            ])->save();
+
+            Log::info(
+                'SELLER ADMIN MAIL SENT SUCCESSFULLY',
+                [
+                    'seller_id' => $seller->id,
+                    'admin_email' => $adminEmail,
+                ]
+            );
+
+            return true;
+        } catch (\Throwable $e) {
+            Log::error(
+                'SELLER ADMIN MAIL FAILED',
+                [
+                    'seller_id' => $seller->id,
+                    'admin_email' => $adminEmail,
+                    'exception' => get_class($e),
+                    'message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                ]
+            );
+
+            try {
+                $seller->forceFill([
+                    'admin_notification_status' => 'failed',
+                    'admin_notification_failed_at' => now(),
+                ])->save();
+            } catch (\Throwable $ignored) {
+                // Prevent secondary database error from masking
+                // the original mail error.
+            }
+
+            return false;
+        }
+    }
+}
+
+==================== C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\app\Http\Controllers\AdminSellerVerificationController.php ====================
+
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Mail\SellerApprovedMail;
+use App\Mail\SellerApplicationSubmittedMail;
+use App\Mail\SellerRejectedMail;
+use App\Models\SellerProfile;
+use App\Models\SellerVerificationLog;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
+
+class AdminSellerVerificationController extends Controller
+{
+    private const ADMIN_EMAIL = 'smartbasket2442@gmail.com';
+
+    private const DOCUMENT_FIELDS = [
+        'certificate' => 'business_certificate_path',
+        'aadhaar'     => 'aadhaar_document_path',
+        'pan'         => 'pan_document_path',
+        'shop_proof'  => 'shop_proof_path',
+        'bank_proof'  => 'bank_proof_path',
+    ];
+
+    public function index()
+    {
+        return view(
+            'admin.seller-verifications.index',
+            [
+                'applications' => SellerProfile::whereIn(
+                    'verification_status',
+                    [
+                        SellerProfile::STATUS_PENDING_REVIEW,
+                        SellerProfile::STATUS_APPROVED,
+                        SellerProfile::STATUS_REJECTED,
+                        SellerProfile::STATUS_ACTIVE,
+                    ]
+                )
+                    ->latest('verification_submitted_at')
+                    ->paginate(20),
+            ]
+        );
+    }
+
+    public function show(SellerProfile $seller)
+    {
+        return view(
+            'admin.seller-verifications.show',
+            [
+                'application' => $seller,
+                'history' => SellerVerificationLog::where(
+                    'seller_profile_id',
+                    $seller->id
+                )
+                    ->latest()
+                    ->get(),
+            ]
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | SEND APPLICATION EMAIL
+    |--------------------------------------------------------------------------
+    */
+
+    public function sendApplicationEmail(
+        SellerProfile $seller
+    ): bool {
+        try {
+
+            Mail::to(self::ADMIN_EMAIL)->send(
+                new SellerApplicationSubmittedMail($seller)
+            );
+
+            return true;
+
+        } catch (\Throwable $e) {
+
+            Log::error(
+                'Seller application email failed.',
+                [
+                    'seller_id' => $seller->id,
+                    'error' => $e->getMessage(),
+                ]
+            );
+
+            return false;
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | EMAIL ACCEPT
+    |--------------------------------------------------------------------------
+    */
+
+    public function emailAccept(
+        SellerProfile $seller
+    ) {
+        if (
+            !in_array(
+                $seller->verification_status,
+                [
+                    SellerProfile::STATUS_PENDING_REVIEW,
+                    SellerProfile::STATUS_APPROVED,
+                ],
+                true
+            )
+        ) {
+            return response(
+                '<h2 style="font-family:Arial">Application already processed.</h2>',
+                422
+            );
+        }
+
+        $from = $seller->verification_status;
+
+        $seller->update([
+            'verification_status' => SellerProfile::STATUS_ACTIVE,
+            'approved_at' => now(),
+            'admin_reviewed_at' => now(),
+            'admin_reviewed_by' => auth()->id(),
+            'rejection_reason' => null,
+
+            'activation_code_hash' => null,
+            'activation_code_expires_at' => null,
+            'activation_attempts' => 0,
+        ]);
+
+        $this->log(
+            $seller,
+            'accepted_from_email',
+            $from
+        );
+
+        try {
+
+            Mail::to($seller->email)->send(
+                new SellerApprovedMail($seller)
+            );
+
+        } catch (\Throwable $e) {
+
+            Log::warning(
+                'Seller approval email could not be sent.',
+                [
+                    'seller_id' => $seller->id,
+                    'error' => $e->getMessage(),
+                ]
+            );
+        }
+
+        return view(
+            'admin.seller-verifications.email-accepted',
+            [
+                'seller' => $seller,
+            ]
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | EMAIL REJECT
+    |--------------------------------------------------------------------------
+    */
+
+    public function emailReject(
+        SellerProfile $seller
+    ) {
+        if (
+            !in_array(
+                $seller->verification_status,
+                [
+                    SellerProfile::STATUS_PENDING_REVIEW,
+                    SellerProfile::STATUS_APPROVED,
+                ],
+                true
+            )
+        ) {
+            return response(
+                '<h2 style="font-family:Arial">Application already processed.</h2>',
+                422
+            );
+        }
+
+        $from = $seller->verification_status;
+
+        $seller->update([
+            'verification_status' => SellerProfile::STATUS_REJECTED,
+            'rejection_reason' =>
+                'Application rejected by SMART BASKET administrator.',
+            'admin_reviewed_at' => now(),
+            'admin_reviewed_by' => auth()->id(),
+        ]);
+
+        $this->log(
+            $seller,
+            'rejected_from_email',
+            $from
+        );
+
+        try {
+
+            Mail::to($seller->email)->send(
+                new SellerRejectedMail($seller)
+            );
+
+        } catch (\Throwable $e) {
+
+            Log::warning(
+                'Seller rejection email could not be sent.',
+                [
+                    'seller_id' => $seller->id,
+                    'error' => $e->getMessage(),
+                ]
+            );
+        }
+
+        return view(
+            'admin.seller-verifications.email-rejected',
+            [
+                'seller' => $seller,
+            ]
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | NORMAL ADMIN APPROVE
+    |--------------------------------------------------------------------------
+    */
+
+    public function approve(
+        SellerProfile $application
+    ) {
+        abort_unless(
+            $application->verification_status ===
+            SellerProfile::STATUS_PENDING_REVIEW,
+            422
+        );
+
+        $from = $application->verification_status;
+
+        $application->update([
+            'verification_status' => SellerProfile::STATUS_ACTIVE,
+            'approved_at' => now(),
+            'admin_reviewed_at' => now(),
+            'admin_reviewed_by' => auth()->id(),
+            'rejection_reason' => null,
+        ]);
+
+        $this->log(
+            $application,
+            'approved',
+            $from
+        );
+
+        try {
+
+            Mail::to($application->email)->send(
+                new SellerApprovedMail($application)
+            );
+
+        } catch (\Throwable $e) {
+
+            Log::warning(
+                'Seller approval email could not be sent.',
+                [
+                    'seller_id' => $application->id,
+                    'error' => $e->getMessage(),
+                ]
+            );
+        }
+
+        return redirect()
+            ->route(
+                'admin.seller-verifications.show',
+                $application
+            )
+            ->with(
+                'success',
+                'Seller approved and activated successfully.'
+            );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | REJECT
+    |--------------------------------------------------------------------------
+    */
+
+    public function reject(
+        Request $request,
+        SellerProfile $application
+    ) {
+        $data = $request->validate([
+            'reason' => [
+                'required',
+                'string',
+                'max:2000',
+            ],
+        ]);
+
+        abort_unless(
+            in_array(
+                $application->verification_status,
+                [
+                    SellerProfile::STATUS_PENDING_REVIEW,
+                    SellerProfile::STATUS_APPROVED,
+                ],
+                true
+            ),
+            422
+        );
+
+        $from = $application->verification_status;
+
+        $application->update([
+            'verification_status' => SellerProfile::STATUS_REJECTED,
+            'rejection_reason' => $data['reason'],
+            'admin_reviewed_at' => now(),
+            'admin_reviewed_by' => auth()->id(),
+        ]);
+
+        $this->log(
+            $application,
+            'rejected',
+            $from
+        );
+
+        try {
+
+            Mail::to($application->email)->send(
+                new SellerRejectedMail($application)
+            );
+
+        } catch (\Throwable $e) {
+
+            Log::warning(
+                'Seller rejection email could not be sent.',
+                [
+                    'seller_id' => $application->id,
+                    'error' => $e->getMessage(),
+                ]
+            );
+        }
+
+        return back()->with(
+            'success',
+            'Seller application rejected.'
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | DOCUMENTS
+    |--------------------------------------------------------------------------
+    */
+
+    public function viewDocument(
+        SellerProfile $seller,
+        string $type
+    ) {
+        $path = $this->documentPath(
+            $seller,
+            $type
+        );
+
+        return response()->file(
+            Storage::disk('local')->path($path)
+        );
+    }
+
+    public function downloadDocument(
+        SellerProfile $seller,
+        string $type
+    ) {
+        $path = $this->documentPath(
+            $seller,
+            $type
+        );
+
+        return response()->download(
+            Storage::disk('local')->path($path),
+            $type . '.' . pathinfo($path, PATHINFO_EXTENSION)
+        );
+    }
+
+    private function documentPath(
+        SellerProfile $seller,
+        string $type
+    ): string {
+        abort_unless(
+            isset(self::DOCUMENT_FIELDS[$type]),
+            404
+        );
+
+        $path = $seller->{self::DOCUMENT_FIELDS[$type]};
+
+        abort_unless(
+            filled($path),
+            404
+        );
+
+        abort_unless(
+            Storage::disk('local')->exists($path),
+            404
+        );
+
+        return $path;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | SUSPEND
+    |--------------------------------------------------------------------------
+    */
+
+    public function suspend(
+        SellerProfile $seller
+    ) {
+        $from = $seller->verification_status;
+
+        $seller->update([
+            'verification_status' => SellerProfile::STATUS_SUSPENDED,
+            'admin_reviewed_at' => now(),
+            'admin_reviewed_by' => auth()->id(),
+        ]);
+
+        $this->log(
+            $seller,
+            'suspended',
+            $from
+        );
+
+        return back()->with(
+            'success',
+            'Seller suspended.'
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | LOG
+    |--------------------------------------------------------------------------
+    */
+
+    private function log(
+        SellerProfile $seller,
+        string $event,
+        string $from
+    ): void {
+        SellerVerificationLog::create([
+            'seller_profile_id' => $seller->id,
+            'actor_id' => auth()->id(),
+            'event' => $event,
+            'from_status' => $from,
+            'to_status' => $seller->verification_status,
+        ]);
+    }
+}
+
+==================== C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\app\Models\SellerProfile.php ====================
+
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class SellerProfile extends Model
+{
+    protected $fillable = [
+        'user_id',
+        'seller_name',
+        'shop_name',
+        'email',
+        'password',
+        'mobile_number',
+        'shop_address',
+        'city',
+        'state',
+        'pincode',
+        'gst_number',
+        'shop_logo',
+        'payment_qr',
+        'theme',
+        'notifications_enabled',
+        'online_payments_enabled',
+    ];
+
+    /**
+     * Seller passwords are only used for authentication and must never be
+     * exposed when this model is serialized.
+     */
+    protected $hidden = [
+        'password',
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function products()
+    {
+        return $this->hasMany(Product::class, 'seller_id');
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class, 'seller_id');
+    }
+}
+
+
+==================== C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\routes\web.php ====================
+
+<?php
+
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\SellerController;
+use App\Http\Controllers\OtpController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\AiHubController;
+use App\Http\Controllers\SellerOrderController;
+use App\Http\Controllers\DeliveryController;
+use App\Http\Controllers\SecurityController;
+use App\Http\Controllers\VirtualTryOnController;
+use App\Http\Controllers\CustomerSettingsController;
+use App\Http\Controllers\SellerPaymentController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\AICameraAssistantController;
+
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\File;
+
+use Illuminate\Http\Request;
+
+use App\Models\User;
+use App\Models\Product;
+use App\Mail\FailedLoginAlert;
+
+
+/*
+|--------------------------------------------------------------------------
+| SMART BASKET PREMIUM ROUTES
+|--------------------------------------------------------------------------
+*/
+
+
+/*
+|--------------------------------------------------------------------------
+| HOME
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/', function () {
+    return view('splash');
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| CUSTOMER AUTHENTICATION
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/login', function () {
+
+    if (Auth::check()) {
+        return redirect('/products');
+    }
+
+    return view('auth.login');
+
+})->name('login');
+
+
+Route::post('/login', function (Request $request) {
+
+    $credentials = $request->validate([
+        'email' => 'required|email',
+        'password' => 'required',
+    ]);
+
+
+    if (Auth::attempt($credentials)) {
+
+        $request->session()->regenerate();
+
+        $user = Auth::user();
+
+
+        if (
+            $user->securitySetting &&
+            $user->securitySetting->security_enabled
+        ) {
+
+            session([
+                'pin_user_id' => $user->id
+            ]);
+
+            Auth::logout();
+
+            return redirect('/security/verify-page');
+        }
+
+
+        return redirect('/products')
+            ->with('success', 'Welcome to SMART BASKET ðŸŽ‰');
+    }
+
+
+    $user = User::where(
+        'email',
+        $request->email
+    )->first();
+
+
+    if ($user) {
+
+        Mail::to($user->email)
+            ->send(new FailedLoginAlert());
+    }
+
+
+    return back()->with(
+        'error',
+        'Wrong password. Security email sent.'
+    );
+
+})->name('login.submit');
+
+
+Route::get('/register', function () {
+
+    return view('auth.register');
+
+})->name('register');
+
+
+Route::post('/register', function (Request $request) {
+
+    $request->validate([
+        'name' => 'required',
+        'email' => 'required|email|unique:users',
+        'password' => 'required|min:8|confirmed',
+    ]);
+
+
+    User::create([
+        'name' => $request->name,
+        'email' => $request->email,
+        'password' => Hash::make($request->password),
+    ]);
+
+
+    return redirect('/login')
+        ->with(
+            'success',
+            'Registration successful. Please login.'
+        );
+
+})->name('register.submit');
+
+
+Route::post('/send-otp', [
+    OtpController::class,
+    'sendOtp'
+])->name('send.otp');
+
+
+Route::get('/forgot-password', function () {
+
+    return view('auth.forgot-password');
+
+})->name('password.request');
+
+
+Route::get('/success', function () {
+
+    return view('auth.success');
+
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| SELLER AUTHENTICATION
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/seller-login', [
+    SellerController::class,
+    'showLogin'
+])->name('seller.login');
+
+
+Route::post('/seller-login', [
+    SellerController::class,
+    'login'
+])->name('seller.login.submit');
+
+
+Route::get('/seller-register', [
+    SellerController::class,
+    'showRegistration'
+])->name('seller.register');
+
+
+Route::post('/seller-register', [
+    SellerController::class,
+    'register'
+])->name('seller.register.submit');
+
+
+/*
+|--------------------------------------------------------------------------
+| SELLER DASHBOARD
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/seller-dashboard', [
+    SellerController::class,
+    'dashboard'
+])
+    ->name('seller.dashboard')
+    ->middleware('seller.auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| SELLER PRODUCTS
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/seller-my-products', [
+    SellerController::class,
+    'myProducts'
+])
+    ->name('seller.products.index')
+    ->middleware('seller.auth');
+
+
+Route::get('/seller-product-add', [
+    SellerController::class,
+    'create'
+])
+    ->name('seller.product.add')
+    ->middleware('seller.auth');
+
+
+Route::post('/seller-product-store', [
+    SellerController::class,
+    'store'
+])
+    ->name('seller.product.store')
+    ->middleware('seller.auth');
+
+
+Route::get('/seller-product-edit/{id}', [
+    SellerController::class,
+    'edit'
+])
+    ->name('seller.product.edit')
+    ->middleware('seller.auth');
+
+
+Route::post('/seller-product-update/{id}', [
+    SellerController::class,
+    'update'
+])
+    ->name('seller.product.update')
+    ->middleware('seller.auth');
+
+
+Route::post('/seller-product-delete/{id}', [
+    SellerController::class,
+    'destroy'
+])
+    ->name('seller.product.delete')
+    ->middleware('seller.auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| SELLER PROFILE
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/seller-profile', [
+    SellerController::class,
+    'profile'
+])
+    ->name('seller.profile')
+    ->middleware('seller.auth');
+
+
+Route::put('/seller-profile', [
+    SellerController::class,
+    'updateProfile'
+])
+    ->name('seller.profile.update')
+    ->middleware('seller.auth');
+
+
+Route::post('/seller-profile/payment-qr', [
+    SellerController::class,
+    'updatePaymentQr'
+])
+    ->name('seller.payment-qr.update')
+    ->middleware('seller.auth');
+
+
+Route::delete('/seller-profile/payment-qr', [
+    SellerController::class,
+    'deletePaymentQr'
+])
+    ->name('seller.payment-qr.delete')
+    ->middleware('seller.auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| SELLER SETTINGS
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/seller-settings', [
+    SellerController::class,
+    'settings'
+])
+    ->name('seller.settings')
+    ->middleware('seller.auth');
+
+
+Route::put('/seller-settings', [
+    SellerController::class,
+    'updateSettings'
+])
+    ->name('seller.settings.update')
+    ->middleware('seller.auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| SELLER LOGOUT
+|--------------------------------------------------------------------------
+*/
+
+Route::post('/seller-logout', function (Request $request) {
+
+    session()->forget([
+        'seller_login',
+        'seller_email',
+        'seller_id'
+    ]);
+
+    $request->session()->invalidate();
+
+    $request->session()->regenerateToken();
+
+    return redirect('/seller-login')
+        ->with(
+            'success',
+            'Seller logout successfully'
+        );
+
+})->name('seller.logout');
+
+
+/*
+|--------------------------------------------------------------------------
+| SELLER ORDERS
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/seller/orders', [
+    SellerOrderController::class,
+    'index'
+])
+    ->name('seller.orders.index')
+    ->middleware('seller.auth');
+
+
+Route::get('/seller/order-details/{order}', [
+    SellerOrderController::class,
+    'show'
+])
+    ->name('seller.orders.show')
+    ->middleware('seller.auth');
+
+
+Route::post('/seller/orders/{order}/status', [
+    SellerController::class,
+    'updateOrderStatus'
+])
+    ->name('seller.orders.update-status')
+    ->middleware('seller.auth');
+
+
+Route::post('/seller/orders/{order}/delivery', [
+    SellerOrderController::class,
+    'storeDelivery'
+])
+    ->name('seller.orders.delivery.store')
+    ->middleware('seller.auth');
+
+
+Route::put('/seller/orders/{order}/delivery', [
+    SellerOrderController::class,
+    'updateDelivery'
+])
+    ->name('seller.orders.delivery.update')
+    ->middleware('seller.auth');
+
+
+Route::delete('/seller/orders/{order}/delivery', [
+    SellerOrderController::class,
+    'destroyDelivery'
+])
+    ->name('seller.orders.delivery.destroy')
+    ->middleware('seller.auth');
+
+
+Route::post('/assign-delivery/{order}', [
+    DeliveryController::class,
+    'assign'
+])
+    ->name('delivery.assign')
+    ->middleware('seller.auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| SELLER PAYMENTS
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/seller/payments', [
+    SellerPaymentController::class,
+    'index'
+])
+    ->name('seller.payments.index')
+    ->middleware('seller.auth');
+
+
+Route::get('/seller/payments/{order}', [
+    SellerPaymentController::class,
+    'show'
+])
+    ->name('seller.payments.show')
+    ->middleware('seller.auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| SELLER PAYMENT RECEIPT DOWNLOAD
+|--------------------------------------------------------------------------
+|
+| This creates a real downloadable receipt file.
+|
+*/
+
+/*
+|--------------------------------------------------------------------------
+| SELLER PAYMENT RECEIPT DOWNLOAD
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/seller/payments/{order}/receipt',
+    [
+        SellerPaymentController::class,
+        'downloadReceipt'
+    ]
+)
+    ->name('seller.payments.receipt')
+    ->middleware('seller.auth');
+
+
+/*
+|--------------------------------------------------------------------------
+| OTP
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/verify-otp', function () {
+
+    return view('auth.verify-otp');
+
+})->name('verify.otp');
+
+
+Route::post('/verify-otp', function (Request $request) {
+
+    $request->validate([
+        'otp' => 'required|digits:6'
+    ]);
+
+
+    if (
+        $request->otp ==
+        session('reset_otp')
+    ) {
+
+        return redirect('/reset-password')
+            ->with(
+                'success',
+                'OTP verified successfully'
+            );
+    }
+
+
+    return back()
+        ->with(
+            'error',
+            'Invalid OTP'
+        );
+
+})->name('verify.otp.submit');
+
+
+/*
+|--------------------------------------------------------------------------
+| PASSWORD RESET
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/reset-password', function () {
+
+    return view('auth.reset-password');
+
+})->name('reset.password');
+
+
+Route::post('/reset-password', function (Request $request) {
+
+    $request->validate([
+        'password' =>
+            'required|min:8|confirmed'
+    ]);
+
+
+    return redirect()
+        ->route('password.success');
+
+})->name('reset.password.submit');
+
+
+Route::get('/password-success', function () {
+
+    return view('auth.password-success');
+
+})->name('password.success');
+
+
+/*
+|--------------------------------------------------------------------------
+| PRODUCTS
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/products', [
+    ProductController::class,
+    'index'
+])->name('products.index');
+
+
+Route::get('/product/{product}', [
+    ProductController::class,
+    'show'
+])->name('product.show');
+
+
+Route::get('/products/{product}', [
+    ProductController::class,
+    'show'
+])->name('products.show');
+
+
+/*
+|--------------------------------------------------------------------------
+| AI HUB
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/ai-hub', [
+    AiHubController::class,
+    'index'
+])->name('ai-hub');
+
+
+Route::get('/overview', [
+    AiHubController::class,
+    'index'
+])->name('overview');
+
+
+Route::get('/ai-camera', [
+    AiHubController::class,
+    'camera'
+])->name('ai-camera');
+
+
+Route::post('/ai-camera', [
+    AiHubController::class,
+    'analyzeCamera'
+])->name('ai-camera.analyze');
+
+
+Route::get('/budget-shopping', [
+    AiHubController::class,
+    'budget'
+])->name('budget-shopping');
+
+
+Route::get('/gift-finder', [
+    AiHubController::class,
+    'giftFinder'
+])->name('gift-finder');
+
+
+Route::get('/trending-products', [
+    AiHubController::class,
+    'trending'
+])->name('trending-products');
+
+
+Route::get('/compare-products', [
+    AiHubController::class,
+    'compare'
+])->name('compare-products');
+
+
+Route::get('/wishlist', [
+    AiHubController::class,
+    'wishlist'
+])->name('wishlist');
+
+
+Route::delete('/wishlist/{wishlist}', [
+    AiHubController::class,
+    'removeWishlist'
+])->name('wishlist.remove');
+
+
+/*
+|--------------------------------------------------------------------------
+| AI CAMERA ASSISTANT
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/ai-camera-assistant', [
+    AICameraAssistantController::class,
+    'index'
+])->name('ai-camera-assistant');
+
+
+Route::post('/ai-camera-assistant', [
+    AICameraAssistantController::class,
+    'analyze'
+])->name('ai-camera-assistant.analyze');
+
+
+Route::get('/ai-camera-assistant/history', [
+    AICameraAssistantController::class,
+    'history'
+])->name('ai-camera-assistant.history');
+
+
+Route::delete(
+    '/ai-camera-assistant/history/{history}',
+    [
+        AICameraAssistantController::class,
+        'deleteHistory'
+    ]
+)->name('ai-camera-assistant.history.delete');
+
+
+Route::get(
+    '/ai-camera-assistant/virtual-try-on',
+    [
+        AICameraAssistantController::class,
+        'virtualTryOn'
+    ]
+)->name('ai-camera-assistant.virtual-try-on');
+
+
+Route::post(
+    '/ai-camera-assistant/virtual-try-on',
+    [
+        AICameraAssistantController::class,
+        'processVirtualTryOn'
+    ]
+)->name('ai-camera-assistant.virtual-try-on.process');
+
+
+Route::get(
+    '/ai-camera-assistant/result/{file}',
+    [
+        AICameraAssistantController::class,
+        'resultImage'
+    ]
+)->name('ai-camera-assistant.result');
+
+
+/*
+|--------------------------------------------------------------------------
+| VIRTUAL TRY ON
+|--------------------------------------------------------------------------
+*/
+
+Route::post(
+    '/products/{product}/virtual-try-on',
+    [
+        VirtualTryOnController::class,
+        'generate'
+    ]
+)->name('products.virtual-try-on.generate');
+
+
+Route::get(
+    '/products/{product}/virtual-try-on/result/{token}',
+    [
+        VirtualTryOnController::class,
+        'result'
+    ]
+)
+    ->where(
+        'token',
+        '[A-Za-z0-9]{40}'
+    )
+    ->name('products.virtual-try-on.result');
+
+
+/*
+|--------------------------------------------------------------------------
+| WISHLIST ADD
+|--------------------------------------------------------------------------
+*/
+
+Route::post('/wishlist/add/{product}', function ($productId) {
+
+    if (!Auth::check()) {
+        return redirect('/login');
+    }
+
+
+    $product =
+        Product::findOrFail($productId);
+
+
+    \App\Models\Wishlist::firstOrCreate([
+
+        'user_id' => Auth::id(),
+
+        'product_id' => $product->id,
+
+    ]);
+
+
+    return back()
+        ->with(
+            'success',
+            'Added to wishlist.'
+        );
+
+})->name('wishlist.add');
+
+
+/*
+|--------------------------------------------------------------------------
+| CHECKOUT
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/checkout', function () {
+
+    $cartItems = [];
+
+    $total = 0.0;
+
+
+    if (Auth::check()) {
+
+        $cartItems =
+            \App\Models\Cart::with(
+                'product.seller'
+            )
+            ->where(
+                'user_id',
+                Auth::id()
+            )
+            ->get();
+
+
+        foreach ($cartItems as $item) {
+
+            $product =
+                $item->product;
+
+
+            if ($product) {
+
+                $total +=
+                    (float) $product->price
+                    *
+                    max(
+                        1,
+                        (int) $item->quantity
+                    );
+            }
+        }
+    }
+
+
+    $buyProductId =
+        session('buy_product');
+
+
+    if ($buyProductId) {
+
+        $product =
+            \App\Models\Product::with(
+                'seller'
+            )->find($buyProductId);
+
+
+        if ($product) {
+
+            $cartItems = [[
+
+                'product' => $product,
+
+                'quantity' => 1,
+
+            ]];
+
+            $total =
+                (float) $product->price;
+        }
+    }
+
+
+    $checkoutSellers =
+        collect($cartItems)
+
+        ->map(
+            fn ($item) =>
+                $item['product']
+                ?? $item->product
+                ?? null
+        )
+
+        ->filter()
+
+        ->map(
+            fn ($product) =>
+                $product->seller
+        )
+
+        ->filter()
+
+        ->unique('id');
+
+
+    $onlinePaymentAvailable =
+        $checkoutSellers->isNotEmpty()
+        &&
+        $checkoutSellers->every(
+            fn ($seller) =>
+                (bool)
+                $seller->online_payments_enabled
+        );
+
+
+    return view(
+        'checkout',
+        compact(
+            'cartItems',
+            'total',
+            'onlinePaymentAvailable'
+        )
+    );
+
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| ORDERS
+|--------------------------------------------------------------------------
+*/
+
+Route::post('/place-order', [
+    OrderController::class,
+    'placeOrder'
+])->name('place.order');
+
+
+Route::get('/order-success', function () {
+
+    return view('order-success');
+
+});
+
+
+Route::get('/my-orders', [
+    OrderController::class,
+    'myOrders'
+])->name('orders.index');
+
+
+Route::get('/order-details/{order}', [
+    OrderController::class,
+    'show'
+])->name('orders.show');
+
+
+Route::post(
+    '/order-details/{order}/cancel',
+    [
+        OrderController::class,
+        'cancel'
+    ]
+)->name('orders.cancel');
+
+
+/*
+|--------------------------------------------------------------------------
+| PAYMENTS
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/payments/{payment}', [
+    PaymentController::class,
+    'show'
+])->name('payments.show');
+
+
+Route::post(
+    '/payments/{payment}/verify',
+    [
+        PaymentController::class,
+        'verify'
+    ]
+)->name('payments.verify');
+
+
+Route::post(
+    '/payments/{payment}/cancel',
+    [
+        PaymentController::class,
+        'cancel'
+    ]
+)->name('payments.cancel');
+
+
+Route::post(
+    '/payments/razorpay/webhook',
+    [
+        PaymentController::class,
+        'webhook'
+    ]
+)->name('payments.razorpay.webhook');
+
+
+/*
+|--------------------------------------------------------------------------
+| CART
+|--------------------------------------------------------------------------
+*/
+
+Route::post(
+    '/cart/add/{product}',
+    [
+        CartController::class,
+        'add'
+    ]
+)->name('cart.add');
+
+
+Route::post(
+    '/cart/update/{product}',
+    [
+        CartController::class,
+        'update'
+    ]
+)->name('cart.update');
+
+
+Route::delete(
+    '/cart/remove/{id}',
+    [
+        CartController::class,
+        'remove'
+    ]
+)->name('cart.remove');
+
+
+Route::get('/cart', [
+    CartController::class,
+    'index'
+])->name('cart.index');
+
+
+/*
+|--------------------------------------------------------------------------
+| BUY NOW
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/buy-now/{id}', function ($id) {
+
+    $product =
+        Product::findOrFail($id);
+
+
+    session([
+        'buy_product' =>
+            $product->id
+    ]);
+
+
+    return redirect('/checkout');
+
+});
+
+
+Route::post('/confirm-buy', function () {
+
+    session()->forget(
+        'buy_product'
+    );
+
+
+    return redirect('/products')
+        ->with(
+            'success',
+            'Order Placed Successfully ðŸŽ‰'
+        );
+
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| CUSTOMER PROFILE
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/profile', [
+    ProfileController::class,
+    'index'
+])->name('profile');
+
+
+Route::post('/profile/update', [
+    ProfileController::class,
+    'update'
+])->name('profile.update');
+
+
+Route::post('/logout', [
+    ProfileController::class,
+    'logout'
+])->name('logout');
+
+
+/*
+|--------------------------------------------------------------------------
+| CUSTOMER SETTINGS
+|--------------------------------------------------------------------------
+*/
+
+/*
+|--------------------------------------------------------------------------
+| CUSTOMER SETTINGS
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('auth')->group(function () {
+
+    Route::get('/settings', [
+        CustomerSettingsController::class,
+        'edit'
+    ])->name('settings');
+
+    Route::put('/settings', [
+        CustomerSettingsController::class,
+        'update'
+    ])->name('settings.update');
+
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| SECURITY
+|--------------------------------------------------------------------------
+*/
+
+Route::post(
+    '/security/save-pin',
+    [
+        SecurityController::class,
+        'savePin'
+    ]
+)->name('security.save');
+
+
+Route::post(
+    '/security/verify',
+    [
+        SecurityController::class,
+        'verifyPin'
+    ]
+)->name('security.verify');
+
+
+Route::post(
+    '/security/disable',
+    [
+        SecurityController::class,
+        'disable'
+    ]
+)->name('security.disable');
+
+
+Route::get(
+    '/security/verify-page',
+    function () {
+
+        return view(
+            'security.verify'
+        );
+
+    }
+)->name('security.verify.page');
+
+
+/*
+|--------------------------------------------------------------------------
+| TEST ROUTES
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/test-profile', function () {
+
+    return "TEST PROFILE OK";
+
+});
+
+
+Route::get('/abc-test', function () {
+
+    return "ABC TEST WORKING";
+
+});
+
+
+Route::get('/profile-test', function () {
+
+    return "PROFILE TEST OK";
+
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| CREATE QR FILE
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/create-qr-file', function () {
+
+    $folder =
+        public_path('images');
+
+
+    if (!File::exists($folder)) {
+
+        File::makeDirectory(
+            $folder,
+            0755,
+            true
+        );
+    }
+
+
+    $image =
+        file_get_contents(
+            'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=upi://pay?pa=smartbasket@upi&pn=SMART%20BASKET'
+        );
+
+
+    file_put_contents(
+        public_path(
+            'images/my-qr.png'
+        ),
+        $image
+    );
+
+
+    return "my-qr.png created successfully";
+
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| AI CHAT
+|--------------------------------------------------------------------------
+*/
+
+Route::post('/ai-chat', [
+    AiHubController::class,
+    'aiChat'
+])->name('ai.chat');
+
+
+Route::get('/ai-chat', function () {
+
+    return view(
+        'ai-hub.chat'
+    );
+
+});
+
+==================== C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\resources\views\seller\dashboard.blade.php ====================
+
+@extends('seller.partials.premium-layout')
+
+@section('title', 'Seller Dashboard')
+
+@section('content')
+
+<style>
+    /* =========================================================
+       SMART BASKET SELLER DASHBOARD
+       PREMIUM DARK UI
+       ========================================================= */
+
+    .seller-dashboard {
+        min-height: 100vh;
+        padding: 32px;
+        color: #f8fafc;
+        background:
+            radial-gradient(circle at 10% 0%, rgba(0, 255, 153, .08), transparent 28%),
+            radial-gradient(circle at 90% 10%, rgba(59, 130, 246, .07), transparent 25%),
+            linear-gradient(135deg, #020617 0%, #07111f 48%, #020617 100%);
+    }
+
+    .seller-dashboard * {
+        box-sizing: border-box;
+    }
+
+    /* =========================================================
+       HEADER
+       ========================================================= */
+
+    .sd-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .sd-title h1 {
+        margin: 0;
+        color: #f8fafc;
+        font-size: 32px;
+        line-height: 1.15;
+        font-weight: 850;
+        letter-spacing: -.8px;
+    }
+
+    .sd-title h1 span {
+        color: #00ff99;
+        text-shadow: 0 0 25px rgba(0,255,153,.18);
+    }
+
+    .sd-subtitle {
+        margin-top: 8px;
+        color: #94a3b8;
+        font-size: 13px;
+    }
+
+    .sd-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        padding: 12px 17px;
+        border: 1px solid rgba(0,255,153,.20);
+        border-radius: 14px;
+        background: rgba(0,255,153,.055);
+        color: #8affcb;
+        font-size: 11px;
+        font-weight: 750;
+        white-space: nowrap;
+        box-shadow: 0 8px 25px rgba(0,0,0,.18);
+    }
+
+    .sd-status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #00ff99;
+        box-shadow:
+            0 0 8px #00ff99,
+            0 0 18px rgba(0,255,153,.6);
+    }
+
+    /* =========================================================
+       QUICK ACTIONS
+       ========================================================= */
+
+    .sd-actions {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .sd-action {
+        position: relative;
+        overflow: hidden;
+        min-height: 145px;
+        padding: 20px;
+        border: 1px solid rgba(148,163,184,.13);
+        border-radius: 20px;
+        background:
+            linear-gradient(
+                145deg,
+                rgba(30,41,59,.78),
+                rgba(15,23,42,.72)
+            );
+        color: #f8fafc;
+        text-decoration: none;
+        box-shadow:
+            0 15px 35px rgba(0,0,0,.22),
+            inset 0 1px 0 rgba(255,255,255,.035);
+        transition: transform .25s ease,
+                    border-color .25s ease,
+                    box-shadow .25s ease;
+    }
+
+    .sd-action::before {
+        content: "";
+        position: absolute;
+        top: -50px;
+        right: -45px;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: #00ff99;
+        opacity: .035;
+        filter: blur(25px);
+    }
+
+    .sd-action:hover {
+        transform: translateY(-5px);
+        border-color: rgba(0,255,153,.30);
+        color: #fff;
+        box-shadow:
+            0 22px 45px rgba(0,0,0,.32),
+            0 0 30px rgba(0,255,153,.055);
+    }
+
+    .sd-action-icon {
+        width: 46px;
+        height: 46px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+        border: 1px solid rgba(0,255,153,.16);
+        border-radius: 14px;
+        background: rgba(0,255,153,.07);
+        color: #00ff99;
+        font-size: 17px;
+    }
+
+    .sd-action-title {
+        color: #f8fafc;
+        font-size: 14px;
+        font-weight: 750;
+    }
+
+    .sd-action-text {
+        margin-top: 5px;
+        color: #64748b;
+        font-size: 11px;
+    }
+
+    /* =========================================================
+       STATISTICS
+       ========================================================= */
+
+    .sd-stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .sd-stat {
+        position: relative;
+        overflow: hidden;
+        min-height: 165px;
+        padding: 22px;
+        border: 1px solid rgba(148,163,184,.13);
+        border-radius: 22px;
+        background:
+            linear-gradient(
+                145deg,
+                rgba(30,41,59,.82),
+                rgba(15,23,42,.68)
+            );
+        backdrop-filter: blur(18px);
+        box-shadow:
+            0 16px 38px rgba(0,0,0,.22),
+            inset 0 1px 0 rgba(255,255,255,.035);
+        transition: transform .28s ease,
+                    border-color .28s ease,
+                    box-shadow .28s ease;
+    }
+
+    .sd-stat:hover {
+        transform: translateY(-5px);
+        border-color: rgba(0,255,153,.24);
+        box-shadow:
+            0 24px 48px rgba(0,0,0,.30),
+            0 0 30px rgba(0,255,153,.045);
+    }
+
+    .sd-stat::after {
+        content: "";
+        position: absolute;
+        right: -50px;
+        bottom: -50px;
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        background: #00ff99;
+        opacity: .035;
+        filter: blur(25px);
+    }
+
+    .sd-stat-icon {
+        width: 47px;
+        height: 47px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 18px;
+        border: 1px solid rgba(0,255,153,.14);
+        border-radius: 14px;
+        background: rgba(0,255,153,.065);
+        color: #00ff99;
+        font-size: 18px;
+    }
+
+    .sd-stat-number {
+        position: relative;
+        z-index: 1;
+        color: #f8fafc;
+        font-size: 28px;
+        line-height: 1;
+        font-weight: 850;
+        letter-spacing: -.5px;
+    }
+
+    .sd-stat-label {
+        position: relative;
+        z-index: 1;
+        margin-top: 9px;
+        color: #64748b;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    /* =========================================================
+       PRODUCTS SECTION
+       ========================================================= */
+
+    .sd-products {
+        margin-top: 38px;
+    }
+
+    .sd-section-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .sd-section-title {
+        color: #f8fafc;
+        font-size: 21px;
+        font-weight: 850;
+        letter-spacing: -.3px;
+    }
+
+    .sd-section-subtitle {
+        margin-top: 5px;
+        color: #64748b;
+        font-size: 11px;
+    }
+
+    .sd-add {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 18px;
+        border: 0;
+        border-radius: 13px;
+        background: linear-gradient(135deg, #00ff99, #00d681);
+        color: #020617 !important;
+        font-size: 12px;
+        font-weight: 850;
+        text-decoration: none;
+        box-shadow:
+            0 10px 25px rgba(0,255,153,.10);
+        transition: transform .25s ease,
+                    box-shadow .25s ease;
+    }
+
+    .sd-add:hover {
+        transform: translateY(-2px);
+        color: #020617 !important;
+        box-shadow:
+            0 15px 35px rgba(0,255,153,.22);
+    }
+
+    /* =========================================================
+       PRODUCT GRID
+       ========================================================= */
+
+    .sd-product-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .sd-product {
+        overflow: hidden;
+        min-width: 0;
+        border: 1px solid rgba(148,163,184,.13);
+        border-radius: 20px;
+        background:
+            linear-gradient(
+                145deg,
+                rgba(30,41,59,.82),
+                rgba(15,23,42,.72)
+            );
+        box-shadow:
+            0 15px 35px rgba(0,0,0,.22),
+            inset 0 1px 0 rgba(255,255,255,.03);
+        transition: transform .3s ease,
+                    border-color .3s ease,
+                    box-shadow .3s ease;
+    }
+
+    .sd-product:hover {
+        transform: translateY(-6px);
+        border-color: rgba(0,255,153,.24);
+        box-shadow:
+            0 25px 50px rgba(0,0,0,.32),
+            0 0 30px rgba(0,255,153,.045);
+    }
+
+    .sd-product-image {
+        position: relative;
+        height: 195px;
+        overflow: hidden;
+        background: #0b1220;
+    }
+
+    .sd-product-image::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+            to bottom,
+            transparent 60%,
+            rgba(2,6,23,.30)
+        );
+        pointer-events: none;
+    }
+
+    .sd-product-image img {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+        transition: transform .45s ease;
+    }
+
+    .sd-product:hover .sd-product-image img {
+        transform: scale(1.06);
+    }
+
+    .sd-product-body {
+        padding: 17px;
+    }
+
+    .sd-product-name {
+        overflow: hidden;
+        color: #f8fafc;
+        font-size: 14px;
+        font-weight: 750;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .sd-product-category {
+        margin-top: 5px;
+        overflow: hidden;
+        color: #64748b;
+        font-size: 10px;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .sd-product-price {
+        margin-top: 12px;
+        color: #00ff99;
+        font-size: 19px;
+        font-weight: 850;
+    }
+
+    .sd-product-stock {
+        margin-top: 6px;
+        color: #94a3b8;
+        font-size: 10px;
+    }
+
+    .sd-product-stock i {
+        margin-right: 3px;
+        color: #00ff99;
+    }
+
+    .sd-product-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 15px;
+    }
+
+    .sd-edit,
+    .sd-delete {
+        flex: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        min-height: 37px;
+        padding: 8px 10px;
+        border-radius: 10px;
+        font-size: 10px;
+        font-weight: 750;
+        text-decoration: none;
+        cursor: pointer;
+        transition: .22s ease;
+    }
+
+    .sd-edit {
+        border: 1px solid rgba(245,158,11,.20);
+        background: rgba(245,158,11,.08);
+        color: #fbbf24;
+    }
+
+    .sd-edit:hover {
+        background: rgba(245,158,11,.15);
+        border-color: rgba(245,158,11,.35);
+        color: #fbbf24;
+    }
+
+    .sd-delete {
+        width: 100%;
+        border: 1px solid rgba(239,68,68,.20);
+        background: rgba(239,68,68,.08);
+        color: #ff8585;
+    }
+
+    .sd-delete:hover {
+        background: rgba(239,68,68,.15);
+        border-color: rgba(239,68,68,.35);
+        color: #ff8585;
+    }
+
+    /* =========================================================
+       EMPTY STATE
+       ========================================================= */
+
+    .sd-empty {
+        grid-column: 1 / -1;
+        padding: 75px 25px;
+        text-align: center;
+        border: 1px dashed rgba(148,163,184,.18);
+        border-radius: 23px;
+        background: rgba(15,23,42,.55);
+    }
+
+    .sd-empty i {
+        color: #475569;
+        font-size: 42px;
+    }
+
+    .sd-empty h3 {
+        margin: 16px 0 0;
+        color: #f8fafc;
+        font-size: 18px;
+        font-weight: 800;
+    }
+
+    .sd-empty p {
+        margin: 8px 0 22px;
+        color: #64748b;
+        font-size: 11px;
+    }
+
+    /* =========================================================
+       RESPONSIVE
+       ========================================================= */
+
+    @media (max-width: 1200px) {
+
+        .sd-product-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+    }
+
+    @media (max-width: 1050px) {
+
+        .sd-actions,
+        .sd-stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+    }
+
+    @media (max-width: 768px) {
+
+        .seller-dashboard {
+            padding: 22px 15px;
+        }
+
+        .sd-top {
+            align-items: flex-start;
+        }
+
+        .sd-title h1 {
+            font-size: 25px;
+        }
+
+        .sd-subtitle {
+            font-size: 11px;
+        }
+
+        .sd-status {
+            display: none;
+        }
+
+        .sd-product-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .sd-product-image {
+            height: 170px;
+        }
+
+    }
+
+    @media (max-width: 560px) {
+
+        .sd-actions,
+        .sd-stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .sd-action {
+            min-height: 130px;
+            padding: 15px;
+        }
+
+        .sd-action-icon {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 12px;
+        }
+
+        .sd-action-title {
+            font-size: 12px;
+        }
+
+        .sd-action-text {
+            font-size: 9px;
+        }
+
+        .sd-stat {
+            min-height: 135px;
+            padding: 16px;
+        }
+
+        .sd-stat-icon {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 14px;
+        }
+
+        .sd-stat-number {
+            font-size: 21px;
+        }
+
+        .sd-stat-label {
+            font-size: 9px;
+        }
+
+        .sd-section-head {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .sd-add {
+            width: 100%;
+        }
+
+        .sd-product-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .sd-product-image {
+            height: 210px;
+        }
+
+    }
+
+    /* =========================================================
+       REDUCED MOTION
+       ========================================================= */
+
+    @media (prefers-reduced-motion: reduce) {
+
+        .sd-action,
+        .sd-stat,
+        .sd-product,
+        .sd-product-image img,
+        .sd-add,
+        .sd-edit,
+        .sd-delete {
+            transition: none !important;
+        }
+
+    }
+</style>
+
+
+<div class="seller-dashboard">
+
+    {{-- =========================================================
+         HEADER
+    ========================================================== --}}
+
+    <div class="sd-top">
+
+        <div class="sd-title">
+
+            <h1>
+                Seller <span>Dashboard</span>
+            </h1>
+
+            <div class="sd-subtitle">
+                Welcome back. Manage your SMART BASKET store from one place.
+            </div>
+
+        </div>
+
+        <div class="sd-status">
+
+            <span class="sd-status-dot"></span>
+
+            Seller Account Active
+
+        </div>
+
+    </div>
+
+
+    {{-- =========================================================
+         QUICK ACTIONS
+    ========================================================== --}}
+
+    <div class="sd-actions">
+
+        <a
+            href="{{ route('seller.product.add') }}"
+            class="sd-action"
+        >
+
+            <div class="sd-action-icon">
+                <i class="fa-solid fa-plus"></i>
+            </div>
+
+            <div class="sd-action-title">
+                Add Product
+            </div>
+
+            <div class="sd-action-text">
+                List a new product
+            </div>
+
+        </a>
+
+
+        <a
+            href="{{ route('seller.products.index') }}"
+            class="sd-action"
+        >
+
+            <div class="sd-action-icon">
+                <i class="fa-solid fa-box"></i>
+            </div>
+
+            <div class="sd-action-title">
+                My Products
+            </div>
+
+            <div class="sd-action-text">
+                Manage your products
+            </div>
+
+        </a>
+
+
+        <a
+            href="{{ route('seller.orders.index') }}"
+            class="sd-action"
+        >
+
+            <div class="sd-action-icon">
+                <i class="fa-solid fa-cart-shopping"></i>
+            </div>
+
+            <div class="sd-action-title">
+                Orders
+            </div>
+
+            <div class="sd-action-text">
+                View customer orders
+            </div>
+
+        </a>
+
+
+        <a
+            href="{{ route('seller.payments.index') }}"
+            class="sd-action"
+        >
+
+            <div class="sd-action-icon">
+                <i class="fa-solid fa-wallet"></i>
+            </div>
+
+            <div class="sd-action-title">
+                Payments
+            </div>
+
+            <div class="sd-action-text">
+                Track your earnings
+            </div>
+
+        </a>
+
+    </div>
+
+
+    {{-- =========================================================
+         STATISTICS
+    ========================================================== --}}
+
+    <div class="sd-stats">
+
+        <div class="sd-stat">
+
+            <div class="sd-stat-icon">
+                <i class="fa-solid fa-box"></i>
+            </div>
+
+            <div class="sd-stat-number">
+                {{ $totalProducts }}
+            </div>
+
+            <div class="sd-stat-label">
+                Total Products
+            </div>
+
+        </div>
+
+
+        <div class="sd-stat">
+
+            <div class="sd-stat-icon">
+                <i class="fa-solid fa-cart-shopping"></i>
+            </div>
+
+            <div class="sd-stat-number">
+                {{ $totalOrders }}
+            </div>
+
+            <div class="sd-stat-label">
+                Total Orders
+            </div>
+
+        </div>
+
+
+        <div class="sd-stat">
+
+            <div class="sd-stat-icon">
+                <i class="fa-solid fa-clock"></i>
+            </div>
+
+            <div class="sd-stat-number">
+                {{ $pendingOrders }}
+            </div>
+
+            <div class="sd-stat-label">
+                Pending Orders
+            </div>
+
+        </div>
+
+
+        <div class="sd-stat">
+
+            <div class="sd-stat-icon">
+                <i class="fa-solid fa-indian-rupee-sign"></i>
+            </div>
+
+            <div class="sd-stat-number">
+                â‚¹ {{ number_format($totalRevenue) }}
+            </div>
+
+            <div class="sd-stat-label">
+                Total Earnings
+            </div>
+
+        </div>
+
+    </div>
+
+
+    {{-- =========================================================
+         PRODUCTS
+    ========================================================== --}}
+
+    <section class="sd-products">
+
+        <div class="sd-section-head">
+
+            <div>
+
+                <div class="sd-section-title">
+                    My Products
+                </div>
+
+                <div class="sd-section-subtitle">
+                    Manage your listed products
+                </div>
+
+            </div>
+
+            <a
+                href="{{ route('seller.product.add') }}"
+                class="sd-add"
+            >
+
+                <i class="fa-solid fa-plus"></i>
+
+                Add Product
+
+            </a>
+
+        </div>
+
+
+        <div class="sd-product-grid">
+
+            @forelse($products as $product)
+
+                <div class="sd-product">
+
+                    <div class="sd-product-image">
+
+                        <img
+                            src="{{ asset('products/'.$product->image) }}"
+                            alt="{{ $product->name }}"
+                            loading="lazy"
+                        >
+
+                    </div>
+
+
+                    <div class="sd-product-body">
+
+                        <div class="sd-product-name">
+                            {{ $product->name }}
+                        </div>
+
+                        <div class="sd-product-category">
+                            {{ $product->category }}
+                        </div>
+
+                        <div class="sd-product-price">
+                            â‚¹ {{ number_format($product->price) }}
+                        </div>
+
+                        <div class="sd-product-stock">
+
+                            <i class="fa-solid fa-cubes"></i>
+
+                            Stock: {{ $product->stock }}
+
+                        </div>
+
+
+                        <div class="sd-product-actions">
+
+                            <a
+                                href="{{ route('seller.product.edit', $product->id) }}"
+                                class="sd-edit"
+                            >
+
+                                <i class="fa-solid fa-pen"></i>
+
+                                Edit
+
+                            </a>
+
+
+                            <form
+                                action="{{ route('seller.product.delete', $product->id) }}"
+                                method="POST"
+                                style="flex:1;margin:0;"
+                            >
+
+                                @csrf
+
+                                <button
+                                    type="submit"
+                                    class="sd-delete"
+                                    onclick="return confirm('Delete this product?')"
+                                >
+
+                                    <i class="fa-solid fa-trash"></i>
+
+                                    Delete
+
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            @empty
+
+                <div class="sd-empty">
+
+                    <i class="fa-solid fa-box-open"></i>
+
+                    <h3>
+                        No Products Added
+                    </h3>
+
+                    <p>
+                        Start selling by adding your first product.
+                    </p>
+
+                    <a
+                        href="{{ route('seller.product.add') }}"
+                        class="sd-add"
+                    >
+
+                        <i class="fa-solid fa-plus"></i>
+
+                        Add Your First Product
+
+                    </a>
+
+                </div>
+
+            @endforelse
+
+        </div>
+
+    </section>
+
+</div>
+
+@endsection
+
+==================== C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\resources\views\seller\verification\aadhaar.blade.php ====================
+
+@extends('seller.partials.premium-layout')
+
+@section('title', 'Aadhaar Verification')
+
+@php
+    $step = 3;
+@endphp
+
+@section('content')
+
+<div class="sb-card">
+
+    <div class="sb-step">
+        STEP 3 OF 6
+    </div>
+
+    <h1 class="sb-title">
+        Aadhaar Verification
+    </h1>
+
+    <p class="sb-description">
+        Verify your Aadhaar identity using the 12-digit Aadhaar number
+        associated with the uploaded document.
+    </p>
+
+
+    {{-- SUCCESS MESSAGE --}}
+
+    @if(session('success'))
+        <div class="sb-alert sb-alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+
+
+    {{-- ERROR MESSAGE --}}
+
+    @if(session('error'))
+        <div class="sb-alert sb-alert-error">
+            {{ session('error') }}
+        </div>
+    @endif
+
+
+    {{-- VALIDATION ERRORS --}}
+
+    @if($errors->any())
+        <div class="sb-alert sb-alert-error">
+
+            <ul style="margin:0;padding-left:20px;">
+
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+
+            </ul>
+
+        </div>
+    @endif
+
+
+    {{-- SELLER INFORMATION --}}
+
+    <div class="sb-info-box">
+
+        <h3>
+            Identity Verification
+        </h3>
+
+        <p>
+            Seller:
+            <strong>
+                {{ $seller->email }}
+            </strong>
+        </p>
+
+        <p>
+            Enter the Aadhaar number belonging to the document
+            uploaded in Step 2.
+        </p>
+
+    </div>
+
+
+    {{-- DOCUMENT STATUS --}}
+
+    <div class="sb-grid">
+
+        <div class="sb-field">
+
+            <label class="sb-label">
+                Business Certificate
+            </label>
+
+            <div class="sb-input">
+
+                @if($seller->business_certificate_path)
+
+                    âœ“ Uploaded
+
+                @else
+
+                    Not uploaded
+
+                @endif
+
+            </div>
+
+        </div>
+
+
+        <div class="sb-field">
+
+            <label class="sb-label">
+                Aadhaar Document
+            </label>
+
+            <div class="sb-input">
+
+                @if($seller->aadhaar_document_path)
+
+                    âœ“ Uploaded
+
+                @else
+
+                    Not uploaded
+
+                @endif
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    {{-- AADHAAR FORM --}}
+
+    <form
+        method="POST"
+        action="{{ route('seller.verification.aadhaar.verify') }}"
+    >
+
+        @csrf
+
+        <div class="sb-field">
+
+            <label
+                class="sb-label"
+                for="aadhaar_number"
+            >
+                Aadhaar Number *
+            </label>
+
+            <input
+                id="aadhaar_number"
+                type="text"
+                name="aadhaar_number"
+                class="sb-input"
+                inputmode="numeric"
+                autocomplete="off"
+                maxlength="12"
+                minlength="12"
+                pattern="[0-9]{12}"
+                placeholder="Enter 12-digit Aadhaar number"
+                value="{{ old('aadhaar_number', $seller->aadhaar_number ?? '') }}"
+                required
+            >
+
+        </div>
+
+
+        <div class="sb-actions">
+
+            {{-- BACK TO STEP 2 --}}
+
+            <a
+                href="{{ route('seller.verification.documents') }}"
+                class="sb-btn"
+            >
+                â† Back
+            </a>
+
+
+            {{-- CONTINUE TO STEP 4 --}}
+
+            <button
+                type="submit"
+                class="sb-btn sb-btn-primary"
+            >
+                Verify & Continue â†’
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+@endsection
+
+==================== C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\resources\views\seller\verification\email.blade.php ====================
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Seller Email Verification | SmartBasket Premium</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Arial, Helvetica, sans-serif;
+            background:
+                radial-gradient(circle at top left, #243b55, transparent 35%),
+                radial-gradient(circle at bottom right, #141e30, transparent 40%),
+                #080b12;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 25px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 35px;
+            box-shadow: 0 25px 70px rgba(0,0,0,0.45);
+        }
+
+        .brand {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .brand h1 {
+            margin: 0;
+            font-size: 28px;
+            letter-spacing: 1px;
+        }
+
+        .brand p {
+            margin-top: 8px;
+            color: #aeb8c8;
+        }
+
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 35px;
+            gap: 8px;
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+        }
+
+        .circle {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            margin: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border: 1px solid rgba(255,255,255,0.25);
+            background: rgba(255,255,255,0.08);
+            color: #aeb8c8;
+        }
+
+        .step.active .circle {
+            background: #fff;
+            color: #111;
+        }
+
+        .step-title {
+            margin-top: 7px;
+            font-size: 11px;
+            color: #aeb8c8;
+        }
+
+        .step.active .step-title {
+            color: #fff;
+        }
+
+        h2 {
+            margin-bottom: 10px;
+            font-size: 23px;
+        }
+
+        .description {
+            color: #aeb8c8;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .email-box {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12);
+            padding: 15px;
+            border-radius: 14px;
+            margin-bottom: 20px;
+        }
+
+        .email-label {
+            color: #9da8ba;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .email {
+            font-weight: bold;
+            word-break: break-all;
+        }
+
+        .alert {
+            padding: 13px 15px;
+            border-radius: 12px;
+            margin-bottom: 18px;
+            line-height: 1.5;
+        }
+
+        .success {
+            background: rgba(34,197,94,0.15);
+            border: 1px solid rgba(34,197,94,0.35);
+            color: #9af5b5;
+        }
+
+        .error {
+            background: rgba(239,68,68,0.15);
+            border: 1px solid rgba(239,68,68,0.35);
+            color: #ffaaaa;
+        }
+
+        .info {
+            background: rgba(59,130,246,0.15);
+            border: 1px solid rgba(59,130,246,0.35);
+            color: #a9c9ff;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #dbe2ed;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            border-radius: 13px;
+            border: 1px solid rgba(255,255,255,0.18);
+            background: rgba(0,0,0,0.25);
+            color: white;
+            outline: none;
+            font-size: 17px;
+            letter-spacing: 3px;
+            text-align: center;
+        }
+
+        input:focus {
+            border-color: rgba(255,255,255,0.55);
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            border: 0;
+            border-radius: 13px;
+            background: white;
+            color: #111;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .secondary {
+            background: rgba(255,255,255,0.08);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .divider {
+            height: 1px;
+            background: rgba(255,255,255,0.1);
+            margin: 28px 0;
+        }
+
+        .hint {
+            text-align: center;
+            color: #8995a8;
+            font-size: 12px;
+            margin-top: 15px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 500px) {
+            .card {
+                padding: 24px;
+            }
+
+            .brand h1 {
+                font-size: 23px;
+            }
+
+            .step-title {
+                font-size: 9px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="card">
+
+        <!-- BRAND -->
+        <div class="brand">
+            <h1>SMART BASKET PREMIUM</h1>
+            <p>Seller Partner Program</p>
+        </div>
+
+        <!-- STEPS -->
+        <div class="steps">
+
+            <div class="step active">
+                <div class="circle">1</div>
+                <div class="step-title">EMAIL</div>
+            </div>
+
+            <div class="step">
+                <div class="circle">2</div>
+                <div class="step-title">DOCUMENTS</div>
+            </div>
+
+            <div class="step">
+                <div class="circle">3</div>
+                <div class="step-title">AADHAAR</div>
+            </div>
+
+            <div class="step">
+                <div class="circle">4</div>
+                <div class="step-title">BUSINESS</div>
+            </div>
+
+            <div class="step">
+                <div class="circle">5</div>
+                <div class="step-title">BANK</div>
+            </div>
+
+            <div class="step">
+                <div class="circle">6</div>
+                <div class="step-title">REVIEW</div>
+            </div>
+
+        </div>
+
+
+        <!-- MESSAGES -->
+
+        @if(session('success'))
+            <div class="alert success">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="alert error">
+                {{ session('error') }}
+            </div>
+        @endif
+
+        @if(session('info'))
+            <div class="alert info">
+                {{ session('info') }}
+            </div>
+        @endif
+
+
+        <h2>Verify Your Email</h2>
+
+        <div class="description">
+            Before continuing with your Seller Partner application,
+            please verify your registered email address.
+        </div>
+
+
+        <!-- SELLER EMAIL -->
+
+        <div class="email-box">
+
+            <div class="email-label">
+                REGISTERED EMAIL
+            </div>
+
+            <div class="email">
+                {{ $seller->email }}
+            </div>
+
+        </div>
+
+
+        <!-- SEND CODE -->
+
+        <form method="POST"
+              action="{{ route('seller.verification.email.send') }}">
+
+            @csrf
+
+            <button type="submit">
+                SEND VERIFICATION CODE
+            </button>
+
+        </form>
+
+
+        <div class="divider"></div>
+
+
+        <!-- VERIFY CODE -->
+
+        <form method="POST"
+              action="{{ route('seller.verification.email.verify') }}">
+
+            @csrf
+
+            <label for="code">
+                Enter 16-digit verification code
+            </label>
+
+            <input
+                type="text"
+                id="code"
+                name="code"
+                maxlength="16"
+                minlength="16"
+                pattern="[0-9]{16}"
+                inputmode="numeric"
+                autocomplete="one-time-code"
+                placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                value="{{ old('code') }}"
+                required
+            >
+
+            @error('code')
+                <div class="alert error" style="margin-top:12px;">
+                    {{ $message }}
+                </div>
+            @enderror
+
+            <button type="submit">
+                VERIFY EMAIL & CONTINUE
+            </button>
+
+        </form>
+
+
+        <div class="hint">
+            A 16-digit verification code will be sent to your registered
+            email address. The code is valid for 10 minutes.
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
+
+==================== C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\resources\views\seller\verification\status.blade.php ====================
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Seller Verification Status | SmartBasket Premium</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: Inter, Arial, sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(99,102,241,.20), transparent 35%),
+                radial-gradient(circle at bottom right, rgba(14,165,233,.15), transparent 35%),
+                #070b14;
+            color: #fff;
+            padding: 30px 18px;
+        }
+
+        .container {
+            width: min(900px, 100%);
+            margin: auto;
+        }
+
+        .brand {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .brand h1 {
+            font-size: 30px;
+            font-weight: 800;
+            letter-spacing: .5px;
+        }
+
+        .brand span {
+            color: #60a5fa;
+        }
+
+        .card {
+            background: rgba(15, 23, 42, .88);
+            border: 1px solid rgba(148,163,184,.18);
+            border-radius: 24px;
+            padding: 35px;
+            box-shadow: 0 25px 80px rgba(0,0,0,.35);
+            backdrop-filter: blur(18px);
+        }
+
+        .title {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .title h2 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .title p {
+            color: #94a3b8;
+        }
+
+        .seller-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .info {
+            background: rgba(30,41,59,.65);
+            border: 1px solid rgba(148,163,184,.12);
+            padding: 16px;
+            border-radius: 14px;
+        }
+
+        .info small {
+            display: block;
+            color: #94a3b8;
+            margin-bottom: 6px;
+        }
+
+        .info strong {
+            color: #f8fafc;
+            word-break: break-word;
+        }
+
+        .status {
+            text-align: center;
+            padding: 25px;
+            border-radius: 18px;
+            margin: 25px 0;
+        }
+
+        .status.pending {
+            background: rgba(245,158,11,.10);
+            border: 1px solid rgba(245,158,11,.35);
+        }
+
+        .status.approved {
+            background: rgba(34,197,94,.10);
+            border: 1px solid rgba(34,197,94,.35);
+        }
+
+        .status.rejected {
+            background: rgba(239,68,68,.10);
+            border: 1px solid rgba(239,68,68,.35);
+        }
+
+        .status.suspended {
+            background: rgba(239,68,68,.10);
+            border: 1px solid rgba(239,68,68,.35);
+        }
+
+        .status-icon {
+            font-size: 45px;
+            margin-bottom: 10px;
+        }
+
+        .status h3 {
+            font-size: 22px;
+            margin-bottom: 8px;
+        }
+
+        .status p {
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+
+        .steps {
+            margin-top: 30px;
+        }
+
+        .steps h3 {
+            margin-bottom: 18px;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 14px;
+            background: rgba(30,41,59,.55);
+            border: 1px solid rgba(148,163,184,.08);
+        }
+
+        .circle {
+            width: 38px;
+            height: 38px;
+            min-width: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #334155;
+            color: #cbd5e1;
+            font-weight: 700;
+        }
+
+        .circle.done {
+            background: #22c55e;
+            color: #052e16;
+        }
+
+        .circle.current {
+            background: #3b82f6;
+            color: #fff;
+            box-shadow: 0 0 0 5px rgba(59,130,246,.12);
+        }
+
+        .step-text {
+            flex: 1;
+        }
+
+        .step-text strong {
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        .step-text small {
+            color: #94a3b8;
+        }
+
+        .step-link {
+            color: #60a5fa;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .step-link:hover {
+            text-decoration: underline;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 13px 22px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 700;
+            border: 0;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-success {
+            background: #16a34a;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #1e293b;
+            color: white;
+            border: 1px solid #334155;
+        }
+
+        .alert {
+            padding: 14px 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .alert.success {
+            background: rgba(34,197,94,.12);
+            border: 1px solid rgba(34,197,94,.3);
+            color: #86efac;
+        }
+
+        .alert.error {
+            background: rgba(239,68,68,.12);
+            border: 1px solid rgba(239,68,68,.3);
+            color: #fca5a5;
+        }
+
+        .note {
+            margin-top: 22px;
+            padding: 15px;
+            border-radius: 14px;
+            background: rgba(59,130,246,.08);
+            border: 1px solid rgba(59,130,246,.20);
+            color: #bfdbfe;
+            font-size: 14px;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        @media(max-width: 650px) {
+            body {
+                padding: 18px 12px;
+            }
+
+            .card {
+                padding: 22px;
+            }
+
+            .seller-info {
+                grid-template-columns: 1fr;
+            }
+
+            .title h2 {
+                font-size: 23px;
+            }
+
+            .step {
+                padding: 13px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+@php
+
+    /*
+    |--------------------------------------------------------------------------
+    | BASIC VALUES
+    |--------------------------------------------------------------------------
+    */
+
+    $status = $seller->verification_status ?? 'pending_email';
+
+    $emailDone = !empty($seller->email_verified_at);
+
+    $documentsDone =
+        !empty($seller->business_certificate_path)
+        && !empty($seller->aadhaar_document_path);
+
+    $aadhaarDone = !empty($seller->aadhaar_verified_at);
+
+    $businessDone =
+        !empty($seller->business_type);
+
+    $bankDone =
+        !empty($seller->bank_account_number)
+        || !empty($seller->account_number);
+
+    $reviewDone =
+        in_array(
+            $status,
+            [
+                'pending_admin_review',
+                'approved',
+            ],
+            true
+        );
+
+    $applicationApproved =
+        $status === 'approved';
+
+    $activationDone =
+        !empty($seller->activation_verified_at);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | CURRENT STEP
+    |--------------------------------------------------------------------------
+    */
+
+    if (!$emailDone) {
+
+        $currentStep = 1;
+
+    } elseif (!$documentsDone) {
+
+        $currentStep = 2;
+
+    } elseif (!$aadhaarDone) {
+
+        $currentStep = 3;
+
+    } elseif (!$businessDone) {
+
+        $currentStep = 4;
+
+    } elseif (!$bankDone) {
+
+        $currentStep = 5;
+
+    } elseif (!$reviewDone) {
+
+        $currentStep = 6;
+
+    } elseif (!$applicationApproved) {
+
+        $currentStep = 7;
+
+    } elseif (!$activationDone) {
+
+        $currentStep = 7;
+
+    } else {
+
+        $currentStep = 7;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | STATUS MESSAGE
+    |--------------------------------------------------------------------------
+    */
+
+    $statusMap = [
+
+        'pending_email' => [
+            'class' => 'pending',
+            'icon' => 'âœ‰ï¸',
+            'title' => 'Email Verification Pending',
+            'message' => 'Please verify your registered seller email to continue.'
+        ],
+
+        'email_verified' => [
+            'class' => 'pending',
+            'icon' => 'ðŸ“„',
+            'title' => 'Documents Required',
+            'message' => 'Your email has been verified. Please complete the required documents.'
+        ],
+
+        'documents_pending' => [
+            'class' => 'pending',
+            'icon' => 'ðŸªª',
+            'title' => 'Aadhaar Verification Pending',
+            'message' => 'Your documents are uploaded. Please complete Aadhaar verification.'
+        ],
+
+        'aadhaar_pending' => [
+            'class' => 'pending',
+            'icon' => 'ðŸ”',
+            'title' => 'Aadhaar Verification In Progress',
+            'message' => 'Your Aadhaar verification is currently being processed.'
+        ],
+
+        'pending_admin_review' => [
+            'class' => 'pending',
+            'icon' => 'â³',
+            'title' => 'Application Under Review',
+            'message' => 'Your complete seller application has been submitted and is waiting for admin approval.'
+        ],
+
+        'approved' => [
+            'class' => 'approved',
+            'icon' => 'âœ…',
+            'title' => 'Application Approved',
+            'message' => 'Congratulations! Your seller application has been approved.'
+        ],
+
+        'rejected' => [
+            'class' => 'rejected',
+            'icon' => 'âŒ',
+            'title' => 'Application Rejected',
+            'message' => !empty($seller->rejection_reason)
+                ? 'Reason: '.$seller->rejection_reason
+                : 'Your seller application was rejected.'
+        ],
+
+        'suspended' => [
+            'class' => 'suspended',
+            'icon' => 'âš ï¸',
+            'title' => 'Seller Account Suspended',
+            'message' => 'Your seller account is currently suspended.'
+        ],
+
+    ];
+
+    $currentStatus = $statusMap[$status] ?? [
+        'class' => 'pending',
+        'icon' => 'â„¹ï¸',
+        'title' => 'Verification Status',
+        'message' => 'Your seller verification is being processed.'
+    ];
+
+@endphp
+
+
+<div class="container">
+
+    <div class="brand">
+        <h1>
+            SMART BASKET
+            <span>PREMIUM</span>
+        </h1>
+    </div>
+
+
+    <div class="card">
+
+        {{-- SUCCESS MESSAGE --}}
+        @if(session('success'))
+            <div class="alert success">
+                {{ session('success') }}
+            </div>
+        @endif
+
+
+        {{-- ERROR MESSAGE --}}
+        @if(session('error'))
+            <div class="alert error">
+                {{ session('error') }}
+            </div>
+        @endif
+
+
+        {{-- TITLE --}}
+        <div class="title">
+
+            <h2>
+                Seller Verification Status
+            </h2>
+
+            <p>
+                Your complete seller onboarding progress is shown below.
+            </p>
+
+        </div>
+
+
+        {{-- SELLER INFORMATION --}}
+        <div class="seller-info">
+
+            <div class="info">
+
+                <small>
+                    Seller Name
+                </small>
+
+                <strong>
+                    {{ $seller->seller_name ?? 'Seller' }}
+                </strong>
+
+            </div>
+
+
+            <div class="info">
+
+                <small>
+                    Email
+                </small>
+
+                <strong>
+                    {{ $seller->email ?? '-' }}
+                </strong>
+
+            </div>
+
+
+            <div class="info">
+
+                <small>
+                    Application ID
+                </small>
+
+                <strong>
+                    #{{ $seller->id }}
+                </strong>
+
+            </div>
+
+
+            <div class="info">
+
+                <small>
+                    Current Step
+                </small>
+
+                <strong>
+                    {{ $currentStep }} / 7
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        {{-- CURRENT STATUS --}}
+        <div class="status {{ $currentStatus['class'] }}">
+
+            <div class="status-icon">
+                {{ $currentStatus['icon'] }}
+            </div>
+
+            <h3>
+                {{ $currentStatus['title'] }}
+            </h3>
+
+            <p>
+                {{ $currentStatus['message'] }}
+            </p>
+
+        </div>
+
+
+        {{-- 7 STEP PROGRESS --}}
+        <div class="steps">
+
+            <h3>
+                Verification Progress
+            </h3>
+
+
+            {{-- STEP 1 --}}
+            <div class="step">
+
+                <div class="circle
+                    {{ $emailDone ? 'done' : ($currentStep === 1 ? 'current' : '') }}">
+
+                    {{ $emailDone ? 'âœ“' : '1' }}
+
+                </div>
+
+                <div class="step-text">
+
+                    <strong>
+                        Step 1 â€” Email Verification
+                    </strong>
+
+                    <small>
+                        {{ $emailDone ? 'Completed' : 'Pending' }}
+                    </small>
+
+                </div>
+
+                @if(!$emailDone)
+                    <a
+                        href="{{ route('seller.verification.email') }}"
+                        class="step-link">
+                        Open
+                    </a>
+                @endif
+
+            </div>
+
+
+            {{-- STEP 2 --}}
+            <div class="step">
+
+                <div class="circle
+                    {{ $documentsDone ? 'done' : ($currentStep === 2 ? 'current' : '') }}">
+
+                    {{ $documentsDone ? 'âœ“' : '2' }}
+
+                </div>
+
+                <div class="step-text">
+
+                    <strong>
+                        Step 2 â€” Documents
+                    </strong>
+
+                    <small>
+                        {{ $documentsDone ? 'Completed' : 'Pending' }}
+                    </small>
+
+                </div>
+
+                @if($emailDone && !$documentsDone)
+                    <a
+                        href="{{ route('seller.verification.documents') }}"
+                        class="step-link">
+                        Open
+                    </a>
+                @endif
+
+            </div>
+
+
+            {{-- STEP 3 --}}
+            <div class="step">
+
+                <div class="circle
+                    {{ $aadhaarDone ? 'done' : ($currentStep === 3 ? 'current' : '') }}">
+
+                    {{ $aadhaarDone ? 'âœ“' : '3' }}
+
+                </div>
+
+                <div class="step-text">
+
+                    <strong>
+                        Step 3 â€” Aadhaar Verification
+                    </strong>
+
+                    <small>
+                        {{ $aadhaarDone ? 'Completed' : 'Pending' }}
+                    </small>
+
+                </div>
+
+                @if($documentsDone && !$aadhaarDone)
+                    <a
+                        href="{{ route('seller.verification.aadhaar') }}"
+                        class="step-link">
+                        Open
+                    </a>
+                @endif
+
+            </div>
+
+
+            {{-- STEP 4 --}}
+            <div class="step">
+
+                <div class="circle
+                    {{ $businessDone ? 'done' : ($currentStep === 4 ? 'current' : '') }}">
+
+                    {{ $businessDone ? 'âœ“' : '4' }}
+
+                </div>
+
+                <div class="step-text">
+
+                    <strong>
+                        Step 4 â€” Business Details
+                    </strong>
+
+                    <small>
+                        {{ $businessDone ? 'Completed' : 'Pending' }}
+                    </small>
+
+                </div>
+
+                @if($aadhaarDone && !$businessDone)
+                    <a
+                        href="{{ route('seller.verification.business-details') }}"
+                        class="step-link">
+                        Open
+                    </a>
+                @endif
+
+            </div>
+
+
+            {{-- STEP 5 --}}
+            <div class="step">
+
+                <div class="circle
+                    {{ $bankDone ? 'done' : ($currentStep === 5 ? 'current' : '') }}">
+
+                    {{ $bankDone ? 'âœ“' : '5' }}
+
+                </div>
+
+                <div class="step-text">
+
+                    <strong>
+                        Step 5 â€” Bank Details
+                    </strong>
+
+                    <small>
+                        {{ $bankDone ? 'Completed' : 'Pending' }}
+                    </small>
+
+                </div>
+
+                @if($businessDone && !$bankDone)
+                    <a
+                        href="{{ route('seller.verification.bank-details') }}"
+                        class="step-link">
+                        Open
+                    </a>
+                @endif
+
+            </div>
+
+
+            {{-- STEP 6 --}}
+            <div class="step">
+
+                <div class="circle
+                    {{ $reviewDone ? 'done' : ($currentStep === 6 ? 'current' : '') }}">
+
+                    {{ $reviewDone ? 'âœ“' : '6' }}
+
+                </div>
+
+                <div class="step-text">
+
+                    <strong>
+                        Step 6 â€” Review & Submit
+                    </strong>
+
+                    <small>
+                        {{ $reviewDone ? 'Application Submitted' : 'Ready for Review' }}
+                    </small>
+
+                </div>
+
+                @if($bankDone && !$reviewDone)
+                    <a
+                        href="{{ route('seller.verification.review') }}"
+                        class="step-link">
+                        Open
+                    </a>
+                @endif
+
+            </div>
+
+
+            {{-- STEP 7 --}}
+            <div class="step">
+
+                <div class="circle
+                    {{ $applicationApproved ? 'done' : ($currentStep === 7 ? 'current' : '') }}">
+
+                    {{ $applicationApproved ? 'âœ“' : '7' }}
+
+                </div>
+
+                <div class="step-text">
+
+                    <strong>
+                        Step 7 â€” Application Status
+                    </strong>
+
+                    <small>
+
+                        @if($applicationApproved)
+                            Approved
+
+                        @elseif($status === 'pending_admin_review')
+                            Waiting for Admin Approval
+
+                        @elseif($status === 'rejected')
+                            Rejected
+
+                        @else
+                            Pending
+
+                        @endif
+
+                    </small>
+
+                </div>
+
+                <a
+                    href="{{ route('seller.verification.status') }}"
+                    class="step-link">
+                    View
+                </a>
+
+            </div>
+
+        </div>
+
+
+        {{-- INFORMATION --}}
+        @if($status === 'pending_admin_review')
+
+            <div class="note">
+                â³ Your application has been submitted successfully.
+                Please wait while the SmartBasket admin team reviews your
+                documents and seller information.
+            </div>
+
+        @elseif($status === 'approved' && !$activationDone)
+
+            <div class="note">
+                ðŸŽ‰ Your application has been approved.
+                Complete seller activation to access your seller dashboard.
+            </div>
+
+        @elseif($status === 'approved' && $activationDone)
+
+            <div class="note">
+                âœ… Your seller account is fully activated.
+                You can now access the Seller Dashboard.
+            </div>
+
+        @elseif($status === 'rejected')
+
+            <div class="note">
+                Please review the rejection reason and update your application
+                if resubmission is allowed.
+            </div>
+
+        @endif
+
+
+        {{-- ACTION BUTTONS --}}
+        <div class="actions">
+
+            {{-- STEP 1 --}}
+            @if(!$emailDone)
+
+                <a
+                    href="{{ route('seller.verification.email') }}"
+                    class="btn btn-primary">
+
+                    Verify Email
+
+                </a>
+
+
+            {{-- STEP 2 --}}
+            @elseif(!$documentsDone)
+
+                <a
+                    href="{{ route('seller.verification.documents') }}"
+                    class="btn btn-primary">
+
+                    Continue to Documents
+
+                </a>
+
+
+            {{-- STEP 3 --}}
+            @elseif(!$aadhaarDone)
+
+                <a
+                    href="{{ route('seller.verification.aadhaar') }}"
+                    class="btn btn-primary">
+
+                    Continue to Aadhaar
+
+                </a>
+
+
+            {{-- STEP 4 --}}
+            @elseif(!$businessDone)
+
+                <a
+                    href="{{ route('seller.verification.business-details') }}"
+                    class="btn btn-primary">
+
+                    Continue to Business Details
+
+                </a>
+
+
+            {{-- STEP 5 --}}
+            @elseif(!$bankDone)
+
+                <a
+                    href="{{ route('seller.verification.bank-details') }}"
+                    class="btn btn-primary">
+
+                    Continue to Bank Details
+
+                </a>
+
+
+            {{-- STEP 6 --}}
+            @elseif(!$reviewDone)
+
+                <a
+                    href="{{ route('seller.verification.review') }}"
+                    class="btn btn-primary">
+
+                    Review Application
+
+                </a>
+
+
+            {{-- STEP 7 --}}
+            @elseif($status === 'approved' && !$activationDone)
+
+                <a
+                    href="{{ route('seller.verification.activation') }}"
+                    class="btn btn-success">
+
+                    Activate Seller Account
+
+                </a>
+
+            @endif
+
+
+            {{-- APPLICATION SUMMARY --}}
+            <a
+                href="{{ route('seller.verification.application.summary') }}"
+                class="btn btn-secondary">
+
+                Application Summary
+
+            </a>
+
+
+            {{-- SELLER LOGIN --}}
+            <a
+                href="{{ route('seller.login') }}"
+                class="btn btn-secondary">
+
+                Seller Login
+
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
+
+==================== C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\resources\views\seller\verification\step-navigation.blade.php ====================
+
+@php
+    /*
+    |--------------------------------------------------------------------------
+    | CURRENT STEP
+    |--------------------------------------------------------------------------
+    |
+    | IMPORTANT:
+    | Do NOT calculate the current step from uploaded documents.
+    | The page currently being displayed decides the active step.
+    |
+    */
+
+    $routeName = request()->route()?->getName();
+
+    $routeToStep = [
+        'seller.verification.email' => 1,
+
+        'seller.verification.documents' => 2,
+
+        'seller.verification.aadhaar' => 3,
+
+        'seller.verification.review' => 4,
+
+        'seller.verification.status' => 5,
+
+        'seller.activation' => 6,
+
+        // Compatibility routes
+        'seller.business-details' => 2,
+        'seller.business-details.edit' => 2,
+
+        'seller.bank-details' => 4,
+        'seller.bank-details.edit' => 4,
+    ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Determine step from CURRENT PAGE
+    |--------------------------------------------------------------------------
+    */
+
+    $currentStep = $routeToStep[$routeName] ?? null;
+
+    /*
+    |--------------------------------------------------------------------------
+    | Fallback only when a route does not have a mapping
+    |--------------------------------------------------------------------------
+    */
+
+    if (!$currentStep) {
+        $currentStep = (int) ($seller->onboarding_step ?? 1);
+
+        if ($currentStep < 1) {
+            $currentStep = 1;
+        }
+
+        if ($currentStep > 6) {
+            $currentStep = 6;
+        }
+    }
+
+    $currentStep = min(max($currentStep, 1), 6);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Six steps
+    |--------------------------------------------------------------------------
+    */
+
+    $steps = [
+        1 => [
+            'title' => 'Email',
+            'icon' => 'âœ‰',
+            'route' => 'seller.verification.email',
+        ],
+
+        2 => [
+            'title' => 'Documents',
+            'icon' => 'â–£',
+            'route' => 'seller.verification.documents',
+        ],
+
+        3 => [
+            'title' => 'Aadhaar',
+            'icon' => 'â—‰',
+            'route' => 'seller.verification.aadhaar',
+        ],
+
+        4 => [
+            'title' => 'Review',
+            'icon' => 'âœ“',
+            'route' => 'seller.verification.review',
+        ],
+
+        5 => [
+            'title' => 'Approval',
+            'icon' => 'â—†',
+            'route' => 'seller.verification.status',
+        ],
+
+        6 => [
+            'title' => 'Activation',
+            'icon' => 'â˜…',
+            'route' => 'seller.activation',
+        ],
+    ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Every previously visited step is editable.
+    |--------------------------------------------------------------------------
+    */
+
+    $canOpenStep = function (int $number) use ($currentStep) {
+        return $number <= $currentStep;
+    };
+
+    /*
+    |--------------------------------------------------------------------------
+    | Back route
+    |--------------------------------------------------------------------------
+    */
+
+    $backRoutes = [
+        1 => null,
+        2 => 'seller.verification.email',
+        3 => 'seller.verification.documents',
+        4 => 'seller.verification.aadhaar',
+        5 => 'seller.verification.review',
+        6 => 'seller.verification.status',
+    ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Next route
+    |--------------------------------------------------------------------------
+    */
+
+    $nextRoutes = [
+        1 => 'seller.verification.documents',
+        2 => 'seller.verification.aadhaar',
+        3 => 'seller.verification.review',
+        4 => 'seller.verification.status',
+        5 => 'seller.activation',
+        6 => null,
+    ];
+
+    $backRoute = $backRoutes[$currentStep] ?? null;
+    $nextRoute = $nextRoutes[$currentStep] ?? null;
+@endphp
+
+
+<style>
+    .sb-wizard {
+        width: 100%;
+        margin-bottom: 28px;
+    }
+
+    .sb-wizard-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .sb-wizard-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .sb-wizard-logo {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        background: linear-gradient(
+            135deg,
+            #ffffff,
+            #d7d7d7
+        );
+
+        color: #111;
+        font-weight: 900;
+
+        box-shadow:
+            0 10px 30px rgba(255,255,255,.12);
+    }
+
+    .sb-wizard-title {
+        color: #fff;
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: .3px;
+    }
+
+    .sb-wizard-subtitle {
+        color: rgba(255,255,255,.5);
+        font-size: 12px;
+        margin-top: 3px;
+    }
+
+    .sb-step-count {
+        color: rgba(255,255,255,.55);
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    .sb-progress {
+        height: 5px;
+        width: 100%;
+        background: rgba(255,255,255,.08);
+        border-radius: 100px;
+        overflow: hidden;
+        margin-bottom: 22px;
+    }
+
+    .sb-progress-fill {
+        height: 100%;
+        border-radius: inherit;
+
+        background: linear-gradient(
+            90deg,
+            #ffffff,
+            #8d8d8d
+        );
+
+        transition: width .4s ease;
+    }
+
+    .sb-steps {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 8px;
+    }
+
+    .sb-step {
+        position: relative;
+        min-width: 0;
+    }
+
+    .sb-step-link {
+        text-decoration: none;
+        display: block;
+
+        padding: 12px 8px;
+
+        border-radius: 16px;
+
+        border: 1px solid rgba(255,255,255,.08);
+
+        background: rgba(255,255,255,.035);
+
+        transition: .25s ease;
+    }
+
+    .sb-step-link:hover {
+        background: rgba(255,255,255,.075);
+        border-color: rgba(255,255,255,.18);
+
+        transform: translateY(-2px);
+    }
+
+    .sb-step-number {
+        width: 34px;
+        height: 34px;
+
+        margin: 0 auto 7px;
+
+        border-radius: 50%;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        font-size: 13px;
+        font-weight: 800;
+
+        background: rgba(255,255,255,.08);
+        color: rgba(255,255,255,.55);
+
+        border: 1px solid rgba(255,255,255,.10);
+    }
+
+    .sb-step-title {
+        text-align: center;
+
+        font-size: 11px;
+        font-weight: 700;
+
+        color: rgba(255,255,255,.5);
+
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | ACTIVE
+    |--------------------------------------------------------------------------
+    */
+
+    .sb-step.active .sb-step-link {
+        background: rgba(255,255,255,.10);
+
+        border-color: rgba(255,255,255,.35);
+
+        box-shadow:
+            0 10px 35px rgba(0,0,0,.20);
+    }
+
+    .sb-step.active .sb-step-number {
+        background: #fff;
+        color: #111;
+
+        border-color: #fff;
+    }
+
+    .sb-step.active .sb-step-title {
+        color: #fff;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | COMPLETED
+    |--------------------------------------------------------------------------
+    */
+
+    .sb-step.completed .sb-step-number {
+        background: rgba(34,197,94,.15);
+        border-color: rgba(34,197,94,.35);
+        color: #86efac;
+    }
+
+    .sb-step.completed .sb-step-title {
+        color: rgba(255,255,255,.75);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | NAVIGATION
+    |--------------------------------------------------------------------------
+    */
+
+    .sb-navigation {
+        display: flex;
+        gap: 12px;
+
+        margin-top: 22px;
+    }
+
+    .sb-nav-btn {
+        flex: 1;
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        min-height: 48px;
+
+        padding: 12px 18px;
+
+        border-radius: 14px;
+
+        border: 1px solid rgba(255,255,255,.12);
+
+        background: rgba(255,255,255,.05);
+
+        color: #fff;
+
+        text-decoration: none;
+
+        font-size: 14px;
+        font-weight: 800;
+
+        transition: .2s ease;
+    }
+
+    .sb-nav-btn:hover {
+        color: #fff;
+
+        background: rgba(255,255,255,.10);
+
+        border-color: rgba(255,255,255,.25);
+
+        transform: translateY(-1px);
+    }
+
+    .sb-nav-btn.primary {
+        background: #fff;
+        color: #111;
+
+        border-color: #fff;
+    }
+
+    .sb-nav-btn.primary:hover {
+        background: #e5e5e5;
+        color: #111;
+    }
+
+    .sb-nav-btn.disabled {
+        opacity: .35;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .sb-edit-note {
+        margin-top: 14px;
+
+        text-align: center;
+
+        color: rgba(255,255,255,.45);
+
+        font-size: 12px;
+    }
+
+    @media (max-width: 768px) {
+
+        .sb-steps {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .sb-navigation {
+            position: sticky;
+            bottom: 10px;
+
+            z-index: 20;
+
+            padding: 10px;
+
+            border-radius: 17px;
+
+            background: rgba(18,18,18,.92);
+
+            backdrop-filter: blur(18px);
+
+            border: 1px solid rgba(255,255,255,.08);
+        }
+
+        .sb-nav-btn {
+            min-width: 0;
+        }
+    }
+
+    @media (max-width: 480px) {
+
+        .sb-wizard-header {
+            align-items: flex-start;
+        }
+
+        .sb-step-title {
+            font-size: 10px;
+        }
+
+        .sb-step-link {
+            padding: 9px 4px;
+        }
+
+        .sb-navigation {
+            gap: 8px;
+        }
+
+        .sb-nav-btn {
+            min-height: 44px;
+            padding: 10px 8px;
+            font-size: 13px;
+        }
+    }
+</style>
+
+
+<div class="sb-wizard">
+
+    <!-- HEADER -->
+
+    <div class="sb-wizard-header">
+
+        <div class="sb-wizard-brand">
+
+            <div class="sb-wizard-logo">
+                SB
+            </div>
+
+            <div>
+
+                <div class="sb-wizard-title">
+                    Seller Partner Program
+                </div>
+
+                <div class="sb-wizard-subtitle">
+                    SMART BASKET PREMIUM
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="sb-step-count">
+            Step {{ $currentStep }} of 6
+        </div>
+
+    </div>
+
+
+    <!-- PROGRESS -->
+
+    <div class="sb-progress">
+
+        <div
+            class="sb-progress-fill"
+            style="width: {{ ($currentStep / 6) * 100 }}%"
+        ></div>
+
+    </div>
+
+
+    <!-- STEP BUTTONS -->
+
+    <div class="sb-steps">
+
+        @foreach($steps as $number => $step)
+
+            @php
+                $completed = $number < $currentStep;
+                $active = $number === $currentStep;
+                $allowed = $canOpenStep($number);
+            @endphp
+
+            <div
+                class="
+                    sb-step
+                    {{ $active ? 'active' : '' }}
+                    {{ $completed ? 'completed' : '' }}
+                "
+            >
+
+                @if($allowed)
+
+                    <a
+                        href="{{ route($step['route']) }}"
+                        class="sb-step-link"
+                        title="Open {{ $step['title'] }} step"
+                    >
+
+                        <div class="sb-step-number">
+
+                            @if($completed)
+                                âœ“
+                            @else
+                                {{ $number }}
+                            @endif
+
+                        </div>
+
+                        <div class="sb-step-title">
+                            {{ $step['title'] }}
+                        </div>
+
+                    </a>
+
+                @else
+
+                    <div class="sb-step-link">
+
+                        <div class="sb-step-number">
+                            {{ $number }}
+                        </div>
+
+                        <div class="sb-step-title">
+                            {{ $step['title'] }}
+                        </div>
+
+                    </div>
+
+                @endif
+
+            </div>
+
+        @endforeach
+
+    </div>
+
+
+    <!-- BACK / NEXT -->
+
+    <div class="sb-navigation">
+
+        @if($backRoute)
+
+            <a
+                href="{{ route($backRoute) }}"
+                class="sb-nav-btn"
+            >
+                â† Back
+            </a>
+
+        @else
+
+            <span class="sb-nav-btn disabled">
+                â† Back
+            </span>
+
+        @endif
+
+
+        @if($nextRoute)
+
+            <a
+                href="{{ route($nextRoute) }}"
+                class="sb-nav-btn primary"
+            >
+                @if($currentStep === 4)
+                    Review â†’
+                @elseif($currentStep === 5)
+                    Activate â†’
+                @else
+                    Next â†’
+                @endif
+            </a>
+
+        @else
+
+            <span class="sb-nav-btn disabled">
+                Completed âœ“
+            </span>
+
+        @endif
+
+    </div>
+
+
+    <div class="sb-edit-note">
+        âœ“ Completed steps can be opened again and edited.
+    </div>
+
+</div>
+
+==================== C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\resources\views\admin\seller-verifications\email-accepted.blade.php ====================
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Seller Accepted</title>
+</head>
+
+<body style="
+    margin:0;
+    padding:40px;
+    background:#f1f5f9;
+    font-family:Arial,sans-serif;
+">
+
+<div style="
+    max-width:650px;
+    margin:auto;
+    background:white;
+    border-radius:18px;
+    padding:45px;
+    text-align:center;
+">
+
+    <div style="font-size:55px;">âœ“</div>
+
+    <h1 style="color:#16a34a;">
+        Seller Accepted Successfully
+    </h1>
+
+    <p style="color:#475569;font-size:16px;">
+        <strong>{{ $seller->name }}</strong>
+        is now an ACTIVE SMART BASKET seller.
+    </p>
+
+    <div style="
+        background:#f0fdf4;
+        padding:20px;
+        border-radius:12px;
+        margin-top:25px;
+        color:#166534;
+    ">
+        The seller can now login and access the Seller Dashboard
+        and add products.
+    </div>
+
+</div>
+
+</body>
+</html>
+
+==================== C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\resources\views\admin\seller-verifications\email-rejected.blade.php ====================
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Seller Rejected</title>
+</head>
+
+<body style="
+    margin:0;
+    padding:40px;
+    background:#f1f5f9;
+    font-family:Arial,sans-serif;
+">
+
+<div style="
+    max-width:650px;
+    margin:auto;
+    background:white;
+    border-radius:18px;
+    padding:45px;
+    text-align:center;
+">
+
+    <div style="font-size:55px;">âœ•</div>
+
+    <h1 style="color:#dc2626;">
+        Seller Application Rejected
+    </h1>
+
+    <p style="color:#475569;font-size:16px;">
+        The application of
+        <strong>{{ $seller->name }}</strong>
+        has been rejected.
+    </p>
+
+    <div style="
+        background:#fef2f2;
+        padding:20px;
+        border-radius:12px;
+        margin-top:25px;
+        color:#991b1b;
+    ">
+        {{ $seller->rejection_reason }}
+    </div>
+
+</div>
+
+</body>
+</html>
+
+==================== C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\resources\views\admin\seller-verifications\index.blade.php ====================
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Seller verification requests Â· SmartBasket Premium</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <main class="container py-5">
+        <h1 class="h3 mb-4">Seller verification requests</h1>
+        @if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
+        <div class="card shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead><tr><th>Application</th><th>Seller</th><th>Shop</th><th>Status</th><th>Submitted</th><th></th></tr></thead>
+                    <tbody>
+                    @forelse($applications as $application)
+                        <tr>
+                            <td>#{{ $application->id }}</td>
+                            <td>{{ $application->seller_name }}<br><small class="text-muted">{{ $application->email }}</small></td>
+                            <td>{{ $application->shop_name }}</td>
+                            <td><span class="badge text-bg-secondary">{{ str_replace('_', ' ', $application->verification_status) }}</span></td>
+                            <td>{{ $application->verification_submitted_at?->format('d M Y, H:i') ?? 'â€”' }}</td>
+                            <td><a class="btn btn-sm btn-primary" href="{{ route('admin.seller-verifications.show', $application) }}">Review</a></td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="6" class="text-center text-muted py-4">No seller verification requests yet.</td></tr>
+                    @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="mt-3">{{ $applications->links() }}</div>
+    </main>
+</body>
+</html>
+
+
+==================== C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\resources\views\admin\seller-verifications\show.blade.php ====================
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Seller application #{{ $application->id }} Â· SmartBasket Premium</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <main class="container py-5">
+        <a class="btn btn-outline-secondary btn-sm mb-3" href="{{ route('admin.seller-verifications.index') }}">â† All requests</a>
+        <h1 class="h3">Seller application #{{ $application->id }}</h1>
+        @if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
+        <div class="row g-4">
+            <section class="col-lg-7"><div class="card shadow-sm"><div class="card-body">
+                <h2 class="h5">Seller information</h2>
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Seller</dt><dd class="col-sm-8">{{ $application->seller_name }}</dd>
+                    <dt class="col-sm-4">Email</dt><dd class="col-sm-8">{{ $application->email }}</dd>
+                    <dt class="col-sm-4">Shop</dt><dd class="col-sm-8">{{ $application->shop_name }}</dd>
+                    <dt class="col-sm-4">Status</dt><dd class="col-sm-8">{{ str_replace('_', ' ', $application->verification_status) }}</dd>
+                    <dt class="col-sm-4">Email verified</dt><dd class="col-sm-8">{{ $application->email_verified_at?->format('d M Y, H:i') ?? 'No' }}</dd>
+                    <dt class="col-sm-4">Aadhaar status</dt><dd class="col-sm-8">{{ $application->aadhaar_verified_at ? 'Verified by provider' : 'Not verified' }}</dd>
+                    <dt class="col-sm-4">Provider reference</dt><dd class="col-sm-8">{{ $application->verification_reference_id ?? 'â€”' }}</dd>
+                    <dt class="col-sm-4">Submitted</dt><dd class="col-sm-8">{{ $application->verification_submitted_at?->format('d M Y, H:i') ?? 'â€”' }}</dd>
+                    <dt class="col-sm-4">Certificate</dt><dd class="col-sm-8">@if($application->business_certificate_path)<a href="{{ route('admin.seller-verifications.document', $application) }}">Download private certificate</a>@else â€” @endif</dd>
+                </dl>
+            </div></div></section>
+            <aside class="col-lg-5"><div class="card shadow-sm"><div class="card-body"><h2 class="h5">Decision</h2>
+                @if($application->verification_status === \App\Models\SellerProfile::STATUS_PENDING_REVIEW)
+                    <form method="post" action="{{ route('admin.seller-verifications.approve', $application) }}" class="mb-3">@csrf<button class="btn btn-success w-100">Approve seller</button></form>
+                    <form method="post" action="{{ route('admin.seller-verifications.reject', $application) }}">@csrf<textarea class="form-control mb-2" name="reason" maxlength="2000" required placeholder="Rejection reason"></textarea><button class="btn btn-outline-danger w-100">Reject seller</button></form>
+                @else
+                    <p class="mb-0">Decision: {{ str_replace('_', ' ', $application->verification_status) }}</p>
+                    @if($application->rejection_reason)<p class="text-danger mt-2 mb-0">{{ $application->rejection_reason }}</p>@endif
+                @endif
+            </div></div></aside>
+            <section class="col-12"><div class="card shadow-sm"><div class="card-body"><h2 class="h5">Verification history</h2><ul class="mb-0">@forelse($history as $entry)<li>{{ $entry->created_at->format('d M Y, H:i') }} â€” {{ str_replace('_', ' ', $entry->event) }}</li>@empty<li class="text-muted">No history recorded.</li>@endforelse</ul></div></div></section>
+        </div>
+    </main>
+</body>
+</html>
+

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Cart;
 use App\Models\Order;
+use App\Models\Notification;
 use App\Models\Product;
 use App\Models\SellerProfile;
 use Illuminate\Http\Request;
@@ -15,12 +16,32 @@ class CheckoutOrderService
     public function customerDetailsFromRequest(Request $request): array
     {
         $validated = $request->validate([
+            'address_id' => ['nullable', 'integer'],
             'name' => ['required', 'string', 'max:255'],
             'mobile' => ['required', 'string', 'max:15'],
             'address' => ['required', 'string'],
             'city' => ['nullable', 'string', 'max:255'],
             'payment_method' => ['nullable', 'string', 'max:40'],
         ]);
+
+        if (! empty($validated['address_id'])) {
+            $savedAddress = \App\Models\CustomerAddress::whereKey($validated['address_id'])
+                ->where('user_id', Auth::id())
+                ->first();
+
+            if (! $savedAddress) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'address_id' => 'The selected delivery address is invalid.',
+                ]);
+            }
+
+            return [
+                'name' => $savedAddress->recipient_name,
+                'mobile' => $savedAddress->phone,
+                'address' => $savedAddress->address_line,
+                'city' => $savedAddress->city,
+            ];
+        }
 
         return [
             'name' => $validated['name'],
@@ -80,7 +101,7 @@ class CheckoutOrderService
         foreach ($itemsBySeller as $sellerId => $items) {
             foreach ($items as $item) {
                 $product = Product::find($item['product_id']);
-                if (! $product || (int) $product->seller_id !== (int) $sellerId || ($product->stock !== null && (int) $product->stock < (int) $item['quantity'])) {
+                if (! $product || $product->status !== 'active' || (int) $product->seller_id !== (int) $sellerId || ($product->stock !== null && (int) $product->stock < (int) $item['quantity'])) {
                     throw new \RuntimeException('A product is no longer available. Please review your cart.');
                 }
             }
@@ -143,6 +164,33 @@ class CheckoutOrderService
                 }
 
                 $orderIds[] = $order->id;
+
+                // Funds are represented by an internal ledger; no money is sent to a
+                // seller until an administrator explicitly records a payout.
+                if (in_array(strtolower($paymentStatus), ['paid', 'successful', 'verified'], true)) {
+                    \App\Models\SellerEarning::firstOrCreate(
+                        ['seller_id' => $sellerId, 'order_id' => $order->id],
+                        ['gross_amount' => $sellerTotal, 'platform_fee' => 0, 'net_amount' => $sellerTotal, 'status' => 'pending']
+                    );
+                }
+
+                Notification::create([
+                    'user_id' => $userId,
+                    'role' => 'user',
+                    'type' => 'order',
+                    'title' => 'Order confirmed',
+                    'message' => 'Your order #' . $order->id . ' has been confirmed.',
+                    'data' => ['order_id' => $order->id],
+                ]);
+
+                Notification::create([
+                    'seller_id' => $sellerId,
+                    'role' => 'seller',
+                    'type' => 'order',
+                    'title' => 'New order received',
+                    'message' => 'Order #' . $order->id . ' is ready for processing.',
+                    'data' => ['order_id' => $order->id],
+                ]);
             }
 
             return $orderIds;
@@ -166,7 +214,7 @@ class CheckoutOrderService
             'seller_id' => $product->seller_id,
             'name' => $product->name,
             'quantity' => $quantity,
-            'price' => (float) $product->price,
+            'price' => (float) $product->effective_price,
         ];
     }
 }

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\PaymentTransaction;
+use App\Models\Order;
+use App\Models\Product;
 use App\Services\CheckoutOrderService;
 use App\Services\RazorpayPaymentGateway;
 use Illuminate\Http\Request;
@@ -11,13 +13,33 @@ use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
+    public function index(Request $request)
+    {
+        $payments = PaymentTransaction::query()
+            ->where('user_id', $request->user()->id)
+            ->with('refunds')
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = trim($request->string('search')->toString());
+                $query->where(function ($payments) use ($search) {
+                    $payments->where('id', $search)
+                        ->orWhere('gateway_payment_id', 'like', "%{$search}%")
+                        ->orWhere('gateway_transaction_id', 'like', "%{$search}%")
+                        ->orWhere('gateway_order_id', 'like', "%{$search}%")
+                        ->orWhereJsonContains('order_ids', (int) preg_replace('/\\D/', '', $search));
+                });
+            })
+            ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')->toString()))
+            ->when($request->filled('date'), fn ($query) => $query->whereDate('created_at', $request->date('date')))
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('payments.index', compact('payments'));
+    }
+
     public function show(PaymentTransaction $payment)
     {
         abort_unless($payment->isAccessibleByCurrentSession(), 403);
-
-        if ($payment->status === 'paid' && ! empty($payment->order_ids)) {
-            return redirect('/order-success')->with('success', 'Payment successful. Order confirmed.');
-        }
 
         return view('payments.show', [
             'payment' => $payment,
@@ -26,9 +48,71 @@ class PaymentController extends Controller
         ]);
     }
 
+    /** Start a new gateway attempt for the existing checkout transaction. */
+    public function retry(Request $request, PaymentTransaction $payment, RazorpayPaymentGateway $gateway)
+    {
+        abort_unless($payment->isAccessibleByCurrentSession(), 403);
+
+        $payment = DB::transaction(function () use ($payment) {
+            $locked = PaymentTransaction::whereKey($payment->id)->lockForUpdate()->firstOrFail();
+
+            abort_if($locked->status === 'paid' || ! empty($locked->order_ids), 422, 'This payment has already created an order and cannot be retried.');
+            abort_unless(in_array($locked->status, ['failed', 'cancelled', 'pending'], true), 422, 'This payment cannot be retried.');
+
+            $locked->update([
+                'status' => 'pending',
+                'failure_reason' => null,
+                'gateway_payment_id' => null,
+                'gateway_signature' => null,
+                'expires_at' => now()->addMinutes(30),
+            ]);
+
+            return $locked->fresh();
+        });
+
+        $gatewayOrder = $gateway->createOrder($payment);
+
+        if (! $gatewayOrder['success']) {
+            $payment->update(['status' => 'failed', 'failure_reason' => $gatewayOrder['message']]);
+
+            return back()->with('error', $gatewayOrder['message']);
+        }
+
+        $payment->update([
+            'gateway_order_id' => $gatewayOrder['gateway_order_id'],
+            'status' => 'processing',
+            'attempt_number' => ((int) $payment->attempt_number) + 1,
+            'initiated_at' => now(),
+        ]);
+
+        return redirect()->route('payments.show', $payment)->with('success', 'Your secure payment session is ready.');
+    }
+
+    public function receipt(PaymentTransaction $payment)
+    {
+        abort_unless($payment->isAccessibleByCurrentSession(), 403);
+
+        $orders = Order::query()
+            ->where('user_id', auth()->id())
+            ->whereIn('id', collect($payment->order_ids ?? [])->map(fn ($id) => (int) $id))
+            ->with('seller')
+            ->get();
+
+        $products = Product::whereIn('id', $orders->flatMap(fn ($order) => collect($order->items ?? [])->pluck('product_id'))->filter()->unique())
+            ->get()->keyBy('id');
+
+        return view('payments.receipt', compact('payment', 'orders', 'products'));
+    }
+
     public function verify(Request $request, PaymentTransaction $payment, RazorpayPaymentGateway $gateway, CheckoutOrderService $orders)
     {
         abort_unless($payment->isAccessibleByCurrentSession(), 403);
+
+        if ($payment->expires_at?->isPast() && $payment->status !== 'paid') {
+            $this->markFailed($payment, 'Payment session expired.');
+
+            return $this->jsonFailure('This payment session has expired. Please start checkout again.', 422);
+        }
 
         $validated = $request->validate([
             'razorpay_payment_id' => ['required', 'string', 'max:255'],
@@ -182,6 +266,10 @@ class PaymentController extends Controller
                 return;
             }
 
+            if ($locked->expires_at?->isPast()) {
+                throw new \RuntimeException('Payment session expired.');
+            }
+
             $orderIds = $orders->createConfirmedOrders(
                 $locked->items_snapshot,
                 $locked->customer_details,
@@ -197,6 +285,7 @@ class PaymentController extends Controller
                 'failure_reason' => null,
                 'verified_at' => now(),
             ]);
+
         });
 
         return response()->json(['success' => true]);

@@ -45,6 +45,10 @@ class SellerAuth
             return $next($request);
         }
 
+        if ($seller->isPendingEmail()) {
+            return redirect()->route('seller.verification.email');
+        }
+
         if ($seller->isApplicationSubmitted() || $seller->isRejected() || $seller->isSuspended()) {
             return redirect()->route('seller.verification.status')
                 ->with('error', 'Your seller application must be approved before the seller dashboard is available.');

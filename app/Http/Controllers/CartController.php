@@ -20,7 +20,7 @@ class CartController extends Controller
             ->get();
 
         $subtotal = $cartItems->sum(function ($item) {
-            return (float) $item->product?->price * (int) $item->quantity;
+            return (float) ($item->product?->effective_price ?? 0) * (int) $item->quantity;
         });
 
         return view('cart.index', compact('cartItems', 'subtotal'));
@@ -30,6 +30,10 @@ class CartController extends Controller
     {
         if (!Auth::check()) {
             return redirect('/login');
+        }
+
+        if ($product->status !== 'active') {
+            return back()->with('error', 'This product is not currently available.');
         }
 
         $validated = $request->validate(['quantity' => ['nullable', 'integer', 'min:1']]);
@@ -75,7 +79,14 @@ class CartController extends Controller
             return back()->with('error', 'Item not found in cart.');
         }
 
-        $cartItem->quantity = (int) $request->quantity;
+        $quantity = (int) $request->quantity;
+        $product = $cartItem->product;
+
+        if (! $product || $product->status !== 'active' || ($product->stock !== null && $quantity > (int) $product->stock)) {
+            return back()->with('error', 'The requested quantity is no longer available.');
+        }
+
+        $cartItem->quantity = $quantity;
         $cartItem->save();
 
         return back()->with('success', 'Cart updated.');

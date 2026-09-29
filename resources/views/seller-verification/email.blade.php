@@ -98,7 +98,7 @@
         <div class="sb-actions">
 
             <a
-                href="{{ route('seller-dashboard') }}"
+                href="{{ route('seller.dashboard') }}"
                 class="sb-btn"
             >
                 ← Back

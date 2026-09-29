@@ -1,0 +1,1088 @@
+/* =========================================================
+   SMART BASKET - SELLER PREMIUM THEME
+   UI ONLY
+   ROUTES / FORMS / JS / FUNCTIONALITY UNTOUCHED
+   ========================================================= */
+
+:root {
+    --sb-bg: #020617;
+    --sb-bg2: #07101f;
+    --sb-card: rgba(15, 23, 42, .88);
+    --sb-card2: rgba(17, 24, 39, .96);
+    --sb-border: rgba(255,255,255,.09);
+    --sb-text: #f8fafc;
+    --sb-muted: #94a3b8;
+    --sb-green: #00ff99;
+    --sb-green-dark: #00c97a;
+    --sb-gold: #fbbf24;
+    --sb-red: #ef4444;
+    --sb-blue: #38bdf8;
+    --sb-radius: 18px;
+    --sb-shadow: 0 18px 55px rgba(0,0,0,.30);
+}
+
+
+/* =========================================================
+   SELLER PAGE
+   ========================================================= */
+
+body.seller-page,
+body.seller-layout,
+body.seller,
+.seller-page,
+.seller-layout {
+
+    min-height: 100vh !important;
+
+    background:
+        radial-gradient(
+            circle at 10% 10%,
+            rgba(0,255,153,.08),
+            transparent 30%
+        ),
+        radial-gradient(
+            circle at 90% 15%,
+            rgba(59,130,246,.07),
+            transparent 30%
+        ),
+        linear-gradient(
+            135deg,
+            #020617,
+            #07101f 50%,
+            #020617
+        ) !important;
+
+    color: var(--sb-text) !important;
+}
+
+
+/* =========================================================
+   GENERIC SELLER CONTENT
+   ========================================================= */
+
+.seller-page *,
+.seller-layout *,
+.seller-container * {
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   CONTAINER
+   ========================================================= */
+
+.seller-container {
+
+    width: 100%;
+    max-width: 1450px;
+
+    margin: 0 auto;
+
+    padding: 30px;
+}
+
+
+/* =========================================================
+   HEADINGS
+   ========================================================= */
+
+.seller-page h1,
+.seller-page h2,
+.seller-page h3,
+.seller-page h4,
+.seller-page h5,
+.seller-page h6,
+.seller-layout h1,
+.seller-layout h2,
+.seller-layout h3,
+.seller-layout h4,
+.seller-layout h5,
+.seller-layout h6 {
+
+    color: var(--sb-text) !important;
+
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   TEXT
+   ========================================================= */
+
+.seller-page p,
+.seller-layout p {
+
+    color: var(--sb-muted);
+}
+
+
+.seller-page .text-muted,
+.seller-layout .text-muted,
+.seller-page small,
+.seller-layout small {
+
+    color: var(--sb-muted) !important;
+}
+
+
+/* =========================================================
+   BOOTSTRAP CARDS
+   ========================================================= */
+
+.seller-page .card,
+.seller-layout .card,
+.seller-page .card-body,
+.seller-layout .card-body,
+.seller-card,
+.seller-panel,
+.dashboard-card {
+
+    color: var(--sb-text) !important;
+}
+
+
+.seller-page .card,
+.seller-layout .card,
+.seller-card,
+.seller-panel,
+.dashboard-card {
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(17,24,39,.96),
+            rgba(15,23,42,.88)
+        ) !important;
+
+    border:
+        1px solid var(--sb-border) !important;
+
+    border-radius:
+        var(--sb-radius) !important;
+
+    box-shadow:
+        var(--sb-shadow) !important;
+
+    backdrop-filter:
+        blur(18px);
+}
+
+
+.seller-page .card-body,
+.seller-layout .card-body {
+
+    background: transparent !important;
+}
+
+
+/* =========================================================
+   FORM
+   ========================================================= */
+
+.seller-page label,
+.seller-layout label {
+
+    color: #e2e8f0 !important;
+
+    font-weight: 600;
+
+    margin-bottom: 7px;
+}
+
+
+.seller-page input,
+.seller-page textarea,
+.seller-page select,
+.seller-page .form-control,
+.seller-page .form-select,
+
+.seller-layout input,
+.seller-layout textarea,
+.seller-layout select,
+.seller-layout .form-control,
+.seller-layout .form-select {
+
+    background:
+        rgba(2,6,23,.80) !important;
+
+    color:
+        #f8fafc !important;
+
+    border:
+        1px solid rgba(255,255,255,.10) !important;
+
+    border-radius:
+        12px !important;
+
+    min-height:
+        44px;
+
+    box-shadow:
+        none !important;
+}
+
+
+.seller-page textarea,
+.seller-layout textarea {
+
+    min-height: 110px;
+}
+
+
+.seller-page input:focus,
+.seller-page textarea:focus,
+.seller-page select:focus,
+.seller-page .form-control:focus,
+.seller-page .form-select:focus,
+
+.seller-layout input:focus,
+.seller-layout textarea:focus,
+.seller-layout select:focus,
+.seller-layout .form-control:focus,
+.seller-layout .form-select:focus {
+
+    background:
+        rgba(2,6,23,.95) !important;
+
+    color:
+        #fff !important;
+
+    border-color:
+        rgba(0,255,153,.55) !important;
+
+    box-shadow:
+        0 0 0 3px rgba(0,255,153,.08) !important;
+
+    outline: none !important;
+}
+
+
+.seller-page input::placeholder,
+.seller-page textarea::placeholder,
+.seller-layout input::placeholder,
+.seller-layout textarea::placeholder {
+
+    color: #64748b !important;
+}
+
+
+/* =========================================================
+   SELECT OPTIONS
+   ========================================================= */
+
+.seller-page option,
+.seller-layout option {
+
+    background: #0f172a !important;
+
+    color: #fff !important;
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.seller-page .btn,
+.seller-layout .btn {
+
+    border-radius: 11px !important;
+
+    font-weight: 700;
+
+    transition:
+        .25s ease;
+
+}
+
+
+.seller-page .btn:hover,
+.seller-layout .btn:hover {
+
+    transform:
+        translateY(-2px);
+}
+
+
+/* PRIMARY */
+
+.seller-page .btn-primary,
+.seller-layout .btn-primary {
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--sb-green),
+            var(--sb-green-dark)
+        ) !important;
+
+    color:
+        #02120c !important;
+
+    border:
+        none !important;
+
+    box-shadow:
+        0 10px 28px rgba(0,255,153,.14);
+}
+
+
+.seller-page .btn-primary:hover,
+.seller-layout .btn-primary:hover {
+
+    box-shadow:
+        0 14px 35px rgba(0,255,153,.25);
+}
+
+
+/* SUCCESS */
+
+.seller-page .btn-success,
+.seller-layout .btn-success {
+
+    background:
+        linear-gradient(
+            135deg,
+            #22c55e,
+            #16a34a
+        ) !important;
+
+    border:
+        none !important;
+}
+
+
+/* DANGER */
+
+.seller-page .btn-danger,
+.seller-layout .btn-danger {
+
+    background:
+        linear-gradient(
+            135deg,
+            #ef4444,
+            #dc2626
+        ) !important;
+
+    border:
+        none !important;
+}
+
+
+/* WARNING */
+
+.seller-page .btn-warning,
+.seller-layout .btn-warning {
+
+    background:
+        linear-gradient(
+            135deg,
+            #fbbf24,
+            #f59e0b
+        ) !important;
+
+    color:
+        #111827 !important;
+
+    border:
+        none !important;
+}
+
+
+/* OUTLINE */
+
+.seller-page .btn-outline-dark,
+.seller-page .btn-outline-secondary,
+.seller-page .btn-outline-light,
+.seller-layout .btn-outline-dark,
+.seller-layout .btn-outline-secondary,
+.seller-layout .btn-outline-light {
+
+    color:
+        #e2e8f0 !important;
+
+    background:
+        rgba(255,255,255,.045) !important;
+
+    border:
+        1px solid rgba(255,255,255,.10) !important;
+}
+
+
+.seller-page .btn-outline-dark:hover,
+.seller-page .btn-outline-secondary:hover,
+.seller-page .btn-outline-light:hover,
+.seller-layout .btn-outline-dark:hover,
+.seller-layout .btn-outline-secondary:hover,
+.seller-layout .btn-outline-light:hover {
+
+    color: #fff !important;
+
+    background:
+        rgba(0,255,153,.08) !important;
+
+    border-color:
+        rgba(0,255,153,.30) !important;
+}
+
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+
+.seller-page .table,
+.seller-layout .table {
+
+    color:
+        #f8fafc !important;
+
+    --bs-table-bg:
+        transparent;
+
+    --bs-table-color:
+        #f8fafc;
+
+    --bs-table-border-color:
+        rgba(255,255,255,.08);
+}
+
+
+.seller-page .table thead th,
+.seller-layout .table thead th {
+
+    background:
+        rgba(2,6,23,.75) !important;
+
+    color:
+        #94a3b8 !important;
+
+    border-color:
+        rgba(255,255,255,.08) !important;
+
+    font-size:
+        11px;
+
+    text-transform:
+        uppercase;
+
+    letter-spacing:
+        .06em;
+}
+
+
+.seller-page .table td,
+.seller-page .table th,
+.seller-layout .table td,
+.seller-layout .table th {
+
+    border-color:
+        rgba(255,255,255,.07) !important;
+
+    vertical-align:
+        middle;
+}
+
+
+.seller-page .table tbody tr,
+.seller-layout .table tbody tr {
+
+    transition:
+        .2s ease;
+}
+
+
+.seller-page .table tbody tr:hover,
+.seller-layout .table tbody tr:hover {
+
+    background:
+        rgba(0,255,153,.035) !important;
+}
+
+
+/* =========================================================
+   STAT CARDS
+   ========================================================= */
+
+.seller-stat-card {
+
+    position:
+        relative;
+
+    padding:
+        24px;
+
+    min-height:
+        145px;
+
+    border:
+        1px solid var(--sb-border);
+
+    border-radius:
+        20px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,.06),
+            rgba(255,255,255,.025)
+        );
+
+    box-shadow:
+        var(--sb-shadow);
+
+    overflow:
+        hidden;
+
+    transition:
+        .3s ease;
+}
+
+
+.seller-stat-card:hover {
+
+    transform:
+        translateY(-5px);
+
+    border-color:
+        rgba(0,255,153,.22);
+
+    box-shadow:
+        0 22px 55px rgba(0,0,0,.35);
+}
+
+
+/* =========================================================
+   PRODUCT CARDS
+   ========================================================= */
+
+.seller-product-card,
+.product-card {
+
+    height: 100%;
+
+    padding: 16px;
+
+    border-radius: 20px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,.06),
+            rgba(255,255,255,.025)
+        );
+
+    border:
+        1px solid rgba(255,255,255,.08);
+
+    box-shadow:
+        0 15px 45px rgba(0,0,0,.25);
+
+    backdrop-filter:
+        blur(16px);
+
+    transition:
+        .3s ease;
+}
+
+
+.seller-product-card:hover,
+.product-card:hover {
+
+    transform:
+        translateY(-5px);
+
+    border-color:
+        rgba(0,255,153,.20);
+
+    box-shadow:
+        0 22px 55px rgba(0,0,0,.35);
+}
+
+
+.seller-product-image,
+.product-card img {
+
+    width:
+        100%;
+
+    max-width:
+        100%;
+
+    height:
+        190px;
+
+    object-fit:
+        cover;
+
+    border-radius:
+        15px;
+
+    background:
+        #0f172a;
+}
+
+
+/* =========================================================
+   ALERTS
+   ========================================================= */
+
+.seller-page .alert,
+.seller-layout .alert {
+
+    background:
+        rgba(255,255,255,.045) !important;
+
+    color:
+        #f8fafc !important;
+
+    border:
+        1px solid rgba(255,255,255,.10) !important;
+
+    border-radius:
+        14px !important;
+}
+
+
+.seller-page .alert-success,
+.seller-layout .alert-success {
+
+    background:
+        rgba(34,197,94,.10) !important;
+
+    color:
+        #86efac !important;
+
+    border-color:
+        rgba(34,197,94,.22) !important;
+}
+
+
+.seller-page .alert-danger,
+.seller-layout .alert-danger {
+
+    background:
+        rgba(239,68,68,.10) !important;
+
+    color:
+        #fca5a5 !important;
+
+    border-color:
+        rgba(239,68,68,.22) !important;
+}
+
+
+/* =========================================================
+   BADGES
+   ========================================================= */
+
+.seller-page .badge,
+.seller-layout .badge {
+
+    border-radius:
+        999px;
+
+    padding:
+        7px 11px;
+}
+
+
+/* =========================================================
+   DROPDOWN
+   ========================================================= */
+
+.seller-page .dropdown-menu,
+.seller-layout .dropdown-menu {
+
+    background:
+        #0f172a !important;
+
+    border:
+        1px solid rgba(255,255,255,.10) !important;
+
+    border-radius:
+        14px !important;
+
+    box-shadow:
+        0 20px 60px rgba(0,0,0,.45);
+}
+
+
+.seller-page .dropdown-item,
+.seller-layout .dropdown-item {
+
+    color:
+        #e2e8f0 !important;
+
+    border-radius:
+        8px;
+}
+
+
+.seller-page .dropdown-item:hover,
+.seller-layout .dropdown-item:hover {
+
+    background:
+        rgba(0,255,153,.08) !important;
+
+    color:
+        #00ff99 !important;
+}
+
+
+/* =========================================================
+   MODAL
+   ========================================================= */
+
+.seller-page .modal-content,
+.seller-layout .modal-content {
+
+    background:
+        #0b1120 !important;
+
+    color:
+        #f8fafc !important;
+
+    border:
+        1px solid rgba(255,255,255,.10) !important;
+
+    border-radius:
+        18px !important;
+
+    box-shadow:
+        0 30px 90px rgba(0,0,0,.55);
+}
+
+
+.seller-page .modal-header,
+.seller-page .modal-footer,
+.seller-layout .modal-header,
+.seller-layout .modal-footer {
+
+    border-color:
+        rgba(255,255,255,.08) !important;
+}
+
+
+/* =========================================================
+   NAVBAR
+   ========================================================= */
+
+.seller-page .navbar,
+.seller-layout .navbar,
+.seller-navbar {
+
+    background:
+        rgba(2,6,23,.88) !important;
+
+    border-bottom:
+        1px solid rgba(255,255,255,.08);
+
+    backdrop-filter:
+        blur(20px);
+}
+
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
+.seller-sidebar {
+
+    background:
+        linear-gradient(
+            180deg,
+            #0f172a,
+            #020617
+        );
+
+    border-right:
+        1px solid rgba(255,255,255,.08);
+
+    min-height:
+        100vh;
+
+    box-shadow:
+        15px 0 50px rgba(0,0,0,.30);
+}
+
+
+.seller-sidebar a {
+
+    color:
+        #94a3b8;
+
+    text-decoration:
+        none;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        10px;
+
+    padding:
+        13px 15px;
+
+    margin:
+        4px 10px;
+
+    border-radius:
+        13px;
+
+    transition:
+        .25s ease;
+}
+
+
+.seller-sidebar a:hover,
+.seller-sidebar a.active {
+
+    color:
+        #00ff99;
+
+    background:
+        rgba(0,255,153,.08);
+}
+
+
+/* =========================================================
+   PROFILE
+   ========================================================= */
+
+.seller-profile-box {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        14px;
+
+    padding:
+        20px;
+
+    border-radius:
+        18px;
+
+    background:
+        rgba(255,255,255,.04);
+
+    border:
+        1px solid rgba(255,255,255,.08);
+
+    box-shadow:
+        var(--sb-shadow);
+}
+
+
+.seller-avatar {
+
+    width:
+        50px;
+
+    height:
+        50px;
+
+    border-radius:
+        15px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    background:
+        linear-gradient(
+            135deg,
+            #00ff99,
+            #00c97a
+        );
+
+    color:
+        #02120c;
+
+    font-weight:
+        800;
+}
+
+
+/* =========================================================
+   3 DOT BUTTON
+   EXISTING FUNCTIONALITY UNTOUCHED
+   ========================================================= */
+
+.seller-three-dots {
+
+    width:
+        44px;
+
+    height:
+        44px;
+
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    border-radius:
+        13px;
+
+    background:
+        rgba(255,255,255,.045);
+
+    color:
+        #f8fafc;
+
+    border:
+        1px solid rgba(255,255,255,.10);
+
+    cursor:
+        pointer;
+
+    transition:
+        .25s ease;
+}
+
+
+.seller-three-dots:hover {
+
+    color:
+        #00ff99;
+
+    background:
+        rgba(0,255,153,.08);
+
+    border-color:
+        rgba(0,255,153,.30);
+
+    transform:
+        translateY(-2px);
+}
+
+
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
+
+.seller-page ::-webkit-scrollbar,
+.seller-layout ::-webkit-scrollbar {
+
+    width:
+        8px;
+
+    height:
+        8px;
+}
+
+
+.seller-page ::-webkit-scrollbar-track,
+.seller-layout ::-webkit-scrollbar-track {
+
+    background:
+        #020617;
+}
+
+
+.seller-page ::-webkit-scrollbar-thumb,
+.seller-layout ::-webkit-scrollbar-thumb {
+
+    background:
+        #334155;
+
+    border-radius:
+        999px;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media(max-width:768px) {
+
+    .seller-container {
+
+        padding:
+            16px;
+    }
+
+    .seller-header {
+
+        flex-direction:
+            column;
+
+        align-items:
+            flex-start;
+
+        padding:
+            18px;
+    }
+
+    .seller-page h1,
+    .seller-layout h1 {
+
+        font-size:
+            24px;
+    }
+
+    .seller-stat-card {
+
+        min-height:
+            125px;
+    }
+
+    .seller-page .table,
+    .seller-layout .table {
+
+        min-width:
+            700px;
+    }
+}
+
+
+@media(max-width:500px) {
+
+    .seller-container {
+
+        padding:
+            12px;
+    }
+
+    .seller-page .card-body,
+    .seller-layout .card-body {
+
+        padding:
+            16px;
+    }
+
+    .seller-product-image,
+    .product-card img {
+
+        height:
+            160px;
+    }
+}
+/* =========================================================
+   SELLER LOGIN POPUP BACKGROUND
+   UI ONLY — DO NOT CHANGE FUNCTIONALITY
+========================================================= */
+
+.seller-login-popup,
+.seller-login-modal,
+.seller-login-popup .modal-content,
+.seller-login-modal .modal-content {
+    background: rgb(20, 21, 24) !important;
+}

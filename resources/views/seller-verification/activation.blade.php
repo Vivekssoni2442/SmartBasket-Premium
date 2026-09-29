@@ -708,7 +708,7 @@
 
             <form
                 method="POST"
-                action="{{ route('seller.activation.resend') }}"
+                action="{{ route('seller.verification.activation.resend') }}"
                 class="resend-form"
             >
 

@@ -12,6 +12,9 @@ use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
 {
+    /**
+     * Show customer profile page.
+     */
     public function index()
     {
         $user = Auth::user();
@@ -23,6 +26,9 @@ class ProfileController extends Controller
         return view('profile', compact('user'));
     }
 
+    /**
+     * Update customer profile.
+     */
     public function update(Request $request)
     {
         $user = Auth::user();
@@ -33,16 +39,15 @@ class ProfileController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | LANGUAGE FIX
+        | LANGUAGE CONFIGURATION
         |--------------------------------------------------------------------------
-        | The database should store the locale KEY, not the display name.
-        | Example:
-        | en => English
-        | hi => Hindi
         |
-        | If config/locales.php does not exist or is empty, the fallback
-        | values below prevent "selected language is invalid".
-        |--------------------------------------------------------------------------
+        | Store language KEY in database:
+        |
+        | en = English
+        | hi = Hindi
+        | gu = Gujarati
+        |
         */
 
         $configuredLocales = config('locales', []);
@@ -59,11 +64,45 @@ class ProfileController extends Controller
 
         /*
         |--------------------------------------------------------------------------
+        | PASSWORD INPUT
+        |--------------------------------------------------------------------------
+        |
+        | Important fix:
+        |
+        | Password is completely optional.
+        |
+        | If customer edits only name/email/phone/address/etc.
+        | and leaves password empty, password validation is skipped.
+        |
+        | If customer enters a new password, Laravel will require:
+        |
+        | password_confirmation
+        |
+        | and it must match.
+        |
+        */
+
+        $passwordRules = [
+            'nullable',
+            'string',
+            'min:8',
+            'confirmed',
+        ];
+
+        /*
+        |--------------------------------------------------------------------------
         | VALIDATION
         |--------------------------------------------------------------------------
         */
 
         $validated = $request->validate([
+
+            /*
+            |--------------------------------------------------------------------------
+            | BASIC INFORMATION
+            |--------------------------------------------------------------------------
+            */
+
             'name' => [
                 'required',
                 'string',
@@ -74,14 +113,16 @@ class ProfileController extends Controller
                 'nullable',
                 'string',
                 'max:255',
-                Rule::unique('users', 'username')->ignore($user->id),
+                Rule::unique('users', 'username')
+                    ->ignore($user->id),
             ],
 
             'email' => [
                 'required',
                 'email',
                 'max:255',
-                Rule::unique('users', 'email')->ignore($user->id),
+                Rule::unique('users', 'email')
+                    ->ignore($user->id),
             ],
 
             'phone' => [
@@ -100,6 +141,12 @@ class ProfileController extends Controller
                 'string',
                 'max:20',
             ],
+
+            /*
+            |--------------------------------------------------------------------------
+            | ADDRESS
+            |--------------------------------------------------------------------------
+            */
 
             'address' => [
                 'nullable',
@@ -156,18 +203,26 @@ class ProfileController extends Controller
             ],
 
             /*
-             * IMPORTANT:
-             * Do NOT validate against "English", "Hindi", "Other".
-             * Validate actual locale keys.
-             */
+            |--------------------------------------------------------------------------
+            | LANGUAGE
+            |--------------------------------------------------------------------------
+            */
+
             'language' => [
                 'nullable',
                 'string',
                 Rule::in($allowedLanguages),
             ],
 
+            /*
+            |--------------------------------------------------------------------------
+            | THEME
+            |--------------------------------------------------------------------------
+            */
+
             'dark_mode' => [
                 'nullable',
+                'string',
                 Rule::in([
                     'light',
                     'dark',
@@ -175,20 +230,44 @@ class ProfileController extends Controller
                 ]),
             ],
 
+            /*
+            |--------------------------------------------------------------------------
+            | NOTIFICATIONS
+            |--------------------------------------------------------------------------
+            */
+
             'notifications' => [
                 'nullable',
+                'string',
                 Rule::in([
                     'enabled',
                     'disabled',
                 ]),
             ],
 
-            'password' => [
-                'nullable',
-                'string',
-                'min:8',
-                'confirmed',
-            ],
+            /*
+            |--------------------------------------------------------------------------
+            | PASSWORD
+            |--------------------------------------------------------------------------
+            |
+            | FIX:
+            | nullable + confirmed
+            |
+            | Empty password:
+            |     No password change.
+            |
+            | Password entered:
+            |     Confirmation must match.
+            |
+            */
+
+            'password' => $passwordRules,
+
+            /*
+            |--------------------------------------------------------------------------
+            | PROFILE IMAGE
+            |--------------------------------------------------------------------------
+            */
 
             'profile_image' => [
                 'nullable',
@@ -200,42 +279,94 @@ class ProfileController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | BASIC INFORMATION
+        | BASIC INFORMATION UPDATE
         |--------------------------------------------------------------------------
         */
 
         $user->name = $validated['name'];
-        $user->username = $validated['username'] ?? null;
+
+        $user->username =
+            array_key_exists('username', $validated)
+                ? $validated['username']
+                : $user->username;
+
         $user->email = $validated['email'];
-        $user->phone = $validated['phone'] ?? null;
-        $user->date_of_birth = $validated['date_of_birth'] ?? null;
-        $user->gender = $validated['gender'] ?? null;
+
+        $user->phone =
+            array_key_exists('phone', $validated)
+                ? $validated['phone']
+                : $user->phone;
+
+        $user->date_of_birth =
+            array_key_exists('date_of_birth', $validated)
+                ? $validated['date_of_birth']
+                : $user->date_of_birth;
+
+        $user->gender =
+            array_key_exists('gender', $validated)
+                ? $validated['gender']
+                : $user->gender;
 
         /*
         |--------------------------------------------------------------------------
-        | ADDRESS
+        | ADDRESS UPDATE
         |--------------------------------------------------------------------------
         */
 
-        $user->address = $validated['address'] ?? null;
-        $user->house_no = $validated['house_no'] ?? null;
-        $user->street = $validated['street'] ?? null;
-        $user->area = $validated['area'] ?? null;
-        $user->landmark = $validated['landmark'] ?? null;
-        $user->city = $validated['city'] ?? null;
-        $user->state = $validated['state'] ?? null;
-        $user->country = $validated['country'] ?? null;
-        $user->pin_code = $validated['pin_code'] ?? null;
+        $user->address =
+            array_key_exists('address', $validated)
+                ? $validated['address']
+                : $user->address;
+
+        $user->house_no =
+            array_key_exists('house_no', $validated)
+                ? $validated['house_no']
+                : $user->house_no;
+
+        $user->street =
+            array_key_exists('street', $validated)
+                ? $validated['street']
+                : $user->street;
+
+        $user->area =
+            array_key_exists('area', $validated)
+                ? $validated['area']
+                : $user->area;
+
+        $user->landmark =
+            array_key_exists('landmark', $validated)
+                ? $validated['landmark']
+                : $user->landmark;
+
+        $user->city =
+            array_key_exists('city', $validated)
+                ? $validated['city']
+                : $user->city;
+
+        $user->state =
+            array_key_exists('state', $validated)
+                ? $validated['state']
+                : $user->state;
+
+        $user->country =
+            array_key_exists('country', $validated)
+                ? $validated['country']
+                : $user->country;
+
+        $user->pin_code =
+            array_key_exists('pin_code', $validated)
+                ? $validated['pin_code']
+                : $user->pin_code;
 
         /*
         |--------------------------------------------------------------------------
-        | LANGUAGE
+        | LANGUAGE UPDATE
         |--------------------------------------------------------------------------
         */
 
         if (
-            array_key_exists('language', $validated) &&
-            filled($validated['language'])
+            array_key_exists('language', $validated)
+            && filled($validated['language'])
         ) {
             $user->language = $validated['language'];
 
@@ -246,66 +377,114 @@ class ProfileController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | THEME
+        | THEME UPDATE
         |--------------------------------------------------------------------------
         */
 
-        $user->dark_mode =
-            $validated['dark_mode']
-            ?? ($user->dark_mode ?: 'light');
+        if (
+            array_key_exists('dark_mode', $validated)
+            && filled($validated['dark_mode'])
+        ) {
+            $user->dark_mode = $validated['dark_mode'];
+        } elseif (! $user->dark_mode) {
+            $user->dark_mode = 'light';
+        }
 
         /*
         |--------------------------------------------------------------------------
-        | NOTIFICATIONS
+        | NOTIFICATION UPDATE
         |--------------------------------------------------------------------------
         */
 
-        $user->notifications =
-            $validated['notifications']
-            ?? ($user->notifications ?: 'enabled');
+        if (
+            array_key_exists('notifications', $validated)
+            && filled($validated['notifications'])
+        ) {
+            $user->notifications = $validated['notifications'];
+        } elseif (! $user->notifications) {
+            $user->notifications = 'enabled';
+        }
 
         /*
         |--------------------------------------------------------------------------
-        | PASSWORD
+        | PASSWORD UPDATE
         |--------------------------------------------------------------------------
+        |
+        | Only update password if customer actually entered one.
+        |
+        | This prevents accidental password changes when editing
+        | normal profile information.
+        |
         */
 
-        if ($request->filled('password')) {
+        if (
+            array_key_exists('password', $validated)
+            && filled($validated['password'])
+        ) {
             $user->password = Hash::make(
-                $request->password
+                $validated['password']
             );
         }
 
         /*
         |--------------------------------------------------------------------------
-        | PROFILE IMAGE
+        | PROFILE IMAGE UPDATE
         |--------------------------------------------------------------------------
         */
 
         if ($request->hasFile('profile_image')) {
 
+            $image = $request->file('profile_image');
+
             /*
-             * Delete old profile image if it exists.
-             */
-            if ($user->profile_image) {
+            |--------------------------------------------------------------------------
+            | Delete old image
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                ! empty($user->profile_image)
+            ) {
                 Storage::disk('public')->delete(
                     'profile/' . $user->profile_image
                 );
             }
 
-            $image = $request->file('profile_image');
+            /*
+            |--------------------------------------------------------------------------
+            | Generate safe unique filename
+            |--------------------------------------------------------------------------
+            */
+
+            $originalName = pathinfo(
+                $image->getClientOriginalName(),
+                PATHINFO_FILENAME
+            );
+
+            $extension = strtolower(
+                $image->getClientOriginalExtension()
+            );
+
+            $safeName = Str::slug($originalName);
+
+            if ($safeName === '') {
+                $safeName = 'profile';
+            }
 
             $fileName =
                 time()
                 . '_'
-                . Str::slug(
-                    pathinfo(
-                        $image->getClientOriginalName(),
-                        PATHINFO_FILENAME
-                    )
-                )
+                . Str::random(8)
+                . '_'
+                . $safeName
                 . '.'
-                . $image->getClientOriginalExtension();
+                . $extension;
+
+            /*
+            |--------------------------------------------------------------------------
+            | Store image
+            |--------------------------------------------------------------------------
+            */
 
             $image->storeAs(
                 'profile',
@@ -318,7 +497,7 @@ class ProfileController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | SAVE
+        | SAVE USER
         |--------------------------------------------------------------------------
         */
 
@@ -326,7 +505,7 @@ class ProfileController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | SUCCESS
+        | SUCCESS MESSAGE
         |--------------------------------------------------------------------------
         */
 
@@ -336,13 +515,34 @@ class ProfileController extends Controller
         );
     }
 
+    /**
+     * Logout customer.
+     */
     public function logout(Request $request)
     {
         Auth::logout();
 
+        /*
+        |--------------------------------------------------------------------------
+        | Invalidate current session
+        |--------------------------------------------------------------------------
+        */
+
         $request->session()->invalidate();
 
+        /*
+        |--------------------------------------------------------------------------
+        | Regenerate CSRF token
+        |--------------------------------------------------------------------------
+        */
+
         $request->session()->regenerateToken();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Forget remember-me cookie
+        |--------------------------------------------------------------------------
+        */
 
         Cookie::queue(
             Cookie::forget(
@@ -351,10 +551,15 @@ class ProfileController extends Controller
             )
         );
 
-        return redirect('/login')
-            ->with(
-                'success',
-                'You have been logged out successfully.'
-            );
+        /*
+        |--------------------------------------------------------------------------
+        | Redirect
+        |--------------------------------------------------------------------------
+        */
+
+        return redirect('/login')->with(
+            'success',
+            'You have been logged out successfully.'
+        );
     }
 }

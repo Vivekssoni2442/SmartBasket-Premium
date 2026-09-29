@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+      data-theme="system">
+
+<head>
+
+    <meta charset="utf-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <meta
+        name="csrf-token"
+        content="{{ csrf_token() }}"
+    >
+
+    <title>
+        @yield('title', 'SmartBasket Premium')
+    </title>
+
+    {{-- Global SmartBasket Theme --}}
+    <link
+        rel="stylesheet"
+        href="{{ asset('css/premium-dark-theme.css') }}"
+    >
+
+    {{-- Theme ko page load hone se pehle initialize karega --}}
+    <script src="{{ asset('js/smartbasket-theme.js') }}"></script>
+
+    @vite([
+        'resources/css/app.css',
+        'resources/js/app.js'
+    ])
+
+    @stack('styles')
+
+</head>
+
+<body>
+
+    <div class="sb-page">
+
+        @yield('content')
+
+    </div>
+
+    @stack('scripts')
+
+</body>
+
+</html>

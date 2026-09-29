@@ -16,7 +16,11 @@
         <div class="profile-hero-left">
 
             <div class="profile-big-avatar">
-                {{ $initials }}
+                @if($admin->avatar)
+                    <img src="{{ asset('storage/admin-avatars/' . $admin->avatar) }}" alt="{{ $name }}" class="profile-avatar-image">
+                @else
+                    {{ $initials }}
+                @endif
             </div>
 
             <div>
@@ -101,6 +105,7 @@
             <form
                 method="POST"
                 action="{{ route('admin.profile.update') }}"
+                enctype="multipart/form-data"
             >
 
                 @csrf
@@ -141,6 +146,12 @@
 
                     </div>
 
+                </div>
+
+                <div class="form-field">
+                    <label for="avatar">Profile photo</label>
+                    <input id="avatar" type="file" name="avatar" accept="image/jpeg,image/png,image/webp">
+                    @if($admin->avatar)<small>Current photo is stored securely.</small>@endif
                 </div>
 
 
@@ -477,6 +488,14 @@
     );
     box-shadow:
         0 15px 35px rgba(99,102,241,.35);
+}
+
+.profile-avatar-image {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    border-radius: inherit;
 }
 
 .profile-eyebrow {

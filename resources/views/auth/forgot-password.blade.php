@@ -12,6 +12,10 @@
 
 <style>
 
+/* =========================================================
+   RESET
+========================================================= */
+
 *{
     margin:0;
     padding:0;
@@ -24,9 +28,15 @@
    PAGE
 ========================================================= */
 
+html,
+body{
+    width:100%;
+    min-height:100%;
+}
+
 body{
 
-    height:100vh;
+    min-height:100vh;
 
     display:flex;
 
@@ -34,42 +44,66 @@ body{
 
     align-items:center;
 
+    padding:30px 20px;
+
     overflow:hidden;
 
     position:relative;
 
     background:
+        radial-gradient(
+            circle at 15% 15%,
+            rgba(37,99,235,.28),
+            transparent 32%
+        ),
+        radial-gradient(
+            circle at 85% 85%,
+            rgba(6,182,212,.20),
+            transparent 32%
+        ),
         linear-gradient(
             135deg,
             #020617,
-            #000,
-            #111827
+            #050816,
+            #020617
         );
 
+    color:#fff;
 }
 
 
 /* =========================================================
-   BACKGROUND GLOW
+   ANIMATED BACKGROUND LIGHTS
 ========================================================= */
 
 body::before{
 
     content:"";
 
-    position:absolute;
+    position:fixed;
 
-    width:650px;
-    height:650px;
+    width:520px;
+    height:520px;
 
-    background:#FFD700;
+    left:-230px;
+    top:-220px;
 
-    opacity:.18;
+    border-radius:50%;
 
-    filter:blur(160px);
+    background:
+        radial-gradient(
+            circle,
+            rgba(37,99,235,.45),
+            rgba(37,99,235,.10) 40%,
+            transparent 72%
+        );
 
-    top:-250px;
-    left:-250px;
+    filter:blur(20px);
+
+    animation:
+        blueFloat 8s ease-in-out infinite;
+
+    pointer-events:none;
 
 }
 
@@ -78,19 +112,132 @@ body::after{
 
     content:"";
 
+    position:fixed;
+
+    width:600px;
+    height:600px;
+
+    right:-280px;
+    bottom:-300px;
+
+    border-radius:50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(14,165,233,.38),
+            rgba(59,130,246,.08) 45%,
+            transparent 72%
+        );
+
+    filter:blur(25px);
+
+    animation:
+        blueFloatReverse 10s ease-in-out infinite;
+
+    pointer-events:none;
+
+}
+
+
+@keyframes blueFloat{
+
+    0%,
+    100%{
+        transform:translate(0,0) scale(1);
+    }
+
+    50%{
+        transform:translate(100px,80px) scale(1.15);
+    }
+
+}
+
+
+@keyframes blueFloatReverse{
+
+    0%,
+    100%{
+        transform:translate(0,0) scale(1);
+    }
+
+    50%{
+        transform:translate(-100px,-80px) scale(1.12);
+    }
+
+}
+
+
+/* =========================================================
+   PAGE LAYER
+========================================================= */
+
+body{
+    isolation:isolate;
+}
+
+body > *{
+    position:relative;
+    z-index:2;
+}
+
+body > .forgot-box{
+    z-index:10;
+}
+
+
+/* =========================================================
+   MOVING LIGHT
+========================================================= */
+
+body > .forgot-box::before{
+
+    content:"";
+
     position:absolute;
 
-    width:650px;
-    height:650px;
+    width:8px;
+    height:8px;
 
-    background:#ff9900;
+    border-radius:50%;
 
-    opacity:.15;
+    background:#fff;
 
-    filter:blur(160px);
+    box-shadow:
+        0 0 10px #fff,
+        0 0 25px #38bdf8;
 
-    bottom:-250px;
-    right:-250px;
+    top:-120px;
+    left:-180px;
+
+    animation:
+        starMove 7s linear infinite;
+
+    pointer-events:none;
+
+}
+
+
+@keyframes starMove{
+
+    0%{
+        transform:translate(0,0);
+        opacity:0;
+    }
+
+    15%{
+        opacity:1;
+    }
+
+    50%{
+        transform:translate(800px,500px);
+        opacity:.8;
+    }
+
+    100%{
+        transform:translate(1200px,750px);
+        opacity:0;
+    }
 
 }
 
@@ -103,41 +250,106 @@ body::after{
 
     width:430px;
 
-    padding:45px;
+    max-width:100%;
 
-    border-radius:35px;
+    padding:42px 40px;
 
-    background:rgba(255,255,255,.08);
-
-    backdrop-filter:blur(25px);
-
-    -webkit-backdrop-filter:blur(25px);
-
-    border:1px solid rgba(255,215,0,.35);
-
-    box-shadow:
-        0 0 60px rgba(255,215,0,.25);
+    border-radius:32px;
 
     position:relative;
 
-    z-index:5;
+    overflow:hidden;
 
-    animation:show 1s ease;
+    background:
+        linear-gradient(
+            145deg,
+            rgba(15,23,42,.96),
+            rgba(3,7,18,.96)
+        );
+
+    border:
+        1px solid rgba(59,130,246,.38);
+
+    box-shadow:
+
+        0 35px 100px rgba(0,0,0,.65),
+
+        0 0 45px rgba(37,99,235,.16),
+
+        inset 0 1px 0 rgba(255,255,255,.08);
+
+    backdrop-filter:blur(28px);
+
+    -webkit-backdrop-filter:blur(28px);
+
+    animation:
+        cardShow .8s cubic-bezier(.2,.8,.2,1);
 
 }
 
 
 /* =========================================================
-   ANIMATION
+   TOP LIGHT LINE
 ========================================================= */
 
-@keyframes show{
+.forgot-box::after{
+
+    content:"";
+
+    position:absolute;
+
+    top:0;
+
+    left:8%;
+
+    right:8%;
+
+    height:2px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            #2563eb,
+            #38bdf8,
+            #60a5fa,
+            transparent
+        );
+
+    box-shadow:
+        0 0 18px rgba(59,130,246,.9);
+
+    animation:
+        linePulse 3s ease-in-out infinite;
+
+}
+
+
+@keyframes linePulse{
+
+    0%,
+    100%{
+        opacity:.45;
+    }
+
+    50%{
+        opacity:1;
+    }
+
+}
+
+
+@keyframes cardShow{
 
     from{
 
         opacity:0;
 
-        transform:translateY(100px);
+        transform:
+            translateY(45px)
+            scale(.94);
+
+        filter:blur(5px);
 
     }
 
@@ -145,7 +357,11 @@ body::after{
 
         opacity:1;
 
-        transform:translateY(0);
+        transform:
+            translateY(0)
+            scale(1);
+
+        filter:blur(0);
 
     }
 
@@ -163,15 +379,17 @@ body::after{
 }
 
 
+/* LOGO ICON */
+
 .logo-icon{
 
-    height:95px;
+    height:88px;
 
-    width:95px;
+    width:88px;
 
-    margin:auto;
+    margin:0 auto;
 
-    border-radius:30px;
+    border-radius:27px;
 
     display:flex;
 
@@ -179,36 +397,61 @@ body::after{
 
     align-items:center;
 
-    font-size:45px;
+    font-size:42px;
 
     background:
         linear-gradient(
             135deg,
-            #FFD700,
-            #ff9900
+            #2563eb,
+            #0ea5e9
         );
 
+    border:
+        1px solid rgba(255,255,255,.25);
+
     box-shadow:
-        0 0 40px #FFD700;
+
+        0 0 30px rgba(37,99,235,.45),
+
+        0 0 70px rgba(14,165,233,.20),
+
+        inset 0 1px 0 rgba(255,255,255,.30);
+
+    animation:
+        logoFloat 3.5s ease-in-out infinite;
+
+}
+
+
+@keyframes logoFloat{
+
+    0%,
+    100%{
+        transform:translateY(0);
+    }
+
+    50%{
+        transform:translateY(-7px);
+    }
 
 }
 
 
 /* =========================================================
    SMART BASKET TITLE
-   SMART = WHITE
-   BASKET = YELLOW
 ========================================================= */
 
 .forgot-box h1{
 
-    margin-top:20px;
+    margin-top:19px;
 
     text-align:center;
 
-    font-size:36px;
+    font-size:32px;
 
     font-weight:800;
+
+    letter-spacing:-.7px;
 
     color:#ffffff !important;
 
@@ -217,7 +460,10 @@ body::after{
 
 .forgot-box h1 span{
 
-    color:#FFD700 !important;
+    color:#38bdf8 !important;
+
+    text-shadow:
+        0 0 18px rgba(56,189,248,.25);
 
 }
 
@@ -230,24 +476,118 @@ body::after{
 
     text-align:center;
 
-    color:#ccc;
+    color:#94a3b8;
 
-    font-size:13px;
+    font-size:11px;
 
-    letter-spacing:2px;
+    font-weight:600;
 
-    margin:10px 0 35px;
+    letter-spacing:2.4px;
+
+    margin:9px 0 31px;
 
 }
 
 
 /* =========================================================
-   INPUT
+   SUCCESS MESSAGE
+========================================================= */
+
+.success-message{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    padding:13px 15px;
+
+    margin-bottom:20px;
+
+    border-radius:15px;
+
+    color:#93c5fd;
+
+    background:
+        rgba(37,99,235,.10);
+
+    border:
+        1px solid rgba(59,130,246,.25);
+
+    font-size:12px;
+
+    line-height:1.5;
+
+    animation:
+        messageShow .45s ease;
+
+}
+
+
+.success-message i{
+
+    color:#38bdf8;
+
+    font-size:15px;
+
+}
+
+
+@keyframes messageShow{
+
+    from{
+        opacity:0;
+        transform:translateY(-8px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+
+}
+
+
+/* =========================================================
+   INPUT AREA
 ========================================================= */
 
 .input-box{
 
-    margin-bottom:25px;
+    margin-bottom:22px;
+
+    position:relative;
+
+}
+
+
+.input-box label{
+
+    display:block;
+
+    margin-bottom:9px;
+
+    padding-left:4px;
+
+    color:#cbd5e1;
+
+    font-size:11px;
+
+    font-weight:700;
+
+    letter-spacing:.7px;
+
+    text-transform:uppercase;
+
+}
+
+
+.input-box label i{
+
+    color:#38bdf8;
+
+    margin-right:6px;
 
 }
 
@@ -258,42 +598,68 @@ body::after{
 
     height:58px;
 
-    padding:0 20px;
+    padding:0 19px;
 
     border:none;
 
     outline:none;
 
-    border-radius:20px;
+    border-radius:18px;
 
-    background:rgba(255,255,255,.12);
+    background:
+        rgba(255,255,255,.065);
 
-    color:white;
+    border:
+        1px solid rgba(148,163,184,.14);
 
-    font-size:15px;
+    color:#fff;
+
+    font-size:14px;
+
+    transition:.25s ease;
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.03);
 
 }
 
 
 .input-box input::placeholder{
 
-    color:#aaa;
+    color:#64748b;
+
+}
+
+
+.input-box input:hover{
+
+    border-color:
+        rgba(59,130,246,.35);
 
 }
 
 
 .input-box input:focus{
 
-    background:rgba(255,255,255,.15);
+    border-color:
+        rgba(56,189,248,.75);
+
+    background:
+        rgba(37,99,235,.075);
 
     box-shadow:
-        0 0 0 2px rgba(255,215,0,.20);
+
+        0 0 0 4px
+        rgba(37,99,235,.10),
+
+        0 12px 30px
+        rgba(0,0,0,.18);
 
 }
 
 
 /* =========================================================
-   BUTTON
+   SEND OTP BUTTON
 ========================================================= */
 
 button{
@@ -304,34 +670,88 @@ button{
 
     border:none;
 
-    border-radius:22px;
+    border-radius:18px;
+
+    position:relative;
+
+    overflow:hidden;
 
     background:
         linear-gradient(
-            135deg,
-            #FFD700,
-            #ff9900
+            110deg,
+            #2563eb,
+            #0ea5e9
         );
 
-    color:#000;
+    color:#fff;
 
-    font-size:18px;
+    font-size:15px;
 
-    font-weight:700;
+    font-weight:800;
+
+    letter-spacing:.2px;
 
     cursor:pointer;
 
-    transition:.3s;
+    transition:.25s ease;
+
+    box-shadow:
+        0 12px 30px
+        rgba(37,99,235,.28);
+
+}
+
+
+button::before{
+
+    content:"";
+
+    position:absolute;
+
+    top:0;
+
+    left:-120%;
+
+    width:75%;
+
+    height:100%;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(255,255,255,.30),
+            transparent
+        );
+
+    transform:skewX(-20deg);
+
+    transition:left .65s ease;
 
 }
 
 
 button:hover{
 
-    transform:scale(1.05);
+    transform:translateY(-2px);
 
     box-shadow:
-        0 0 35px #FFD700;
+        0 18px 40px
+        rgba(37,99,235,.40);
+
+}
+
+
+button:hover::before{
+
+    left:145%;
+
+}
+
+
+button:active{
+
+    transform:translateY(0) scale(.98);
 
 }
 
@@ -342,50 +762,128 @@ button:hover{
 
 .back{
 
-    text-align:center;
+    display:flex;
 
-    margin-top:25px;
+    align-items:center;
 
-    color:#ccc;
+    justify-content:center;
+
+    gap:5px;
+
+    margin-top:24px;
+
+    color:#94a3b8;
+
+    font-size:12px;
 
 }
 
 
 .back a{
 
-    color:#FFD700;
+    color:#38bdf8;
 
     text-decoration:none;
 
-    font-weight:600;
+    font-weight:700;
+
+    transition:.2s ease;
 
 }
 
 
 .back a:hover{
 
-    color:#ffffff;
+    color:#fff;
+
+    text-shadow:
+        0 0 12px rgba(56,189,248,.7);
 
 }
 
 
 /* =========================================================
-   MOBILE
+   RESPONSIVE
 ========================================================= */
 
 @media(max-width:500px){
 
-    .forgot-box{
+    body{
 
-        width:calc(100% - 30px);
+        padding:20px 15px;
 
-        padding:35px 25px;
+        overflow-y:auto;
 
     }
 
+
+    .forgot-box{
+
+        width:100%;
+
+        padding:34px 24px;
+
+        border-radius:27px;
+
+    }
+
+
+    .logo-icon{
+
+        width:78px;
+
+        height:78px;
+
+        border-radius:23px;
+
+        font-size:36px;
+
+    }
+
+
     .forgot-box h1{
 
-        font-size:30px;
+        font-size:28px;
+
+    }
+
+
+    .subtitle{
+
+        font-size:9px;
+
+        letter-spacing:1.8px;
+
+        margin-bottom:27px;
+
+    }
+
+
+    .input-box input{
+
+        height:55px;
+
+    }
+
+
+    button{
+
+        height:55px;
+
+    }
+
+}
+
+
+@media(max-height:650px){
+
+    body{
+
+        align-items:flex-start;
+
+        padding-top:20px;
+
+        overflow-y:auto;
 
     }
 
@@ -397,6 +895,7 @@ button:hover{
 
 
 <body>
+
 <x-site-menu />
 
 
@@ -405,13 +904,14 @@ button:hover{
 
     @if(session('success'))
 
-        <div style="
-            color:#FFD700;
-            text-align:center;
-            margin-bottom:20px;
-            font-weight:600;
-        ">
-            {{ session('success') }}
+        <div class="success-message">
+
+            <i class="fa-solid fa-circle-check"></i>
+
+            <span>
+                {{ session('success') }}
+            </span>
+
         </div>
 
     @endif
@@ -421,7 +921,7 @@ button:hover{
 
 
         <div class="logo-icon">
-            🔐
+            🛒
         </div>
 
 
@@ -445,7 +945,17 @@ button:hover{
 
         <div class="input-box">
 
+            <label for="email">
+
+                <i class="fa-solid fa-envelope"></i>
+
+                Registered Email
+
+            </label>
+
+
             <input
+                id="email"
                 type="email"
                 name="email"
                 placeholder="Enter Registered Email"
@@ -458,7 +968,11 @@ button:hover{
 
 
         <button type="submit">
-            SEND OTP
+
+            <i class="fa-solid fa-paper-plane"></i>
+
+            &nbsp; SEND OTP
+
         </button>
 
 
@@ -470,7 +984,9 @@ button:hover{
         Remember Password?
 
         <a href="{{ route('login') }}">
+
             Login
+
         </a>
 
     </div>

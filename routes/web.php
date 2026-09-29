@@ -18,6 +18,9 @@ use App\Http\Controllers\SecurityController;
 use App\Http\Controllers\SellerController;
 use App\Http\Controllers\SellerOrderController;
 use App\Http\Controllers\SellerPaymentController;
+use App\Http\Controllers\SellerPayoutController;
+use App\Http\Controllers\AdminPayoutController;
+use App\Http\Controllers\CustomerAddressController;
 use App\Http\Controllers\SellerSettingsController;
 use App\Http\Controllers\SellerVerificationController;
 use App\Http\Controllers\VirtualTryOnController;
@@ -114,15 +117,12 @@ Route::post('/login', function (Request $request) {
         |--------------------------------------------------------------------------
         | CUSTOMER LOGIN WELCOME ANIMATION
         |--------------------------------------------------------------------------
-        |
-        | This is a one-time session flag.
-        |
-        | It is consumed on the Products page, so the animation appears
-        | only after a successful customer login.
-        |--------------------------------------------------------------------------
         */
 
-        session()->flash('customer_login_welcome', true);
+        session()->flash(
+            'customer_login_welcome',
+            true
+        );
 
         return redirect()
             ->route('products.index')
@@ -180,12 +180,14 @@ Route::post('/register', function (Request $request) {
     $request->validate([
         'name' => ['required', 'string', 'max:255'],
         'email' => ['required', 'email', 'unique:users,email'],
+        'phone' => ['required', 'string', 'max:20'],
         'password' => ['required', 'min:8', 'confirmed'],
     ]);
 
     User::create([
         'name' => $request->name,
         'email' => $request->email,
+        'phone' => $request->phone,
         'password' => Hash::make($request->password),
     ]);
 
@@ -252,6 +254,9 @@ Route::post('/seller-register', [
 */
 
 Route::middleware('seller.auth')->group(function () {
+
+    Route::get('/seller/payouts', [SellerPayoutController::class, 'index'])->name('seller.payouts.index');
+    Route::post('/seller/payouts', [SellerPayoutController::class, 'request'])->name('seller.payouts.request');
 
     Route::get('/seller-dashboard', [
         SellerController::class,
@@ -607,7 +612,7 @@ Route::middleware('seller.auth')->group(function () {
     Route::post('/seller-verification/activation/verify', [
         SellerVerificationController::class,
         'verifyActivation',
-    ])->name('seller.verification.activation.verify');
+    ])->name('seller.activation.verify');
 
 
     Route::post('/seller-verification/activation/resend', [
@@ -625,7 +630,7 @@ Route::middleware('seller.auth')->group(function () {
     Route::get('/seller-verification/onboarding', [
         SellerVerificationController::class,
         'onboarding',
-    ])->name('seller.verification.onboarding');
+    ])->name('seller.onboarding');
 
 
     /*
@@ -786,34 +791,7 @@ Route::get('/verify-otp', function () {
 })->name('verify.otp');
 
 
-Route::post('/verify-otp', function (Request $request) {
-
-    $request->validate([
-        'otp' => ['required', 'digits:6'],
-    ]);
-
-    if (
-        hash_equals(
-            (string) session('reset_otp'),
-            (string) $request->otp
-        )
-    ) {
-
-        return redirect()
-            ->route('reset.password')
-            ->with(
-                'success',
-                'OTP verified successfully'
-            );
-    }
-
-    return back()
-        ->with(
-            'error',
-            'Invalid OTP'
-        );
-
-})->name('verify.otp.submit');
+Route::post('/verify-otp', [OtpController::class, 'verifyOtp'])->name('verify.otp.submit');
 
 
 /*
@@ -827,20 +805,7 @@ Route::get('/reset-password', function () {
 })->name('reset.password');
 
 
-Route::post('/reset-password', function (Request $request) {
-
-    $request->validate([
-        'password' => [
-            'required',
-            'min:8',
-            'confirmed',
-        ],
-    ]);
-
-    return redirect()
-        ->route('password.success');
-
-})->name('reset.password.submit');
+Route::post('/reset-password', [OtpController::class, 'resetPassword'])->name('reset.password.submit');
 
 
 Route::get('/password-success', function () {
@@ -1063,6 +1028,14 @@ Route::post('/wishlist/add/{product}', function ($productId) {
     ->middleware('auth')
     ->name('wishlist.add');
 
+Route::middleware('auth')->group(function () {
+    Route::get('/buy-again', [CustomerDiscoveryController::class, 'buyAgain'])->name('buy-again');
+    Route::get('/for-you', [CustomerDiscoveryController::class, 'forYou'])->name('for-you');
+    Route::get('/price-watches', [CustomerDiscoveryController::class, 'watches'])->name('price-watches.index');
+    Route::post('/products/{product}/price-watch', [CustomerDiscoveryController::class, 'storeWatch'])->name('price-watches.store');
+    Route::delete('/price-watches/{priceWatch}', [CustomerDiscoveryController::class, 'destroyWatch'])->name('price-watches.destroy');
+});
+
 
 /*
 |--------------------------------------------------------------------------
@@ -1072,7 +1045,15 @@ Route::post('/wishlist/add/{product}', function ($productId) {
 
 Route::middleware('auth')->group(function () {
 
+    Route::get('/addresses', [CustomerAddressController::class, 'index'])->name('addresses.index');
+    Route::post('/addresses', [CustomerAddressController::class, 'store'])->name('addresses.store');
+    Route::put('/addresses/{address}', [CustomerAddressController::class, 'update'])->name('addresses.update');
+    Route::delete('/addresses/{address}', [CustomerAddressController::class, 'destroy'])->name('addresses.destroy');
+    Route::post('/addresses/{address}/default', [CustomerAddressController::class, 'makeDefault'])->name('addresses.default');
+
     Route::get('/checkout', function () {
+
+        $addresses = Auth::user()->addresses()->latest('is_default')->latest()->get();
 
         $cartItems = \App\Models\Cart::with(
             'product.seller'
@@ -1092,7 +1073,7 @@ Route::middleware('auth')->group(function () {
             if ($product) {
 
                 $total +=
-                    (float) $product->price
+                    (float) $product->effective_price
                     *
                     max(
                         1,
@@ -1122,7 +1103,7 @@ Route::middleware('auth')->group(function () {
                     'quantity' => 1,
                 ]];
 
-                $total = (float) $product->price;
+                $total = (float) $product->effective_price;
             }
         }
 
@@ -1163,6 +1144,7 @@ Route::middleware('auth')->group(function () {
                 'cartItems',
                 'total',
                 'onlinePaymentAvailable'
+                , 'addresses'
             )
         );
 
@@ -1261,10 +1243,25 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware('auth')->group(function () {
 
+    Route::get('/payments', [
+        PaymentController::class,
+        'index',
+    ])->name('payments.index');
+
     Route::get('/payments/{payment}', [
         PaymentController::class,
         'show',
     ])->name('payments.show');
+
+    Route::post('/payments/{payment}/retry', [
+        PaymentController::class,
+        'retry',
+    ])->name('payments.retry');
+
+    Route::get('/payments/{payment}/receipt', [
+        PaymentController::class,
+        'receipt',
+    ])->name('payments.receipt');
 
 
     Route::post('/payments/{payment}/verify', [
@@ -1383,6 +1380,13 @@ Route::middleware('auth')->group(function () {
 |--------------------------------------------------------------------------
 */
 
+
+/*
+|--------------------------------------------------------------------------
+| CREATE / UPDATE SECURITY PIN
+|--------------------------------------------------------------------------
+*/
+
 Route::post('/security/save-pin', [
     SecurityController::class,
     'savePin',
@@ -1391,11 +1395,44 @@ Route::post('/security/save-pin', [
     ->name('security.save');
 
 
+/*
+|--------------------------------------------------------------------------
+| LOGIN SECURITY PIN
+|--------------------------------------------------------------------------
+|
+| Used after normal customer login when a Security PIN already exists.
+|
+*/
+
 Route::post('/security/verify', [
     SecurityController::class,
     'verifyPin',
 ])->name('security.verify');
 
+
+/*
+|--------------------------------------------------------------------------
+| CUSTOMER SECURITY PIN POPUP
+|--------------------------------------------------------------------------
+|
+| Used by the customer Products page popup.
+| This verifies the currently logged-in customer's PIN.
+|
+*/
+
+Route::post('/security/verify-customer-pin', [
+    SecurityController::class,
+    'verifyCustomerPin',
+])
+    ->middleware('auth')
+    ->name('security.customer.verify');
+
+
+/*
+|--------------------------------------------------------------------------
+| DISABLE SECURITY PIN
+|--------------------------------------------------------------------------
+*/
 
 Route::post('/security/disable', [
     SecurityController::class,
@@ -1405,9 +1442,101 @@ Route::post('/security/disable', [
     ->name('security.disable');
 
 
+/*
+|--------------------------------------------------------------------------
+| SECURITY PIN VERIFY PAGE
+|--------------------------------------------------------------------------
+|
+| Shown after customer login when Security PIN is enabled.
+|
+*/
+
 Route::get('/security/verify-page', function () {
+
     return view('security.verify');
+
 })->name('security.verify.page');
+
+
+/*
+|--------------------------------------------------------------------------
+| SECURITY PIN SETUP PAGE
+|--------------------------------------------------------------------------
+|
+| IMPORTANT:
+| SecurityController::managePin() can redirect here when a customer
+| does not have a Security PIN configured.
+|
+| If your project already has this route somewhere else, DO NOT add
+| another route with the same name.
+|
+*/
+
+Route::get('/security/setup', function () {
+
+    return view('security.setup');
+
+})
+    ->middleware('auth')
+    ->name('security.setup.page');
+
+
+/*
+|--------------------------------------------------------------------------
+| SECURITY PIN MANAGE / CHANGE PAGE
+|--------------------------------------------------------------------------
+|
+| Customer Settings
+|      ↓
+| Security Center
+|      ↓
+| Manage
+|      ↓
+| /security/manage
+|
+*/
+
+Route::get('/security/manage', [
+    SecurityController::class,
+    'managePin',
+])
+    ->middleware('auth')
+    ->name('security.manage.page');
+
+
+/*
+|--------------------------------------------------------------------------
+| VERIFY CURRENT SECURITY PIN
+|--------------------------------------------------------------------------
+|
+| Before changing an existing Security PIN, the customer must
+| verify the current PIN.
+|
+*/
+
+Route::post('/security/manage/verify', [
+    SecurityController::class,
+    'verifyManagePin',
+])
+    ->middleware('auth')
+    ->name('security.manage.verify');
+
+
+/*
+|--------------------------------------------------------------------------
+| UPDATE SECURITY PIN
+|--------------------------------------------------------------------------
+|
+| Saves the new Security PIN after the current PIN has been verified.
+|
+*/
+
+Route::post('/security/manage/update', [
+    SecurityController::class,
+    'updateManagedPin',
+])
+    ->middleware('auth')
+    ->name('security.manage.update');
 
 
 /*
@@ -1417,7 +1546,9 @@ Route::get('/security/verify-page', function () {
 */
 
 Route::get('/ai-chat', function () {
+
     return view('ai-hub.chat');
+
 })->name('ai.chat.page');
 
 
@@ -1475,6 +1606,9 @@ Route::post('/admin/mfa-verify', [
 */
 
 Route::middleware('admin.auth')->group(function () {
+
+    Route::get('/admin/payouts', [AdminPayoutController::class, 'index'])->name('admin.payouts.index');
+    Route::patch('/admin/payouts/{payout}', [AdminPayoutController::class, 'update'])->name('admin.payouts.update');
 
     /*
     |--------------------------------------------------------------------------
@@ -1769,6 +1903,19 @@ Route::prefix('admin')
             ]
         )->name('admin.seller-verifications.document.download');
 
+        // Legacy admin application view still links to these names. Keep the
+        // aliases on distinct URLs so there is one authoritative document
+        // authorization implementation.
+        Route::get('/sellers/{seller}/documents/{type}', [
+            AdminSellerVerificationController::class,
+            'viewDocument',
+        ])->name('admin.sellers.documents.view');
+
+        Route::get('/sellers/{seller}/documents/{type}/download', [
+            AdminSellerVerificationController::class,
+            'downloadDocument',
+        ])->name('admin.sellers.documents.download');
+
 
         Route::post('/seller-verifications/{seller}/suspend', [
             AdminSellerVerificationController::class,
@@ -1804,6 +1951,7 @@ Route::middleware('admin.auth')->group(function () {
         );
 
         if ($image === false) {
+
             abort(
                 500,
                 'Unable to generate QR image.'
@@ -1832,15 +1980,21 @@ Route::middleware('admin.auth')->group(function () {
 */
 
 Route::get('/test-profile', function () {
+
     return 'TEST PROFILE OK';
+
 });
 
 
 Route::get('/abc-test', function () {
+
     return 'ABC TEST WORKING';
+
 });
 
 
 Route::get('/profile-test', function () {
+
     return 'PROFILE TEST OK';
+
 });

@@ -28,6 +28,8 @@ class SellerProfile extends Model
     public const STATUS_DRAFT = 'draft';
     public const STATUS_PENDING_EMAIL = 'pending_email';
     public const STATUS_EMAIL_VERIFICATION = 'email_verification';
+    // Compatibility name used by the verification workflow after email success.
+    public const STATUS_EMAIL_VERIFIED = self::STATUS_DOCUMENTS_PENDING;
     public const STATUS_DOCUMENTS_PENDING = 'documents_pending';
     public const STATUS_AADHAAR_VERIFICATION = 'aadhaar_verification';
     public const STATUS_BUSINESS_DETAILS = 'business_details';
@@ -56,9 +58,11 @@ class SellerProfile extends Model
         'user_id',
 
         'seller_name',
+        'shop_name',
         'email',
         'phone',
         'mobile',
+        'mobile_number',
 
         'address',
         'city',
@@ -68,6 +72,9 @@ class SellerProfile extends Model
 
         'verification_status',
         'verification_step',
+        'onboarding_step',
+
+        'password',
 
         'email_verified_at',
         'email_verification_code',
@@ -180,6 +187,16 @@ class SellerProfile extends Model
             Admin::class,
             'reviewed_by'
         );
+    }
+
+    public function earnings(): HasMany
+    {
+        return $this->hasMany(SellerEarning::class, 'seller_id');
+    }
+
+    public function payouts(): HasMany
+    {
+        return $this->hasMany(SellerPayout::class, 'seller_id');
     }
 
     /*

@@ -2,12 +2,13 @@
 
 namespace App\Services;
 
+use App\Contracts\PaymentGatewayInterface;
 use App\Models\PaymentTransaction;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class RazorpayPaymentGateway
+class RazorpayPaymentGateway implements PaymentGatewayInterface
 {
     public function isConfigured(): bool
     {
@@ -100,6 +101,47 @@ class RazorpayPaymentGateway
             'amount' => (int) $response->json('amount'),
             'currency' => $response->json('currency'),
             'order_id' => $response->json('order_id'),
+        ];
+    }
+
+    public function verifyWebhookSignature(string $payload, string $signature): bool
+    {
+        $secret = config('services.razorpay.webhook_secret');
+
+        return filled($secret)
+            && filled($signature)
+            && hash_equals(hash_hmac('sha256', $payload, $secret), $signature);
+    }
+
+    public function createRefund(PaymentTransaction $transaction, string $amount): array
+    {
+        if (! $this->isConfigured() || ! filled($transaction->gateway_payment_id)) {
+            return ['success' => false, 'message' => 'A verified gateway payment is required before a refund can be requested.'];
+        }
+
+        try {
+            $response = Http::acceptJson()
+                ->withBasicAuth(config('services.razorpay.key'), config('services.razorpay.secret'))
+                ->timeout(20)
+                ->post('https://api.razorpay.com/v1/payments/' . rawurlencode($transaction->gateway_payment_id) . '/refund', [
+                    'amount' => (int) round(((float) $amount) * 100),
+                ]);
+        } catch (ConnectionException $exception) {
+            Log::warning('Razorpay refund connection failed.', ['exception' => $exception->getMessage()]);
+
+            return ['success' => false, 'message' => 'Payment gateway is temporarily unavailable.'];
+        }
+
+        if ($response->failed()) {
+            Log::warning('Razorpay refund request failed.', ['status' => $response->status()]);
+
+            return ['success' => false, 'message' => 'The gateway could not create this refund.'];
+        }
+
+        return [
+            'success' => true,
+            'gateway_refund_id' => $response->json('id'),
+            'status' => $response->json('status', 'requested'),
         ];
     }
 }

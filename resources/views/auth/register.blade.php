@@ -358,6 +358,17 @@ required>
 
 </div>
 
+<div class="input-box">
+
+<input
+type="tel"
+name="phone"
+value="{{ old('phone') }}"
+placeholder="Enter Phone Number"
+required>
+
+</div>
+
 
 
 <div class="input-box">

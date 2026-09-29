@@ -30,6 +30,9 @@ class AdminAuth
     {
         // Check if admin is authenticated via session
         if (!session('admin_authenticated')) {
+            if (auth()->check()) {
+                abort(403, 'Customer accounts cannot access the administrator area.');
+            }
             return redirect('/admin/login')->with('error', 'Please login to access admin area.');
         }
 

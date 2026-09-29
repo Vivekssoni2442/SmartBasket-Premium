@@ -1621,6 +1621,207 @@
 
         }
 
+/* =========================================================
+   PRODUCTS PAGE — FULL WIDTH PREMIUM TASKBAR
+========================================================= */
+:root{
+    --sb-tbar-bg:rgba(255,255,255,.92);
+    --sb-tbar-panel:#ffffff;
+    --sb-tbar-text:#102033;
+    --sb-tbar-muted:#64748b;
+    --sb-tbar-border:rgba(37,99,235,.13);
+    --sb-tbar-blue:#2563eb;
+    --sb-tbar-blue2:#4f46e5;
+    --sb-tbar-soft:#eef4ff;
+    --sb-tbar-shadow:0 16px 45px rgba(15,23,42,.12);
+}
+html[data-theme="dark"],html[data-sb-theme="dark"]{
+    --sb-tbar-bg:rgba(5,11,22,.94);
+    --sb-tbar-panel:#0b1728;
+    --sb-tbar-text:#f7fbff;
+    --sb-tbar-muted:#9aacbf;
+    --sb-tbar-border:rgba(101,165,255,.20);
+    --sb-tbar-blue:#65a5ff;
+    --sb-tbar-blue2:#8b7cff;
+    --sb-tbar-soft:rgba(37,99,235,.16);
+    --sb-tbar-shadow:0 20px 60px rgba(0,0,0,.42);
+}
+
+.sb-products-taskbar{
+    position:sticky;top:0;left:0;right:0;z-index:99990;
+    width:100%;min-height:76px;padding:8px 12px;
+    display:flex;align-items:center;gap:9px;
+    background:var(--sb-tbar-bg);
+    border-bottom:1px solid var(--sb-tbar-border);
+    box-shadow:var(--sb-tbar-shadow);
+    backdrop-filter:blur(24px) saturate(155%);-webkit-backdrop-filter:blur(24px) saturate(155%);
+}
+.sb-products-taskbar:before{
+    content:"";position:absolute;left:0;right:0;bottom:-2px;height:2px;
+    background:linear-gradient(90deg,#00e5ff,#287bff,#8b35ff,#ff20c8,#ff405d,#ffe45c,#00e5ff);
+    background-size:600% 100%;animation:sbTaskbarRGB 8s linear infinite;pointer-events:none;
+}
+@keyframes sbTaskbarRGB{to{background-position:600% 50%}}
+.sb-products-brand{
+    flex:0 0 208px;min-width:190px;height:58px;padding:5px 10px 5px 6px;
+    display:flex;align-items:center;gap:10px;border-radius:18px;
+    color:var(--sb-tbar-text)!important;text-decoration:none!important;
+    border:1px solid transparent;transition:.22s ease;
+}
+.sb-products-brand:hover{background:var(--sb-tbar-soft);border-color:var(--sb-tbar-border);transform:translateY(-1px)}
+.sb-brand-mark{width:45px;height:45px;display:grid;place-items:center;border-radius:14px;color:#fff;
+    background:linear-gradient(135deg,#2563eb,#7c3aed);box-shadow:0 8px 22px rgba(37,99,235,.30),inset 0 1px rgba(255,255,255,.25);font-size:17px}
+.sb-brand-copy{display:flex;flex-direction:column;line-height:1.05;min-width:0}.sb-brand-copy strong{font-size:14px;letter-spacing:.4px}.sb-brand-copy small{margin-top:5px;font-size:8px;letter-spacing:1.25px;color:var(--sb-tbar-muted);font-weight:900}
+.sb-products-nav{display:flex;align-items:center;gap:6px;flex:1;min-width:0}
+.sb-pnav-btn{
+    position:relative;flex:1;min-width:82px;height:50px;padding:0 10px;
+    display:flex;align-items:center;justify-content:center;gap:7px;
+    border:1px solid rgba(37,99,235,.13);border-radius:14px;
+    background:linear-gradient(180deg,var(--sb-tbar-panel),var(--sb-tbar-soft));
+    color:var(--sb-tbar-muted)!important;font-size:11px;font-weight:900;
+    text-decoration:none!important;white-space:nowrap;cursor:pointer;
+    box-shadow:0 5px 16px rgba(37,99,235,.06);transition:.2s ease;
+}
+.sb-pnav-btn i{font-size:13px;width:16px;text-align:center}.sb-pnav-btn:hover{color:var(--sb-tbar-blue)!important;border-color:rgba(37,99,235,.32);transform:translateY(-2px);box-shadow:0 10px 25px rgba(37,99,235,.13)}
+.sb-pnav-btn.is-active{color:#fff!important;border-color:transparent;background:linear-gradient(135deg,#2563eb,#4f46e5);box-shadow:0 10px 28px rgba(37,99,235,.28)}
+.sb-pnav-aihub{color:#2563eb!important}.sb-pnav-aihub:hover{color:#fff!important;background:linear-gradient(135deg,#2563eb,#7c3aed);border-color:transparent}
+.sb-pnav-smart-ai{color:#4f46e5!important}.sb-pnav-smart-ai:hover{color:#fff!important;background:linear-gradient(135deg,#4f46e5,#9333ea);border-color:transparent}
+.sb-smart-orb{width:25px;height:25px;display:grid;place-items:center;border-radius:8px;color:#fff;background:linear-gradient(135deg,#4f46e5,#9333ea);box-shadow:0 5px 14px rgba(79,70,229,.25);font-size:11px}.sb-online-dot{position:absolute;top:7px;right:8px;width:6px;height:6px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.13)}
+.sb-taskbar-user{flex:0 1 145px;min-width:105px;height:50px;padding:0 10px;display:flex;align-items:center;gap:8px;border:1px solid var(--sb-tbar-border);border-radius:14px;background:var(--sb-tbar-panel);box-shadow:0 5px 16px rgba(37,99,235,.05);animation:sbHiFloat 3s ease-in-out infinite}
+@keyframes sbHiFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+.sb-user-dot{width:31px;height:31px;display:grid;place-items:center;border-radius:10px;background:var(--sb-tbar-soft);color:var(--sb-tbar-blue);flex:0 0 31px}.sb-user-text{display:flex;flex-direction:column;min-width:0;line-height:1.05}.sb-user-text small{font-size:8px;color:var(--sb-tbar-muted);font-weight:800}.sb-user-text strong{margin-top:4px;font-size:10px;color:var(--sb-tbar-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:92px}
+.sb-products-more{flex:0 0 52px;height:50px;border:1px solid var(--sb-tbar-border);border-radius:14px;background:var(--sb-tbar-panel);color:var(--sb-tbar-text);cursor:pointer;font-size:17px;transition:.2s ease;box-shadow:0 5px 16px rgba(37,99,235,.06)}.sb-products-more:hover{color:#fff;background:linear-gradient(135deg,#2563eb,#7c3aed);border-color:transparent;transform:translateY(-2px)}
+.sb-products-more-menu{position:fixed;z-index:100000;top:84px;right:12px;width:290px;max-height:calc(100vh - 100px);overflow:auto;padding:10px;border:1px solid var(--sb-tbar-border);border-radius:22px;background:var(--sb-tbar-bg);box-shadow:0 30px 90px rgba(0,0,0,.28);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);display:none}.sb-products-more-menu.is-open{display:block;animation:sbMenuIn .2s ease}.sb-more-heading{padding:9px 10px 11px;border-bottom:1px solid var(--sb-tbar-border);margin-bottom:5px}.sb-more-heading span{display:block;color:var(--sb-tbar-text);font-size:11px;font-weight:950;letter-spacing:.7px}.sb-more-heading small{display:block;margin-top:4px;color:var(--sb-tbar-muted);font-size:8px}.sb-more-link{width:100%;min-height:42px;padding:0 11px;display:flex;align-items:center;gap:10px;border:0;border-radius:12px;background:transparent;color:var(--sb-tbar-text)!important;text-decoration:none!important;font-size:10px;font-weight:850;cursor:pointer}.sb-more-link i{width:18px;text-align:center;color:var(--sb-tbar-blue)}.sb-more-link:hover{background:var(--sb-tbar-soft);color:var(--sb-tbar-blue)!important;transform:translateX(2px)}.sb-more-separator{height:1px;margin:7px 5px;background:var(--sb-tbar-border)}.sb-more-title{display:flex;gap:8px;align-items:center;padding:5px 10px 7px;color:var(--sb-tbar-muted);font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}.sb-theme-switcher{display:grid;grid-template-columns:1fr 1fr;gap:6px}.sb-theme-choice{height:38px;border:1px solid var(--sb-tbar-border);border-radius:11px;background:var(--sb-tbar-panel);color:var(--sb-tbar-text);font-size:10px;font-weight:850;cursor:pointer}.sb-theme-choice:hover,.sb-theme-choice.is-selected{color:#fff;background:linear-gradient(135deg,#2563eb,#7c3aed);border-color:transparent}.sb-theme-choice i{margin-right:5px}.sb-more-action{font-family:inherit;text-align:left}.sb-logout-form{margin:0}.sb-logout{color:#e05b72!important}.sb-logout i{color:#e05b72!important}
+@keyframes sbMenuIn{from{opacity:0;transform:translateY(-8px) scale(.98)}to{opacity:1;transform:none}}
+
+/* AI HUB left button: existing project component remains the single left-side AI HUB launcher */
+.ai-hub-fab{z-index:99980!important}.ai-hub-drawer{z-index:99999!important}
+html[data-theme="light"] .ai-hub-drawer{background:linear-gradient(145deg,rgba(255,255,255,.99),rgba(242,246,252,.99))!important;color:#101828!important;border-right-color:rgba(37,99,235,.14)!important;box-shadow:24px 0 70px rgba(15,23,42,.20)!important}
+html[data-theme="light"] .ai-hub-drawer-header strong,html[data-theme="light"] .ai-hub-tool-text strong{color:#101828!important}html[data-theme="light"] .ai-hub-drawer-header small,html[data-theme="light"] .ai-hub-tool-text small{color:#667085!important}
+html[data-theme="light"] .ai-hub-fab{background:linear-gradient(145deg,#fff,#eef4ff)!important;color:#172033!important;border-color:rgba(37,99,235,.25)!important}
+html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f,#020711)!important}html[data-theme="dark"] .ai-hub-fab{background:linear-gradient(145deg,#1e293b,#050a14)!important}
+
+/* Robot launcher is hidden; its original panel remains fully functional */
+.sb-products-smart-ai-host>.smart-ai>.smart-ai__launch{opacity:0!important;visibility:hidden!important;pointer-events:none!important;position:fixed!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important}.sb-products-smart-ai-host [data-smart-ai-panel]{z-index:100001!important}
+
+@media(max-width:1350px){.sb-products-brand{flex-basis:185px;min-width:175px}.sb-pnav-btn{min-width:70px;padding:0 7px;font-size:10px}.sb-taskbar-user{flex-basis:125px}}
+@media(max-width:1120px){.sb-brand-copy{display:none}.sb-products-brand{flex-basis:65px;min-width:65px;justify-content:center;padding:5px}.sb-pnav-btn span{display:none}.sb-pnav-btn{min-width:52px;padding:0}.sb-taskbar-user{flex-basis:90px;min-width:90px}.sb-user-text strong{max-width:52px}}
+@media(max-width:700px){.sb-products-taskbar{padding:7px;gap:5px;overflow-x:auto;scrollbar-width:none}.sb-products-taskbar::-webkit-scrollbar{display:none}.sb-products-brand{position:sticky;left:0;z-index:2;flex-basis:52px;min-width:52px;height:48px}.sb-brand-mark{width:39px;height:39px}.sb-products-nav{flex:0 0 auto}.sb-pnav-btn{height:46px;min-width:48px;flex:0 0 48px;border-radius:12px}.sb-taskbar-user{flex:0 0 110px;height:46px}.sb-products-more{flex:0 0 46px;height:46px}.sb-products-more-menu{top:66px;right:7px;width:min(290px,calc(100vw - 14px))}}
+
+        /* =====================================================
+           PRODUCT DETAIL — PREMIUM REDESIGN
+           Full-width page + crystal-clear product imagery
+        ====================================================== */
+        .wrap.product-detail-page{
+            width:100%;
+            max-width:none;
+            margin:0;
+            padding:28px 24px 90px;
+        }
+        .product-detail-page .product-shell{
+            width:100%;
+            max-width:1600px;
+            margin:0 auto;
+            padding:clamp(16px,2.2vw,34px);
+            border-radius:32px;
+            background:linear-gradient(145deg,var(--card),color-mix(in srgb,var(--card2) 38%,var(--card)));
+            border:1px solid color-mix(in srgb,var(--primary) 13%,var(--border));
+            box-shadow:0 28px 90px rgba(15,23,42,.11);
+            position:relative;
+            overflow:hidden;
+        }
+        html[data-theme="dark"] .product-detail-page .product-shell{
+            box-shadow:0 30px 100px rgba(0,0,0,.38);
+        }
+        .product-detail-page .product-shell:before{
+            content:"";position:absolute;inset:0;pointer-events:none;
+            background:radial-gradient(circle at 5% 0%,rgba(37,99,235,.10),transparent 30%),radial-gradient(circle at 100% 0%,rgba(124,58,237,.09),transparent 28%);
+        }
+        .product-detail-page .product-shell > .row{position:relative;z-index:1}
+
+        .product-detail-page .gallery-box{
+            height:clamp(430px,62vh,680px);
+            min-height:430px;
+            width:100%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            padding:14px;
+            overflow:hidden;
+            border-radius:28px;
+            border:1px solid color-mix(in srgb,var(--primary) 12%,var(--border));
+            background:
+                radial-gradient(circle at 50% 42%,rgba(255,255,255,.98),rgba(248,250,252,.78) 52%,rgba(226,232,240,.48) 100%),
+                var(--card2);
+            box-shadow:inset 0 1px 0 rgba(255,255,255,.65),0 20px 60px rgba(15,23,42,.08);
+        }
+        html[data-theme="dark"] .product-detail-page .gallery-box{
+            background:radial-gradient(circle at 50% 42%,#17263a 0,#101e31 52%,#0a1525 100%);
+            box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 24px 70px rgba(0,0,0,.30);
+        }
+        .product-detail-page .main-image{
+            width:100%;
+            height:100%;
+            max-width:100%;
+            max-height:100%;
+            object-fit:contain;
+            object-position:center;
+            padding:4px;
+            display:block;
+            filter:drop-shadow(0 22px 30px rgba(15,23,42,.16));
+            transition:transform .4s cubic-bezier(.2,.8,.2,1),filter .3s ease;
+        }
+        .product-detail-page .main-image:hover{
+            transform:scale(1.035);
+            filter:drop-shadow(0 28px 38px rgba(15,23,42,.22));
+        }
+        .product-detail-page .thumbs{gap:10px;margin-top:14px;padding:2px}
+        .product-detail-page .thumb{
+            width:78px;height:78px;padding:4px;border-radius:15px;
+            background:var(--card);border:2px solid var(--border);
+            box-shadow:0 8px 20px rgba(15,23,42,.07);
+        }
+        .product-detail-page .thumb.active{border-color:var(--primary);box-shadow:0 10px 25px rgba(37,99,235,.20)}
+        .product-detail-page .info{padding:4px 4px 4px 12px}
+        .product-detail-page .category{box-shadow:0 7px 20px rgba(37,99,235,.08)}
+        .product-detail-page .title{font-size:clamp(32px,4vw,58px);line-height:1.02;margin:14px 0 12px}
+        .product-detail-page .desc{font-size:14px;max-width:760px}
+        .product-detail-page .price-row{margin:22px 0 18px}
+        .product-detail-page .price{font-size:clamp(32px,3vw,42px)}
+        .product-detail-page .details{gap:11px;margin-top:20px}
+        .product-detail-page .detail{padding:15px;border-radius:16px;background:color-mix(in srgb,var(--card2) 88%,transparent);box-shadow:0 7px 22px rgba(15,23,42,.04)}
+        .product-detail-page .seller{border-radius:18px;box-shadow:0 12px 30px rgba(37,99,235,.06)}
+        .product-detail-page .actions{gap:10px;margin-top:20px}
+        .product-detail-page .btnx{min-height:48px;border-radius:13px;padding:10px 17px;box-shadow:0 7px 18px rgba(15,23,42,.06)}
+        .product-detail-page .btnx.primary,.product-detail-page .btnx.success{box-shadow:0 12px 26px rgba(37,99,235,.18)}
+        .product-detail-page .qty{height:48px;border-radius:13px}
+        .product-detail-page .ai{margin-top:26px;border-radius:23px;padding:23px;box-shadow:0 15px 38px rgba(37,99,235,.07)}
+        .product-detail-page #tryOnPreview,.product-detail-page #tryOnResult{max-height:560px;background:var(--card2);object-fit:contain;padding:4px}
+        .product-detail-page .related{max-width:1600px;margin:42px auto 0}
+        .product-detail-page .related-card{border-radius:20px;box-shadow:0 14px 42px rgba(15,23,42,.09)}
+        .product-detail-page .related-img{height:220px;padding:14px;object-fit:contain;background:linear-gradient(145deg,var(--card2),var(--card))}
+        .product-detail-page .related-body{padding:15px}
+
+        /* Canonical Products-page taskbar takes the place of the old detail-page topbar. */
+        .sb-products-taskbar{margin:0!important}
+
+        @media(max-width:991px){
+            .wrap.product-detail-page{padding:18px 14px 60px}
+            .product-detail-page .product-shell{padding:16px;border-radius:25px}
+            .product-detail-page .info{padding:6px 2px}
+            .product-detail-page .gallery-box{height:520px;min-height:360px}
+        }
+        @media(max-width:575px){
+            .wrap.product-detail-page{padding:12px 10px 50px}
+            .product-detail-page .product-shell{padding:10px;border-radius:20px}
+            .product-detail-page .gallery-box{height:390px;min-height:300px;padding:8px;border-radius:19px}
+            .product-detail-page .main-image{padding:0}
+            .product-detail-page .thumb{width:66px;height:66px}
+            .product-detail-page .title{font-size:32px}
+            .product-detail-page .actions>*{width:100%}
+            .product-detail-page .btnx{width:100%}
+        }
+
     </style>
 
 </head>
@@ -1629,260 +1830,192 @@
 <body>
 
 
-<!-- MENU OVERLAY -->
-
-<div
-    class="menu-overlay"
-    id="menuOverlay"
-    hidden
-></div>
-
-
-<div class="wrap">
-
-
-    <!-- =====================================================
-         TOP BAR
-    ====================================================== -->
-
-    <div class="top">
-
-        <a
-            href="{{ route('products.index') }}"
-            class="brand"
-        >
-
-            <span class="brand-icon">
-
-                <i class="fa-solid fa-basket-shopping"></i>
-
-            </span>
-
-            <span class="brand-text">
-
-                <strong>
-                    SMART BASKET
-                </strong>
-
-                <small>
-                    PRODUCT DETAILS
-                </small>
-
-            </span>
-
-        </a>
-
-
-        <!-- 3 DOTS -->
-
-        <div class="menu-wrap" hidden aria-hidden="true" style="display:none!important">
-
-            <button
-                type="button"
-                class="menu-button"
-                id="menuButton"
-                aria-label="Open customer menu"
-                aria-expanded="false"
-            >
-
-                <i class="fa-solid fa-ellipsis-vertical"></i>
-
-            </button>
-
-
-            <div
-                class="customer-menu"
-                id="customerMenu"
-            >
-
-                <div class="menu-header">
-
-                    @auth
-
-                        <strong>
-                            Hi, {{ auth()->user()->name ?? 'Customer' }}
-                        </strong>
-
-                        <span>
-                            Manage your Smart Basket account
-                        </span>
-
-                    @else
-
-                        <strong>
-                            SMART BASKET
-                        </strong>
-
-                        <span>
-                            Your smarter shopping menu
-                        </span>
-
-                    @endauth
-
-                </div>
-
-
-                <a
-                    href="{{ route('products.index') }}"
-                    class="menu-item"
-                >
-
-                    <span class="menu-icon">
-                        <i class="fa-solid fa-house"></i>
-                    </span>
-
-                    <span>
-                        Home / Products
-                    </span>
-
-                </a>
-
-
-                <a
-                    href="{{ route('products.index') }}"
-                    class="menu-item"
-                >
-
-                    <span class="menu-icon">
-                        <i class="fa-solid fa-store"></i>
-                    </span>
-
-                    <span>
-                        All Products
-                    </span>
-
-                </a>
-
-
-                <a
-                    href="{{ route('cart.index') }}"
-                    class="menu-item"
-                >
-
-                    <span class="menu-icon">
-                        <i class="fa-solid fa-cart-shopping"></i>
-                    </span>
-
-                    <span>
-                        My Cart
-                    </span>
-
-                </a>
-
-
-                @auth
-
-                    <a
-                        href="{{ route('wishlist') }}"
-                        class="menu-item"
-                    >
-
-                        <span class="menu-icon">
-                            <i class="fa-regular fa-heart"></i>
-                        </span>
-
-                        <span>
-                            Wishlist
-                        </span>
-
-                    </a>
-
-
-                    @if(Route::has('profile'))
-
-                        <a
-                            href="{{ route('profile') }}"
-                            class="menu-item"
-                        >
-
-                            <span class="menu-icon">
-                                <i class="fa-solid fa-user"></i>
-                            </span>
-
-                            <span>
-                                My Profile
-                            </span>
-
-                        </a>
-
-                    @endif
-
-
-                    @if(Route::has('orders'))
-
-                        <a
-                            href="{{ route('orders') }}"
-                            class="menu-item"
-                        >
-
-                            <span class="menu-icon">
-                                <i class="fa-solid fa-box"></i>
-                            </span>
-
-                            <span>
-                                My Orders
-                            </span>
-
-                        </a>
-
-                    @endif
-
-
-                    @if(Route::has('settings'))
-
-                        <a
-                            href="{{ route('settings') }}"
-                            class="menu-item"
-                        >
-
-                            <span class="menu-icon">
-                                <i class="fa-solid fa-gear"></i>
-                            </span>
-
-                            <span>
-                                Settings
-                            </span>
-
-                        </a>
-
-                    @endif
-
-
-                    <div class="menu-divider"></div>
-
-
-                    <form
-                        action="{{ route('logout') }}"
-                        method="POST"
-                        style="margin:0"
-                    >
-
-                        @csrf
-
-                        <button
-                            type="submit"
-                            class="menu-item logout"
-                        >
-
-                            <span class="menu-icon">
-                                <i class="fa-solid fa-right-from-bracket"></i>
-                            </span>
-
-                            <span>
-                                Logout
-                            </span>
-
-                        </button>
-
-                    </form>
-
-                @endauth
-
-            </div>
-
-        </div>
-
+{{-- =========================================================
+     SMART BASKET — COMMON PREMIUM CUSTOMER TASKBAR
+     Same Products-page taskbar + same 3-dot menu.
+========================================================= --}}
+
+@auth
+@php
+    $currentRoute = request()->route()?->getName();
+    $ordersRoute = Route::has('orders.index') ? 'orders.index' : (Route::has('orders') ? 'orders' : null);
+@endphp
+
+<nav class="sb-products-taskbar" id="sbProductsTaskbar" aria-label="Customer Navigation">
+    <a href="{{ route('products.index') }}" class="sb-products-brand" aria-label="Smart Basket Products">
+        <span class="sb-brand-mark"><i class="fa-solid fa-basket-shopping"></i></span>
+        <span class="sb-brand-copy">
+            <strong>SMART BASKET</strong>
+            <small>CUSTOMER PANEL</small>
+        </span>
+    </a>
+
+    <div class="sb-products-nav">
+        @if(Route::has('products.index'))
+            <a href="{{ route('products.index') }}" class="sb-pnav-btn {{ $currentRoute === 'products.index' ? 'is-active' : '' }}">
+                <i class="fa-solid fa-store"></i><span>Products</span>
+            </a>
+        @endif
+
+        @if($ordersRoute)
+            <a href="{{ route($ordersRoute) }}" class="sb-pnav-btn {{ $currentRoute === $ordersRoute ? 'is-active' : '' }}">
+                <i class="fa-solid fa-box"></i><span>Orders</span>
+            </a>
+        @endif
+
+        @if(Route::has('cart.index'))
+            <a href="{{ route('cart.index') }}" class="sb-pnav-btn {{ $currentRoute === 'cart.index' ? 'is-active' : '' }}">
+                <i class="fa-solid fa-cart-shopping"></i><span>Cart</span>
+            </a>
+        @endif
+
+        @if(Route::has('wishlist'))
+            <a href="{{ route('wishlist') }}" class="sb-pnav-btn {{ $currentRoute === 'wishlist' ? 'is-active' : '' }}">
+                <i class="fa-regular fa-heart"></i><span>Wishlist</span>
+            </a>
+        @endif
+
+        @if(Route::has('profile'))
+            <a href="{{ route('profile') }}" class="sb-pnav-btn {{ $currentRoute === 'profile' ? 'is-active' : '' }}">
+                <i class="fa-regular fa-user"></i><span>Profile</span>
+            </a>
+        @endif
+
+        @if(Route::has('settings'))
+            <a href="{{ route('settings') }}" class="sb-pnav-btn {{ $currentRoute === 'settings' ? 'is-active' : '' }}">
+                <i class="fa-solid fa-gear"></i><span>Settings</span>
+            </a>
+        @endif
+
+        <button type="button" class="sb-pnav-btn sb-pnav-aihub" id="sbProductsAIHub" data-sb-ai-hub-open title="Open AI Hub">
+            <i class="fa-solid fa-wand-magic-sparkles"></i><span>AI HUB</span>
+        </button>
+
+        <button type="button" class="sb-pnav-btn sb-pnav-smart-ai" id="sbProductsSmartAI" title="Open Smart AI">
+            <span class="sb-smart-orb"><i class="fa-solid fa-robot"></i></span><span>Smart AI</span><b class="sb-online-dot"></b>
+        </button>
     </div>
+
+    <div class="sb-taskbar-user">
+        <span class="sb-user-dot"><i class="fa-regular fa-user"></i></span>
+        <span class="sb-user-text"><small>Hi,</small><strong>{{ auth()->user()->name ?? 'Customer' }}</strong></span>
+    </div>
+
+    <button type="button" class="sb-products-more" id="sbProductsMore" aria-expanded="false" aria-controls="sbProductsMoreMenu" title="More options">
+        <i class="fa-solid fa-ellipsis-vertical"></i>
+    </button>
+</nav>
+
+<div class="sb-products-more-menu" id="sbProductsMoreMenu" aria-hidden="true">
+    <div class="sb-more-heading"><span>SMART BASKET</span><small>More options</small></div>
+
+    @if(Route::has('products.index'))
+        <a href="{{ route('products.index') }}" class="sb-more-link"><i class="fa-solid fa-house"></i><span>Products Home</span></a>
+    @endif
+    @if($ordersRoute)
+        <a href="{{ route($ordersRoute) }}" class="sb-more-link"><i class="fa-solid fa-box"></i><span>My Orders</span></a>
+    @endif
+    @if(Route::has('cart.index'))
+        <a href="{{ route('cart.index') }}" class="sb-more-link"><i class="fa-solid fa-cart-shopping"></i><span>Cart</span></a>
+    @endif
+    @if(Route::has('wishlist'))
+        <a href="{{ route('wishlist') }}" class="sb-more-link"><i class="fa-regular fa-heart"></i><span>Wishlist</span></a>
+    @endif
+    @if(Route::has('profile'))
+        <a href="{{ route('profile') }}" class="sb-more-link"><i class="fa-regular fa-user"></i><span>Profile</span></a>
+    @endif
+    @if(Route::has('settings'))
+        <a href="{{ route('settings') }}" class="sb-more-link"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+    @endif
+
+    <div class="sb-more-separator"></div>
+    <div class="sb-more-title"><i class="fa-solid fa-palette"></i><span>Theme</span></div>
+    <div class="sb-theme-switcher">
+        <button type="button" class="sb-theme-choice" data-sb-set-theme="light"><i class="fa-solid fa-sun"></i><span>Light</span></button>
+        <button type="button" class="sb-theme-choice" data-sb-set-theme="dark"><i class="fa-solid fa-moon"></i><span>Dark</span></button>
+    </div>
+
+    <div class="sb-more-separator"></div>
+    <button type="button" class="sb-more-link sb-more-action" data-sb-more-aihub><i class="fa-solid fa-wand-magic-sparkles"></i><span>Open AI HUB</span></button>
+    <button type="button" class="sb-more-link sb-more-action" data-sb-more-smart-ai><i class="fa-solid fa-robot"></i><span>Open Smart AI</span></button>
+
+    @if(Route::has('logout'))
+        <div class="sb-more-separator"></div>
+        <form method="POST" action="{{ route('logout') }}" class="sb-logout-form">
+            @csrf
+            <button type="submit" class="sb-more-link sb-logout"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></button>
+        </form>
+    @endif
+</div>
+@endauth
+
+<div class="sb-products-smart-ai-host" aria-hidden="false">
+    <x-smart-ai-robot />
+</div>
+
+<x-ai-hub-sidebar :without-menu="true" />
+
+<script>
+(function(){
+    'use strict';
+    if(window.__SBProductsPremiumTaskbar) return;
+    window.__SBProductsPremiumTaskbar=true;
+
+    const more=document.getElementById('sbProductsMore');
+    const menu=document.getElementById('sbProductsMoreMenu');
+    const aiHubBtn=document.getElementById('sbProductsAIHub');
+    const smartAiBtn=document.getElementById('sbProductsSmartAI');
+
+    function closeMore(){
+        if(menu){menu.classList.remove('is-open');menu.setAttribute('aria-hidden','true');}
+        if(more) more.setAttribute('aria-expanded','false');
+    }
+    function openMore(){
+        if(menu){menu.classList.add('is-open');menu.setAttribute('aria-hidden','false');}
+        if(more) more.setAttribute('aria-expanded','true');
+    }
+    if(more){
+        more.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();menu&&menu.classList.contains('is-open')?closeMore():openMore();});
+    }
+    document.addEventListener('click',function(e){if(menu&&more&&!menu.contains(e.target)&&!more.contains(e.target))closeMore();});
+    document.addEventListener('keydown',function(e){if(e.key==='Escape')closeMore();});
+
+    function openHub(){
+        const trigger=document.querySelector('[data-ai-hub-open]');
+        if(trigger) trigger.click();
+        closeMore();
+    }
+    function openRobot(){
+        const trigger=document.querySelector('[data-smart-ai-open]');
+        if(trigger) trigger.click();
+        closeMore();
+    }
+    if(aiHubBtn) aiHubBtn.addEventListener('click',openHub);
+    if(smartAiBtn) smartAiBtn.addEventListener('click',openRobot);
+    document.querySelectorAll('[data-sb-more-aihub]').forEach(b=>b.addEventListener('click',openHub));
+    document.querySelectorAll('[data-sb-more-smart-ai]').forEach(b=>b.addEventListener('click',openRobot));
+
+    function setTheme(theme){
+        if(!['light','dark'].includes(theme)) return;
+        localStorage.setItem('sb-theme',theme);
+        document.documentElement.setAttribute('data-theme',theme);
+        document.documentElement.setAttribute('data-sb-theme',theme);
+        document.body.setAttribute('data-sb-theme',theme);
+        window.SB_THEME=theme;
+        try{window.dispatchEvent(new CustomEvent('sb-theme-changed',{detail:{theme:theme}}));}catch(e){}
+        try{window.dispatchEvent(new CustomEvent('smartbasket-theme-changed',{detail:{theme:theme}}));}catch(e){}
+        updateThemeButtons(theme);
+    }
+    function updateThemeButtons(theme){
+        document.querySelectorAll('[data-sb-set-theme]').forEach(function(btn){btn.classList.toggle('is-selected',btn.getAttribute('data-sb-set-theme')===theme);});
+    }
+    document.querySelectorAll('[data-sb-set-theme]').forEach(function(btn){btn.addEventListener('click',function(){setTheme(btn.getAttribute('data-sb-set-theme'));});});
+    updateThemeButtons(document.documentElement.getAttribute('data-theme')||localStorage.getItem('sb-theme')||'dark');
+})();
+</script>
+
+
+<div class="wrap product-detail-page">
 
 
     <!-- =====================================================
@@ -2056,6 +2189,16 @@
 
                     @endif
 
+                    @if(!empty($product->video))
+                        <section class="mt-4" aria-label="Product video">
+                            <span class="label mb-2">Product video</span>
+                            <video class="w-100 rounded-4 border" controls preload="metadata" style="max-height:360px;background:#000" onerror="this.closest('section').remove()">
+                                <source src="{{ asset('storage/' . ltrim($product->video, '/')) }}">
+                                Your browser does not support product video playback.
+                            </video>
+                        </section>
+                    @endif
+
 
                     <!-- DETAILS -->
 
@@ -2205,16 +2348,7 @@
 
                     <div class="actions">
 
-                        <a
-                            href="{{ route('products.index') }}"
-                            class="btnx"
-                        >
-
-                            <i class="fa-solid fa-arrow-left"></i>
-
-                            Back
-
-                        </a>
+                       
 
 
                         @auth
@@ -2226,16 +2360,7 @@
 
                                 @csrf
 
-                                <button
-                                    class="btnx"
-                                    type="submit"
-                                >
-
-                                    <i class="fa-regular fa-heart"></i>
-
-                                    Wishlist
-
-                                </button>
+                               
 
                             </form>
 
@@ -2585,130 +2710,10 @@
 </div>
 
 
-<x-ai-hub-sidebar />
-
 
 <script>
 
 (() => {
-
-
-    /* =====================================================
-       THREE DOT MENU
-    ====================================================== */
-
-    const menuButton =
-        document.getElementById('menuButton');
-
-    const menu =
-        document.getElementById('customerMenu');
-
-    const overlay =
-        document.getElementById('menuOverlay');
-
-
-    function openMenu() {
-
-        menu.classList.add('open');
-
-        overlay.classList.add('open');
-
-        menuButton.classList.add('active');
-
-        menuButton.setAttribute(
-            'aria-expanded',
-            'true'
-        );
-
-    }
-
-
-    function closeMenu() {
-
-        menu.classList.remove('open');
-
-        overlay.classList.remove('open');
-
-        menuButton.classList.remove('active');
-
-        menuButton.setAttribute(
-            'aria-expanded',
-            'false'
-        );
-
-    }
-
-
-    menuButton.addEventListener(
-        'click',
-        event => {
-
-            event.stopPropagation();
-
-            if (
-                menu.classList.contains('open')
-            ) {
-
-                closeMenu();
-
-            } else {
-
-                openMenu();
-
-            }
-
-        }
-    );
-
-
-    overlay.addEventListener(
-        'click',
-        closeMenu
-    );
-
-
-    document.addEventListener(
-        'keydown',
-        event => {
-
-            if (
-                event.key === 'Escape'
-            ) {
-
-                closeMenu();
-
-            }
-
-        }
-    );
-
-
-    document.querySelectorAll(
-        '.customer-menu a'
-    ).forEach(link => {
-
-        link.addEventListener(
-            'click',
-            closeMenu
-        );
-
-    });
-
-
-    document.querySelectorAll('.related-card--clickable').forEach(card => {
-        const visitProduct = event => {
-            if (event.target.closest('a, button, form, input, select, textarea, label')) return;
-            window.location.href = card.dataset.productUrl;
-        };
-
-        card.addEventListener('click', visitProduct);
-        card.addEventListener('keydown', event => {
-            if ((event.key === 'Enter' || event.key === ' ') && !event.target.closest('a, button, form, input, select, textarea, label')) {
-                event.preventDefault();
-                window.location.href = card.dataset.productUrl;
-            }
-        });
-    });
 
 
     /* =====================================================

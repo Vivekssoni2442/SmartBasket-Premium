@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Order;
+use App\Models\Notification;
 use App\Models\SellerProfile;
 
 use Illuminate\Http\Request;
@@ -221,15 +222,53 @@ class SellerController extends Controller
         |--------------------------------------------------------------------------
         | SELLER ORDERS
         |--------------------------------------------------------------------------
-        |
-        | IMPORTANT:
-        | forSeller() makes sure that only orders belonging
-        | to the currently logged-in seller are included.
-        |
         */
 
-        $sellerOrders =
-            Order::forSeller($sellerId);
+        $sellerProductIds = $products
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->values();
+
+        $sellerOrders = Order::query()
+            ->where(function ($query) use (
+                $sellerId,
+                $sellerProductIds
+            ) {
+                $query
+                    ->where(
+                        'seller_id',
+                        $sellerId
+                    )
+                    ->orWhereJsonContains(
+                        'items',
+                        [
+                            'seller_id' => $sellerId,
+                        ]
+                    );
+
+                if (
+                    $sellerProductIds->isNotEmpty()
+                ) {
+                    $query->orWhere(
+                        function ($legacy) use (
+                            $sellerProductIds
+                        ) {
+                            foreach (
+                                $sellerProductIds
+                                as $productId
+                            ) {
+                                $legacy->orWhereJsonContains(
+                                    'items',
+                                    [
+                                        'product_id' =>
+                                            $productId,
+                                    ]
+                                );
+                            }
+                        }
+                    );
+                }
+            });
 
         /*
         |--------------------------------------------------------------------------
@@ -248,62 +287,163 @@ class SellerController extends Controller
 
         $pendingOrders =
             (clone $sellerOrders)
-                ->where(function ($query) {
-                    $query
-                        ->where(
-                            'status',
-                            'Pending'
-                        )
-                        ->orWhere(
-                            'order_status',
-                            'Pending'
-                        );
-                })
+                ->where(
+                    function ($query) {
+                        $query
+                            ->where(
+                                'status',
+                                'Pending'
+                            )
+                            ->orWhere(
+                                'order_status',
+                                'Pending'
+                            );
+                    }
+                )
                 ->count();
+
+        /*
+        |--------------------------------------------------------------------------
+        | EARNING ORDERS
+        |--------------------------------------------------------------------------
+        */
+
+        $earningOrders =
+            (clone $sellerOrders)
+                ->where(
+                    function ($query) {
+                        $query
+                            ->whereNull('status')
+                            ->orWhereNotIn(
+                                'status',
+                                [
+                                    'Cancelled',
+                                    'Canceled',
+                                ]
+                            );
+                    }
+                )
+                ->get([
+                    'id',
+                    'seller_id',
+                    'total',
+                    'items',
+                ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | LEGACY PRODUCT SELLER MAP
+        |--------------------------------------------------------------------------
+        */
+
+        $legacyProductIds =
+            $earningOrders
+                ->flatMap(
+                    fn ($order) =>
+                        collect(
+                            $order->items ?? []
+                        )
+                )
+                ->filter(
+                    fn ($item) =>
+                        empty($item['seller_id']) &&
+                        !empty($item['product_id'])
+                )
+                ->pluck('product_id')
+                ->map(
+                    fn ($id) =>
+                        (int) $id
+                )
+                ->unique()
+                ->values();
+
+        $legacyProductSellerMap =
+            $legacyProductIds->isNotEmpty()
+                ? Product::whereIn(
+                    'id',
+                    $legacyProductIds
+                )->pluck(
+                    'seller_id',
+                    'id'
+                )
+                : collect();
 
         /*
         |--------------------------------------------------------------------------
         | TOTAL EARNINGS
         |--------------------------------------------------------------------------
-        |
-        | Seller earning is calculated only from successful
-        | payments.
-        |
-        | Cancelled orders are excluded so that seller does
-        | not see cancelled order amount as earnings.
-        |
         */
 
         $totalEarnings =
-            (clone $sellerOrders)
-                ->whereIn(
-                    'payment_status',
-                    [
-                        'Paid',
-                        'Successful',
-                    ]
-                )
-                ->where(function ($query) {
-                    $query
-                        ->whereNull('status')
-                        ->orWhereNotIn(
-                            'status',
-                            [
-                                'Cancelled',
-                                'Canceled',
-                            ]
-                        );
-                })
-                ->sum('total');
+            $earningOrders->sum(
+                function ($order) use (
+                    $sellerId,
+                    $legacyProductSellerMap
+                ) {
+                    return collect(
+                        $order->items ?? []
+                    )->sum(
+                        function ($item) use (
+                            $sellerId,
+                            $legacyProductSellerMap
+                        ) {
+                            $itemSellerId =
+                                $item['seller_id']
+                                ?? null;
+
+                            if (
+                                $itemSellerId === null &&
+                                !empty(
+                                    $item['product_id']
+                                )
+                            ) {
+                                $itemSellerId =
+                                    $legacyProductSellerMap[
+                                        (int)
+                                        $item['product_id']
+                                    ] ?? null;
+                            }
+
+                            if (
+                                (int) $itemSellerId !==
+                                (int) $sellerId
+                            ) {
+                                return 0;
+                            }
+
+                            $quantity =
+                                max(
+                                    1,
+                                    (int) (
+                                        $item['quantity']
+                                        ?? 1
+                                    )
+                                );
+
+                            $price =
+                                (float) (
+                                    $item['price']
+                                    ?? 0
+                                );
+
+                            return
+                                $price *
+                                $quantity;
+                        }
+                    );
+                }
+            );
+
+        $totalEarnings =
+            round(
+                (float) $totalEarnings,
+                2
+            );
 
         /*
         |--------------------------------------------------------------------------
         | TOTAL REVENUE
         |--------------------------------------------------------------------------
-        |
-        | Keep the old variable as well so existing
-        | seller dashboard Blade code continues working.
-        |
         */
 
         $totalRevenue =
@@ -311,7 +451,7 @@ class SellerController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | ADDITIONAL EARNING DATA
+        | PAID ORDERS
         |--------------------------------------------------------------------------
         */
 
@@ -324,17 +464,19 @@ class SellerController extends Controller
                         'Successful',
                     ]
                 )
-                ->where(function ($query) {
-                    $query
-                        ->whereNull('status')
-                        ->orWhereNotIn(
-                            'status',
-                            [
-                                'Cancelled',
-                                'Canceled',
-                            ]
-                        );
-                })
+                ->where(
+                    function ($query) {
+                        $query
+                            ->whereNull('status')
+                            ->orWhereNotIn(
+                                'status',
+                                [
+                                    'Cancelled',
+                                    'Canceled',
+                                ]
+                            );
+                    }
+                )
                 ->count();
 
         /*
@@ -378,16 +520,11 @@ class SellerController extends Controller
                 'totalProducts',
                 'totalOrders',
                 'pendingOrders',
-
-                // Earnings
                 'totalEarnings',
                 'totalRevenue',
                 'paidOrders',
-
-                // Other order information
                 'cancelledOrders',
                 'unpaidOrders',
-
                 'seller'
             )
         );
@@ -401,7 +538,8 @@ class SellerController extends Controller
 
     public function profile()
     {
-        $seller = $this->currentSeller();
+        $seller =
+            $this->currentSeller();
 
         return view(
             'seller.profile',
@@ -415,188 +553,152 @@ class SellerController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function updateProfile(Request $request)
-    {
-        $seller = $this->currentSeller();
+    public function updateProfile(
+        Request $request
+    ) {
+        $seller =
+            $this->currentSeller();
 
-        $validated = $request->validate([
+        $validated =
+            $request->validate([
 
-            /*
-            |--------------------------------------------------------------------------
-            | BASIC ACCOUNT
-            |--------------------------------------------------------------------------
-            */
+                'seller_name' => [
+                    'required',
+                    'string',
+                    'max:255',
+                ],
 
-            'seller_name' => [
-                'required',
-                'string',
-                'max:255',
-            ],
+                'shop_name' => [
+                    'required',
+                    'string',
+                    'max:255',
+                ],
 
-            'shop_name' => [
-                'required',
-                'string',
-                'max:255',
-            ],
+                'email' => [
+                    'required',
+                    'email',
+                    'max:255',
 
-            'email' => [
-                'required',
-                'email',
-                'max:255',
+                    Rule::unique(
+                        'seller_profiles',
+                        'email'
+                    )->ignore(
+                        $seller->id
+                    ),
+                ],
 
-                Rule::unique(
-                    'seller_profiles',
-                    'email'
-                )->ignore($seller->id),
-            ],
+                'mobile_number' => [
+                    'required',
+                    'string',
+                    'max:20',
+                ],
 
-            'mobile_number' => [
-                'required',
-                'string',
-                'max:20',
-            ],
+                'shop_address' => [
+                    'nullable',
+                    'string',
+                    'max:1000',
+                ],
 
-            /*
-            |--------------------------------------------------------------------------
-            | ADDRESS
-            |--------------------------------------------------------------------------
-            */
+                'city' => [
+                    'nullable',
+                    'string',
+                    'max:255',
+                ],
 
-            'shop_address' => [
-                'nullable',
-                'string',
-                'max:1000',
-            ],
+                'state' => [
+                    'nullable',
+                    'string',
+                    'max:255',
+                ],
 
-            'city' => [
-                'nullable',
-                'string',
-                'max:255',
-            ],
+                'pincode' => [
+                    'nullable',
+                    'string',
+                    'max:20',
+                ],
 
-            'state' => [
-                'nullable',
-                'string',
-                'max:255',
-            ],
+                'business_type' => [
+                    'nullable',
+                    'string',
+                    'max:255',
+                ],
 
-            'pincode' => [
-                'nullable',
-                'string',
-                'max:20',
-            ],
+                'gst_number' => [
+                    'nullable',
+                    'string',
+                    'max:100',
+                ],
 
-            /*
-            |--------------------------------------------------------------------------
-            | BUSINESS
-            |--------------------------------------------------------------------------
-            */
+                'pan_number' => [
+                    'nullable',
+                    'string',
+                    'max:100',
+                ],
 
-            'business_type' => [
-                'nullable',
-                'string',
-                'max:255',
-            ],
+                'udyam_number' => [
+                    'nullable',
+                    'string',
+                    'max:100',
+                ],
 
-            'gst_number' => [
-                'nullable',
-                'string',
-                'max:100',
-            ],
+                'aadhaar_number' => [
+                    'nullable',
+                    'string',
+                    'max:100',
+                ],
 
-            'pan_number' => [
-                'nullable',
-                'string',
-                'max:100',
-            ],
+                'bank_name' => [
+                    'nullable',
+                    'string',
+                    'max:255',
+                ],
 
-            'udyam_number' => [
-                'nullable',
-                'string',
-                'max:100',
-            ],
+                'account_holder_name' => [
+                    'nullable',
+                    'string',
+                    'max:255',
+                ],
 
-            /*
-            |--------------------------------------------------------------------------
-            | AADHAAR
-            |--------------------------------------------------------------------------
-            */
+                'account_number' => [
+                    'nullable',
+                    'string',
+                    'max:100',
+                ],
 
-            'aadhaar_number' => [
-                'nullable',
-                'string',
-                'max:100',
-            ],
+                'ifsc_code' => [
+                    'nullable',
+                    'string',
+                    'max:50',
+                ],
 
-            /*
-            |--------------------------------------------------------------------------
-            | BANK DETAILS
-            |--------------------------------------------------------------------------
-            */
+                'branch_name' => [
+                    'nullable',
+                    'string',
+                    'max:255',
+                ],
 
-            'bank_name' => [
-                'nullable',
-                'string',
-                'max:255',
-            ],
-
-            'account_holder_name' => [
-                'nullable',
-                'string',
-                'max:255',
-            ],
-
-            'account_number' => [
-                'nullable',
-                'string',
-                'max:100',
-            ],
-
-            'ifsc_code' => [
-                'nullable',
-                'string',
-                'max:50',
-            ],
-
-            'branch_name' => [
-                'nullable',
-                'string',
-                'max:255',
-            ],
-
-            /*
-            |--------------------------------------------------------------------------
-            | SHOP LOGO
-            |--------------------------------------------------------------------------
-            */
-
-            'shop_logo' => [
-                'nullable',
-                'image',
-                'mimes:jpeg,png,jpg,webp',
-                'max:4096',
-            ],
-        ]);
+                'shop_logo' => [
+                    'nullable',
+                    'image',
+                    'mimes:jpeg,png,jpg,webp',
+                    'max:4096',
+                ],
+            ]);
 
         $profileFields = [
-
             'seller_name',
             'shop_name',
             'email',
             'mobile_number',
-
             'shop_address',
             'city',
             'state',
             'pincode',
-
             'business_type',
             'gst_number',
             'pan_number',
             'udyam_number',
-
             'aadhaar_number',
-
             'bank_name',
             'account_holder_name',
             'account_number',
@@ -606,8 +708,9 @@ class SellerController extends Controller
 
         $updateData = [];
 
-        foreach ($profileFields as $field) {
-
+        foreach (
+            $profileFields as $field
+        ) {
             if (
                 array_key_exists(
                     $field,
@@ -625,19 +728,21 @@ class SellerController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        if ($request->hasFile('shop_logo')) {
-
+        if (
+            $request->hasFile(
+                'shop_logo'
+            )
+        ) {
             $newLogo =
-                $request->file('shop_logo');
+                $request->file(
+                    'shop_logo'
+                );
 
-            /*
-            |--------------------------------------------------------------------------
-            | DELETE OLD LOGO
-            |--------------------------------------------------------------------------
-            */
-
-            if (!empty($seller->shop_logo)) {
-
+            if (
+                !empty(
+                    $seller->shop_logo
+                )
+            ) {
                 $oldLogo =
                     ltrim(
                         trim(
@@ -655,12 +760,17 @@ class SellerController extends Controller
                     $oldLogo =
                         substr(
                             $oldLogo,
-                            strlen('storage/')
+                            strlen(
+                                'storage/'
+                            )
                         );
                 }
 
-                Storage::disk('public')
-                    ->delete($oldLogo);
+                Storage::disk(
+                    'public'
+                )->delete(
+                    $oldLogo
+                );
 
                 if (
                     !str_contains(
@@ -668,19 +778,14 @@ class SellerController extends Controller
                         '/'
                     )
                 ) {
-                    Storage::disk('public')
-                        ->delete(
-                            'seller-logos/' .
-                            $oldLogo
-                        );
+                    Storage::disk(
+                        'public'
+                    )->delete(
+                        'seller-logos/' .
+                        $oldLogo
+                    );
                 }
             }
-
-            /*
-            |--------------------------------------------------------------------------
-            | UNIQUE FILE NAME
-            |--------------------------------------------------------------------------
-            */
 
             $extension =
                 strtolower(
@@ -698,12 +803,6 @@ class SellerController extends Controller
                 '.' .
                 $extension;
 
-            /*
-            |--------------------------------------------------------------------------
-            | STORE LOGO
-            |--------------------------------------------------------------------------
-            */
-
             $logoPath =
                 $newLogo->storeAs(
                     'seller-logos',
@@ -713,8 +812,11 @@ class SellerController extends Controller
 
             if (
                 !$logoPath ||
-                !Storage::disk('public')
-                    ->exists($logoPath)
+                !Storage::disk(
+                    'public'
+                )->exists(
+                    $logoPath
+                )
             ) {
                 return back()
                     ->withInput()
@@ -724,7 +826,9 @@ class SellerController extends Controller
                     ]);
             }
 
-            $updateData['shop_logo'] =
+            $updateData[
+                'shop_logo'
+            ] =
                 $logoPath;
         }
 
@@ -798,7 +902,9 @@ class SellerController extends Controller
         );
 
         return SellerProfile::findOrFail(
-            (int) session('seller_id')
+            (int) session(
+                'seller_id'
+            )
         );
     }
 
@@ -828,10 +934,20 @@ class SellerController extends Controller
         );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | STORE PRODUCT
+    |--------------------------------------------------------------------------
+    */
+
     public function store(
         Request $request
     ) {
-        if (!session('seller_login')) {
+        if (
+            !session(
+                'seller_login'
+            )
+        ) {
             return redirect(
                 '/seller-login'
             );
@@ -839,6 +955,12 @@ class SellerController extends Controller
 
         $sellerId =
             $this->currentSeller()->id;
+
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDATION
+        |--------------------------------------------------------------------------
+        */
 
         $request->validate([
 
@@ -863,6 +985,15 @@ class SellerController extends Controller
             'image' =>
                 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
 
+            /*
+            |--------------------------------------------------------------------------
+            | PRODUCT VIDEO
+            |--------------------------------------------------------------------------
+            */
+
+            'video' =>
+                'nullable|file|mimetypes:video/mp4,video/webm,video/quicktime|max:20480',
+
             'rating' =>
                 'nullable|numeric|min:0|max:5',
 
@@ -879,15 +1010,33 @@ class SellerController extends Controller
                 'nullable|in:active,inactive',
         ]);
 
+        /*
+        |--------------------------------------------------------------------------
+        | MAIN PRODUCT IMAGE
+        |--------------------------------------------------------------------------
+        */
+
         $imageName =
             time() .
+            '_' .
+            uniqid() .
             '.' .
-            $request->image->extension();
+            $request
+                ->image
+                ->extension();
 
         $request->image->move(
-            public_path('products'),
+            public_path(
+                'products'
+            ),
             $imageName
         );
+
+        /*
+        |--------------------------------------------------------------------------
+        | CREATE PRODUCT
+        |--------------------------------------------------------------------------
+        */
 
         $product =
             Product::create([
@@ -917,7 +1066,8 @@ class SellerController extends Controller
                     $request->discount_price,
 
                 'rating' =>
-                    $request->rating ?? 4.5,
+                    $request->rating
+                    ?? 4.5,
 
                 'stock' =>
                     $request->stock,
@@ -929,13 +1079,81 @@ class SellerController extends Controller
                     $request->color,
 
                 'status' =>
-                    $request->status ?? 'active',
+                    $request->status
+                    ?? 'active',
             ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | PRODUCT VIDEO
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            $request->hasFile(
+                'video'
+            )
+        ) {
+            $video =
+                $request->file(
+                    'video'
+                );
+
+            $videoName =
+                'product_' .
+                $product->id .
+                '_' .
+                time() .
+                '_' .
+                uniqid() .
+                '.' .
+                $video->extension();
+
+            $videoPath =
+                $video->storeAs(
+                    'product-videos',
+                    $videoName,
+                    'public'
+                );
+
+            if (
+                !$videoPath ||
+                !Storage::disk(
+                    'public'
+                )->exists(
+                    $videoPath
+                )
+            ) {
+                return back()
+                    ->withInput()
+                    ->withErrors([
+                        'video' =>
+                            'Product video could not be saved. Please try again.',
+                    ]);
+            }
+
+            $product->video =
+                $videoPath;
+
+            $product->save();
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | ADDITIONAL PRODUCT IMAGES
+        |--------------------------------------------------------------------------
+        */
 
         $this->storeAdditionalImages(
             $request,
             $product
         );
+
+        /*
+        |--------------------------------------------------------------------------
+        | SUCCESS
+        |--------------------------------------------------------------------------
+        */
 
         return redirect(
             '/seller-dashboard'
@@ -951,9 +1169,14 @@ class SellerController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function edit($id)
-    {
-        if (!session('seller_login')) {
+    public function edit(
+        $id
+    ) {
+        if (
+            !session(
+                'seller_login'
+            )
+        ) {
             return redirect(
                 '/seller-login'
             );
@@ -965,11 +1188,15 @@ class SellerController extends Controller
                 $this->currentSeller()->id
             )
                 ->with('images')
-                ->findOrFail($id);
+                ->findOrFail(
+                    $id
+                );
 
         return view(
             'seller.edit-product',
-            compact('product')
+            compact(
+                'product'
+            )
         );
     }
 
@@ -983,18 +1210,39 @@ class SellerController extends Controller
         Request $request,
         $id
     ) {
-        if (!session('seller_login')) {
+        if (
+            !session(
+                'seller_login'
+            )
+        ) {
             return redirect(
                 '/seller-login'
             );
         }
 
+        $seller =
+            $this->currentSeller();
+
+        /*
+        |--------------------------------------------------------------------------
+        | GET SELLER PRODUCT
+        |--------------------------------------------------------------------------
+        */
+
         $product =
             Product::where(
                 'seller_id',
-                $this->currentSeller()->id
+                $seller->id
             )
-                ->findOrFail($id);
+                ->findOrFail(
+                    $id
+                );
+
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDATION
+        |--------------------------------------------------------------------------
+        */
 
         $request->validate([
 
@@ -1019,6 +1267,39 @@ class SellerController extends Controller
             'image' =>
                 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
 
+            /*
+            |--------------------------------------------------------------------------
+            | PRODUCT VIDEO
+            |--------------------------------------------------------------------------
+            */
+
+            'video' =>
+                'nullable|file|mimetypes:video/mp4,video/webm,video/quicktime|max:20480',
+
+            'video_poster' =>
+                'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+
+            'remove_video' =>
+                'nullable|boolean',
+
+            'video_playback_speed' =>
+                'nullable|numeric|min:0.25|max:4',
+
+            'video_volume' =>
+                'nullable|numeric|min:0|max:1',
+
+            'video_rotation' =>
+                'nullable|integer|in:0,90,180,270',
+
+            'video_autoplay' =>
+                'nullable|boolean',
+
+            'video_loop' =>
+                'nullable|boolean',
+
+            'video_muted' =>
+                'nullable|boolean',
+
             'rating' =>
                 'nullable|numeric|min:0|max:5',
 
@@ -1034,6 +1315,12 @@ class SellerController extends Controller
             'status' =>
                 'nullable|in:active,inactive',
         ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | BASIC PRODUCT DATA
+        |--------------------------------------------------------------------------
+        */
 
         $data = [
 
@@ -1056,7 +1343,8 @@ class SellerController extends Controller
                 $request->discount_price,
 
             'rating' =>
-                $request->rating ?? 4.5,
+                $request->rating
+                ?? 4.5,
 
             'stock' =>
                 $request->stock,
@@ -1068,31 +1356,199 @@ class SellerController extends Controller
                 $request->color,
 
             'status' =>
-                $request->status ?? 'active',
+                $request->status
+                ?? 'active',
         ];
 
-        if ($request->hasFile('image')) {
+        /*
+        |--------------------------------------------------------------------------
+        | REPLACE MAIN PRODUCT IMAGE
+        |--------------------------------------------------------------------------
+        */
 
+        if (
+            $request->hasFile(
+                'image'
+            )
+        ) {
             $imageName =
                 time() .
+                '_' .
+                uniqid() .
                 '.' .
-                $request->image->extension();
+                $request
+                    ->image
+                    ->extension();
 
             $request->image->move(
-                public_path('products'),
+                public_path(
+                    'products'
+                ),
                 $imageName
             );
+
+            /*
+            |----------------------------------------------------------------------
+            | DELETE OLD IMAGE
+            |----------------------------------------------------------------------
+            */
+
+            if (
+                !empty(
+                    $product->image
+                )
+            ) {
+                $oldImage =
+                    public_path(
+                        'products/' .
+                        $product->image
+                    );
+
+                if (
+                    is_file(
+                        $oldImage
+                    )
+                ) {
+                    @unlink(
+                        $oldImage
+                    );
+                }
+            }
 
             $data['image'] =
                 $imageName;
         }
 
-        $product->update($data);
+        /*
+        |--------------------------------------------------------------------------
+        | REMOVE EXISTING VIDEO
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            $request->boolean(
+                'remove_video'
+            )
+        ) {
+            if (
+                !empty(
+                    $product->video
+                )
+            ) {
+                Storage::disk(
+                    'public'
+                )->delete(
+                    $product->video
+                );
+            }
+
+            $data['video'] =
+                null;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | REPLACE PRODUCT VIDEO
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            $request->hasFile(
+                'video'
+            )
+        ) {
+            /*
+            |----------------------------------------------------------------------
+            | DELETE OLD VIDEO
+            |----------------------------------------------------------------------
+            */
+
+            if (
+                !empty(
+                    $product->video
+                )
+            ) {
+                Storage::disk(
+                    'public'
+                )->delete(
+                    $product->video
+                );
+            }
+
+            /*
+            |----------------------------------------------------------------------
+            | NEW VIDEO
+            |----------------------------------------------------------------------
+            */
+
+            $video =
+                $request->file(
+                    'video'
+                );
+
+            $videoName =
+                'product_' .
+                $product->id .
+                '_' .
+                time() .
+                '_' .
+                uniqid() .
+                '.' .
+                $video->extension();
+
+            $videoPath =
+                $video->storeAs(
+                    'product-videos',
+                    $videoName,
+                    'public'
+                );
+
+            if (
+                !$videoPath ||
+                !Storage::disk(
+                    'public'
+                )->exists(
+                    $videoPath
+                )
+            ) {
+                return back()
+                    ->withInput()
+                    ->withErrors([
+                        'video' =>
+                            'Product video could not be saved. Please try again.',
+                    ]);
+            }
+
+            $data['video'] =
+                $videoPath;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | UPDATE PRODUCT
+        |--------------------------------------------------------------------------
+        */
+
+        $product->update(
+            $data
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | ADDITIONAL IMAGES
+        |--------------------------------------------------------------------------
+        */
 
         $this->storeAdditionalImages(
             $request,
             $product
         );
+
+        /*
+        |--------------------------------------------------------------------------
+        | SUCCESS
+        |--------------------------------------------------------------------------
+        */
 
         return redirect(
             '/seller-dashboard'
@@ -1108,9 +1564,14 @@ class SellerController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function destroy($id)
-    {
-        if (!session('seller_login')) {
+    public function destroy(
+        $id
+    ) {
+        if (
+            !session(
+                'seller_login'
+            )
+        ) {
             return redirect(
                 '/seller-login'
             );
@@ -1121,7 +1582,27 @@ class SellerController extends Controller
                 'seller_id',
                 $this->currentSeller()->id
             )
-                ->findOrFail($id);
+                ->findOrFail(
+                    $id
+                );
+
+        /*
+        |--------------------------------------------------------------------------
+        | DELETE PRODUCT VIDEO
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            !empty(
+                $product->video
+            )
+        ) {
+            Storage::disk(
+                'public'
+            )->delete(
+                $product->video
+            );
+        }
 
         $product->delete();
 
@@ -1143,7 +1624,11 @@ class SellerController extends Controller
         Request $request,
         Order $order
     ) {
-        if (!session('seller_login')) {
+        if (
+            !session(
+                'seller_login'
+            )
+        ) {
             return redirect(
                 '/seller-login'
             );
@@ -1153,26 +1638,54 @@ class SellerController extends Controller
 
         abort_unless(
             $order->belongsToSeller(
-                (int) session('seller_id')
+                (int) session(
+                    'seller_id'
+                )
             ),
             404
         );
 
-        $request->validate([
+        $validated = $request->validate([
             'order_status' =>
                 'required|in:Placed,Confirmed,Packed,Picked By Delivery Partner,Out For Delivery,Near Customer,Delivered,Cancelled',
         ]);
 
+        $currentStatus = $order->order_status ?: $order->status ?: 'Placed';
+        $allowedTransitions = [
+            'Placed' => ['Confirmed', 'Cancelled'],
+            'Confirmed' => ['Packed', 'Cancelled'],
+            'Packed' => ['Picked By Delivery Partner', 'Cancelled'],
+            'Picked By Delivery Partner' => ['Out For Delivery', 'Cancelled'],
+            'Out For Delivery' => ['Near Customer', 'Delivered'],
+            'Near Customer' => ['Delivered'],
+            'Delivered' => [],
+            'Cancelled' => [],
+        ];
+
+        $nextStatus = $validated['order_status'];
+        if ($nextStatus !== $currentStatus && ! in_array($nextStatus, $allowedTransitions[$currentStatus] ?? [], true)) {
+            return back()->with('error', 'This order status transition is not allowed.');
+        }
+
         $order->update([
 
             'order_status' =>
-                $request->order_status,
+                $nextStatus,
 
             'status' =>
-                $request->order_status,
+                $nextStatus,
 
             'delivery_status' =>
-                $request->order_status,
+                $nextStatus,
+        ]);
+
+        Notification::create([
+            'user_id' => $order->user_id,
+            'role' => 'user',
+            'type' => 'order_status',
+            'title' => 'Order status updated',
+            'message' => 'Order #' . $order->id . ' is now ' . $nextStatus . '.',
+            'data' => ['order_id' => $order->id, 'order_status' => $nextStatus],
         ]);
 
         return back()->with(
@@ -1201,7 +1714,8 @@ class SellerController extends Controller
                 'preferences' =>
                     array_merge(
                         $this->defaultSellerPreferences(),
-                        $seller->preferences ?? []
+                        $seller->preferences
+                        ?? []
                     ),
             ]
         );
@@ -1242,88 +1756,176 @@ class SellerController extends Controller
                 ],
 
                 'preferences.shipping_enabled' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.seller_delivery' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.platform_delivery' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.pickup_option' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.same_day_delivery' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.express_delivery' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.auto_accept_orders' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.allow_order_cancellation' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.allow_return_requests' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.allow_exchange_requests' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.auto_update_order_status' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.order_confirmation_notification' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.delivery_status_notification' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.default_product_status' =>
-                    ['sometimes', 'in:active,inactive'],
+                    [
+                        'sometimes',
+                        'in:active,inactive',
+                    ],
 
                 'preferences.default_rating' =>
-                    ['sometimes', 'numeric', 'min:0', 'max:5'],
+                    [
+                        'sometimes',
+                        'numeric',
+                        'min:0',
+                        'max:5',
+                    ],
 
                 'preferences.low_stock_threshold' =>
-                    ['sometimes', 'integer', 'min:0', 'max:100000'],
+                    [
+                        'sometimes',
+                        'integer',
+                        'min:0',
+                        'max:100000',
+                    ],
 
                 'preferences.allow_customer_reviews' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.allow_customer_questions' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.show_stock_quantity' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.product_visibility_enabled' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.auto_hide_out_of_stock' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.profile_visibility' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.shop_visibility' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.show_mobile_number' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.show_email' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.show_business_information' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.allow_customer_messages' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.auto_reply' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.welcome_message' =>
                     [
@@ -1358,22 +1960,40 @@ class SellerController extends Controller
                     ],
 
                 'preferences.show_seller_logo_on_invoice' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.show_gst_on_invoice' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.show_seller_address_on_invoice' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.show_customer_address_on_invoice' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.show_payment_details_on_invoice' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.show_qr_on_invoice' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.invoice_prefix' =>
                     [
@@ -1392,13 +2012,22 @@ class SellerController extends Controller
                     ],
 
                 'preferences.store_active' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.temporarily_closed' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.vacation_mode' =>
-                    ['sometimes', 'boolean'],
+                    [
+                        'sometimes',
+                        'boolean',
+                    ],
 
                 'preferences.delivery_charge' =>
                     [
@@ -1432,8 +2061,7 @@ class SellerController extends Controller
                 'theme',
                 'notifications_enabled',
                 'online_payments_enabled',
-            ]
-            as $field
+            ] as $field
         ) {
             if (
                 array_key_exists(
@@ -1454,7 +2082,8 @@ class SellerController extends Controller
             $current =
                 array_merge(
                     $this->defaultSellerPreferences(),
-                    $seller->preferences ?? []
+                    $seller->preferences
+                    ?? []
                 );
 
             $data['preferences'] =
@@ -1464,7 +2093,9 @@ class SellerController extends Controller
                 );
         }
 
-        $seller->update($data);
+        $seller->update(
+            $data
+        );
 
         return back()->with(
             'success',
@@ -1505,7 +2136,9 @@ class SellerController extends Controller
 
         if (
             !Hash::check(
-                $validated['current_password'],
+                $validated[
+                    'current_password'
+                ],
                 $seller->password
             )
         ) {
@@ -1519,7 +2152,9 @@ class SellerController extends Controller
         $seller->update([
             'password' =>
                 Hash::make(
-                    $validated['password']
+                    $validated[
+                        'password'
+                    ]
                 ),
         ]);
 
@@ -1685,18 +2320,21 @@ class SellerController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function updatePaymentQr(Request $request)
-    {
-        $data = $request->validate([
-            'payment_qr' => [
-                'required',
-                'image',
-                'mimes:jpeg,jpg,png,webp',
-                'max:2048',
-            ],
-        ]);
+    public function updatePaymentQr(
+        Request $request
+    ) {
+        $data =
+            $request->validate([
+                'payment_qr' => [
+                    'required',
+                    'image',
+                    'mimes:jpeg,jpg,png,webp',
+                    'max:2048',
+                ],
+            ]);
 
-        $seller = $this->currentSeller();
+        $seller =
+            $this->currentSeller();
 
         if (!$seller) {
             return back()->with(
@@ -1711,8 +2349,11 @@ class SellerController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        if (!empty($seller->payment_qr)) {
-
+        if (
+            !empty(
+                $seller->payment_qr
+            )
+        ) {
             $oldQr =
                 ltrim(
                     $seller->payment_qr,
@@ -1728,12 +2369,17 @@ class SellerController extends Controller
                 $oldQr =
                     substr(
                         $oldQr,
-                        strlen('storage/')
+                        strlen(
+                            'storage/'
+                        )
                     );
             }
 
-            Storage::disk('public')
-                ->delete($oldQr);
+            Storage::disk(
+                'public'
+            )->delete(
+                $oldQr
+            );
         }
 
         /*
@@ -1742,15 +2388,21 @@ class SellerController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $qrPath = $data['payment_qr']->store(
-            'seller-payment-qr',
-            'public'
-        );
+        $qrPath =
+            $data[
+                'payment_qr'
+            ]->store(
+                'seller-payment-qr',
+                'public'
+            );
 
         if (
             !$qrPath ||
-            !Storage::disk('public')
-                ->exists($qrPath)
+            !Storage::disk(
+                'public'
+            )->exists(
+                $qrPath
+            )
         ) {
             return back()->with(
                 'error',
@@ -1780,8 +2432,11 @@ class SellerController extends Controller
         $seller =
             $this->currentSeller();
 
-        if (!empty($seller->payment_qr)) {
-
+        if (
+            !empty(
+                $seller->payment_qr
+            )
+        ) {
             $oldQr =
                 ltrim(
                     $seller->payment_qr,
@@ -1797,12 +2452,17 @@ class SellerController extends Controller
                 $oldQr =
                     substr(
                         $oldQr,
-                        strlen('storage/')
+                        strlen(
+                            'storage/'
+                        )
                     );
             }
 
-            Storage::disk('public')
-                ->delete($oldQr);
+            Storage::disk(
+                'public'
+            )->delete(
+                $oldQr
+            );
         }
 
         $seller->update([

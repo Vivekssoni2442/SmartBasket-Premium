@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class PaymentTransaction extends Model
 {
     protected $fillable = [
+        'payment_id',
         'user_id',
         'access_token',
         'gateway',
@@ -24,6 +25,13 @@ class PaymentTransaction extends Model
         'failure_reason',
         'verified_at',
         'expires_at',
+        'attempt_number',
+        'transaction_type',
+        'gateway_transaction_id',
+        'request_metadata',
+        'response_metadata',
+        'initiated_at',
+        'completed_at',
     ];
 
     protected $casts = [
@@ -31,13 +39,32 @@ class PaymentTransaction extends Model
         'items_snapshot' => 'array',
         'customer_details' => 'array',
         'order_ids' => 'array',
+        'request_metadata' => 'array',
+        'response_metadata' => 'array',
         'verified_at' => 'datetime',
         'expires_at' => 'datetime',
+        'initiated_at' => 'datetime',
+        'completed_at' => 'datetime',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function payment()
+    {
+        return $this->belongsTo(Payment::class);
+    }
+
+    public function refunds()
+    {
+        return $this->hasMany(Refund::class);
+    }
+
+    public function auditRecords()
+    {
+        return $this->hasMany(PaymentAuditRecord::class);
     }
 
     public function isAccessibleByCurrentSession(): bool

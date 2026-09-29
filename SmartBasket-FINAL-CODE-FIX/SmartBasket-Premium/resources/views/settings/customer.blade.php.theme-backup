@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <meta
+        name="csrf-token"
+        content="{{ csrf_token() }}"
+    >
+
+    <title>Settings | Smart Basket Premium</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    {{-- Global Smart Basket Theme --}}
+    <link
+        rel="stylesheet"
+        href="{{ asset('css/premium-dark-theme.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+<div class="container py-5" style="max-width: 700px;">
+
+    {{-- HEADER --}}
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h1 class="h3 mb-1">
+                Settings
+            </h1>
+
+            <p class="text-muted mb-0">
+                Manage your Smart Basket preferences
+            </p>
+
+        </div>
+
+
+        <a
+            href="{{ route('products.index') }}"
+            class="btn btn-outline-dark"
+        >
+            Products
+        </a>
+
+    </div>
+
+
+    {{-- SUCCESS MESSAGE --}}
+
+    @if(session('success'))
+
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+
+    @endif
+
+
+    {{-- VALIDATION ERRORS --}}
+
+    @if($errors->any())
+
+        <div class="alert alert-danger">
+
+            <strong>Please fix the following:</strong>
+
+            <ul class="mb-0 mt-2">
+
+                @foreach($errors->all() as $error)
+
+                    <li>
+                        {{ $error }}
+                    </li>
+
+                @endforeach
+
+            </ul>
+
+        </div>
+
+    @endif
+
+
+    {{-- SETTINGS CARD --}}
+
+    <div class="card shadow-sm border-0">
+
+        <div class="card-body p-4">
+
+            <form
+                method="POST"
+                action="{{ route('settings.update') }}"
+            >
+
+                @csrf
+
+                @method('PUT')
+
+
+                {{-- THEME --}}
+
+                <div class="mb-4">
+
+                    <label
+                        for="dark_mode"
+                        class="form-label fw-bold"
+                    >
+                        Theme
+                    </label>
+
+
+                    <select
+                        id="dark_mode"
+                        class="form-select"
+                        name="dark_mode"
+                    >
+
+                        <option
+                            value="light"
+                            @selected($user->dark_mode === 'light')
+                        >
+                            Light
+                        </option>
+
+
+                        <option
+                            value="dark"
+                            @selected($user->dark_mode === 'dark')
+                        >
+                            Dark
+                        </option>
+
+
+                        <option
+                            value="system"
+                            @selected(
+                                $user->dark_mode === 'system' ||
+                                empty($user->dark_mode)
+                            )
+                        >
+                            System default
+                        </option>
+
+                    </select>
+
+                    <div class="form-text">
+                        Choose how Smart Basket should appear on all pages.
+                    </div>
+
+                </div>
+
+
+                {{-- NOTIFICATIONS --}}
+
+                <div class="mb-4">
+
+                    <label
+                        for="notifications"
+                        class="form-label fw-bold"
+                    >
+                        Notifications
+                    </label>
+
+
+                    <select
+                        id="notifications"
+                        class="form-select"
+                        name="notifications"
+                    >
+
+                        <option
+                            value="enabled"
+                            @selected($user->notifications !== 'disabled')
+                        >
+                            Enabled
+                        </option>
+
+
+                        <option
+                            value="disabled"
+                            @selected($user->notifications === 'disabled')
+                        >
+                            Disabled
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                {{-- LANGUAGE --}}
+
+                <div class="mb-4">
+
+                    <label
+                        for="language"
+                        class="form-label fw-bold"
+                    >
+                        Language
+                    </label>
+
+
+                    <input
+                        id="language"
+                        type="text"
+                        class="form-control"
+                        name="language"
+                        value="{{ old('language', $user->language) }}"
+                        placeholder="English"
+                    >
+
+                </div>
+
+
+                {{-- SAVE --}}
+
+                <div class="d-flex justify-content-end">
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary px-4"
+                    >
+                        Save Settings
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    {{-- FOOTER --}}
+
+    <div class="text-center mt-4">
+
+        <small class="text-muted">
+            © {{ date('Y') }} Smart Basket Premium
+        </small>
+
+    </div>
+
+</div>
+
+
+{{-- Global Theme JavaScript --}}
+
+<script src="{{ asset('js/smartbasket-theme.js') }}"></script>
+
+
+{{-- Instant Theme Preview --}}
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    const themeSelect =
+        document.getElementById('dark_mode');
+
+
+    if (!themeSelect) {
+        return;
+    }
+
+
+    themeSelect.addEventListener('change', function () {
+
+        const selectedTheme = this.value;
+
+
+        if (
+            window.SmartBasketTheme &&
+            typeof window.SmartBasketTheme.set === 'function'
+        ) {
+
+            window.SmartBasketTheme.set(
+                selectedTheme
+            );
+
+        }
+
+    });
+
+});
+
+</script>
+
+</body>
+
+</html>

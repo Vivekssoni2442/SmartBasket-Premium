@@ -73,6 +73,16 @@ class User extends Authenticatable
         return $this->hasMany(PaymentTransaction::class);
     }
 
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function refunds()
+    {
+        return $this->hasMany(Refund::class);
+    }
+
     public function carts()
     {
         return $this->hasMany(Cart::class);
@@ -81,6 +91,11 @@ class User extends Authenticatable
     public function wishlists()
     {
         return $this->hasMany(Wishlist::class);
+    }
+
+    public function addresses()
+    {
+        return $this->hasMany(CustomerAddress::class);
     }
 
 

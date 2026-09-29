@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Models\Admin;
 
 class AdminProfileController extends Controller
 {
@@ -20,9 +21,7 @@ class AdminProfileController extends Controller
             abort(403, 'Administrator session not found.');
         }
 
-        $admin = DB::table('admins')
-            ->where('id', $adminId)
-            ->first();
+        $admin = Admin::find($adminId);
 
         if (!$admin) {
             abort(403, 'Administrator account not found.');
@@ -113,13 +112,29 @@ class AdminProfileController extends Controller
                 'min:8',
                 'confirmed',
             ],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'bio' => ['nullable', 'string', 'max:2000'],
+            'timezone' => ['nullable', 'timezone'],
+            'language' => ['nullable', 'string', 'max:20'],
+            'dark_mode' => ['nullable', 'boolean'],
+            'notification_preferences' => ['nullable', 'array'],
+            'avatar' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:2048'],
         ]);
 
         $data = [
             'name' => trim($validated['name']),
             'email' => strtolower(trim($validated['email'])),
             'updated_at' => now(),
+            'phone' => $validated['phone'] ?? $admin->phone,
+            'bio' => $validated['bio'] ?? $admin->bio,
+            'timezone' => $validated['timezone'] ?? $admin->timezone,
+            'language' => $validated['language'] ?? $admin->language,
+            'notification_preferences' => $validated['notification_preferences'] ?? $admin->notification_preferences,
         ];
+
+        if ($request->has('dark_mode')) {
+            $data['dark_mode'] = $request->boolean('dark_mode');
+        }
 
         /*
          * Password change
@@ -157,9 +172,13 @@ class AdminProfileController extends Controller
             );
         }
 
-        DB::table('admins')
-            ->where('id', $admin->id)
-            ->update($data);
+        if ($request->hasFile('avatar')) {
+            if ($admin->avatar) Storage::disk('public')->delete('admin-avatars/' . $admin->avatar);
+            $data['avatar'] = $request->file('avatar')->store('admin-avatars', 'public');
+            $data['avatar'] = basename($data['avatar']);
+        }
+
+        $admin->update($data);
 
         /*
          * Keep current session information synchronized.
