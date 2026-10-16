@@ -6,6 +6,7 @@ use App\Contracts\PaymentGatewayInterface;
 use App\Models\Payment;
 use App\Models\User;
 use App\Services\PaymentService;
+use App\Services\RazorpayPaymentGateway;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -45,6 +46,23 @@ class PaymentServiceFoundationTest extends TestCase
 
         $this->assertSame('[redacted]', $webhook->payload['payment']['card_number']);
         $this->assertDatabaseCount('payment_webhooks', 1);
+    }
+
+    public function test_razorpay_key_must_match_the_configured_environment_mode(): void
+    {
+        config([
+            'services.razorpay.mode' => 'test',
+            'services.razorpay.key' => 'rzp_live_wrong_environment',
+            'services.razorpay.secret' => 'configured-secret',
+        ]);
+
+        $gateway = app(RazorpayPaymentGateway::class);
+
+        $this->assertFalse($gateway->isConfigured());
+
+        config(['services.razorpay.key' => 'rzp_test_expected_environment']);
+
+        $this->assertTrue($gateway->isConfigured());
     }
 
     private function gateway(): PaymentGatewayInterface

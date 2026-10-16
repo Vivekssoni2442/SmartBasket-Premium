@@ -596,12 +596,9 @@ th {
         $formattedPaymentDate
         ?? '—';
 
-    $method = strtoupper(
-        (string) (
-            $paymentMethod
-            ?? 'COD'
-        )
-    );
+    $method = $order->isCashOnDelivery()
+        ? 'Cash'
+        : strtoupper((string) ($paymentMethod ?? 'ONLINE PAYMENT'));
 
     $receiptNo =
         $receiptNumber
@@ -627,10 +624,9 @@ th {
         ?? 'PLACED'
     );
 
-    $paymentStatus = strtoupper(
-        $status
-        ?? 'PENDING'
-    );
+    $paymentStatus = $status === 'Cash'
+        ? 'Cash'
+        : strtoupper($status ?? 'PENDING');
 
 @endphp
 

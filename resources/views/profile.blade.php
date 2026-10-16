@@ -1755,22 +1755,9 @@
                 ) !important;
         }
 
-        .sb-products-smart-ai-host >
-        .smart-ai >
-        .smart-ai__launch {
-            opacity: 0 !important;
-            visibility: hidden !important;
-            pointer-events: none !important;
-            position: fixed !important;
-            width: 1px !important;
-            height: 1px !important;
-            overflow: hidden !important;
-            clip: rect(0,0,0,0) !important;
-        }
+        
 
-        .sb-products-smart-ai-host [data-smart-ai-panel] {
-            z-index: 100001 !important;
-        }
+        
 
         /* =====================================================
            MOBILE
@@ -1911,6 +1898,7 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/customer-page-title.css') }}">
 </head>
 
 @php
@@ -2343,6 +2331,8 @@
 
         @endif
 
+
+        <x-customer-page-hero title="My Profile" />
 
         <div class="row g-4">
 

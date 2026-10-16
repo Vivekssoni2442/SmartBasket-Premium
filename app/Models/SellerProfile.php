@@ -4,12 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SellerProfile extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     /*
     |--------------------------------------------------------------------------
@@ -26,11 +27,17 @@ class SellerProfile extends Model
     */
 
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_PENDING_EMAIL = 'pending_email';
     public const STATUS_EMAIL_VERIFICATION = 'email_verification';
-    // Compatibility name used by the verification workflow after email success.
-    public const STATUS_EMAIL_VERIFIED = self::STATUS_DOCUMENTS_PENDING;
+
     public const STATUS_DOCUMENTS_PENDING = 'documents_pending';
+
+    /*
+     * Backward compatibility.
+     */
+    public const STATUS_EMAIL_VERIFIED = self::STATUS_DOCUMENTS_PENDING;
+
     public const STATUS_AADHAAR_VERIFICATION = 'aadhaar_verification';
     public const STATUS_BUSINESS_DETAILS = 'business_details';
     public const STATUS_BANK_DETAILS = 'bank_details';
@@ -44,6 +51,7 @@ class SellerProfile extends Model
     public const STATUS_APPROVED = 'approved';
     public const STATUS_ACTIVE = 'active';
     public const STATUS_INACTIVE = 'inactive';
+
     public const STATUS_REJECTED = 'rejected';
     public const STATUS_SUSPENDED = 'suspended';
 
@@ -54,62 +62,191 @@ class SellerProfile extends Model
     */
 
     protected $fillable = [
+
+        /*
+        | Identity
+        */
+
         'seller_id',
         'user_id',
 
         'seller_name',
         'shop_name',
+
         'email',
         'phone',
         'mobile',
         'mobile_number',
 
+        /*
+        | Address
+        */
+
         'address',
+        'business_address',
+
         'city',
         'state',
         'country',
         'pincode',
 
+        'business_city',
+        'business_state',
+        'business_pincode',
+
+        /*
+        | Verification
+        */
+
         'verification_status',
         'verification_step',
         'onboarding_step',
 
+        /*
+        | Password
+        */
+
         'password',
 
+        /*
+        | Email verification
+        */
+
         'email_verified_at',
+
         'email_verification_code',
         'email_verification_code_hash',
         'email_verification_expires_at',
+        'email_verification_attempts',
+
+        'email_code_hash',
+        'email_code_expires_at',
+        'email_code_attempts',
+        'email_code_sent_at',
+
+        /*
+        | Documents
+        */
 
         'business_certificate_path',
         'aadhaar_document_path',
+        'pan_document_path',
+        'shop_proof_path',
+        'bank_proof_path',
+
+        'business_certificate_uploaded_at',
+        'aadhaar_document_uploaded_at',
+        'pan_document_uploaded_at',
+        'shop_proof_uploaded_at',
+        'bank_proof_uploaded_at',
+
+        /*
+        | Aadhaar
+        */
 
         'aadhaar_number',
+        'aadhaar_verified',
         'aadhaar_verified_at',
         'aadhaar_verification_status',
 
+        'verification_reference_id',
+
+        /*
+        | Business
+        */
+
         'business_type',
         'business_name',
+
+        'gst_number',
         'pan_number',
         'udyam_number',
 
+        /*
+        | Bank
+        */
+
         'bank_account_holder',
+        'bank_account_holder_name',
         'bank_account_number',
         'bank_ifsc',
         'bank_name',
         'bank_branch',
 
+        /*
+        | Application
+        */
+
         'application_submitted_at',
+        'verification_submitted_at',
 
         'approved_at',
         'rejected_at',
         'rejection_reason',
 
+        /*
+        | Admin review
+        */
+
         'admin_notes',
         'reviewed_by',
         'reviewed_at',
 
+        'admin_reviewed_at',
+        'admin_reviewed_by',
+
+        /*
+        | Admin notification
+        */
+
+        'admin_notification_status',
+        'admin_notification_sent_at',
+        'admin_notification_failed_at',
+
+        /*
+        | Seller account
+        */
+
         'is_active',
+        'blocked_at',
+        'block_reason',
+
+        /*
+        | Seller settings
+        */
+
+        'preferences',
+
+        /*
+        | Seller payment settings
+        */
+
+        'payment_upi_id',
+        'payment_mobile_number',
+        'payment_business_name',
+        'payment_status',
+        'payment_provider',
+        'payment_verification_status',
+        'payment_verified_at',
+        'payment_enabled',
+
+        'online_payments_enabled',
+
+        /*
+        | Seller payment QR
+        */
+
+        'payment_qr',
+
+        /*
+        | Activation
+        */
+
+        'activation_code_hash',
+        'activation_code_expires_at',
+        'activation_code_sent_at',
+        'activation_attempts',
+        'activation_verified_at',
     ];
 
     /*
@@ -121,37 +258,239 @@ class SellerProfile extends Model
     protected function casts(): array
     {
         return [
+
+            /*
+            |--------------------------------------------------------------------------
+            | Email verification dates
+            |--------------------------------------------------------------------------
+            */
+
             'email_verified_at' => 'datetime',
+
+            'email_code_sent_at' => 'datetime',
+            'email_code_expires_at' => 'datetime',
+
             'email_verification_expires_at' => 'datetime',
 
+            /*
+            |--------------------------------------------------------------------------
+            | Document upload dates
+            |--------------------------------------------------------------------------
+            */
+
+            'business_certificate_uploaded_at' => 'datetime',
+            'aadhaar_document_uploaded_at' => 'datetime',
+            'pan_document_uploaded_at' => 'datetime',
+            'shop_proof_uploaded_at' => 'datetime',
+            'bank_proof_uploaded_at' => 'datetime',
+
+            /*
+            |--------------------------------------------------------------------------
+            | Aadhaar
+            |--------------------------------------------------------------------------
+            */
+
+            'aadhaar_verified' => 'boolean',
             'aadhaar_verified_at' => 'datetime',
 
             /*
-             * Actual database column.
-             */
+            |--------------------------------------------------------------------------
+            | Application
+            |--------------------------------------------------------------------------
+            */
+
             'application_submitted_at' => 'datetime',
+            'verification_submitted_at' => 'datetime',
 
             'approved_at' => 'datetime',
             'rejected_at' => 'datetime',
+
+            /*
+            |--------------------------------------------------------------------------
+            | Admin review
+            |--------------------------------------------------------------------------
+            */
+
+            'admin_reviewed_at' => 'datetime',
             'reviewed_at' => 'datetime',
 
+            /*
+            |--------------------------------------------------------------------------
+            | Admin notifications
+            |--------------------------------------------------------------------------
+            */
+
+            'admin_notification_sent_at' => 'datetime',
+            'admin_notification_failed_at' => 'datetime',
+
+            /*
+            |--------------------------------------------------------------------------
+            | Seller account
+            |--------------------------------------------------------------------------
+            */
+
             'is_active' => 'boolean',
+            'blocked_at' => 'datetime',
+
+            /*
+            |--------------------------------------------------------------------------
+            | Seller settings
+            |--------------------------------------------------------------------------
+            */
+
+            'preferences' => 'array',
+
+            /*
+            |--------------------------------------------------------------------------
+            | Payment
+            |--------------------------------------------------------------------------
+            */
+
+            'payment_enabled' => 'boolean',
+            'payment_verified_at' => 'datetime',
+
+            'online_payments_enabled' => 'boolean',
+
+            /*
+            |--------------------------------------------------------------------------
+            | Activation
+            |--------------------------------------------------------------------------
+            */
+
+            'activation_code_expires_at' => 'datetime',
+            'activation_code_sent_at' => 'datetime',
+            'activation_verified_at' => 'datetime',
+
+            'activation_attempts' => 'integer',
+
+            /*
+            |--------------------------------------------------------------------------
+            | Attempts
+            |--------------------------------------------------------------------------
+            */
+
+            'email_code_attempts' => 'integer',
+            'email_verification_attempts' => 'integer',
         ];
+    }
+
+    public function isBlocked(): bool
+    {
+        return $this->blocked_at !== null;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | PAYMENT HELPERS
+    |--------------------------------------------------------------------------
+    */
+
+    public function getPaymentUpiId(): string
+    {
+        return trim(
+            (string) (
+                $this->payment_upi_id
+                ?: ($this->preferences['upi_id'] ?? '')
+            )
+        );
+    }
+
+    public function getPaymentMobileNumber(): string
+    {
+        return trim(
+            (string) (
+                $this->payment_mobile_number
+                ?: $this->mobile_number
+                ?: $this->phone
+                ?: $this->mobile
+                ?: ''
+            )
+        );
+    }
+
+    public function getPaymentBusinessName(): string
+    {
+        return trim(
+            (string) (
+                $this->payment_business_name
+                ?: $this->shop_name
+                ?: $this->seller_name
+                ?: 'SMART BASKET'
+            )
+        );
+    }
+
+    public function isOnlinePaymentEnabled(): bool
+    {
+        return (bool) $this->online_payments_enabled
+            && (bool) $this->payment_enabled
+            && $this->payment_status === 'enabled'
+            && ! in_array($this->verification_status, [self::STATUS_INACTIVE, self::STATUS_SUSPENDED, self::STATUS_REJECTED], true);
+    }
+
+    public function hasValidPaymentConfiguration(): bool
+    {
+        $upiId = $this->getPaymentUpiId();
+        $mobile = $this->getPaymentMobileNumber();
+        $businessName = $this->getPaymentBusinessName();
+
+        return $upiId !== ''
+            && preg_match(
+                '/^[a-zA-Z0-9][a-zA-Z0-9._-]{1,252}@[a-zA-Z][a-zA-Z0-9.-]{1,63}$/',
+                $upiId
+            ) === 1
+            && preg_match(
+                '/^(?:\+91)?[6-9][0-9]{9}$/',
+                preg_replace('/[\s()\-]/', '', $mobile)
+            ) === 1
+            && $businessName !== '';
+    }
+
+    public function paymentUriForAmount(
+        float|string $amount,
+        string $orderReference
+    ): string {
+        $upiId = $this->getPaymentUpiId();
+
+        if (! $this->isOnlinePaymentEnabled() || ! $this->hasValidPaymentConfiguration()) {
+            throw new \InvalidArgumentException(
+                'Seller UPI payment is currently unavailable.'
+            );
+        }
+
+        if (! is_numeric($amount) || (float) $amount <= 0) {
+            throw new \InvalidArgumentException('Payment amount must be greater than zero.');
+        }
+
+        $amountValue = number_format(
+            (float) $amount,
+            2,
+            '.',
+            ''
+        );
+
+        $name = $this->getPaymentBusinessName();
+
+        $query = http_build_query(
+            [
+                'pa' => $upiId,
+                'pn' => $name,
+                'am' => $amountValue,
+                'cu' => 'INR',
+                'tn' => $orderReference,
+            ],
+            '',
+            '&',
+            PHP_QUERY_RFC3986
+        );
+
+        return 'upi://pay?' . $query;
     }
 
     /*
     |--------------------------------------------------------------------------
     | BACKWARD COMPATIBILITY
     |--------------------------------------------------------------------------
-    |
-    | Older admin pages may use:
-    |
-    | $seller->verification_submitted_at
-    |
-    | Actual database column:
-    |
-    | application_submitted_at
-    |
     */
 
     public function getVerificationSubmittedAtAttribute()
@@ -191,12 +530,18 @@ class SellerProfile extends Model
 
     public function earnings(): HasMany
     {
-        return $this->hasMany(SellerEarning::class, 'seller_id');
+        return $this->hasMany(
+            SellerEarning::class,
+            'seller_id'
+        );
     }
 
     public function payouts(): HasMany
     {
-        return $this->hasMany(SellerPayout::class, 'seller_id');
+        return $this->hasMany(
+            SellerPayout::class,
+            'seller_id'
+        );
     }
 
     /*
@@ -226,20 +571,12 @@ class SellerProfile extends Model
         return !empty($this->aadhaar_document_path);
     }
 
-    /**
-     * Check whether all required documents are uploaded.
-     *
-     * This method is required by the Admin Seller Verification page.
-     */
     public function hasRequiredDocuments(): bool
     {
         return $this->hasBusinessCertificate()
             && $this->hasAadhaarDocument();
     }
 
-    /**
-     * Existing compatibility method.
-     */
     public function areDocumentsUploaded(): bool
     {
         return $this->hasRequiredDocuments();
@@ -265,6 +602,7 @@ class SellerProfile extends Model
     public function areBusinessDetailsComplete(): bool
     {
         return !empty($this->business_type)
+            && !empty($this->business_name)
             && !empty($this->pan_number)
             && !empty($this->udyam_number);
     }
@@ -318,22 +656,26 @@ class SellerProfile extends Model
 
     public function isDocumentsPending(): bool
     {
-        return $this->verification_status === self::STATUS_DOCUMENTS_PENDING;
+        return $this->verification_status
+            === self::STATUS_DOCUMENTS_PENDING;
     }
 
     public function isAadhaarVerificationPending(): bool
     {
-        return $this->verification_status === self::STATUS_AADHAAR_VERIFICATION;
+        return $this->verification_status
+            === self::STATUS_AADHAAR_VERIFICATION;
     }
 
     public function isBusinessDetailsPending(): bool
     {
-        return $this->verification_status === self::STATUS_BUSINESS_DETAILS;
+        return $this->verification_status
+            === self::STATUS_BUSINESS_DETAILS;
     }
 
     public function isBankDetailsPending(): bool
     {
-        return $this->verification_status === self::STATUS_BANK_DETAILS;
+        return $this->verification_status
+            === self::STATUS_BANK_DETAILS;
     }
 
     public function isPendingAdminReview(): bool
@@ -374,17 +716,20 @@ class SellerProfile extends Model
 
     public function isActive(): bool
     {
-        return $this->verification_status === self::STATUS_ACTIVE;
+        return $this->verification_status
+            === self::STATUS_ACTIVE;
     }
 
     public function isRejected(): bool
     {
-        return $this->verification_status === self::STATUS_REJECTED;
+        return $this->verification_status
+            === self::STATUS_REJECTED;
     }
 
     public function isSuspended(): bool
     {
-        return $this->verification_status === self::STATUS_SUSPENDED;
+        return $this->verification_status
+            === self::STATUS_SUSPENDED;
     }
 
     /*
@@ -564,7 +909,10 @@ class SellerProfile extends Model
                     str_replace(
                         ['_', '-'],
                         ' ',
-                        (string) ($this->verification_status ?: 'Unknown')
+                        (string) (
+                            $this->verification_status
+                            ?: 'Unknown'
+                        )
                     )
                 ),
         };
@@ -786,32 +1134,44 @@ class SellerProfile extends Model
 
     /*
     |--------------------------------------------------------------------------
-    | SET STATUS
+    | SET VERIFICATION STATUS
     |--------------------------------------------------------------------------
     */
 
-    public function setVerificationStatus(string $status): bool
-    {
+    public function setVerificationStatus(
+        string $status
+    ): bool {
         $allowedStatuses = [
+
             self::STATUS_DRAFT,
+
             self::STATUS_PENDING_EMAIL,
             self::STATUS_EMAIL_VERIFICATION,
+
             self::STATUS_DOCUMENTS_PENDING,
             self::STATUS_AADHAAR_VERIFICATION,
             self::STATUS_BUSINESS_DETAILS,
             self::STATUS_BANK_DETAILS,
+
             self::STATUS_SUBMITTED,
             self::STATUS_PENDING_ADMIN_REVIEW,
+
             self::STATUS_PENDING_REVIEW,
             self::STATUS_UNDER_REVIEW,
+
             self::STATUS_APPROVED,
             self::STATUS_ACTIVE,
             self::STATUS_INACTIVE,
+
             self::STATUS_REJECTED,
             self::STATUS_SUSPENDED,
         ];
 
-        if (!in_array($status, $allowedStatuses, true)) {
+        if (!in_array(
+            $status,
+            $allowedStatuses,
+            true
+        )) {
             return false;
         }
 
@@ -828,7 +1188,8 @@ class SellerProfile extends Model
 
     public function updateVerificationStep(): bool
     {
-        $this->verification_step = $this->getVerificationStep();
+        $this->verification_step =
+            $this->getVerificationStep();
 
         return $this->save();
     }
@@ -841,7 +1202,8 @@ class SellerProfile extends Model
 
     public function markApplicationSubmitted(): bool
     {
-        $this->verification_status = self::STATUS_PENDING_ADMIN_REVIEW;
+        $this->verification_status =
+            self::STATUS_PENDING_ADMIN_REVIEW;
 
         $this->application_submitted_at = now();
 
@@ -858,7 +1220,8 @@ class SellerProfile extends Model
 
     public function markApproved(): bool
     {
-        $this->verification_status = self::STATUS_APPROVED;
+        $this->verification_status =
+            self::STATUS_APPROVED;
 
         $this->approved_at = now();
 
@@ -879,7 +1242,8 @@ class SellerProfile extends Model
 
     public function markActive(): bool
     {
-        $this->verification_status = self::STATUS_ACTIVE;
+        $this->verification_status =
+            self::STATUS_ACTIVE;
 
         $this->is_active = true;
 
@@ -896,9 +1260,11 @@ class SellerProfile extends Model
     |--------------------------------------------------------------------------
     */
 
-    public function markRejected(?string $reason = null): bool
-    {
-        $this->verification_status = self::STATUS_REJECTED;
+    public function markRejected(
+        ?string $reason = null
+    ): bool {
+        $this->verification_status =
+            self::STATUS_REJECTED;
 
         $this->rejected_at = now();
 
@@ -915,9 +1281,11 @@ class SellerProfile extends Model
     |--------------------------------------------------------------------------
     */
 
-    public function markSuspended(?string $reason = null): bool
-    {
-        $this->verification_status = self::STATUS_SUSPENDED;
+    public function markSuspended(
+        ?string $reason = null
+    ): bool {
+        $this->verification_status =
+            self::STATUS_SUSPENDED;
 
         $this->is_active = false;
 
@@ -936,7 +1304,8 @@ class SellerProfile extends Model
 
     public function markPendingReview(): bool
     {
-        $this->verification_status = self::STATUS_PENDING_REVIEW;
+        $this->verification_status =
+            self::STATUS_PENDING_REVIEW;
 
         return $this->save();
     }
@@ -951,7 +1320,7 @@ class SellerProfile extends Model
     {
         return $this->seller_name
             ?: $this->business_name
-            ?: ($this->name ?? null)
+            ?: $this->shop_name
             ?: 'Seller';
     }
 
@@ -970,8 +1339,15 @@ class SellerProfile extends Model
     {
         return $this->phone
             ?: $this->mobile
+            ?: $this->mobile_number
             ?: ($this->user?->phone ?? '-');
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | MASKED AADHAAR
+    |--------------------------------------------------------------------------
+    */
 
     public function getMaskedAadhaar(): string
     {
@@ -982,18 +1358,22 @@ class SellerProfile extends Model
         $aadhaar = preg_replace(
             '/\D/',
             '',
-            $this->aadhaar_number
+            (string) $this->aadhaar_number
         );
 
         if (strlen($aadhaar) < 4) {
             return '****';
         }
 
-        return 'XXXX-XXXX-' . substr(
-            $aadhaar,
-            -4
-        );
+        return 'XXXX-XXXX-' .
+            substr($aadhaar, -4);
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | MASKED BANK ACCOUNT
+    |--------------------------------------------------------------------------
+    */
 
     public function getMaskedBankAccount(): string
     {
@@ -1004,17 +1384,15 @@ class SellerProfile extends Model
         $account = preg_replace(
             '/\s+/',
             '',
-            $this->bank_account_number
+            (string) $this->bank_account_number
         );
 
         if (strlen($account) < 4) {
             return '****';
         }
 
-        return '****' . substr(
-            $account,
-            -4
-        );
+        return '****' .
+            substr($account, -4);
     }
 
     /*
@@ -1024,7 +1402,7 @@ class SellerProfile extends Model
     */
 
     public function hasPaymentQr(): bool
-{
-    return !empty($this->payment_qr);
-}
+    {
+        return !empty($this->payment_qr);
+    }
 }

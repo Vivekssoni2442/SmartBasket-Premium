@@ -28,7 +28,7 @@ class Payment extends Model
     }
 
     public function user(): BelongsTo { return $this->belongsTo(User::class); }
-    public function orders(): BelongsToMany { return $this->belongsToMany(Order::class)->withTimestamps(); }
+    public function orders(): BelongsToMany { return $this->belongsToMany(Order::class, 'payment_order')->withTimestamps(); }
     public function transactions(): HasMany { return $this->hasMany(PaymentTransaction::class); }
     public function webhooks(): HasMany { return $this->hasMany(PaymentWebhook::class); }
     public function refunds(): HasMany { return $this->hasMany(Refund::class); }

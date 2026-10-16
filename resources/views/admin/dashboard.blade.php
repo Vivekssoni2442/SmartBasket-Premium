@@ -526,7 +526,7 @@
                 </div>
 
                 <h1 class="sb-hero-title">
-                    Welcome back, {{ $adminName }} 👑
+                    Welcome back, {{ $adminName }}
                 </h1>
 
                 <p class="sb-hero-description">

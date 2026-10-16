@@ -5,6 +5,7 @@
 ========================================================= --}}
 
 <link rel="stylesheet" href="{{ asset('css/ai-camera-assistant.css') }}">
+<link rel="stylesheet" href="{{ asset('css/customer-page-title.css') }}">
 
 <style>
 /* =========================================================
@@ -1356,9 +1357,11 @@
 
             <div>
 
-                <h1>
+                <x-customer-page-hero>
+<h1 class="sb-customer-page-title">
                     AI Style Studio
                 </h1>
+</x-customer-page-hero>
 
                 <p>
                     Discover your style and get personalized outfit recommendations.

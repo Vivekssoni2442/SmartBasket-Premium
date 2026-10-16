@@ -88,8 +88,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(135deg, #eef2ff, #e0e7ff);
-        color: #4f46e5;
+        background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+        color: #2563EB;
         font-size: 22px;
         flex-shrink: 0;
     }
@@ -142,14 +142,14 @@
     }
 
     .seller-kyc-btn {
-        background: #4f46e5;
+        background: #2563EB;
         color: #ffffff;
-        border: 1px solid #4f46e5;
-        box-shadow: 0 8px 20px rgba(79, 70, 229, .18);
+        border: 1px solid #2563EB;
+        box-shadow: 0 8px 20px rgba(37, 99, 235, .18);
     }
 
     .seller-kyc-btn:hover {
-        background: #4338ca;
+        background: #1D4ED8;
         color: #ffffff;
         transform: translateY(-1px);
     }
@@ -180,7 +180,7 @@
         align-items: center;
         justify-content: center;
         background: #f3f4f6;
-        color: #4f46e5;
+        color: #2563EB;
         font-size: 18px;
         flex-shrink: 0;
     }
@@ -230,7 +230,7 @@
     }
 
     .seller-card-title i {
-        color: #4f46e5;
+        color: #2563EB;
     }
 
     .seller-card-body {
@@ -313,8 +313,8 @@
 
     .seller-view-btn:hover {
         background: #f9fafb;
-        color: #4f46e5;
-        border-color: #c7d2fe;
+        color: #2563EB;
+        border-color: #BFDBFE;
     }
 
     .seller-empty {

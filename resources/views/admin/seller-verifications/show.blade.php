@@ -1,296 +1,62 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@extends('layouts.admin')
 
-    <title>
-        Seller Verification - {{ $seller->shop_name ?? 'Seller' }}
-    </title>
+@section('title', 'Seller Verification - ' . ($seller->shop_name ?? 'Seller'))
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+@section('breadcrumbs')
+    <span>/</span>
+    <a href="{{ route('admin.seller-verifications.index') }}">Seller verifications</a>
+    <span>/</span>
+    <span>{{ $seller->shop_name ?? 'Seller' }}</span>
+@endsection
 
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f4f7fb;
-            color: #172033;
-        }
+@section('extra-css')
+<style>
+body.admin-layout .admin-content .admin-verification-detail { width:100%; max-width:1500px; margin:0 auto; color:#E2E8F0; }
+body.admin-layout .admin-content .admin-verification-detail .topbar { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; margin:0 0 22px; flex-wrap:wrap; }
+body.admin-layout .admin-content .admin-verification-detail .title h1 { margin:0; color:#F8FAFC; font-size:clamp(1.4rem,2vw,1.85rem); line-height:1.25; font-weight:800; letter-spacing:-.025em; }
+body.admin-layout .admin-content .admin-verification-detail .title p { margin:7px 0 0; color:#94A3B8; line-height:1.6; }
+body.admin-layout .admin-content .admin-verification-detail .status { display:inline-flex; align-items:center; margin-top:12px; padding:6px 10px; border:1px solid rgba(245,158,11,.28); border-radius:999px; background:rgba(245,158,11,.12); color:#FDE68A; font-size:.78rem; font-weight:700; }
+body.admin-layout .admin-content .admin-verification-detail .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+body.admin-layout .admin-content .admin-verification-detail .card { min-width:0; padding:20px; color:#CBD5E1; background:#151C2F; border:1px solid #263249; border-radius:15px; box-shadow:0 10px 28px rgba(0,0,0,.16); }
+body.admin-layout .admin-content .admin-verification-detail .card.full { grid-column:1/-1; }
+body.admin-layout .admin-content .admin-verification-detail .card h2 { margin:0 0 16px; color:#F8FAFC; font-size:1rem; line-height:1.35; font-weight:750; }
+body.admin-layout .admin-content .admin-verification-detail .profile { display:flex; align-items:center; gap:15px; margin-bottom:18px; min-width:0; }
+body.admin-layout .admin-content .admin-verification-detail .logo,
+body.admin-layout .admin-content .admin-verification-detail .logo-placeholder { width:68px; height:68px; flex:0 0 68px; object-fit:cover; border:1px solid #35435D; border-radius:14px; background:#0F1728; }
+body.admin-layout .admin-content .admin-verification-detail .logo-placeholder { display:grid; place-items:center; color:#93C5FD; font-size:1.35rem; font-weight:800; }
+body.admin-layout .admin-content .admin-verification-detail .shop-name { overflow-wrap:anywhere; color:#F8FAFC; font-size:1.1rem; line-height:1.4; font-weight:750; }
+body.admin-layout .admin-content .admin-verification-detail .seller-name { margin-top:3px; color:#94A3B8; }
+body.admin-layout .admin-content .admin-verification-detail .info-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+body.admin-layout .admin-content .admin-verification-detail .info { min-width:0; padding:12px; border:1px solid #263249; border-radius:11px; background:#10182B; }
+body.admin-layout .admin-content .admin-verification-detail .label { margin-bottom:5px; color:#94A3B8; font-size:.68rem; font-weight:750; letter-spacing:.055em; text-transform:uppercase; }
+body.admin-layout .admin-content .admin-verification-detail .value { color:#E2E8F0; font-size:.88rem; line-height:1.5; font-weight:600; overflow-wrap:anywhere; }
+body.admin-layout .admin-content .admin-verification-detail .documents { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+body.admin-layout .admin-content .admin-verification-detail .document { min-width:0; padding:14px; border:1px solid #263249; border-radius:12px; background:#10182B; }
+body.admin-layout .admin-content .admin-verification-detail .document h3 { margin:0 0 10px; color:#F1F5F9; font-size:.9rem; font-weight:700; }
+body.admin-layout .admin-content .admin-verification-detail .document img { display:block; width:100%; height:240px; object-fit:contain; border:1px solid #35435D; border-radius:9px; background:#0B1020; }
+body.admin-layout .admin-content .admin-verification-detail .document-link { display:inline-flex; align-items:center; gap:7px; margin-top:10px; color:#93C5FD; font-weight:700; text-decoration:none; }
+body.admin-layout .admin-content .admin-verification-detail .document-link:hover { color:#BFDBFE; text-decoration:underline; }
+body.admin-layout .admin-content .admin-verification-detail .actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:8px; }
+body.admin-layout .admin-content .admin-verification-detail .actions form { margin:0; }
+body.admin-layout .admin-content .admin-verification-detail .btn { min-height:40px; display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:9px 14px; border:1px solid transparent; border-radius:9px; color:#fff; font:inherit; font-size:.85rem; font-weight:700; text-decoration:none; cursor:pointer; transition:filter .16s ease,transform .16s ease; }
+body.admin-layout .admin-content .admin-verification-detail .btn:hover { filter:brightness(1.08); transform:translateY(-1px); }
+body.admin-layout .admin-content .admin-verification-detail .btn-success { background:#059669; }
+body.admin-layout .admin-content .admin-verification-detail .btn-danger { background:#E11D48; }
+body.admin-layout .admin-content .admin-verification-detail .btn-secondary { color:#D7E0EF; background:#1A2439; border-color:#35435D; }
+body.admin-layout .admin-content .admin-verification-detail .timeline { display:flex; flex-direction:column; gap:10px; }
+body.admin-layout .admin-content .admin-verification-detail .log { padding:13px 14px; border:1px solid #263249; border-left:3px solid #3B82F6; border-radius:9px; background:#10182B; color:#CBD5E1; overflow-wrap:anywhere; }
+body.admin-layout .admin-content .admin-verification-detail .log-title { margin-bottom:4px; color:#F1F5F9; font-weight:700; }
+body.admin-layout .admin-content .admin-verification-detail .log-meta { margin-top:7px; color:#94A3B8; font-size:.78rem; }
+body.admin-layout .admin-content .admin-verification-detail .empty { padding:22px 12px; color:#94A3B8; text-align:center; }
+body.admin-layout .admin-content .admin-verification-detail :focus-visible { outline:3px solid #22D3EE; outline-offset:3px; }
+@media (max-width:900px) { body.admin-layout .admin-content .admin-verification-detail .grid { grid-template-columns:minmax(0,1fr); } body.admin-layout .admin-content .admin-verification-detail .card.full { grid-column:auto; } }
+@media (max-width:620px) { body.admin-layout .admin-content .admin-verification-detail .card { padding:15px; } body.admin-layout .admin-content .admin-verification-detail .info-grid, body.admin-layout .admin-content .admin-verification-detail .documents { grid-template-columns:minmax(0,1fr); } body.admin-layout .admin-content .admin-verification-detail .actions, body.admin-layout .admin-content .admin-verification-detail .actions form { width:100%; } body.admin-layout .admin-content .admin-verification-detail .actions .btn { width:100%; } body.admin-layout .admin-content .admin-verification-detail .document img { height:200px; } }
+@media (prefers-reduced-motion:reduce) { body.admin-layout .admin-content .admin-verification-detail *, body.admin-layout .admin-content .admin-verification-detail *::before, body.admin-layout .admin-content .admin-verification-detail *::after { transition-duration:.01ms!important; animation-duration:.01ms!important; } }
+</style>
+@endsection
 
-        .page {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 30px;
-        }
-
-        .topbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-        }
-
-        .title h1 {
-            margin: 0;
-            font-size: 30px;
-            font-weight: 800;
-        }
-
-        .title p {
-            margin: 7px 0 0;
-            color: #667085;
-        }
-
-        .back-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 11px 17px;
-            border-radius: 10px;
-            text-decoration: none;
-            background: #111827;
-            color: #fff;
-            font-weight: 700;
-        }
-
-        .status {
-            display: inline-flex;
-            padding: 8px 13px;
-            border-radius: 999px;
-            font-size: 13px;
-            font-weight: 800;
-            margin-top: 12px;
-            background: #fff7ed;
-            color: #c2410c;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .card {
-            background: #fff;
-            border: 1px solid #e5e7eb;
-            border-radius: 18px;
-            padding: 24px;
-            box-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
-        }
-
-        .card.full {
-            grid-column: 1 / -1;
-        }
-
-        .card h2 {
-            margin: 0 0 20px;
-            font-size: 20px;
-        }
-
-        .profile {
-            display: flex;
-            gap: 18px;
-            align-items: center;
-            margin-bottom: 22px;
-        }
-
-        .logo {
-            width: 90px;
-            height: 90px;
-            border-radius: 16px;
-            object-fit: cover;
-            background: #eef2f7;
-            border: 1px solid #e5e7eb;
-        }
-
-        .logo-placeholder {
-            width: 90px;
-            height: 90px;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #eef2f7;
-            color: #64748b;
-            font-size: 28px;
-            font-weight: 800;
-        }
-
-        .shop-name {
-            font-size: 23px;
-            font-weight: 800;
-            margin-bottom: 5px;
-        }
-
-        .seller-name {
-            color: #667085;
-        }
-
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 14px;
-        }
-
-        .info {
-            padding: 14px;
-            border-radius: 12px;
-            background: #f8fafc;
-            border: 1px solid #edf0f4;
-        }
-
-        .label {
-            font-size: 12px;
-            color: #64748b;
-            font-weight: 700;
-            text-transform: uppercase;
-            margin-bottom: 5px;
-        }
-
-        .value {
-            font-size: 15px;
-            font-weight: 700;
-            word-break: break-word;
-        }
-
-        .documents {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 18px;
-        }
-
-        .document {
-            border: 1px solid #e5e7eb;
-            border-radius: 14px;
-            padding: 15px;
-            background: #fafafa;
-        }
-
-        .document h3 {
-            margin: 0 0 12px;
-            font-size: 15px;
-        }
-
-        .document img {
-            width: 100%;
-            height: 260px;
-            object-fit: contain;
-            border-radius: 10px;
-            background: #f1f5f9;
-            border: 1px solid #e2e8f0;
-        }
-
-        .document-link {
-            display: inline-block;
-            margin-top: 10px;
-            text-decoration: none;
-            font-weight: 700;
-            color: #2563eb;
-        }
-
-        .actions {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-top: 20px;
-        }
-
-        .btn {
-            border: 0;
-            border-radius: 10px;
-            padding: 12px 18px;
-            font-weight: 800;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .btn-success {
-            background: #16a34a;
-            color: #fff;
-        }
-
-        .btn-danger {
-            background: #dc2626;
-            color: #fff;
-        }
-
-        .btn-secondary {
-            background: #e5e7eb;
-            color: #111827;
-        }
-
-        .timeline {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .log {
-            padding: 15px;
-            border-left: 4px solid #2563eb;
-            background: #f8fafc;
-            border-radius: 8px;
-        }
-
-        .log-title {
-            font-weight: 800;
-            margin-bottom: 5px;
-        }
-
-        .log-meta {
-            color: #64748b;
-            font-size: 13px;
-        }
-
-        .empty {
-            text-align: center;
-            padding: 30px;
-            color: #64748b;
-        }
-
-        @media (max-width: 900px) {
-            .grid {
-                grid-template-columns: 1fr;
-            }
-
-            .card.full {
-                grid-column: auto;
-            }
-
-            .documents,
-            .info-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 600px) {
-            .page {
-                padding: 15px;
-            }
-
-            .title h1 {
-                font-size: 24px;
-            }
-
-            .profile {
-                align-items: flex-start;
-            }
-        }
-    </style>
-</head>
-
-<body>
-
-<div class="page">
+@section('content')
+<div class="admin-verification-detail">
 
     <div class="topbar">
         <div class="title">
@@ -306,7 +72,7 @@
             href="{{ route('admin.seller-verifications.index') }}"
             class="back-btn"
         >
-            ← Back to Verifications
+            <i class="fas fa-arrow-left" aria-hidden="true"></i> Back to Verifications
         </a>
     </div>
 
@@ -572,7 +338,7 @@
                             href="{{ asset('storage/' . $seller->business_certificate_path) }}"
                             target="_blank"
                         >
-                            Open Document →
+                            <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i> Open Document
                         </a>
                     @else
                         <div class="empty">Not uploaded</div>
@@ -739,7 +505,7 @@
                             class="btn btn-success"
                             onclick="return confirm('Approve this seller verification?')"
                         >
-                            ✓ Approve Seller
+                            <i class="fas fa-check" aria-hidden="true"></i> Approve Seller
                         </button>
                     </form>
                 @endif
@@ -757,7 +523,7 @@
                             class="btn btn-danger"
                             onclick="return confirm('Reject this seller verification?')"
                         >
-                            ✕ Reject Seller
+                            <i class="fas fa-xmark" aria-hidden="true"></i> Reject Seller
                         </button>
                     </form>
                 @endif
@@ -777,7 +543,4 @@
     </div>
 
 </div>
-
-</body>
-</html>
-
+@endsection

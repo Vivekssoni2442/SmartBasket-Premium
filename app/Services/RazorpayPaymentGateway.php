@@ -12,7 +12,17 @@ class RazorpayPaymentGateway implements PaymentGatewayInterface
 {
     public function isConfigured(): bool
     {
-        return filled(config('services.razorpay.key')) && filled(config('services.razorpay.secret'));
+        $key = (string) config('services.razorpay.key');
+        $secret = (string) config('services.razorpay.secret');
+        $mode = config('services.razorpay.mode', 'test');
+
+        if (! filled($key) || ! filled($secret) || ! in_array($mode, ['test', 'live'], true)) {
+            return false;
+        }
+
+        // Razorpay issues distinct rzp_test_* and rzp_live_* key IDs. Refuse
+        // to initialize Checkout when the deployment mode and key disagree.
+        return str_starts_with($key, 'rzp_' . $mode . '_');
     }
 
     public function publicKey(): ?string
@@ -119,12 +129,20 @@ class RazorpayPaymentGateway implements PaymentGatewayInterface
             return ['success' => false, 'message' => 'A verified gateway payment is required before a refund can be requested.'];
         }
 
+        if (! preg_match('/^(\d+)(?:\.(\d{1,2}))?$/', $amount, $matches)) {
+            return ['success' => false, 'message' => 'Refund amount must be a non-negative INR amount with at most two decimal places.'];
+        }
+        $amountPaise = ((int) $matches[1] * 100) + (int) str_pad($matches[2] ?? '', 2, '0');
+        if ($amountPaise <= 0) {
+            return ['success' => false, 'message' => 'Refund amount must be greater than zero.'];
+        }
+
         try {
             $response = Http::acceptJson()
                 ->withBasicAuth(config('services.razorpay.key'), config('services.razorpay.secret'))
                 ->timeout(20)
                 ->post('https://api.razorpay.com/v1/payments/' . rawurlencode($transaction->gateway_payment_id) . '/refund', [
-                    'amount' => (int) round(((float) $amount) * 100),
+                    'amount' => $amountPaise,
                 ]);
         } catch (ConnectionException $exception) {
             Log::warning('Razorpay refund connection failed.', ['exception' => $exception->getMessage()]);

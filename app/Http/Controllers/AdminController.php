@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Admin;
 use App\Models\AdminAuditLog;
+use App\Models\AboutContent;
+use App\Services\SiteSettings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -1437,16 +1439,70 @@ class AdminController extends Controller
     /**
      * Admin settings.
      */
-    public function settings()
+    public function settings(SiteSettings $siteSettings)
     {
         $admin =
             Admin::find(
                 session('admin_id')
             );
 
+        $aboutContent = AboutContent::find(1);
+
+        $featureSettings = $siteSettings->all();
+
         return view(
             'admin.settings',
-            compact('admin')
+            compact('admin', 'aboutContent', 'featureSettings')
         );
+    }
+
+    /** Persist the supported storefront feature controls. */
+    public function updateFeatureSettings(Request $request, SiteSettings $siteSettings)
+    {
+        $validated = $request->validate([
+            'customer_registration_enabled' => ['sometimes', 'boolean'],
+            'seller_registration_enabled' => ['sometimes', 'boolean'],
+            'return_requests_enabled' => ['sometimes', 'boolean'],
+        ]);
+
+        $admin = Admin::find(session('admin_id'));
+        $before = $siteSettings->all();
+        $siteSettings->saveFeatures(array_merge($before, $validated));
+        if ($admin) {
+            AdminAuditLog::log(
+                $admin,
+                'update_store_features',
+                'site_settings',
+                null,
+                'Updated storefront registration and return availability controls.',
+                $before,
+                $siteSettings->all(),
+            );
+        }
+
+        return redirect()->route('admin.settings')->with('success', 'Store feature settings saved.');
+    }
+
+    /** Save the public About Smart Basket content. */
+    public function updateAbout(Request $request)
+    {
+        $validated = $request->validate([
+            'title' => ['nullable', 'string', 'max:120'],
+            'introduction' => ['nullable', 'string', 'max:5000'],
+            'mission' => ['nullable', 'string', 'max:3000'],
+            'vision' => ['nullable', 'string', 'max:3000'],
+            'services' => ['nullable', 'string', 'max:5000'],
+            'additional_information' => ['nullable', 'string', 'max:5000'],
+        ]);
+
+        foreach ($validated as $field => $value) {
+            $validated[$field] = is_string($value) ? trim($value) : $value;
+        }
+
+        AboutContent::updateOrCreate(['id' => 1], $validated);
+
+        return redirect()
+            ->route('admin.settings')
+            ->with('success', 'About Smart Basket information saved.');
     }
 }

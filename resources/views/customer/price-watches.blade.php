@@ -5,10 +5,13 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/premium-dark-theme.css') }}">
     <title>Price Watches</title>
+    <link rel="stylesheet" href="{{ asset('css/customer-page-title.css') }}">
 </head>
 <body class="bg-light">
-<main class="container py-4">
-    <h1 class="h3 mb-4">Tracked Products</h1>
+<main class="container-fluid py-4">
+    <x-customer-page-hero>
+<h1 class="h3 mb-4 sb-customer-page-title">Tracked Products</h1>
+</x-customer-page-hero>
     <div class="row g-3">
         @forelse ($watches as $watch)
             @php($product = $watch->product)
@@ -41,5 +44,7 @@
         @endforelse
     </div>
 </main>
+@include('customer.partials.smart-ai-robot')
+
 </body>
 </html>

@@ -117,6 +117,9 @@ class SellerPaymentController extends Controller
             ->keyBy('id');
 
         $paymentStatus = $this->status($order);
+        if ($paymentStatus === 'Pending' && $order->isCashOnDelivery()) {
+            $paymentStatus = 'Cash';
+        }
 
         $customer = $order->user;
 
@@ -311,9 +314,11 @@ class SellerPaymentController extends Controller
         */
 
         $paymentMethod =
-            $order->payment_method
-            ?? $payment?->payment_method
-            ?? 'ONLINE PAYMENT';
+            $order->isCashOnDelivery()
+                ? 'CASH'
+                : ($order->payment_method
+                    ?? $payment?->payment_method
+                    ?? 'ONLINE PAYMENT');
 
         $paymentMethod = strtoupper(
             str_replace(
@@ -1041,6 +1046,10 @@ class SellerPaymentController extends Controller
                         'Pending',
                     ],
 
+                    'Cash' => [
+                        'Pending',
+                    ],
+
                     'Failed' => [
                         'Failed',
                     ],
@@ -1052,16 +1061,23 @@ class SellerPaymentController extends Controller
                     default => [],
                 }
             );
+
+            if ($status === 'Cash') {
+                $query->whereIn('payment_method', ['COD', 'cod', 'cash', 'cash_on_delivery', 'Cash on Delivery']);
+            } elseif ($status === 'Pending') {
+                $query->whereNotIn('payment_method', ['COD', 'cod', 'cash', 'cash_on_delivery', 'Cash on Delivery']);
+            }
         }
 
         if (
             $method = $request->input('method')
         ) {
 
-            $query->where(
-                'payment_method',
-                $method
-            );
+            if (in_array(strtolower(trim($method)), ['cod', 'cash', 'cash_on_delivery', 'cash on delivery'], true)) {
+                $query->whereIn('payment_method', ['COD', 'cod', 'cash', 'cash_on_delivery', 'Cash on Delivery']);
+            } else {
+                $query->where('payment_method', $method);
+            }
         }
 
         return $query;
@@ -1171,6 +1187,13 @@ class SellerPaymentController extends Controller
     public function status(
         Order $order
     ): string {
+
+        if (
+            $order->isCashOnDelivery()
+            && in_array(strtolower(trim((string) $order->payment_status)), ['pending', 'cash'], true)
+        ) {
+            return 'Cash';
+        }
 
         return match (
             $order->payment_status

@@ -28,13 +28,42 @@ class SellerPayoutController extends Controller
         $validated = $request->validate(['amount' => ['required', 'numeric', 'min:1'], 'seller_note' => ['nullable', 'string', 'max:1000']]);
 
         DB::transaction(function () use ($sellerId, $validated) {
-            $available = (float) SellerEarning::where('seller_id', $sellerId)->where('status', 'available')->lockForUpdate()->sum('net_amount');
-            $requested = round((float) $validated['amount'], 2);
-            if (abs($requested - $available) > 0.009) abort(422, 'For audit-safe ledger settlement, request your full available balance.');
+            $earnings = SellerEarning::where('seller_id', $sellerId)
+                ->where('status', 'available')
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get();
+            $availablePaise = $earnings->sum(fn ($earning) => $this->toPaise((string) $earning->net_amount));
+            $requestedPaise = $this->toPaise((string) $validated['amount']);
+            if ($requestedPaise !== $availablePaise || $availablePaise === 0) {
+                abort(422, 'For audit-safe ledger settlement, request your full available balance.');
+            }
 
-            SellerPayout::create(['seller_id' => $sellerId, 'amount' => $requested, 'seller_note' => $validated['seller_note'] ?? null]);
+            $payout = SellerPayout::create([
+                'seller_id' => $sellerId,
+                'amount' => $this->formatPaise($requestedPaise),
+                'seller_note' => $validated['seller_note'] ?? null,
+            ]);
+            $payout->earnings()->attach($earnings->mapWithKeys(
+                fn ($earning) => [$earning->id => ['amount' => $earning->net_amount]]
+            )->all());
+            SellerEarning::whereKey($earnings->modelKeys())->update(['status' => 'payout_requested']);
         });
 
         return back()->with('success', 'Payout request submitted for admin review.');
+    }
+
+    private function toPaise(string $amount): int
+    {
+        if (! preg_match('/^(\d+)(?:\.(\d{1,2}))?$/', $amount, $matches)) {
+            abort(422, 'Payout amounts must use INR with no more than two decimal places.');
+        }
+
+        return ((int) $matches[1] * 100) + (int) str_pad($matches[2] ?? '', 2, '0');
+    }
+
+    private function formatPaise(int $amount): string
+    {
+        return intdiv($amount, 100) . '.' . str_pad((string) ($amount % 100), 2, '0', STR_PAD_LEFT);
     }
 }

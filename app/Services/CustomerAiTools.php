@@ -6,9 +6,14 @@ use App\Models\Cart;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
+use App\Models\Wishlist;
 
 class CustomerAiTools
 {
+    public function __construct(private CustomerAiWebSearch $webSearch)
+    {
+    }
+
     public function definitions(): array
     {
         return [
@@ -23,13 +28,38 @@ class CustomerAiTools
                     ],
                     'max_price' => [
                         'type' => 'number',
-                        'description' => 'Maximum product price.',
+                        'description' => 'Maximum effective product price.',
+                    ],
+                    'min_price' => [
+                        'type' => 'number',
+                        'description' => 'Minimum effective product price.',
+                    ],
+                    'in_stock' => [
+                        'type' => 'boolean',
+                        'description' => 'Set true to return products with confirmed positive stock only.',
                     ],
                     'sort' => [
                         'type' => 'string',
                         'enum' => ['price_asc', 'price_desc', 'newest'],
                     ],
                 ]
+            ),
+
+            $this->definition(
+                'web_search',
+                'Search the configured live web provider and return sourced results. Use only when live/current external information is requested.',
+                [
+                    'query' => [
+                        'type' => 'string',
+                        'description' => 'A concise public query only. Never include customer identifiers, account details, addresses, orders, or payment information.',
+                    ],
+                    'topic' => [
+                        'type' => 'string',
+                        'enum' => ['general', 'news'],
+                        'description' => 'Use news for current news coverage; otherwise use general.',
+                    ],
+                ],
+                ['query']
             ),
 
             $this->definition(
@@ -40,6 +70,27 @@ class CustomerAiTools
                         'type' => 'integer',
                     ],
                 ],
+                ['product_id']
+            ),
+
+            $this->definition(
+                'compare_products',
+                'Compare two to four active Smart Basket products using their actual stored details.',
+                [
+                    'product_ids' => [
+                        'type' => 'array',
+                        'minItems' => 2,
+                        'maxItems' => 4,
+                        'items' => ['type' => 'integer'],
+                    ],
+                ],
+                ['product_ids']
+            ),
+
+            $this->definition(
+                'open_product_page',
+                'Open an active product in the Smart Basket customer storefront.',
+                ['product_id' => ['type' => 'integer']],
                 ['product_id']
             ),
 
@@ -70,6 +121,26 @@ class CustomerAiTools
                         'description' => 'Do not use. Internal schema placeholder.',
                     ],
                 ]
+            ),
+
+            $this->definition(
+                'get_wishlist',
+                'Get the authenticated customer’s own wishlist.',
+                ['_dummy' => ['type' => 'string']]
+            ),
+
+            $this->definition(
+                'add_to_wishlist',
+                'Add an active product to the authenticated customer’s wishlist.',
+                ['product_id' => ['type' => 'integer']],
+                ['product_id']
+            ),
+
+            $this->definition(
+                'remove_from_wishlist',
+                'Remove a product from the authenticated customer’s own wishlist.',
+                ['wishlist_item_id' => ['type' => 'integer']],
+                ['wishlist_item_id']
             ),
 
             $this->definition(
@@ -128,17 +199,37 @@ class CustomerAiTools
             ),
 
             $this->definition(
+                'get_customer_order_details',
+                'Get details for one order belonging to the authenticated customer only.',
+                ['order_id' => ['type' => 'integer']],
+                ['order_id']
+            ),
+
+            $this->definition(
+                'get_customer_profile',
+                'Show the authenticated customer their own basic profile contact information.',
+                ['_dummy' => ['type' => 'string']]
+            ),
+
+            $this->definition(
                 'navigate_customer_page',
                 'Navigate the customer to one allowed Smart Basket page.',
                 [
                     'destination' => [
                         'type' => 'string',
                         'enum' => [
+                            'home',
+                            'back',
+                            'forward',
                             'products',
                             'cart',
                             'checkout',
                             'orders',
+                            'wishlist',
+                            'profile',
+                            'addresses',
                             'settings',
+                            'payments',
                         ],
                     ],
                 ],
@@ -196,14 +287,35 @@ class CustomerAiTools
             'search_products'
                 => $this->searchProducts($arguments),
 
+            'web_search'
+                => $this->webSearch->search(
+                    (string) ($arguments['query'] ?? ''),
+                    (string) ($arguments['topic'] ?? 'general')
+                ),
+
             'get_product_details'
                 => $this->productDetails($arguments),
+
+            'compare_products'
+                => $this->compareProducts($arguments),
+
+            'open_product_page'
+                => $this->openProductPage($arguments),
 
             'get_visible_products'
                 => $this->visibleProducts($context),
 
             'get_cart'
                 => $this->cart($customer),
+
+            'get_wishlist'
+                => $this->wishlist($customer),
+
+            'add_to_wishlist'
+                => $this->addToWishlist($arguments, $customer),
+
+            'remove_from_wishlist'
+                => $this->removeFromWishlist($arguments, $customer),
 
             'add_to_cart'
                 => $this->addToCart($arguments, $customer),
@@ -216,6 +328,12 @@ class CustomerAiTools
 
             'get_customer_orders'
                 => $this->orders($arguments, $customer),
+
+            'get_customer_order_details'
+                => $this->orderDetails($arguments, $customer),
+
+            'get_customer_profile'
+                => $this->customerProfile($customer),
 
             'navigate_customer_page'
                 => $this->navigate($arguments),
@@ -240,8 +358,11 @@ class CustomerAiTools
         $maxPrice = isset($args['max_price'])
             ? max(0, (float) $args['max_price'])
             : null;
+        $minPrice = isset($args['min_price'])
+            ? max(0, (float) $args['min_price'])
+            : null;
 
-        $products = Product::query()
+        $products = Product::query()->customerVisible()
             ->where(function ($q) {
                 $q->whereNull('status')
                     ->orWhere('status', 'active');
@@ -251,22 +372,41 @@ class CustomerAiTools
             $products->where(function ($q) use ($query) {
                 $q->where('name', 'like', "%{$query}%")
                     ->orWhere('category', 'like', "%{$query}%")
+                    ->orWhere('brand', 'like', "%{$query}%")
+                    ->orWhere('size', 'like', "%{$query}%")
+                    ->orWhere('color', 'like', "%{$query}%")
                     ->orWhere('description', 'like', "%{$query}%");
             });
         }
 
+        // Product prices are stored as decimal strings on supported database
+        // drivers; cast explicitly so range comparisons remain numeric.
+        $effectivePriceSql = 'CAST(CASE WHEN discount_price IS NOT NULL '
+            .'AND CAST(discount_price AS DECIMAL(12,2)) >= 0 '
+            .'AND CAST(discount_price AS DECIMAL(12,2)) < CAST(price AS DECIMAL(12,2)) '
+            .'THEN discount_price ELSE price END AS DECIMAL(12,2))';
+
         if ($maxPrice !== null) {
-            $products->where('price', '<=', $maxPrice);
+            $products->whereRaw($effectivePriceSql.' <= ?', [$maxPrice]);
+        }
+
+        if ($minPrice !== null) {
+            $products->whereRaw($effectivePriceSql.' >= ?', [$minPrice]);
+        }
+
+        if (($args['in_stock'] ?? false) === true) {
+            $products->where('stock', '>', 0);
         }
 
         match ($args['sort'] ?? 'newest') {
-            'price_asc' => $products->orderBy('price'),
-            'price_desc' => $products->orderByDesc('price'),
+            'price_asc' => $products->orderByRaw($effectivePriceSql.' ASC'),
+            'price_desc' => $products->orderByRaw($effectivePriceSql.' DESC'),
             default => $products->latest(),
         };
 
+        $resultLimit = max(1, min(12, (int) config('services.customer_ai.product_results', 6)));
         $results = $products
-            ->limit(6)
+            ->limit($resultLimit)
             ->get([
                 'id',
                 'name',
@@ -275,6 +415,11 @@ class CustomerAiTools
                 'discount_price',
                 'rating',
                 'stock',
+                'brand',
+                'size',
+                'color',
+                'description',
+                'image',
             ]);
 
         $formatted = $results
@@ -313,6 +458,54 @@ class CustomerAiTools
         ];
     }
 
+    private function compareProducts(array $args): array
+    {
+        $ids = collect($args['product_ids'] ?? [])
+            ->map(fn ($id) => filter_var($id, FILTER_VALIDATE_INT))
+            ->filter(fn ($id) => $id !== false && $id > 0)
+            ->unique()
+            ->take(4)
+            ->values();
+
+        if ($ids->count() < 2) {
+            return ['ok' => false, 'message' => 'Choose at least two available products to compare.'];
+        }
+
+        $products = Product::query()->customerVisible()
+            ->whereIn('id', $ids)
+            ->where(function ($q) {
+                $q->whereNull('status')->orWhere('status', 'active');
+            })
+            ->get()
+            ->keyBy('id');
+
+        $ordered = $ids->map(fn ($id) => $products->get($id))->filter();
+        if ($ordered->count() < 2) {
+            return ['ok' => false, 'message' => 'At least two of those products are no longer available.'];
+        }
+
+        $formatted = $ordered->map(fn (Product $product) => $this->product($product, true))->values()->all();
+
+        return [
+            'ok' => true,
+            'products' => $formatted,
+            'action' => ['type' => 'recommendations', 'products' => $formatted],
+        ];
+    }
+
+    private function openProductPage(array $args): array
+    {
+        $product = $this->activeProduct((int) ($args['product_id'] ?? 0));
+        if (! $product) {
+            return ['ok' => false, 'message' => 'That product is not available.'];
+        }
+
+        return [
+            'ok' => true,
+            'action' => ['type' => 'open_product', 'product_id' => $product->id],
+        ];
+    }
+
     private function visibleProducts(array $context): array
     {
         $ids = collect($context['visible_product_ids'] ?? [])
@@ -329,7 +522,7 @@ class CustomerAiTools
             ];
         }
 
-        $products = Product::query()
+        $products = Product::query()->customerVisible()
             ->whereIn('id', $ids)
             ->where(function ($q) {
                 $q->whereNull('status')
@@ -361,7 +554,7 @@ class CustomerAiTools
             'subtotal' => round(
                 $items->sum(
                     fn (Cart $item) =>
-                        (float) $item->product->price * $item->quantity
+                        (float) $item->product->effective_price * $item->quantity
                 ),
                 2
             ),
@@ -377,6 +570,58 @@ class CustomerAiTools
         ];
     }
 
+    private function wishlist(User $customer): array
+    {
+        $products = Wishlist::with('product')
+            ->where('user_id', $customer->id)
+            ->latest()
+            ->limit(20)
+            ->get()
+            ->filter(fn (Wishlist $item) => $item->product && $this->isActive($item->product));
+
+        return [
+            'ok' => true,
+            'count' => $products->count(),
+            'items' => $products->map(fn (Wishlist $item) => [
+                'wishlist_item_id' => $item->id,
+                'product' => $this->product($item->product),
+            ])->values()->all(),
+        ];
+    }
+
+    private function addToWishlist(array $args, User $customer): array
+    {
+        $product = $this->activeProduct((int) ($args['product_id'] ?? 0));
+        if (! $product) {
+            return ['ok' => false, 'message' => 'That product is not available.'];
+        }
+
+        $item = Wishlist::firstOrCreate([
+            'user_id' => $customer->id,
+            'product_id' => $product->id,
+        ]);
+
+        return [
+            'ok' => true,
+            'message' => $item->wasRecentlyCreated ? 'Product added to your wishlist.' : 'Product is already in your wishlist.',
+            'wishlist_item_id' => $item->id,
+        ];
+    }
+
+    private function removeFromWishlist(array $args, User $customer): array
+    {
+        $item = Wishlist::whereKey((int) ($args['wishlist_item_id'] ?? 0))
+            ->where('user_id', $customer->id)
+            ->first();
+        if (! $item) {
+            return ['ok' => false, 'message' => 'That wishlist item was not found.'];
+        }
+
+        $item->delete();
+
+        return ['ok' => true, 'message' => 'Product removed from your wishlist.'];
+    }
+
     private function addToCart(
         array $args,
         User $customer
@@ -385,12 +630,14 @@ class CustomerAiTools
             (int) ($args['product_id'] ?? 0)
         );
 
-        $quantity = max(
-            1,
-            min(10, (int) ($args['quantity'] ?? 1))
-        );
+        $rawQuantity = $args['quantity'] ?? 1;
+        $quantity = filter_var($rawQuantity, FILTER_VALIDATE_INT);
 
-        if (! $product) {
+        if ($quantity === false || $quantity < 1 || $quantity > 10) {
+            return ['ok' => false, 'message' => 'Choose a quantity from 1 to 10.'];
+        }
+
+        if (! $product || ($product->stock !== null && (int) $product->stock < 1)) {
             return [
                 'ok' => false,
                 'message' => 'That product is not available.',
@@ -471,10 +718,11 @@ class CustomerAiTools
             ->where('user_id', $customer->id)
             ->first();
 
-        $quantity = max(
-            1,
-            min(10, (int) ($args['quantity'] ?? 1))
-        );
+        $quantity = filter_var($args['quantity'] ?? null, FILTER_VALIDATE_INT);
+
+        if ($quantity === false || $quantity < 1 || $quantity > 10) {
+            return ['ok' => false, 'message' => 'Choose a quantity from 1 to 10.'];
+        }
 
         if (! $item || ! $item->product) {
             return [
@@ -548,9 +796,51 @@ class CustomerAiTools
                         ?? 'Processing',
                     'placed_at' =>
                         $order->created_at?->toDateString(),
+                    'url' => route('orders.show', $order),
                 ])
                 ->values()
                 ->all(),
+        ];
+    }
+
+    private function orderDetails(array $args, User $customer): array
+    {
+        $order = Order::query()
+            ->where('user_id', $customer->id)
+            ->whereKey((int) ($args['order_id'] ?? 0))
+            ->first();
+
+        if (! $order) {
+            return ['ok' => false, 'message' => 'That order was not found in your account.'];
+        }
+
+        return [
+            'ok' => true,
+            'order' => [
+                'id' => $order->id,
+                'total' => (float) ($order->total ?? $order->amount ?? 0),
+                'status' => $order->delivery_status ?? $order->order_status ?? $order->status ?? 'Processing',
+                'placed_at' => $order->created_at?->toDateString(),
+                'items' => collect($order->items ?? [])->map(fn ($item) => [
+                    'name' => (string) ($item['name'] ?? $item['product_name'] ?? 'Product'),
+                    'quantity' => max(1, (int) ($item['quantity'] ?? 1)),
+                    'price' => (float) ($item['price'] ?? 0),
+                ])->take(20)->values()->all(),
+                'url' => route('orders.show', $order),
+            ],
+        ];
+    }
+
+    private function customerProfile(User $customer): array
+    {
+        return [
+            'ok' => true,
+            'profile' => [
+                'name' => $customer->name,
+                'email' => $customer->email,
+                'phone' => $customer->phone,
+                'url' => route('profile'),
+            ],
         ];
     }
 
@@ -561,11 +851,18 @@ class CustomerAiTools
         if (! in_array(
             $destination,
             [
+                'home',
+                'back',
+                'forward',
                 'products',
                 'cart',
                 'checkout',
                 'orders',
+                'wishlist',
+                'profile',
+                'addresses',
                 'settings',
+                'payments',
             ],
             true
         )) {
@@ -647,13 +944,18 @@ class CustomerAiTools
 
     private function activeProduct(int $id): ?Product
     {
-        return Product::query()
+        return Product::query()->customerVisible()
             ->whereKey($id)
             ->where(function ($q) {
                 $q->whereNull('status')
                     ->orWhere('status', 'active');
             })
             ->first();
+    }
+
+    private function isActive(Product $product): bool
+    {
+        return $product->status === null || $product->status === 'active';
     }
 
     private function product(
@@ -665,15 +967,16 @@ class CustomerAiTools
                 'id' => $product->id,
                 'name' => $product->name,
                 'category' => $product->category,
-                'price' => (float) (
-                    $product->discount_price ?: $product->price
-                ),
+                'price' => number_format((float) $product->effective_price, 2, '.', ''),
+                'url' => route('products.show', $product),
+                'image_url' => $product->image ? asset('products/' . ltrim($product->image, '/')) : null,
+                'brand' => $product->brand,
+                'size' => $product->size,
+                'color' => $product->color,
                 'rating' => (float) $product->rating,
-                'stock' => (int) $product->stock,
+                'stock' => $product->stock === null ? null : (int) $product->stock,
                 'description' =>
-                    $details
-                    ? $product->description
-                    : null,
+                    $product->description,
             ],
             fn ($value) => $value !== null
         );

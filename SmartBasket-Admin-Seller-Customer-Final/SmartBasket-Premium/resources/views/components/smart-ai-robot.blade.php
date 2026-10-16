@@ -57,11 +57,7 @@
             </div>
 
             <div class="smart-ai__header-actions">
-                <button
-                    type="button"
-                    data-smart-ai-minimize
-                    aria-label="Minimize assistant"
-                >—</button>
+               
 
                 <button
                     type="button"

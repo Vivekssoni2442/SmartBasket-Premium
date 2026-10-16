@@ -22,21 +22,17 @@
 html,
 body{
     width:100%;
-    height:100%;
+    min-height:100%;
 }
 
 body{
-
     min-height:100vh;
-
     display:flex;
-
     justify-content:center;
-
     align-items:center;
-
-    overflow:hidden;
-
+    padding:25px;
+    overflow-x:hidden;
+    overflow-y:auto;
     position:relative;
 
     background:
@@ -61,7 +57,6 @@ body{
             #000000 48%,
             #111827 100%
         );
-
 }
 
 
@@ -70,17 +65,12 @@ body{
 ========================================================= */
 
 body::before{
-
     content:"";
-
-    position:absolute;
-
+    position:fixed;
     width:650px;
     height:650px;
-
     left:-230px;
     top:-250px;
-
     border-radius:50%;
 
     background:
@@ -94,7 +84,6 @@ body::before{
         );
 
     filter:blur(100px);
-
     opacity:.22;
 
     animation:
@@ -102,22 +91,16 @@ body::before{
         rgbPulse 5s ease-in-out infinite;
 
     pointer-events:none;
-
+    z-index:0;
 }
 
-
 body::after{
-
     content:"";
-
-    position:absolute;
-
+    position:fixed;
     width:650px;
     height:650px;
-
     right:-250px;
     bottom:-270px;
-
     border-radius:50%;
 
     background:
@@ -131,7 +114,6 @@ body::after{
         );
 
     filter:blur(110px);
-
     opacity:.20;
 
     animation:
@@ -139,55 +121,40 @@ body::after{
         rgbPulse 6s ease-in-out infinite;
 
     pointer-events:none;
-
+    z-index:0;
 }
 
-
 @keyframes rgbRotate{
-
     0%{
         transform:rotate(0deg) scale(1);
     }
-
     50%{
         transform:rotate(180deg) scale(1.12);
     }
-
     100%{
         transform:rotate(360deg) scale(1);
     }
-
 }
 
-
 @keyframes rgbRotateReverse{
-
     0%{
         transform:rotate(360deg) scale(1);
     }
-
     50%{
         transform:rotate(180deg) scale(1.13);
     }
-
     100%{
         transform:rotate(0deg) scale(1);
     }
-
 }
 
-
 @keyframes rgbPulse{
-
-    0%,
-    100%{
+    0%,100%{
         opacity:.16;
     }
-
     50%{
         opacity:.28;
     }
-
 }
 
 
@@ -195,19 +162,15 @@ body::after{
    RGB GRID
 ========================================================= */
 
-body .rgb-grid{
-
-    position:absolute;
-
+.rgb-grid{
+    position:fixed;
     inset:-100px;
 
     background-image:
-
         linear-gradient(
             rgba(0,255,255,.045) 1px,
             transparent 1px
         ),
-
         linear-gradient(
             90deg,
             rgba(255,0,255,.045) 1px,
@@ -216,31 +179,27 @@ body .rgb-grid{
 
     background-size:55px 55px;
 
-    transform:perspective(700px)
-              rotateX(62deg)
-              scale(1.8);
+    transform:
+        perspective(700px)
+        rotateX(62deg)
+        scale(1.8);
 
     transform-origin:center;
 
     animation:gridMove 12s linear infinite;
 
     opacity:.65;
-
     pointer-events:none;
-
+    z-index:0;
 }
 
-
 @keyframes gridMove{
-
     from{
-        background-position:0 0;
+        background-position:0 0,0 0;
     }
-
     to{
-        background-position:0 110px;
+        background-position:0 110px,0 110px;
     }
-
 }
 
 
@@ -249,9 +208,7 @@ body .rgb-grid{
 ========================================================= */
 
 .rgb-beam{
-
-    position:absolute;
-
+    position:fixed;
     width:900px;
     height:3px;
 
@@ -265,77 +222,45 @@ body .rgb-grid{
         );
 
     filter:blur(2px);
-
     opacity:.5;
-
     pointer-events:none;
-
+    z-index:0;
 }
-
 
 .rgb-beam.one{
-
     top:18%;
-
     left:-200px;
-
     transform:rotate(22deg);
-
     animation:beamMove1 7s ease-in-out infinite;
-
 }
-
 
 .rgb-beam.two{
-
     bottom:22%;
-
     right:-250px;
-
     transform:rotate(-25deg);
-
     animation:beamMove2 9s ease-in-out infinite;
-
 }
-
 
 @keyframes beamMove1{
-
-    0%,
-    100%{
-        transform:
-            translateX(-100px)
-            rotate(22deg);
+    0%,100%{
+        transform:translateX(-100px) rotate(22deg);
         opacity:.15;
     }
-
     50%{
-        transform:
-            translateX(500px)
-            rotate(22deg);
+        transform:translateX(500px) rotate(22deg);
         opacity:.55;
     }
-
 }
 
-
 @keyframes beamMove2{
-
-    0%,
-    100%{
-        transform:
-            translateX(100px)
-            rotate(-25deg);
+    0%,100%{
+        transform:translateX(100px) rotate(-25deg);
         opacity:.15;
     }
-
     50%{
-        transform:
-            translateX(-500px)
-            rotate(-25deg);
+        transform:translateX(-500px) rotate(-25deg);
         opacity:.55;
     }
-
 }
 
 
@@ -344,36 +269,25 @@ body .rgb-grid{
 ========================================================= */
 
 .rgb-particles{
-
-    position:absolute;
-
+    position:fixed;
     inset:0;
-
     pointer-events:none;
-
+    z-index:0;
 }
 
-
 .rgb-particles span{
-
     position:absolute;
-
     width:4px;
     height:4px;
-
     border-radius:50%;
-
     background:#ffffff;
 
     box-shadow:
         0 0 8px #00ffff,
         0 0 18px #ff00ff;
 
-    animation:
-        particleFloat 5s ease-in-out infinite;
-
+    animation:particleFloat 5s ease-in-out infinite;
 }
-
 
 .rgb-particles span:nth-child(1){
     left:8%;
@@ -423,26 +337,15 @@ body .rgb-grid{
     animation-delay:3.5s;
 }
 
-
 @keyframes particleFloat{
-
-    0%,
-    100%{
-        transform:
-            translateY(0)
-            scale(.7);
-
+    0%,100%{
+        transform:translateY(0) scale(.7);
         opacity:.25;
     }
-
     50%{
-        transform:
-            translateY(-35px)
-            scale(1.5);
-
+        transform:translateY(-35px) scale(1.5);
         opacity:1;
     }
-
 }
 
 
@@ -451,59 +354,40 @@ body .rgb-grid{
 ========================================================= */
 
 .energy-ring{
-
-    position:absolute;
-
+    position:fixed;
     width:600px;
     height:600px;
-
     border-radius:50%;
 
-    border:
-        1px solid rgba(0,255,255,.13);
+    border:1px solid rgba(0,255,255,.13);
 
     box-shadow:
         0 0 70px rgba(0,255,255,.08),
         inset 0 0 70px rgba(255,0,255,.06);
 
-    animation:
-        ringRotate 20s linear infinite;
+    animation:ringRotate 20s linear infinite;
 
     pointer-events:none;
-
+    z-index:1;
 }
-
 
 .energy-ring::before{
-
     content:"";
-
     position:absolute;
-
     inset:35px;
-
     border-radius:50%;
 
-    border:
-        1px dashed rgba(255,0,255,.18);
+    border:1px dashed rgba(255,0,255,.18);
 
-    animation:
-        ringRotateReverse 13s linear infinite;
-
+    animation:ringRotateReverse 13s linear infinite;
 }
 
-
 .energy-ring::after{
-
     content:"";
-
     position:absolute;
-
     width:14px;
     height:14px;
-
     border-radius:50%;
-
     top:50px;
     left:50%;
 
@@ -512,57 +396,45 @@ body .rgb-grid{
     box-shadow:
         0 0 15px #00ffff,
         0 0 35px #ff00ff;
-
 }
-
 
 @keyframes ringRotate{
-
     from{
         transform:rotate(0deg);
     }
-
     to{
         transform:rotate(360deg);
     }
-
 }
 
-
 @keyframes ringRotateReverse{
-
     from{
         transform:rotate(360deg);
     }
-
     to{
         transform:rotate(0deg);
     }
-
 }
 
 
 /* =========================================================
    SELLER LOGIN CARD
-   ORIGINAL SELLER COLOR
+   MATCHED SIZE WITH CUSTOMER LOGIN
 ========================================================= */
 
 .card{
+    width:400px;
+    max-width:100%;
 
-    width:420px;
+    padding:36px;
 
-    padding:40px;
-
-    border-radius:30px;
+    border-radius:28px;
 
     background:rgb(20,21,24) !important;
-
     background-color:rgb(20,21,24) !important;
-
     background-image:none !important;
 
     backdrop-filter:none !important;
-
     -webkit-backdrop-filter:none !important;
 
     border:1px solid rgba(37,99,235,.5);
@@ -572,80 +444,54 @@ body .rgb-grid{
         0 25px 80px rgba(0,0,0,.55);
 
     position:relative;
-
     z-index:5;
 
     animation:
         show 1s ease,
         cardFloat 6s ease-in-out infinite;
-
 }
-
 
 @keyframes show{
-
     from{
-
         opacity:0;
-
-        transform:
-            translateY(60px)
-            scale(.96);
-
+        transform:translateY(60px) scale(.96);
     }
-
     to{
-
         opacity:1;
-
-        transform:
-            translateY(0)
-            scale(1);
-
+        transform:translateY(0) scale(1);
     }
-
 }
 
-
 @keyframes cardFloat{
-
-    0%,
-    100%{
+    0%,100%{
         box-shadow:
             0 0 45px rgba(37,99,235,.35),
             0 25px 80px rgba(0,0,0,.55);
     }
-
     50%{
         box-shadow:
             0 0 70px rgba(37,99,235,.55),
             0 25px 90px rgba(0,0,0,.65);
     }
-
 }
 
 
 /* =========================================================
-   LOGO
+   LOGO — SLIGHTLY COMPACT
 ========================================================= */
 
 .logo{
-
-    width:95px;
-
-    height:95px;
-
+    width:88px;
+    height:88px;
     margin:auto;
 
-    border-radius:30px;
+    border-radius:27px;
 
     display:flex;
-
     justify-content:center;
-
     align-items:center;
 
-    font-size:45px;
+    font-size:42px;
 
     background:
         linear-gradient(
@@ -657,23 +503,16 @@ body .rgb-grid{
     box-shadow:
         0 0 40px rgba(37,99,235,.45);
 
-    animation:
-        logoFloat 3s ease-in-out infinite;
-
+    animation:logoFloat 3s ease-in-out infinite;
 }
 
-
 @keyframes logoFloat{
-
-    0%,
-    100%{
+    0%,100%{
         transform:translateY(0) rotate(0deg);
     }
-
     50%{
         transform:translateY(-7px) rotate(2deg);
     }
-
 }
 
 
@@ -682,26 +521,16 @@ body .rgb-grid{
 ========================================================= */
 
 h1{
-
     text-align:center;
-
-    margin-top:25px;
-
+    margin-top:17px;
     color:#ffffff;
-
-    font-size:35px;
-
+    font-size:32px;
     font-weight:800;
-
     letter-spacing:2px;
-
 }
 
-
 h1 span{
-
     color:#3b82f6 !important;
-
 }
 
 
@@ -710,15 +539,10 @@ h1 span{
 ========================================================= */
 
 .subtitle{
-
     text-align:center;
-
     color:#cccccc;
-
-    font-size:13px;
-
-    margin:10px 0 35px;
-
+    font-size:12px;
+    margin:9px 0 29px;
 }
 
 
@@ -727,83 +551,58 @@ h1 span{
 ========================================================= */
 
 .message-error{
-
     background:rgba(255,0,0,.15);
-
     color:#ff6b6b;
-
-    padding:12px;
-
+    padding:11px;
     border-radius:10px;
-
     text-align:center;
-
-    margin-bottom:20px;
-
+    margin-bottom:18px;
+    font-size:13px;
     font-weight:600;
-
 }
 
-
 .message-success{
-
     background:rgba(37,99,235,.15);
-
     color:#60a5fa;
-
-    padding:12px;
-
+    padding:11px;
     border-radius:10px;
-
     text-align:center;
-
-    margin-bottom:20px;
-
+    margin-bottom:18px;
+    font-size:13px;
     font-weight:600;
-
 }
 
 
 /* =========================================================
-   INPUT
+   INPUTS
 ========================================================= */
 
 .input-box{
-
-    margin-bottom:20px;
-
+    margin-bottom:17px;
 }
-
 
 .input-box input{
-
     width:100%;
+    height:53px;
+    padding:0 18px;
 
-    height:55px;
-
-    padding:0 20px;
-
-    border:none;
-
+    border:1px solid transparent;
     outline:none;
-
-    border-radius:18px;
+    border-radius:17px;
 
     background:rgba(255,255,255,.10);
-
     color:#ffffff;
-
-    font-size:15px;
+    font-size:14px;
 
     transition:.3s ease;
-
 }
 
+.input-box input::placeholder{
+    color:#aaaaaa;
+}
 
 .input-box input:focus{
-
     background:rgba(255,255,255,.12);
-
     border:1px solid #2563eb;
 
     box-shadow:
@@ -811,41 +610,23 @@ h1 span{
         0 0 10px rgba(37,99,235,.75),
         0 0 25px rgba(37,99,235,.45);
 
-    animation:
-        sellerInputGlow 1.5s ease-in-out infinite;
-
+    animation:sellerInputGlow 1.5s ease-in-out infinite;
 }
 
-
 @keyframes sellerInputGlow{
-
-    0%,
-    100%{
-
+    0%,100%{
         box-shadow:
             0 0 0 1px #2563eb,
             0 0 8px rgba(37,99,235,.65),
             0 0 20px rgba(37,99,235,.35);
-
     }
-
     50%{
-
         box-shadow:
             0 0 0 1px #3b82f6,
             0 0 14px rgba(37,99,235,.95),
             0 0 32px rgba(37,99,235,.55),
             0 0 50px rgba(37,99,235,.20);
-
     }
-
-}
-
-
-.input-box input::placeholder{
-
-    color:#aaaaaa;
-
 }
 
 
@@ -854,45 +635,29 @@ h1 span{
 ========================================================= */
 
 .options{
-
     display:flex;
-
     justify-content:space-between;
-
-    align-items:center;
-
-    color:#ffffff;
-
-    font-size:13px;
-
-    margin-bottom:25px;
-
-}
-
-
-.options label{
-
-    display:flex;
-
     align-items:center;
 
     gap:8px;
 
-    cursor:pointer;
-
+    color:#ffffff;
+    font-size:12px;
+    margin-bottom:22px;
 }
 
+.options label{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    cursor:pointer;
+}
 
 .options input[type="checkbox"]{
-
-    width:16px;
-
-    height:16px;
-
+    width:15px;
+    height:15px;
     cursor:pointer;
-
     accent-color:#2563eb;
-
 }
 
 
@@ -901,24 +666,15 @@ h1 span{
 ========================================================= */
 
 .forgot-link{
-
     color:#3b82f6 !important;
-
     text-decoration:none;
-
     font-weight:600;
-
     transition:.25s ease;
-
 }
 
-
 .forgot-link:hover{
-
     color:#ffffff !important;
-
     text-decoration:underline;
-
 }
 
 
@@ -926,15 +682,12 @@ h1 span{
    LOGIN BUTTON
 ========================================================= */
 
-button{
-
+.login-submit{
     width:100%;
-
-    height:55px;
+    height:53px;
 
     border:none;
-
-    border-radius:20px;
+    border-radius:18px;
 
     background:
         linear-gradient(
@@ -944,60 +697,45 @@ button{
         );
 
     color:#ffffff;
-
-    font-size:18px;
-
+    font-size:17px;
     font-weight:700;
 
     cursor:pointer;
-
-    transition:.3s;
-
+    transition:.3s ease;
 }
 
-
-button:hover{
-
+.login-submit:hover{
     transform:scale(1.03);
 
     box-shadow:
         0 0 20px rgba(37,99,235,.55),
         0 0 40px rgba(37,99,235,.35);
-
 }
 
 
 /* =========================================================
    CUSTOMER LOGIN
-   ORIGINAL GOLD/ORANGE HOVER
 ========================================================= */
 
 .back{
-
     display:flex;
-
     align-items:center;
-
     justify-content:center;
 
     width:100%;
+    min-height:48px;
 
-    min-height:50px;
+    margin-top:21px;
+    padding:10px 18px;
 
-    margin-top:25px;
-
-    padding:10px 20px;
-
-    border-radius:18px;
+    border-radius:17px;
 
     background:rgb(20,21,24);
-
     border:1px solid rgba(255,255,255,.10);
 
     color:#ffffff !important;
-
     text-decoration:none;
-
+    font-size:13px;
     font-weight:600;
 
     cursor:pointer;
@@ -1008,23 +746,17 @@ button:hover{
         border-color .25s ease,
         box-shadow .25s ease,
         transform .25s ease;
-
 }
 
-
 .back:hover{
-
     background:rgb(255,173,0) !important;
-
     color:#000000 !important;
-
     border-color:rgb(255,173,0) !important;
 
     box-shadow:
         0 0 30px rgba(255,173,0,.45);
 
     transform:translateY(-1px);
-
 }
 
 
@@ -1033,61 +765,40 @@ button:hover{
 ========================================================= */
 
 .create-account-row{
-
     display:flex;
-
     justify-content:center;
-
     align-items:center;
+    flex-wrap:wrap;
+    gap:6px;
 
-    gap:7px;
-
-    margin-top:22px;
+    margin-top:19px;
 
     color:#aaaaaa;
-
-    font-size:13px;
-
+    font-size:12px;
 }
 
-
 .create-account-link{
-
     width:auto;
-
     height:auto;
-
     padding:0;
 
     border:0;
-
     border-radius:0;
-
     background:transparent;
 
     color:#3b82f6;
-
-    font-size:13px;
-
+    font-size:12px;
     font-weight:700;
 
     cursor:pointer;
-
     transition:.25s ease;
-
 }
 
-
 .create-account-link:hover{
-
     color:#60a5fa;
-
     transform:none;
-
     box-shadow:none;
-
     text-decoration:underline;
-
 }
 
 
@@ -1096,15 +807,11 @@ button:hover{
 ========================================================= */
 
 .register-modal{
-
     position:fixed;
-
     inset:0;
 
     display:none;
-
     align-items:center;
-
     justify-content:center;
 
     padding:20px;
@@ -1112,35 +819,24 @@ button:hover{
     background:rgba(0,0,0,.72);
 
     backdrop-filter:blur(10px);
-
     -webkit-backdrop-filter:blur(10px);
 
     z-index:1000;
-
 }
-
 
 .register-modal.active{
-
     display:flex;
-
 }
 
-
 .register-modal-card{
-
     width:min(560px,100%);
-
     max-height:calc(100vh - 40px);
-
     overflow-y:auto;
 
     padding:32px;
-
     border-radius:28px;
 
     background:rgb(20,21,24);
-
     border:1px solid rgba(37,99,235,.45);
 
     box-shadow:
@@ -1150,95 +846,58 @@ button:hover{
     position:relative;
 
     animation:registerModalShow .28s ease;
-
 }
-
 
 @keyframes registerModalShow{
-
     from{
-
         opacity:0;
-
-        transform:
-            translateY(20px)
-            scale(.97);
-
+        transform:translateY(20px) scale(.97);
     }
-
     to{
-
         opacity:1;
-
-        transform:
-            translateY(0)
-            scale(1);
-
+        transform:translateY(0) scale(1);
     }
-
 }
 
-
 .register-modal-close{
-
     position:absolute;
-
     top:16px;
-
     right:16px;
 
     width:42px;
-
     height:42px;
 
     display:flex;
-
     align-items:center;
-
     justify-content:center;
 
     border-radius:50%;
-
     border:1px solid rgba(255,255,255,.12);
 
     background:rgba(255,255,255,.07);
-
     color:#ffffff;
 
     font-size:24px;
-
     line-height:1;
 
     cursor:pointer;
-
     transition:.25s ease;
-
 }
-
 
 .register-modal-close:hover{
-
     background:#FFD700;
-
     color:#000000;
-
     transform:rotate(90deg);
-
 }
 
-
 .register-modal-icon{
-
     width:70px;
-
     height:70px;
 
     margin:0 auto 16px;
 
     display:flex;
-
     align-items:center;
-
     justify-content:center;
 
     border-radius:22px;
@@ -1254,151 +913,98 @@ button:hover{
         0 0 30px rgba(37,99,235,.28);
 
     font-size:32px;
-
 }
 
-
 .register-modal-title{
-
     margin:0;
-
     text-align:center;
 
     color:#ffffff;
-
     font-size:26px;
-
     font-weight:800;
-
 }
-
 
 .register-modal-title span{
-
     color:#3b82f6;
-
 }
 
-
 .register-modal-subtitle{
-
     margin:8px 0 24px;
-
     text-align:center;
 
     color:#aaaaaa;
-
     font-size:13px;
-
 }
-
 
 .register-form-grid{
-
     display:grid;
-
     grid-template-columns:1fr 1fr;
-
     gap:16px;
-
 }
-
 
 .register-field{
-
     margin:0;
-
 }
-
 
 .register-field.full{
-
     grid-column:1 / -1;
-
 }
 
-
 .register-field label{
-
     display:block;
-
     margin:0 0 7px 4px;
 
     color:#eeeeee;
-
     font-size:12px;
-
     font-weight:600;
-
 }
 
-
 .register-field input{
-
     width:100%;
-
     height:50px;
-
     padding:0 16px;
 
     border:1px solid rgba(255,255,255,.10);
-
     outline:none;
-
     border-radius:15px;
 
     background:rgba(255,255,255,.07);
-
     color:#ffffff;
-
     font-size:14px;
 
     transition:.2s ease;
-
 }
 
-
 .register-field input:focus{
-
     border-color:rgba(37,99,235,.65);
 
     box-shadow:
         0 0 0 3px rgba(37,99,235,.10),
         0 0 18px rgba(37,99,235,.20);
-
 }
-
 
 .register-field input::placeholder{
-
     color:#888888;
-
 }
 
-
 .password-hint{
-
     margin:6px 3px 0;
-
     color:#777777;
-
     font-size:10px;
-
     line-height:1.45;
-
 }
 
 
 /* =========================================================
-   CREATE SELLER ACCOUNT BUTTON
+   REGISTRATION SUBMIT
 ========================================================= */
 
 .register-submit{
-
+    width:100%;
     margin-top:20px;
-
     height:54px;
 
+    border:none;
     border-radius:17px;
 
     background:
@@ -1409,67 +1015,48 @@ button:hover{
         );
 
     color:#ffffff;
-
     font-size:16px;
-
     font-weight:800;
 
+    cursor:pointer;
+    transition:.3s ease;
 }
 
-
 .register-submit:hover{
-
-    transform:
-        translateY(-1px)
-        scale(1.01);
+    transform:translateY(-1px) scale(1.01);
 
     box-shadow:
         0 0 20px rgba(37,99,235,.55),
         0 0 40px rgba(37,99,235,.30);
-
 }
 
-
 .register-login-note{
-
     margin-top:14px;
-
     text-align:center;
 
     color:#888888;
-
     font-size:12px;
-
 }
 
-
 .register-login-note button{
-
     width:auto;
-
     height:auto;
-
     padding:0;
 
+    border:none;
     background:transparent;
 
     color:#3b82f6;
-
     font-size:12px;
-
     font-weight:700;
 
+    cursor:pointer;
 }
 
-
 .register-login-note button:hover{
-
     transform:none;
-
     box-shadow:none;
-
     text-decoration:underline;
-
 }
 
 
@@ -1480,60 +1067,131 @@ button:hover{
 @media(max-width:600px){
 
     .register-modal-card{
-
         padding:27px 20px 22px;
-
         border-radius:22px;
-
     }
 
     .register-form-grid{
-
         grid-template-columns:1fr;
-
     }
 
     .register-field.full{
-
         grid-column:auto;
-
     }
 
 }
 
 
 /* =========================================================
-   MOBILE
+   MOBILE RESPONSIVE
 ========================================================= */
 
 @media(max-width:500px){
 
+    body{
+        padding:16px;
+        overflow-x:hidden;
+        overflow-y:auto;
+    }
+
     .card{
+        width:100%;
+        max-width:400px;
+        padding:28px 24px;
+        border-radius:25px;
+    }
 
-        width:calc(100% - 30px);
-
-        padding:30px 25px;
-
+    .logo{
+        width:82px;
+        height:82px;
+        font-size:38px;
+        border-radius:25px;
     }
 
     h1{
-
         font-size:29px;
+        letter-spacing:1.5px;
+    }
 
+    .subtitle{
+        font-size:11px;
+        margin-bottom:25px;
     }
 
     .options{
+        font-size:11px;
+    }
 
-        font-size:12px;
+    .input-box input{
+        height:52px;
+        font-size:13px;
+    }
 
+    .login-submit{
+        height:52px;
+        font-size:16px;
     }
 
     .energy-ring{
-
         width:420px;
-
         height:420px;
+    }
 
+    .create-account-row{
+        font-size:11px;
+    }
+
+    .create-account-link{
+        font-size:11px;
+    }
+}
+
+
+/* =========================================================
+   EXTRA SMALL SCREENS
+========================================================= */
+
+@media(max-width:350px){
+
+    .card{
+        padding:24px 16px;
+    }
+
+    h1{
+        font-size:25px;
+        letter-spacing:1px;
+    }
+
+    .options{
+        gap:6px;
+        font-size:10px;
+    }
+
+    .back{
+        font-size:12px;
+    }
+
+    .register-modal-card{
+        padding:25px 15px 20px;
+    }
+
+}
+
+
+/* =========================================================
+   SHORT SCREENS
+========================================================= */
+
+@media(max-height:700px) and (min-width:501px){
+
+    body{
+        align-items:flex-start;
+        padding-top:25px;
+        padding-bottom:25px;
+    }
+
+    .card{
+        margin:auto 0;
     }
 
 }
@@ -1548,13 +1206,9 @@ button:hover{
     *,
     *::before,
     *::after{
-
         animation-duration:.01ms !important;
-
         animation-iteration-count:1 !important;
-
         transition-duration:.01ms !important;
-
     }
 
 }
@@ -1709,7 +1363,10 @@ button:hover{
 
         <!-- LOGIN -->
 
-        <button type="submit">
+        <button
+            type="submit"
+            class="login-submit"
+        >
             LOGIN AS SELLER
         </button>
 
@@ -1717,6 +1374,7 @@ button:hover{
     </form>
 
 
+    @if(app(\App\Services\SiteSettings::class)->enabled('seller_registration_enabled'))
     <!-- CREATE SELLER ACCOUNT -->
 
     <div class="create-account-row">
@@ -1732,6 +1390,7 @@ button:hover{
         </button>
 
     </div>
+    @endif
 
 
     <!-- CUSTOMER LOGIN -->
@@ -1751,6 +1410,7 @@ button:hover{
      CREATE SELLER ACCOUNT MODAL
 ========================================================= -->
 
+@if(app(\App\Services\SiteSettings::class)->enabled('seller_registration_enabled'))
 <div
     class="register-modal"
     id="sellerRegisterModal"
@@ -1934,6 +1594,7 @@ button:hover{
     </div>
 
 </div>
+@endif
 
 
 <script>
@@ -1974,9 +1635,7 @@ button:hover{
                 modal.querySelector('input');
 
             if (firstInput) {
-
                 firstInput.focus();
-
             }
 
         }, 50);
@@ -2027,9 +1686,7 @@ button:hover{
         function (event) {
 
             if (event.target === modal) {
-
                 closeModal();
-
             }
 
         }
@@ -2044,9 +1701,7 @@ button:hover{
                 event.key === 'Escape' &&
                 modal.classList.contains('active')
             ) {
-
                 closeModal();
-
             }
 
         }

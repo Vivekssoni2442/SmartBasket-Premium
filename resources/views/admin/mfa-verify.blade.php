@@ -3,12 +3,31 @@
 @section('title', 'SmartBasket Admin - 2FA Verification')
 
 @section('content')
-<div class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center px-4">
+<style>
+.admin-mfa-shell{min-height:100vh;background:radial-gradient(ellipse at 78% 0%,rgba(88,183,255,.2),transparent 38%),#F4F8FF!important;color:#14233D}
+.admin-mfa-shell h1,.admin-mfa-shell h2{color:#07152F}
+.admin-mfa-shell p,.admin-mfa-shell label,.admin-mfa-shell summary{color:#64748B}
+.admin-mfa-shell [class*="bg-slate-800"]{color:#344B68;background:#fff;border-color:#D8E2F0;box-shadow:0 18px 48px rgba(7,21,47,.12)}
+.admin-mfa-shell [class*="bg-purple-"]{color:#155EEF;background:#EDF5FF;border:1px solid #D1E3FF}
+.admin-mfa-shell [class*="text-purple-"]{color:#1552B5}
+.admin-mfa-shell [class*="text-white"]{color:#07152F}
+.admin-mfa-shell [class*="text-gray-"]{color:#64748B}
+.admin-mfa-shell input{color:#14233D;background:#fff;border:1px solid #C9D7E8;border-radius:9px}
+.admin-mfa-shell input::placeholder{color:#8494A9;opacity:1}
+.admin-mfa-shell input:focus{border-color:#155EEF;box-shadow:0 0 0 3px rgba(21,94,239,.14)}
+.admin-mfa-shell button{color:#fff;background:#155EEF;transition:background-color .16s ease,transform .16s ease}
+.admin-mfa-shell button[class*="text-white"]{color:#fff}
+.admin-mfa-shell button:hover{background:#0E4FD4;transform:translateY(-1px)}
+.admin-mfa-shell a{color:#1552B5}
+.admin-mfa-shell :focus-visible{outline:3px solid rgba(41,121,255,.55);outline-offset:3px}
+</style>
+
+<div class="admin-mfa-shell min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center px-4">
     <div class="w-full max-w-md">
         <!-- Logo -->
         <div class="text-center mb-8">
             <h1 class="text-4xl font-bold text-white mb-2">
-                👑 SMART BASKET
+                <i class="fas fa-basket-shopping text-blue-300" aria-hidden="true"></i> SMART BASKET
             </h1>
             <p class="text-purple-300 text-lg">2FA Verification</p>
         </div>

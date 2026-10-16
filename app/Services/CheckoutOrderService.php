@@ -99,9 +99,13 @@ class CheckoutOrderService
         }
 
         foreach ($itemsBySeller as $sellerId => $items) {
+            $seller = SellerProfile::find($sellerId);
+            if (! $seller || $seller->isBlocked()) {
+                throw new \RuntimeException('A seller is currently unavailable. Please review your cart.');
+            }
             foreach ($items as $item) {
                 $product = Product::find($item['product_id']);
-                if (! $product || $product->status !== 'active' || (int) $product->seller_id !== (int) $sellerId || ($product->stock !== null && (int) $product->stock < (int) $item['quantity'])) {
+                if (! $product || ($product->status !== null && $product->status !== 'active') || (int) $product->seller_id !== (int) $sellerId || ($product->stock !== null && (int) $product->stock < (int) $item['quantity'])) {
                     throw new \RuntimeException('A product is no longer available. Please review your cart.');
                 }
             }
@@ -118,11 +122,20 @@ class CheckoutOrderService
         return in_array($paymentMethod, ['Card', 'UPI', 'Google Pay', 'PhonePe', 'Net Banking'], true);
     }
 
-    public function totalForItems(array $itemsBySeller): float
+    public function totalForItems(array $itemsBySeller): string
     {
-        return round(collect($itemsBySeller)->flatten(1)->sum(
-            fn (array $item) => (float) $item['price'] * (int) $item['quantity']
-        ), 2);
+        return $this->formatMinorUnits($this->totalForItemsInPaise($itemsBySeller));
+    }
+
+    public function totalForItemsInPaise(array $itemsBySeller): int
+    {
+        $total = 0;
+
+        foreach (collect($itemsBySeller)->flatten(1) as $item) {
+            $total += $this->toMinorUnits($item['price']) * (int) $item['quantity'];
+        }
+
+        return $total;
     }
 
     public function createConfirmedOrders(array $itemsBySeller, array $customerDetails, ?int $userId, string $paymentMethod, string $paymentStatus): array
@@ -131,13 +144,16 @@ class CheckoutOrderService
             $orderIds = [];
 
             foreach ($itemsBySeller as $sellerId => $sellerItems) {
-                $sellerTotal = round(collect($sellerItems)->sum(
-                    fn (array $item) => (float) $item['price'] * (int) $item['quantity']
-                ), 2);
+                $seller = SellerProfile::whereKey($sellerId)->lockForUpdate()->first();
+                if (! $seller || $seller->isBlocked()) {
+                    throw new \RuntimeException('A seller is currently unavailable. Please review your cart.');
+                }
+                $sellerTotalPaise = $this->totalForItemsInPaise([$sellerId => $sellerItems]);
+                $sellerTotal = $this->formatMinorUnits($sellerTotalPaise);
 
                 foreach ($sellerItems as $item) {
                     $product = Product::lockForUpdate()->find($item['product_id']);
-                    if (! $product || (int) $product->seller_id !== (int) $sellerId || ($product->stock !== null && (int) $product->stock < (int) $item['quantity'])) {
+                    if (! $product || ($product->status !== null && $product->status !== 'active') || (int) $product->seller_id !== (int) $sellerId || ($product->stock !== null && (int) $product->stock < (int) $item['quantity'])) {
                         throw new \RuntimeException('A product is no longer available. Please review your cart.');
                     }
                 }
@@ -214,7 +230,36 @@ class CheckoutOrderService
             'seller_id' => $product->seller_id,
             'name' => $product->name,
             'quantity' => $quantity,
-            'price' => (float) $product->effective_price,
+            'price' => $this->effectivePriceAsDecimal($product),
         ];
+    }
+
+    private function effectivePriceAsDecimal(Product $product): string
+    {
+        $price = (string) $product->getRawOriginal('price');
+        $discountPrice = $product->getRawOriginal('discount_price');
+
+        if ($discountPrice !== null
+            && $this->toMinorUnits((string) $discountPrice) < $this->toMinorUnits($price)) {
+            return (string) $discountPrice;
+        }
+
+        return $price;
+    }
+
+    private function toMinorUnits(string|int|float $amount): int
+    {
+        $decimal = is_float($amount) ? number_format($amount, 2, '.', '') : (string) $amount;
+
+        if (! preg_match('/^(\d+)(?:\.(\d{1,2}))?$/', $decimal, $matches)) {
+            throw new \InvalidArgumentException('Payment amounts must be non-negative values with at most two decimal places.');
+        }
+
+        return ((int) $matches[1] * 100) + (int) str_pad($matches[2] ?? '', 2, '0');
+    }
+
+    private function formatMinorUnits(int $amount): string
+    {
+        return intdiv($amount, 100) . '.' . str_pad((string) ($amount % 100), 2, '0', STR_PAD_LEFT);
     }
 }

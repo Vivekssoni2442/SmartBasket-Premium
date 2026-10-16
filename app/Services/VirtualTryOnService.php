@@ -19,23 +19,32 @@ class VirtualTryOnService
             && filled(config('services.virtual_tryon.openai.key'));
     }
 
-    public function generateFromFiles(string $customerPath, string $customerMime, string $productPath, string $productMime, string $productName, string $category): array
+    public function generateFromFiles(string $customerPath, string $customerMime, string $productPath, string $productMime, string $productName, string $category, string $description = '', string $attributes = ''): array
     {
         if (! $this->isConfigured()) {
             return $this->failure('not_configured');
         }
 
         try {
+            $payload = [
+                'model' => config('services.virtual_tryon.openai.model'),
+                'size' => config('services.virtual_tryon.openai.size', '1024x1024'),
+                'quality' => config('services.virtual_tryon.quality', 'high'),
+                'output_format' => 'png',
+                'images' => [
+                    ['image_url' => $this->dataUrl($customerPath, $customerMime)],
+                    ['image_url' => $this->dataUrl($productPath, $productMime)],
+                ],
+                'prompt' => $this->prompt($productName, $category, $description, $attributes),
+            ];
+            if (in_array($payload['model'], ['gpt-image-1', 'gpt-image-1.5'], true)) {
+                $payload['input_fidelity'] = 'high';
+            }
+
             $response = Http::acceptJson()
-                ->timeout((int) config('services.virtual_tryon.timeout', 90))
+                ->timeout((int) config('services.virtual_tryon.timeout', 120))
                 ->withToken(config('services.virtual_tryon.openai.key'))
-                ->attach('image[]', fopen($customerPath, 'r'), 'customer.' . $this->extensionFor($customerMime))
-                ->attach('image[]', fopen($productPath, 'r'), 'product.' . $this->extensionFor($productMime))
-                ->post(rtrim(config('services.virtual_tryon.openai.url'), '/'), [
-                    'model' => config('services.virtual_tryon.openai.model'),
-                    'size' => config('services.virtual_tryon.openai.size', '1024x1024'),
-                    'prompt' => $this->prompt($productName, $category),
-                ]);
+                ->post(rtrim(config('services.virtual_tryon.openai.url'), '/'), $payload);
         } catch (ConnectionException $exception) {
             Log::warning('Virtual try-on provider connection failed.', ['exception' => $exception->getMessage()]);
             return $this->failure('unavailable');
@@ -65,14 +74,15 @@ class VirtualTryOnService
         return ['success' => true, 'binary' => $binary, 'mime' => 'image/png'];
     }
 
-    private function prompt(string $productName, string $category): string
+    private function prompt(string $productName, string $category, string $description, string $attributes): string
     {
-        return "Use the first image as the person reference and the second image as the exact product reference. Create a realistic virtual try-on preview of the {$category} '{$productName}' being worn or used by that person. Preserve the person's identity, face, hair, pose, body proportions, and background. Preserve the product's exact design, pattern, colour, logo, shape, and important details. Do not invent or substitute another product. This is a visual reference only and not a guarantee of size or fit.";
+        $details = mb_substr(trim(implode(' ', array_filter([$description, $attributes]))), 0, 1000);
+        return "Create a realistic virtual try-on edit using BOTH supplied images. Image 1 is the source photograph: preserve this same person's recognizable face, identity, hair, pose, body proportions, lighting, and background. Image 2 is the exact product sold as '{$productName}' in category '{$category}'. Apply that specific product to the person, changing only the relevant clothing region. Preserve its actual visible color, cut, pattern, shape, and details; do not substitute or invent a different item. Product notes: {$details}. Make a natural, photorealistic preview. Do not make a collage or show the product separately. The result is an approximate visual preview, not a fit guarantee.";
     }
 
-    private function extensionFor(string $mime): string
+    private function dataUrl(string $path, string $mime): string
     {
-        return match ($mime) { 'image/png' => 'png', 'image/webp' => 'webp', default => 'jpg' };
+        return 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($path));
     }
 
     private function failure(string $reason): array

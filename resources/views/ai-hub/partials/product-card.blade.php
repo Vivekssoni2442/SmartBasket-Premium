@@ -1,4 +1,4 @@
-<article class="ai-product-card">
+<article class="ai-product-card" data-smart-ai-product-id="{{ $product->id }}">
     <img src="{{ asset('products/' . $product->image) }}" alt="{{ $product->name }}">
     <div class="ai-product-card-body">
         <h3>{{ $product->name }}</h3>

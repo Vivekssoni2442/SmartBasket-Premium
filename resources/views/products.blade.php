@@ -719,6 +719,7 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/customer-page-title.css') }}">
 </head>
 
 @php
@@ -792,9 +793,11 @@
                         Smart Basket Premium
                     </div>
 
-                    <h1 class="page-title">
+                    <x-customer-page-hero>
+<h1 class="page-title sb-customer-page-title">
                         Featured Products
                     </h1>
+</x-customer-page-hero>
 
                     <p class="page-subtitle">
                         Discover premium products from Smart Basket sellers.
@@ -1279,6 +1282,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 </script>
+
+@include('customer.partials.smart-ai-robot')
 
 </body>
 </html>

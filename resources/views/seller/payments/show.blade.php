@@ -1795,6 +1795,17 @@
                                 </span>
 
 
+                            @elseif($paymentStatus === 'Cash')
+
+                                <span class="status-pill" style="color:#1552b5;background:#edf5ff;border:1px solid #d1e3ff">
+
+                                    <i class="fa-solid fa-money-bill-wave"></i>
+
+                                    Cash
+
+                                </span>
+
+
                             @elseif($paymentStatus === 'Pending')
 
                                 <span class="status-pill pending">
@@ -1956,7 +1967,7 @@
 
                     <span class="info-value">
 
-                        {{ $order->payment_method ?: 'Not recorded' }}
+                        {{ $order->isCashOnDelivery() ? 'Cash' : ($order->payment_method ?: 'Not recorded') }}
 
                     </span>
 
@@ -1977,6 +1988,10 @@
                             @if($paymentStatus === 'Successful')
 
                                 <i class="fa-solid fa-circle-check"></i>
+
+                            @elseif($paymentStatus === 'Cash')
+
+                                <i class="fa-solid fa-money-bill-wave"></i>
 
                             @elseif($paymentStatus === 'Pending')
 

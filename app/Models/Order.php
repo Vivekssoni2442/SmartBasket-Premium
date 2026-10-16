@@ -42,12 +42,17 @@ class Order extends Model
 
     public function payments()
     {
-        return $this->belongsToMany(Payment::class)->withTimestamps();
+        return $this->belongsToMany(Payment::class, 'payment_order')->withTimestamps();
     }
 
     public function refunds()
     {
         return $this->hasMany(Refund::class);
+    }
+
+    public function returnRequests()
+    {
+        return $this->hasMany(OrderReturnRequest::class);
     }
 
     public function scopeForSeller($query, int $sellerId)
@@ -78,5 +83,29 @@ class Order extends Model
     {
         $status = $this->deliveryDetail?->status ?? $this->order_status ?? $this->status;
         return in_array($status, ['Placed', 'Confirmed', 'Pending', 'Order Placed', 'Seller Confirmed'], true);
+    }
+
+    /** COD is collected at delivery, so its customer-facing payment label is Cash. */
+    public function isCashOnDelivery(): bool
+    {
+        $method = strtolower(trim((string) $this->payment_method));
+
+        return in_array($method, ['cod', 'cash', 'cash_on_delivery', 'cash on delivery'], true);
+    }
+
+    public function isPaymentEligibleForReturn(): bool
+    {
+        return $this->isCashOnDelivery()
+            || in_array(strtolower(trim((string) $this->payment_status)), ['paid', 'successful'], true);
+    }
+
+    public function getPaymentStatusLabelAttribute(): string
+    {
+        $status = trim((string) ($this->payment_status ?? 'Pending'));
+        if ($this->isCashOnDelivery() && in_array(strtolower($status), ['pending', 'cash'], true)) {
+            return 'Cash';
+        }
+
+        return ucfirst($status);
     }
 }

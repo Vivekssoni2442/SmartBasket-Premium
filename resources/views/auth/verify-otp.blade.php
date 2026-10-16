@@ -373,7 +373,7 @@ font-size:42px;
 
 <body>
 
-<x-site-menu />
+
 
 
 <div class="otp-box">

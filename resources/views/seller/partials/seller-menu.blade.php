@@ -923,6 +923,11 @@
 
         </a>
 
+        <a href="{{ route('seller.returns.index') }}" class="{{ request()->routeIs('seller.returns.*') ? 'sb-menu-active' : '' }}">
+            <span class="sb-common-menu-icon"><i class="fa-solid fa-arrow-rotate-left" aria-hidden="true"></i></span>
+            <span>Returns</span>
+        </a>
+
 
         <!-- ==================================================
              PAYMENTS

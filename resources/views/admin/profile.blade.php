@@ -17,7 +17,7 @@
 
             <div class="profile-big-avatar">
                 @if($admin->avatar)
-                    <img src="{{ asset('storage/admin-avatars/' . $admin->avatar) }}" alt="{{ $name }}" class="profile-avatar-image">
+                    <img src="{{ Storage::disk('public')->url('admin-avatars/' . basename($admin->avatar)) }}" alt="{{ $name }}" class="profile-avatar-image">
                 @else
                     {{ $initials }}
                 @endif
@@ -142,7 +142,10 @@
                             name="email"
                             value="{{ old('email', $email) }}"
                             required
+                            readonly
+                            aria-describedby="email-help"
                         >
+                        <small id="email-help">Email changes require verification and are currently locked.</small>
 
                     </div>
 
@@ -150,8 +153,9 @@
 
                 <div class="form-field">
                     <label for="avatar">Profile photo</label>
-                    <input id="avatar" type="file" name="avatar" accept="image/jpeg,image/png,image/webp">
-                    @if($admin->avatar)<small>Current photo is stored securely.</small>@endif
+                    <input id="avatar" type="file" name="avatar" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" aria-describedby="avatar-help avatar-error">
+                    <small id="avatar-help">JPEG, PNG, or WebP. Maximum file size: 5 MB.</small>
+                    @error('avatar')<small id="avatar-error" class="field-error" role="alert">{{ $message }}</small>@enderror
                 </div>
 
 
@@ -447,12 +451,12 @@
     background:
         radial-gradient(
             circle at 15% 10%,
-            rgba(99,102,241,.25),
+            rgba(59,130,246,.25),
             transparent 32%
         ),
         radial-gradient(
             circle at 90% 90%,
-            rgba(139,92,246,.18),
+            rgba(37,99,235,.18),
             transparent 35%
         ),
         linear-gradient(
@@ -483,11 +487,11 @@
     font-weight: 800;
     background: linear-gradient(
         135deg,
-        #6366f1,
-        #8b5cf6
+        #2563EB,
+        #3B82F6
     );
     box-shadow:
-        0 15px 35px rgba(99,102,241,.35);
+        0 15px 35px rgba(59,130,246,.35);
 }
 
 .profile-avatar-image {
@@ -610,8 +614,8 @@
     display: grid;
     place-items: center;
     border-radius: 13px;
-    background: rgba(99,102,241,.1);
-    color: #6366f1;
+    background: rgba(59,130,246,.1);
+    color: #2563EB;
 }
 
 .card-heading h2 {
@@ -656,8 +660,8 @@
 }
 
 .form-field input:focus {
-    border-color: #6366f1;
-    box-shadow: 0 0 0 4px rgba(99,102,241,.1);
+    border-color: #2563EB;
+    box-shadow: 0 0 0 4px rgba(59,130,246,.1);
 }
 
 .readonly-field {
@@ -677,8 +681,8 @@
     padding: 12px 18px;
     background: linear-gradient(
         135deg,
-        #6366f1,
-        #8b5cf6
+        #2563EB,
+        #3B82F6
     );
     color: #fff;
     font-weight: 800;
@@ -686,7 +690,7 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    box-shadow: 0 10px 24px rgba(99,102,241,.25);
+    box-shadow: 0 10px 24px rgba(59,130,246,.25);
 }
 
 .account-list {
@@ -733,8 +737,8 @@
     padding: 12px 14px;
     margin-bottom: 15px;
     border-radius: 12px;
-    background: rgba(99,102,241,.07);
-    color: #6366f1;
+    background: rgba(59,130,246,.07);
+    color: #2563EB;
     font-size: 12px;
 }
 
@@ -752,7 +756,7 @@
 }
 
 .settings-link:hover {
-    border-color: #6366f1;
+    border-color: #2563EB;
     transform: translateY(-1px);
 }
 

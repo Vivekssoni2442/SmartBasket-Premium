@@ -1,4 +1,25 @@
-@if($showSiteMenu ?? true)
+@php
+    $usesProductsTaskbar = request()->routeIs(
+        'ai-hub',
+        'overview',
+        'ai-camera',
+        'budget-shopping',
+        'gift-finder',
+        'trending-products',
+        'compare-products',
+        'ai.chat.page',
+        'ai-camera-assistant',
+        'ai-camera-assistant.history',
+        'ai-camera-assistant.virtual-try-on',
+        'ai-camera-assistant*'
+    );
+@endphp
+
+@if($usesProductsTaskbar)
+    @once
+        <x-products-customer-taskbar />
+    @endonce
+@elseif($showSiteMenu ?? true)
     <x-site-menu />
 @endif
 

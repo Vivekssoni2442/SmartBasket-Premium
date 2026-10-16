@@ -1,6 +1,9 @@
+<style data-visual-design>{!! app(\App\Services\WebsiteDesignService::class)->renderCss('customer.shared') !!}</style>
+
 <aside
     class="sb-sidebar"
     id="sbSidebar"
+    data-ve="customer.shared.taskbar"
 >
 
     {{-- =========================================================
@@ -27,6 +30,14 @@
 
         </span>
 
+    </a>
+
+    <a
+        href="{{ route('returns.index') }}"
+        class="sb-sidebar-link {{ request()->routeIs('returns.*') ? 'active' : '' }}"
+    >
+        <i class="fa-solid fa-arrow-rotate-left"></i>
+        <span>Returns &amp; Refunds</span>
     </a>
 
 

@@ -7,6 +7,7 @@
         'title' => 'Smart Basket AI'
     ])
 
+    <link rel="stylesheet" href="{{ asset('css/customer-page-title.css') }}">
 </head>
 
 
@@ -44,9 +45,11 @@
                     SMART BASKET AI
                 </span>
 
-                <h1>
+                <x-customer-page-hero>
+<h1 class="sb-customer-page-title">
                     AI Shopping Assistant 🤖
                 </h1>
+</x-customer-page-hero>
 
                 <p>
                     Ask Smart Basket AI anything about products,

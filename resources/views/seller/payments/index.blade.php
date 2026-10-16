@@ -1040,6 +1040,12 @@
                 1px solid #f7dca2;
         }
 
+        .status-cash {
+            color: #166534;
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+        }
+
 
         .status-failed {
 
@@ -2061,6 +2067,7 @@
 
                         @foreach([
                             'Successful',
+                            'Cash',
                             'Pending',
                             'Failed',
                             'Refunded'
@@ -2095,7 +2102,7 @@
 
 
                         @foreach([
-                            'COD',
+                            'Cash',
                             'UPI',
                             'Card',
                             'Google Pay',
@@ -2288,6 +2295,10 @@
                                 </span>
 
 
+                            @elseif($status === 'Cash')
+
+                                <span class="payment-status status-cash"><i class="fa-solid fa-money-bill-wave"></i> Cash</span>
+
                             @elseif($status === 'Pending')
 
                                 <span
@@ -2444,7 +2455,7 @@
                             "
                         ></i>
 
-                        {{ $order->payment_method ?: 'Not recorded' }}
+                        {{ $order->isCashOnDelivery() ? 'Cash' : ($order->payment_method ?: 'Not recorded') }}
 
 
                         <span class="transaction-text">

@@ -686,6 +686,7 @@
 
     </style>
 
+    <link rel="stylesheet" href="{{ asset('css/customer-page-title.css') }}">
 </head>
 
 
@@ -719,9 +720,11 @@
 
                 </span>
 
-                <h1>
+                <x-customer-page-hero>
+<h1 class="sb-customer-page-title">
                     Trending Products
                 </h1>
+</x-customer-page-hero>
 
                 <p>
                     Discover the products customers are actually

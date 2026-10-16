@@ -2,14 +2,18 @@
 
 use App\Http\Controllers\AdminProfileController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AdminAccountController;
 use App\Http\Controllers\AdminSellerVerificationController;
 use App\Http\Controllers\AICameraAssistantController;
 use App\Http\Controllers\AiHubController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CustomerAiController;
+use App\Http\Controllers\CustomerDiscoveryController;
 use App\Http\Controllers\CustomerSettingsController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\OrderReturnController;
+use App\Http\Controllers\AdminReturnController;
 use App\Http\Controllers\OtpController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
@@ -20,6 +24,8 @@ use App\Http\Controllers\SellerOrderController;
 use App\Http\Controllers\SellerPaymentController;
 use App\Http\Controllers\SellerPayoutController;
 use App\Http\Controllers\AdminPayoutController;
+use App\Http\Controllers\AdminRefundController;
+use App\Http\Controllers\VisualWebsiteEditorController;
 use App\Http\Controllers\CustomerAddressController;
 use App\Http\Controllers\SellerSettingsController;
 use App\Http\Controllers\SellerVerificationController;
@@ -52,7 +58,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('splash');
+    return view('welcome');
 });
 
 
@@ -79,6 +85,11 @@ Route::post('/login', function (Request $request) {
         'email' => ['required', 'email'],
         'password' => ['required'],
     ]);
+
+    $customer = User::where('email', $credentials['email'])->first();
+    if ($customer && $customer->isBlocked()) {
+        return back()->withInput($request->only('email'))->with('error', 'This customer account is blocked. Please contact Smart Basket support for assistance.');
+    }
 
     if (Auth::attempt($credentials)) {
 
@@ -171,11 +182,14 @@ Route::post('/login', function (Request $request) {
 
 
 Route::get('/register', function () {
+    abort_unless(app(\App\Services\SiteSettings::class)->enabled('customer_registration_enabled'), 404);
     return view('auth.register');
 })->name('register');
 
 
 Route::post('/register', function (Request $request) {
+
+    abort_unless(app(\App\Services\SiteSettings::class)->enabled('customer_registration_enabled'), 404);
 
     $request->validate([
         'name' => ['required', 'string', 'max:255'],
@@ -254,6 +268,9 @@ Route::post('/seller-register', [
 */
 
 Route::middleware('seller.auth')->group(function () {
+
+    Route::get('/seller/returns', [OrderReturnController::class, 'sellerIndex'])->name('seller.returns.index');
+    Route::post('/seller/returns/{returnRequest}/note', [OrderReturnController::class, 'sellerNote'])->name('seller.returns.note');
 
     Route::get('/seller/payouts', [SellerPayoutController::class, 'index'])->name('seller.payouts.index');
     Route::post('/seller/payouts', [SellerPayoutController::class, 'request'])->name('seller.payouts.request');
@@ -338,17 +355,6 @@ Route::middleware('seller.auth')->group(function () {
     ])->name('seller.profile.update');
 
 
-    Route::post('/seller-profile/payment-qr', [
-        SellerController::class,
-        'updatePaymentQr',
-    ])->name('seller.payment-qr.update');
-
-
-    Route::delete('/seller-profile/payment-qr', [
-        SellerController::class,
-        'deletePaymentQr',
-    ])->name('seller.payment-qr.delete');
-
 });
 
 
@@ -377,17 +383,20 @@ Route::middleware('seller.auth')->group(function () {
         'updatePassword',
     ])->name('seller.settings.password');
 
+    Route::get('/seller-settings/payment-qr', function () {
+        return redirect()->route('seller.settings', ['_section' => 'payments']) . '#seller-payment-qr';
+    })->name('seller.payment-qr.manage');
 
     Route::post('/seller-settings/payment-qr', [
         SellerSettingsController::class,
         'updatePaymentQr',
-    ])->name('seller.settings.payment-qr');
-
+    ])->name('seller.payment-qr.update');
 
     Route::delete('/seller-settings/payment-qr', [
         SellerSettingsController::class,
         'deletePaymentQr',
-    ])->name('seller.settings.payment-qr.delete');
+    ])->name('seller.payment-qr.delete');
+
 
 });
 
@@ -927,6 +936,26 @@ Route::post('/customer-ai/message', [
     ])
     ->name('customer-ai.message');
 
+Route::get('/customer-ai/history', [
+    CustomerAiController::class,
+    'history',
+])
+    ->middleware([
+        'auth',
+        'throttle:60,1',
+    ])
+    ->name('customer-ai.history');
+
+Route::delete('/customer-ai/history', [
+    CustomerAiController::class,
+    'clearHistory',
+])
+    ->middleware([
+        'auth',
+        'throttle:10,1',
+    ])
+    ->name('customer-ai.clear');
+
 
 /*
 |--------------------------------------------------------------------------
@@ -985,7 +1014,7 @@ Route::get('/ai-camera-assistant/result/{file}', [
 Route::post('/products/{product}/virtual-try-on', [
     VirtualTryOnController::class,
     'generate',
-])->name('products.virtual-try-on.generate');
+])->middleware('throttle:3,1')->name('products.virtual-try-on.generate');
 
 
 Route::get(
@@ -997,6 +1026,18 @@ Route::get(
 )
     ->where('token', '[A-Za-z0-9]{40}')
     ->name('products.virtual-try-on.result');
+
+Route::get('/products/{product}/virtual-try-on/result/{token}/download', [
+    VirtualTryOnController::class,
+    'download',
+])->where('token', '[A-Za-z0-9]{40}')
+    ->name('products.virtual-try-on.download');
+
+Route::delete('/products/{product}/virtual-try-on/result/{token}', [
+    VirtualTryOnController::class,
+    'discard',
+])->where('token', '[A-Za-z0-9]{40}')
+    ->name('products.virtual-try-on.discard');
 
 
 /*
@@ -1231,6 +1272,11 @@ Route::middleware('auth')->group(function () {
         OrderController::class,
         'cancel',
     ])->name('orders.cancel');
+
+    Route::get('/my-returns', [OrderReturnController::class, 'index'])->name('returns.index');
+    Route::post('/order-details/{order}/returns', [OrderReturnController::class, 'store'])->name('returns.store');
+    Route::get('/my-returns/{returnRequest}', [OrderReturnController::class, 'show'])->name('returns.show');
+    Route::post('/my-returns/{returnRequest}/cancel', [OrderReturnController::class, 'cancel'])->name('returns.cancel');
 
 });
 
@@ -1607,8 +1653,22 @@ Route::post('/admin/mfa-verify', [
 
 Route::middleware('admin.auth')->group(function () {
 
+    Route::middleware('admin.auth:admin')->group(function () {
+        Route::get('/admin/returns', [AdminReturnController::class, 'index'])->name('admin.returns.index');
+        Route::get('/admin/returns/{returnRequest}', [AdminReturnController::class, 'show'])->name('admin.returns.show');
+        Route::patch('/admin/returns/{returnRequest}', [AdminReturnController::class, 'review'])->name('admin.returns.review');
+        Route::post('/admin/returns/{returnRequest}/refund', [AdminReturnController::class, 'refund'])->name('admin.returns.refund');
+        Route::get('/admin/visual-editor', [VisualWebsiteEditorController::class, 'index'])->name('admin.visual-editor.index');
+        Route::post('/admin/visual-editor/drafts', [VisualWebsiteEditorController::class, 'saveDraft'])->name('admin.visual-editor.drafts.store');
+        Route::get('/admin/visual-editor/preview/{revision}', [VisualWebsiteEditorController::class, 'preview'])->name('admin.visual-editor.preview');
+        Route::post('/admin/visual-editor/revisions/{revision}/publish', [VisualWebsiteEditorController::class, 'publish'])->name('admin.visual-editor.publish');
+        Route::delete('/admin/visual-editor/revisions/{revision}', [VisualWebsiteEditorController::class, 'discard'])->name('admin.visual-editor.discard');
+        Route::post('/admin/visual-editor/revisions/{revision}/rollback', [VisualWebsiteEditorController::class, 'rollback'])->name('admin.visual-editor.rollback');
+    });
+
     Route::get('/admin/payouts', [AdminPayoutController::class, 'index'])->name('admin.payouts.index');
     Route::patch('/admin/payouts/{payout}', [AdminPayoutController::class, 'update'])->name('admin.payouts.update');
+    Route::post('/admin/transactions/{transaction}/refund', [AdminRefundController::class, 'store'])->name('admin.transactions.refund');
 
     /*
     |--------------------------------------------------------------------------
@@ -1658,6 +1718,7 @@ Route::middleware('admin.auth')->group(function () {
     |--------------------------------------------------------------------------
     */
 
+    Route::middleware('admin.auth:admin')->group(function () {
     Route::get('/admin/customers/activity', [
         AdminController::class,
         'customerActivity',
@@ -1665,9 +1726,14 @@ Route::middleware('admin.auth')->group(function () {
 
 
     Route::get('/admin/customers', [
-        AdminController::class,
-        'customerIndex',
+        AdminAccountController::class,
+        'customers',
     ])->name('admin.customers.index');
+
+    Route::post('/admin/customers/{user}/block', [AdminAccountController::class, 'blockCustomer'])->name('admin.customers.block');
+    Route::post('/admin/customers/{user}/unblock', [AdminAccountController::class, 'unblockCustomer'])->name('admin.customers.unblock');
+    Route::delete('/admin/customers/{user}', [AdminAccountController::class, 'deleteCustomer'])->name('admin.customers.delete');
+    Route::post('/admin/customers/{id}/restore', [AdminAccountController::class, 'restoreCustomer'])->name('admin.customers.restore');
 
 
     Route::get('/admin/customers/{user}', [
@@ -1683,15 +1749,21 @@ Route::middleware('admin.auth')->group(function () {
     */
 
     Route::get('/admin/sellers', [
-        AdminController::class,
-        'sellerIndex',
+        AdminAccountController::class,
+        'sellers',
     ])->name('admin.sellers.index');
+
+    Route::post('/admin/sellers/{seller}/block', [AdminAccountController::class, 'blockSeller'])->name('admin.sellers.block');
+    Route::post('/admin/sellers/{seller}/unblock', [AdminAccountController::class, 'unblockSeller'])->name('admin.sellers.unblock');
+    Route::delete('/admin/sellers/{seller}', [AdminAccountController::class, 'deleteSeller'])->name('admin.sellers.delete');
+    Route::post('/admin/sellers/{id}/restore', [AdminAccountController::class, 'restoreSeller'])->name('admin.sellers.restore');
 
 
     Route::get('/admin/sellers/{seller}', [
         AdminController::class,
         'sellerShow',
     ])->name('admin.sellers.show');
+    });
 
 
     /*
@@ -1759,12 +1831,6 @@ Route::middleware('admin.auth')->group(function () {
     | RETURNS & REFUNDS
     |--------------------------------------------------------------------------
     */
-
-    Route::get('/admin/returns', [
-        AdminController::class,
-        'returnIndex',
-    ])->name('admin.returns.index');
-
 
     /*
     |--------------------------------------------------------------------------
@@ -1842,6 +1908,14 @@ Route::middleware('admin.auth')->group(function () {
         AdminController::class,
         'settings',
     ])->name('admin.settings');
+
+    Route::put('/admin/settings/features', [AdminController::class, 'updateFeatureSettings'])
+        ->name('admin.settings.features.update');
+
+    Route::put('/admin/settings/about', [
+        AdminController::class,
+        'updateAbout',
+    ])->name('admin.settings.about.update');
 
 });
 

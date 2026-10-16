@@ -7,7 +7,7 @@ use App\Models\Order;
 use App\Models\PaymentTransaction;
 use App\Models\Product;
 use App\Services\CheckoutOrderService;
-use App\Services\RazorpayPaymentGateway;
+use App\Services\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -25,7 +25,7 @@ class OrderController extends Controller
     public function placeOrder(
         Request $request,
         CheckoutOrderService $checkout,
-        RazorpayPaymentGateway $gateway
+        PaymentService $payments
     ) {
         $customerDetails =
             $checkout->customerDetailsFromRequest($request);
@@ -90,100 +90,27 @@ class OrderController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $total =
-            $checkout->totalForItems(
-                $itemsBySeller
-            );
-
-
-        $payment = PaymentTransaction::create([
-
-            'user_id' =>
-                $user?->id,
-
-            'access_token' =>
-                Str::random(64),
-
-            'gateway' =>
-                'razorpay',
-
-            'payment_method' =>
-                $paymentMethod,
-
-            'status' =>
-                'pending',
-
-            'amount' =>
-                $total,
-
-            'amount_paise' =>
-                (int) round($total * 100),
-
-            'currency' =>
-                'INR',
-
-            'items_snapshot' =>
-                $itemsBySeller,
-
-            'customer_details' =>
-                $customerDetails,
-
-            'expires_at' =>
-                now()->addMinutes(30),
-
-        ]);
-
-
-        session([
-            'payment_transaction_token.' .
-            $payment->id =>
-                $payment->access_token
-        ]);
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | CREATE RAZORPAY ORDER
-        |--------------------------------------------------------------------------
-        */
-
-        $gatewayOrder =
-            $gateway->createOrder($payment);
-
-
-        if (! $gatewayOrder['success']) {
-
-            $payment->update([
-
-                'status' =>
-                    'pending',
-
-                'failure_reason' =>
-                    $gatewayOrder['message'],
-
-            ]);
-
-            return redirect()
-                ->route(
-                    'payments.show',
-                    $payment
-                )
-                ->with(
-                    'error',
-                    $gatewayOrder['message']
-                );
+        $total = $checkout->totalForItems($itemsBySeller);
+        $idempotencySeed = (string) session('checkout_payment_nonce', '');
+        if ($idempotencySeed === '') {
+            $idempotencySeed = Str::uuid()->toString();
+            session(['checkout_payment_nonce' => $idempotencySeed]);
         }
+        $idempotencyKey = hash('sha256', implode('|', [
+            $idempotencySeed,
+            (string) $user->id,
+            $paymentMethod,
+            json_encode($itemsBySeller, JSON_THROW_ON_ERROR),
+            json_encode($customerDetails, JSON_THROW_ON_ERROR),
+        ]));
 
+        $canonicalPayment = $payments->createPayment($user, $total, 'INR', $paymentMethod, [], $idempotencyKey);
+        $payment = $payments->initiatePayment($canonicalPayment, $itemsBySeller, $customerDetails);
+        session(['payment_transaction_token.' . $payment->id => $payment->access_token]);
 
-        $payment->update([
-
-            'gateway_order_id' =>
-                $gatewayOrder['gateway_order_id'],
-
-            'status' =>
-                'processing',
-
-        ]);
+        if ($payment->status === 'failed') {
+            return redirect()->route('payments.show', $payment)->with('error', $payment->failure_reason);
+        }
 
 
         return redirect()
@@ -283,12 +210,28 @@ class OrderController extends Controller
             ->get()
             ->keyBy('id');
 
+        $reservedReturnQuantities = [];
+        foreach ($order->returnRequests()->whereIn('status', ['requested', 'approved', 'refund_pending', 'refunded'])->get() as $returnRequest) {
+            foreach ($returnRequest->items ?? [] as $line) {
+                $productId = (int) ($line['product_id'] ?? 0);
+                $reservedReturnQuantities[$productId] = ($reservedReturnQuantities[$productId] ?? 0) + (int) ($line['quantity'] ?? 0);
+            }
+        }
+        $orderStatuses = collect([$order->deliveryDetail?->status, $order->delivery_status, $order->order_status, $order->status])
+            ->filter()->map(fn ($status) => strtolower((string) $status));
+        $canRequestReturn = $orderStatuses->contains(fn ($status) => in_array($status, ['delivered', 'complete', 'completed'], true))
+            && $order->isPaymentEligibleForReturn()
+            && $order->created_at?->gte(now()->subDays((int) config('returns.window_days', 30)));
+        $returnRequests = $order->returnRequests()->latest()->get();
 
         return view(
             'orders.show',
             compact(
                 'order',
-                'products'
+                'products',
+                'reservedReturnQuantities',
+                'canRequestReturn',
+                'returnRequests'
             )
         );
     }
@@ -360,7 +303,7 @@ class OrderController extends Controller
 
         $paymentStatus =
             $payment?->status
-            ?? $order->payment_status
+            ?? $order->payment_status_label
             ?? 'Pending';
 
 

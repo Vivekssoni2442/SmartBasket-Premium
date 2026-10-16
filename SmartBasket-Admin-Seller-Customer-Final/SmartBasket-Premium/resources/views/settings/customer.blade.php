@@ -3702,13 +3702,7 @@
             </h1>
 
 
-            <p class="settings-subtitle">
-
-                Manage your shopping preferences, language,
-                notifications, appearance and account security —
-                all from one premium control center.
-
-            </p>
+           
 
         </div>
 

@@ -2846,7 +2846,7 @@
 
                     @elseif($isCod)
 
-                        COD
+                        Cash
 
                     @elseif($isFailed)
 
@@ -3319,7 +3319,7 @@
 
                                         <i class="fa-solid fa-money-bill-wave"></i>
 
-                                        COD
+                                        Cash
 
                                     </span>
 

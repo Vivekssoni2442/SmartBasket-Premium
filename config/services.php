@@ -64,6 +64,17 @@ return [
         'timeout' => (int) env('AI_TIMEOUT', 30),
 
         'max_steps' => (int) env('AI_MAX_STEPS', 5),
+
+        'product_results' => (int) env('AI_PRODUCT_RESULTS', 6),
+
+        // Optional OpenAI-compatible provider used only when the primary
+        // provider is unavailable. Keep credentials server-side.
+        'fallback' => [
+            'provider' => env('AI_FALLBACK_PROVIDER'),
+            'key' => env('AI_FALLBACK_API_KEY'),
+            'base_url' => env('AI_FALLBACK_BASE_URL'),
+            'model' => env('AI_FALLBACK_MODEL'),
+        ],
     ],
 
     /*
@@ -71,25 +82,36 @@ return [
     | Smart AI Web Search
     |--------------------------------------------------------------------------
     |
-    | This allows Smart AI to get fresh internet information.
-    | Tavily API key must be configured in .env.
+    | Google Gemini grounding or Tavily supplies current web sources.
+    | Provider credentials stay in server-side environment configuration.
     |
     */
 
     'customer_ai_web' => [
 
-        'provider' => env('AI_WEB_PROVIDER', 'tavily'),
+        'provider' => env('AI_WEB_SEARCH_PROVIDER', 'tavily'),
+
+        'fallback_provider' => env('AI_WEB_SEARCH_FALLBACK_PROVIDER', 'tavily'),
+
+        'google_key' => env('GOOGLE_GEMINI_API_KEY'),
+
+        'google_model' => env('GOOGLE_GEMINI_SEARCH_MODEL', 'gemini-2.5-flash'),
+
+        'google_url' => 'https://generativelanguage.googleapis.com/v1beta/interactions',
 
         'key' => env('TAVILY_API_KEY'),
 
-        'url' => env(
-            'AI_WEB_SEARCH_URL',
-            'https://api.tavily.com/search'
-        ),
+        // Tavily supports low-volume keyless search with an explicit header.
+        'keyless' => env('AI_WEB_SEARCH_KEYLESS', true),
+
+        // Keep this fixed to avoid turning configuration into an SSRF target.
+        'url' => 'https://api.tavily.com/search',
 
         'timeout' => (int) env('AI_WEB_TIMEOUT', 15),
 
         'results' => (int) env('AI_WEB_RESULTS', 5),
+
+        'cache_ttl' => (int) env('AI_WEB_CACHE_TTL', 300),
     ],
 
     /*
@@ -135,7 +157,9 @@ return [
 
         'provider' => env('VIRTUAL_TRYON_PROVIDER'),
 
-        'timeout' => (int) env('VIRTUAL_TRYON_TIMEOUT', 90),
+        'timeout' => (int) env('VIRTUAL_TRYON_TIMEOUT', 120),
+
+        'quality' => env('VIRTUAL_TRYON_QUALITY', 'high'),
 
         'openai' => [
             'key' => env('VIRTUAL_TRYON_API_KEY'),

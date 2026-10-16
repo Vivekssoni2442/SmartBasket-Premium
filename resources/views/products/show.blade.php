@@ -1702,7 +1702,7 @@ html[data-theme="light"] .ai-hub-fab{background:linear-gradient(145deg,#fff,#eef
 html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f,#020711)!important}html[data-theme="dark"] .ai-hub-fab{background:linear-gradient(145deg,#1e293b,#050a14)!important}
 
 /* Robot launcher is hidden; its original panel remains fully functional */
-.sb-products-smart-ai-host>.smart-ai>.smart-ai__launch{opacity:0!important;visibility:hidden!important;pointer-events:none!important;position:fixed!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important}.sb-products-smart-ai-host [data-smart-ai-panel]{z-index:100001!important}
+
 
 @media(max-width:1350px){.sb-products-brand{flex-basis:185px;min-width:175px}.sb-pnav-btn{min-width:70px;padding:0 7px;font-size:10px}.sb-taskbar-user{flex-basis:125px}}
 @media(max-width:1120px){.sb-brand-copy{display:none}.sb-products-brand{flex-basis:65px;min-width:65px;justify-content:center;padding:5px}.sb-pnav-btn span{display:none}.sb-pnav-btn{min-width:52px;padding:0}.sb-taskbar-user{flex-basis:90px;min-width:90px}.sb-user-text strong{max-width:52px}}
@@ -1740,6 +1740,7 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
         .product-detail-page .product-shell > .row{position:relative;z-index:1}
 
         .product-detail-page .gallery-box{
+            position:relative;
             height:clamp(430px,62vh,680px);
             min-height:430px;
             width:100%;
@@ -1771,6 +1772,12 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
             filter:drop-shadow(0 22px 30px rgba(15,23,42,.16));
             transition:transform .4s cubic-bezier(.2,.8,.2,1),filter .3s ease;
         }
+        .product-detail-page #mainProductVideo{background:#05070d;border-radius:18px;object-fit:contain}
+        .gallery-nav{position:absolute;z-index:2;top:50%;transform:translateY(-50%);width:42px;height:42px;border:1px solid var(--border);border-radius:50%;background:color-mix(in srgb,var(--card) 90%,transparent);color:var(--text);box-shadow:0 8px 24px rgba(15,23,42,.18)}
+        .gallery-prev{left:18px}.gallery-next{right:18px}
+        .gallery-video-thumb{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--primary);font-size:20px}
+        .gallery-video-thumb small{font-size:8px;font-weight:900;letter-spacing:.1em}
+        @media(max-width:575px){.gallery-nav{width:36px;height:36px}.gallery-prev{left:9px}.gallery-next{right:9px}}
         .product-detail-page .main-image:hover{
             transform:scale(1.035);
             filter:drop-shadow(0 28px 38px rgba(15,23,42,.22));
@@ -1797,6 +1804,15 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
         .product-detail-page .qty{height:48px;border-radius:13px}
         .product-detail-page .ai{margin-top:26px;border-radius:23px;padding:23px;box-shadow:0 15px 38px rgba(37,99,235,.07)}
         .product-detail-page #tryOnPreview,.product-detail-page #tryOnResult{max-height:560px;background:var(--card2);object-fit:contain;padding:4px}
+        .tryon-product-ref{display:flex;align-items:center;gap:13px;padding:12px;margin:12px 0 18px;border:1px solid var(--border);border-radius:16px;background:var(--card)}
+        .tryon-product-ref img{width:76px;height:76px;object-fit:contain;border-radius:12px;background:var(--card2)}
+        .tryon-product-ref div{display:flex;flex-direction:column;gap:4px;min-width:0}
+        .tryon-product-ref small,.tryon-product-ref span{font-size:11px;color:var(--muted)}
+        .tryon-product-ref strong{color:var(--text);font-size:14px}
+        #tryOnPreview{max-height:320px;object-fit:contain;background:var(--card2);padding:6px}
+        #tryOnResult,#tryOnOriginal,#tryOnComparisonResult{max-height:520px;object-fit:contain;background:var(--card2);padding:6px}
+        #tryOnForm.is-processing{opacity:.72;pointer-events:none}
+        @media(max-width:575px){.tryon-product-ref img{width:60px;height:60px}.tryon-product-ref{align-items:flex-start}}
         .product-detail-page .related{max-width:1600px;margin:42px auto 0}
         .product-detail-page .related-card{border-radius:20px;box-shadow:0 14px 42px rgba(15,23,42,.09)}
         .product-detail-page .related-img{height:220px;padding:14px;object-fit:contain;background:linear-gradient(145deg,var(--card2),var(--card))}
@@ -1824,6 +1840,9 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
 
     </style>
 
+    <style data-visual-design>{!! app(\App\Services\WebsiteDesignService::class)->renderCss('customer.product_detail') . app(\App\Services\WebsiteDesignService::class)->renderCss('customer.shared') !!}</style>
+
+    <link rel="stylesheet" href="{{ asset('css/customer-page-title.css') }}">
 </head>
 
 
@@ -1841,7 +1860,7 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
     $ordersRoute = Route::has('orders.index') ? 'orders.index' : (Route::has('orders') ? 'orders' : null);
 @endphp
 
-<nav class="sb-products-taskbar" id="sbProductsTaskbar" aria-label="Customer Navigation">
+<nav class="sb-products-taskbar" id="sbProductsTaskbar" data-ve="customer.shared.taskbar" aria-label="Customer Navigation">
     <a href="{{ route('products.index') }}" class="sb-products-brand" aria-label="Smart Basket Products">
         <span class="sb-brand-mark"><i class="fa-solid fa-basket-shopping"></i></span>
         <span class="sb-brand-copy">
@@ -2017,6 +2036,8 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
 
 <div class="wrap product-detail-page">
 
+    <x-customer-page-hero :title="$product->name" />
+
 
     <!-- =====================================================
          PRODUCT
@@ -2035,6 +2056,7 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
 
                     $gallery = collect([
                         [
+                            'type' => 'image',
                             'url' =>
                                 asset(
                                     'products/' .
@@ -2049,6 +2071,7 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
 
                         $product->images->map(
                             fn($image) => [
+                                'type' => 'image',
                                 'url' =>
                                     asset(
                                         'storage/' .
@@ -2062,14 +2085,26 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
                                     $image->id
                             ]
                         )
-
-                    );
+                    )->merge(collect($product->video ? [[
+                        'type' => 'video',
+                        'url' => asset('storage/' . ltrim($product->video, '/')),
+                        'label' => 'Product video',
+                        'image_id' => null,
+                        'poster' => $product->video_poster ? asset('storage/' . ltrim($product->video_poster, '/')) : null,
+                    ]] : [])->merge($product->videos->map(fn($video) => [
+                        'type' => 'video',
+                        'url' => asset('storage/' . ltrim($video->path, '/')),
+                        'label' => 'Product video',
+                        'image_id' => null,
+                        'poster' => null,
+                    ])));
 
                 @endphp
 
 
-                <div class="gallery-box">
+                <div class="gallery-box" data-ve="customer.product_detail.gallery">
 
+                    @if($gallery->count() > 1)<button type="button" class="gallery-nav gallery-prev" aria-label="Previous product media"><i class="fa-solid fa-chevron-left"></i></button>@endif
                     <img
                         id="mainProductImage"
                         src="{{ $gallery->first()['url'] }}"
@@ -2077,6 +2112,10 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
                         alt="{{ $product->name }}"
                         onerror="this.style.opacity='.25'"
                     >
+                    <video id="mainProductVideo" class="main-image" style="display:none" controls playsinline preload="metadata" aria-label="Product video">
+                        Your browser does not support product video playback.
+                    </video>
+                    @if($gallery->count() > 1)<button type="button" class="gallery-nav gallery-next" aria-label="Next product media"><i class="fa-solid fa-chevron-right"></i></button>@endif
 
                 </div>
 
@@ -2091,13 +2130,20 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
                                 type="button"
                                 class="thumb {{ $index === 0 ? 'active' : '' }}"
                                 data-image="{{ $image['url'] }}"
+                                data-media-type="{{ $image['type'] }}"
                                 data-product-image-id="{{ $image['image_id'] }}"
+                                data-poster="{{ $image['poster'] ?? '' }}"
+                                aria-label="Show {{ $image['label'] }} {{ $index + 1 }}"
                             >
-
+                                @if($image['type'] === 'video')
+                                    <span class="gallery-video-thumb"><i class="fa-solid fa-play"></i><small>VIDEO</small></span>
+                                @else
                                 <img
                                     src="{{ $image['url'] }}"
                                     alt="{{ $image['label'] }}"
+                                    loading="lazy"
                                 >
+                                @endif
 
                             </button>
 
@@ -2124,11 +2170,6 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
                         </span>
 
                     @endif
-
-
-                    <h1 class="title">
-                        {{ $product->name }}
-                    </h1>
 
 
                     @php
@@ -2189,15 +2230,6 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
 
                     @endif
 
-                    @if(!empty($product->video))
-                        <section class="mt-4" aria-label="Product video">
-                            <span class="label mb-2">Product video</span>
-                            <video class="w-100 rounded-4 border" controls preload="metadata" style="max-height:360px;background:#000" onerror="this.closest('section').remove()">
-                                <source src="{{ asset('storage/' . ltrim($product->video, '/')) }}">
-                                Your browser does not support product video playback.
-                            </video>
-                        </section>
-                    @endif
 
 
                     <!-- DETAILS -->
@@ -2341,6 +2373,21 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
 
                         </div>
 
+                        @php
+                            $sellerQrPath = ltrim((string) $product->seller->payment_qr, '/');
+                            if (str_starts_with($sellerQrPath, 'storage/')) $sellerQrPath = substr($sellerQrPath, 8);
+                            $sellerQrAvailable = $sellerQrPath !== '' && \Illuminate\Support\Facades\Storage::disk('public')->exists($sellerQrPath);
+                        @endphp
+                        @if($sellerQrAvailable)
+                            <details class="seller-qr-panel" style="margin:14px 0;padding:14px;border:1px solid var(--border,#dbe3ef);border-radius:16px;background:var(--surface,#fff);">
+                                <summary style="cursor:pointer;font-weight:700;">View {{ $product->seller->shop_name ?: $product->seller->seller_name }} QR Code</summary>
+                                <a href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($sellerQrPath) }}" target="_blank" rel="noopener" aria-label="Enlarge {{ $product->seller->shop_name ?: $product->seller->seller_name }} payment QR code">
+                                    <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($sellerQrPath) }}" alt="Payment QR code for {{ $product->seller->shop_name ?: $product->seller->seller_name }}" loading="lazy" style="display:block;width:min(260px,100%);max-height:300px;object-fit:contain;margin:14px auto 0;padding:10px;background:#fff;border-radius:12px;">
+                                </a>
+                                <small style="display:block;margin-top:10px;color:#64748b;">Showing this seller's QR does not verify payment or update order status.</small>
+                            </details>
+                        @endif
+
                     @endif
 
 
@@ -2450,18 +2497,32 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
 
                     <!-- AI TRY ON -->
 
+                    @if(preg_match('/fashion|clothing|apparel|footwear|shoes/i', (string) $product->category) && preg_match('/\b(?:t[\s-]?shirts?|tees?|dresses?|tops?|blouses?|jeans?|trousers?|pants?|leggings?|skirts?|jackets?|coats?|hoodies?|sweaters?|suits?|kurtas?|sarees?|clothing|apparel|footwear|shoes?|sneakers?|boots?)\b/i', (string) $product->name . ' ' . (string) $product->category))
+
+                    @php
+                        $tryOnReady = config('services.virtual_tryon.provider') === 'openai'
+                            && filled(config('services.virtual_tryon.openai.key'));
+                    @endphp
+
+                    <button type="button" class="btnx primary mt-4" id="tryOnOpen"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Virtual Try-On</button>
+
                     <section
-                        class="ai"
+                        class="ai d-none"
                         id="virtualTryOn"
                     >
 
-                        <h2>
-                            ✨ AI Virtual Try-On
-                        </h2>
+                        <div class="d-flex align-items-start justify-content-between gap-3">
+                            <div><h2>✨ AI Virtual Try-On</h2><p>Preview this exact product on your photo. The result is approximate and may differ from real fit, material, colour, or appearance.</p></div>
+                            <div class="d-flex gap-2"><button type="button" class="btnx" id="tryOnReset">Reset</button><button type="button" class="btnx" id="tryOnClose" aria-label="Close try-on">Close</button></div>
+                        </div>
+
+                        <div class="tryon-product-ref">
+                            <img id="tryOnProductPreview" src="{{ $gallery->first()['url'] }}" alt="Selected product: {{ $product->name }}">
+                            <div><small>Selected product</small><strong>{{ $product->name }}</strong><span id="tryOnSelectedImageLabel">{{ $gallery->first()['label'] }} image</span></div>
+                        </div>
 
                         <p>
-                            Upload your photo or use your camera
-                            to create an AI visual preview.
+                            Upload a clear, well-lit photo showing the area where you would wear this item. Your photo and the product image are sent to the configured AI provider for generation.
                         </p>
 
 
@@ -2470,6 +2531,10 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
                             class="alert d-none"
                             role="alert"
                         ></div>
+
+                        @unless($tryOnReady)
+                            <div class="alert alert-warning" role="status">AI Virtual Try-On needs to be configured by the site administrator before a preview can be generated. Your photo will not be sent while the provider is unavailable.</div>
+                        @endunless
 
 
                         <form
@@ -2487,6 +2552,11 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
                                 id="tryOnProductImageId"
                                 name="product_image_id"
                             >
+
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" id="tryOnConsent" name="privacy_consent" type="checkbox" value="1" required>
+                                <label class="form-check-label small" for="tryOnConsent">I agree to send this photo and selected product image to the configured external AI provider. The uploaded photo is deleted from this server after the generation request; the provider may process or retain submitted images under its own policies. Generated results are kept privately for up to 24 hours.</label>
+                            </div>
 
 
                             <input
@@ -2506,8 +2576,9 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
                                     class="btnx primary"
                                     type="submit"
                                     id="tryOnSubmit"
+                                    {{ $tryOnReady ? '' : 'disabled' }}
                                 >
-                                    ✨ Try Product On Me
+                                    ✨ Generate My Try-On
                                 </button>
 
 
@@ -2530,6 +2601,8 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
                             alt="Customer photo preview"
                         >
 
+                        <button type="button" class="btnx d-none" id="tryOnChangePhoto">Replace Photo</button>
+
 
                         <div
                             class="mt-4 d-none"
@@ -2547,6 +2620,13 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
                                 alt="AI-generated virtual try-on preview"
                             >
 
+                            <p class="small text-muted mt-2">AI-generated preview · may differ from real fit, colour, or appearance.</p>
+
+                            <div class="row g-3 mt-1" id="tryOnComparison">
+                                <div class="col-6"><div class="small fw-bold mb-1">Original Photo</div><img id="tryOnOriginal" class="img-fluid" alt="Original customer photo"></div>
+                                <div class="col-6"><div class="small fw-bold mb-1">AI Try-On Preview</div><img id="tryOnComparisonResult" class="img-fluid" alt="AI-generated try-on preview"></div>
+                            </div>
+
 
                             <div class="actions">
 
@@ -2557,6 +2637,9 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
                                 >
                                     🔄 Try Again
                                 </button>
+
+                                <a class="btnx success" id="tryOnDownload" href="#" download="smart-basket-try-on.png">Download result</a>
+                                <button class="btnx" type="button" id="tryOnDiscard">Discard photo and result</button>
 
 
                                 <label
@@ -2576,23 +2659,6 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
                                 </button>
 
 
-                                <form
-                                    action="{{ route('cart.add',$product) }}"
-                                    method="POST"
-                                >
-
-                                    @csrf
-
-                                    <button
-                                        class="btnx primary"
-                                        type="submit"
-                                    >
-                                        🛒 Add to Cart
-                                    </button>
-
-                                </form>
-
-
                                 <a
                                     class="btnx success"
                                     href="{{ url('/buy-now/'.$product->id) }}"
@@ -2605,6 +2671,11 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
                         </div>
 
                     </section>
+
+                    @else
+                        <p class="small text-muted mt-4">AI Virtual Try-On is currently available for clothing and footwear items only. This product cannot be previewed reliably.</p>
+
+                    @endif
 
                 </div>
 
@@ -2720,49 +2791,45 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
        PRODUCT IMAGE GALLERY
     ====================================================== */
 
-    document
-        .querySelectorAll('.thumb')
-        .forEach(button => {
-
-            button.addEventListener(
-                'click',
-                () => {
-
-                    document
-                        .getElementById(
-                            'mainProductImage'
-                        )
-                        .src =
-                        button.dataset.image;
-
-
-                    document
-                        .getElementById(
-                            'tryOnProductImageId'
-                        )
-                        .value =
-                        button.dataset.productImageId
-                        || '';
-
-
-                    document
-                        .querySelectorAll('.thumb')
-                        .forEach(
-                            item =>
-                                item.classList.remove(
-                                    'active'
-                                )
-                        );
-
-
-                    button.classList.add(
-                        'active'
-                    );
-
-                }
-            );
-
+    const mediaThumbs = [...document.querySelectorAll('.thumb')];
+    let activeMediaIndex = 0;
+    const showMedia = (index) => {
+        if (!mediaThumbs.length) return;
+        activeMediaIndex = (index + mediaThumbs.length) % mediaThumbs.length;
+        const button = mediaThumbs[activeMediaIndex];
+        const image = document.getElementById('mainProductImage');
+        const video = document.getElementById('mainProductVideo');
+        if (video) { video.pause(); video.removeAttribute('src'); video.load(); }
+        if (button.dataset.mediaType === 'video') {
+            image.style.display = 'none';
+            video.style.display = 'block';
+            if (button.dataset.poster) video.poster = button.dataset.poster;
+            else video.removeAttribute('poster');
+            video.src = button.dataset.image;
+        } else {
+            video.style.display = 'none';
+            image.style.display = 'block';
+            image.src = button.dataset.image;
+        }
+        const productImageId = document.getElementById('tryOnProductImageId');
+        if (productImageId) productImageId.value = button.dataset.mediaType === 'image' ? (button.dataset.productImageId || '') : '';
+        const productPreview = document.getElementById('tryOnProductPreview');
+        if (productPreview && button.dataset.mediaType === 'image') productPreview.src = button.dataset.image;
+        const selectedLabel = document.getElementById('tryOnSelectedImageLabel');
+        if (selectedLabel) selectedLabel.textContent = button.querySelector('img')?.alt || 'Product video';
+        mediaThumbs.forEach((item, itemIndex) => {
+            item.classList.toggle('active', itemIndex === activeMediaIndex);
+            item.setAttribute('aria-current', itemIndex === activeMediaIndex ? 'true' : 'false');
         });
+    };
+    mediaThumbs.forEach((button, index) => button.addEventListener('click', () => showMedia(index)));
+    document.querySelector('.gallery-prev')?.addEventListener('click', () => showMedia(activeMediaIndex - 1));
+    document.querySelector('.gallery-next')?.addEventListener('click', () => showMedia(activeMediaIndex + 1));
+    document.addEventListener('keydown', (event) => {
+        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+        if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return;
+        showMedia(activeMediaIndex + (event.key === 'ArrowRight' ? 1 : -1));
+    });
 
 
     /* =====================================================
@@ -2890,6 +2957,16 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
             'tryOnResult'
         );
 
+    const originalResult = document.getElementById('tryOnOriginal');
+    const comparisonResult = document.getElementById('tryOnComparisonResult');
+    const downloadResult = document.getElementById('tryOnDownload');
+    const panel = document.getElementById('virtualTryOn');
+    let photoPreviewUrl = null;
+
+    document.getElementById('tryOnOpen')?.addEventListener('click', () => { panel.classList.remove('d-none'); panel.scrollIntoView({behavior:'smooth', block:'center'}); });
+    document.getElementById('tryOnClose')?.addEventListener('click', () => panel.classList.add('d-none'));
+    document.getElementById('tryOnChangePhoto')?.addEventListener('click', () => input.click());
+
 
     function showMessage(
         text,
@@ -2926,6 +3003,10 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
                 URL.createObjectURL(
                     file
                 );
+            if(photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
+            photoPreviewUrl = preview.src;
+
+            originalResult.src = preview.src;
 
 
             preview.classList.remove(
@@ -2936,6 +3017,7 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
             remove.classList.remove(
                 'd-none'
             );
+            document.getElementById('tryOnChangePhoto')?.classList.remove('d-none');
 
         }
     );
@@ -2951,6 +3033,10 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
                 'src'
             );
 
+            originalResult.removeAttribute('src');
+            if(photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
+            photoPreviewUrl = null;
+
             preview.classList.add(
                 'd-none'
             );
@@ -2958,6 +3044,7 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
             remove.classList.add(
                 'd-none'
             );
+            document.getElementById('tryOnChangePhoto')?.classList.add('d-none');
 
         }
     );
@@ -3010,6 +3097,8 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
 
             submit.disabled =
                 true;
+            form.classList.add('is-processing');
+            submit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating your preview…';
 
 
             showMessage(
@@ -3068,6 +3157,10 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
                 result.src =
                     data.result_url;
 
+                comparisonResult.src = data.result_url;
+                downloadResult.href = data.download_url;
+                result.dataset.discardUrl = data.discard_url;
+
 
                 resultWrap.classList.remove(
                     'd-none'
@@ -3091,11 +3184,45 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
 
                 submit.disabled =
                     false;
+                form.classList.remove('is-processing');
+                submit.innerHTML = '✨ Generate My Try-On';
 
             }
 
         }
     );
+
+    async function discardTryOn(){
+        try {
+            if(result.dataset.discardUrl){
+                const response = await fetch(result.dataset.discardUrl, {
+                    method: 'DELETE',
+                    headers: {'X-CSRF-TOKEN': form.querySelector('[name="_token"]').value, 'Accept': 'application/json'}
+                });
+                if (!response.ok) throw new Error('Could not discard this result.');
+            }
+            resultWrap.classList.add('d-none');
+            input.value = '';
+            preview.removeAttribute('src');
+            preview.classList.add('d-none');
+            originalResult.removeAttribute('src');
+            remove.classList.add('d-none');
+            document.getElementById('tryOnChangePhoto')?.classList.add('d-none');
+            if(photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
+            photoPreviewUrl = null;
+            result.removeAttribute('src');
+            comparisonResult.removeAttribute('src');
+            originalResult.removeAttribute('src');
+            downloadResult.removeAttribute('href');
+            delete result.dataset.discardUrl;
+            document.getElementById('tryOnChangePhoto')?.classList.add('d-none');
+            showMessage('The uploaded photo and generated result were cleared from this page. Any saved server result was deleted.', true);
+        } catch (error) {
+            showMessage(error.message);
+        }
+    }
+    document.getElementById('tryOnDiscard')?.addEventListener('click', discardTryOn);
+    document.getElementById('tryOnReset')?.addEventListener('click', discardTryOn);
 
 
     /* =====================================================

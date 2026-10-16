@@ -623,6 +623,7 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/customer-page-title.css') }}">
 </head>
 
 @php
@@ -650,9 +651,11 @@
                 </div>
 
                 <div>
-                    <h1 class="cart-title">
+                    <x-customer-page-hero>
+<h1 class="cart-title sb-customer-page-title">
                         Your Cart
                     </h1>
+</x-customer-page-hero>
 
                     <p class="cart-subtitle">
                         Review your products before checkout.
@@ -947,6 +950,8 @@
 
 
 <x-ai-hub-sidebar />
+
+@include('customer.partials.smart-ai-robot')
 
 </body>
 </html>

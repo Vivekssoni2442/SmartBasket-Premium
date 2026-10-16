@@ -1030,9 +1030,11 @@
 
                 </span>
 
-                <h1>
+                <x-customer-page-hero>
+<h1 class="sb-customer-page-title">
                     Gift Finder 🎁
                 </h1>
+</x-customer-page-hero>
 
                 <p>
                     Find thoughtful gifts for every special

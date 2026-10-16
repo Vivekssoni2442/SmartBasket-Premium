@@ -1030,7 +1030,7 @@
                 </div>
 
                 @foreach([
-                    ['name' => 'pan_document', 'field' => 'pan_document_path', 'title' => 'PAN Document', 'description' => 'Tax identity proof'],
+                    ['name' => 'pan_document', 'field' => 'pan_document_path', 'title' => 'PAN Card', 'description' => 'Tax identity proof'],
                     ['name' => 'shop_proof', 'field' => 'shop_proof_path', 'title' => 'Shop / Business Proof', 'description' => 'Proof of business address'],
                     ['name' => 'bank_proof', 'field' => 'bank_proof_path', 'title' => 'Bank Proof', 'description' => 'Bank statement or cancelled cheque'],
                 ] as $document)

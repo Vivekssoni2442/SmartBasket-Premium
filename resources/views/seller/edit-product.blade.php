@@ -3052,6 +3052,21 @@
 
                                     </div>
 
+                                    <label class="ep-tool-card-title mt-3" for="additionalVideos">Add more videos (up to 8, {{ config('product-media.max_video_size_mb', 100) }} MB each)</label>
+                                    <input type="file" name="videos[]" id="additionalVideos" class="form-control" accept="video/mp4,video/webm,video/quicktime" multiple>
+
+                                    @if($product->videos->isNotEmpty())
+                                        <div class="ep-gallery-heading mt-3">Existing additional videos</div>
+                                        <div class="ep-gallery">
+                                            @foreach($product->videos as $extraVideo)
+                                                <label class="ep-gallery-card" style="padding:10px">
+                                                    <video src="{{ asset('storage/' . $extraVideo->path) }}" controls preload="metadata" style="width:100%;max-height:140px"></video>
+                                                    <span><input type="checkbox" name="remove_video_ids[]" value="{{ $extraVideo->id }}"> Remove this video</span>
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                    @endif
+
 
                                     <div class="ep-note">
 
@@ -3470,6 +3485,8 @@
 
                                     </label>
 
+                                    <div class="ep-note">Maximum video size: {{ config('product-media.max_video_size_mb', 100) }} MB.</div>
+
 
                                     <div
                                         class="ep-selected-file"
@@ -3804,6 +3821,11 @@
                                         accept="image/jpeg,image/png,image/webp"
                                     >
 
+                                    @if($product->video_poster)
+                                        <img src="{{ asset('storage/' . $product->video_poster) }}" alt="Current product video poster" style="display:block;max-width:240px;max-height:140px;margin-top:10px;border-radius:10px;">
+                                    @endif
+                                    <img id="videoPosterPreview" alt="Selected video poster preview" style="display:none;max-width:240px;max-height:140px;margin-top:10px;border-radius:10px;">
+
 
                                     <div class="ep-note">
 
@@ -3933,6 +3955,16 @@
 
             const selectedFileName =
                 document.getElementById('selectedVideoFileName');
+
+            const maxVideoSizeMb = {{ config('product-media.max_video_size_mb', 100) }};
+            const maxVideoBytes = maxVideoSizeMb * 1024 * 1024;
+            document.getElementById('additionalVideos')?.addEventListener('change', function () {
+                const tooLarge = Array.from(this.files || []).some(file => file.size > maxVideoBytes);
+                if (tooLarge) {
+                    window.alert(`Each video must be no larger than ${maxVideoSizeMb} MB.`);
+                    this.value = '';
+                }
+            });
 
 
             const durationElement =
@@ -4520,6 +4552,13 @@
                     return;
                 }
 
+                if (file.size > maxVideoBytes) {
+                    window.alert(`Video size must not exceed ${maxVideoSizeMb} MB.`);
+                    uploadInput.value = '';
+                    selectedFile.classList.remove('show');
+                    return;
+                }
+
 
                 if (!file.type.startsWith('video/')) {
 
@@ -4713,6 +4752,11 @@
                         const file =
                             files[0];
 
+                        if (file.size > maxVideoBytes) {
+                            window.alert(`Video size must not exceed ${maxVideoSizeMb} MB.`);
+                            return;
+                        }
+
 
                         if (!file.type.startsWith('video/')) {
 
@@ -4825,6 +4869,232 @@
     </script>
 
 
+
+<script>
+(function () {
+    'use strict';
+
+    const form = document.getElementById('editProductForm');
+    if (!form) return;
+
+    const imageInputs = [
+        document.getElementById('mainProductImage'),
+        document.getElementById('additionalProductImages')
+    ].filter(Boolean);
+
+    const MAX_BYTES = 1500 * 1024;
+    const MAX_DIMENSION = 2200;
+
+    function loadImage(file) {
+        return new Promise((resolve, reject) => {
+            const url = URL.createObjectURL(file);
+            const img = new Image();
+
+            img.onload = () => {
+                URL.revokeObjectURL(url);
+                resolve(img);
+            };
+
+            img.onerror = () => {
+                URL.revokeObjectURL(url);
+                reject(new Error('Unable to read image.'));
+            };
+
+            img.src = url;
+        });
+    }
+
+    function canvasBlob(canvas, type, quality) {
+        return new Promise((resolve, reject) => {
+            canvas.toBlob(
+                blob => blob ? resolve(blob) : reject(new Error('Image conversion failed.')),
+                type,
+                quality
+            );
+        });
+    }
+
+    async function compressImage(file) {
+        if (!file || !file.type.startsWith('image/')) return file;
+        if (file.size <= MAX_BYTES) return file;
+
+        const img = await loadImage(file);
+
+        let width = img.naturalWidth || img.width;
+        let height = img.naturalHeight || img.height;
+
+        if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+            const scale = Math.min(
+                MAX_DIMENSION / width,
+                MAX_DIMENSION / height
+            );
+            width = Math.max(1, Math.round(width * scale));
+            height = Math.max(1, Math.round(height * scale));
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d', { alpha: false });
+        if (!ctx) return file;
+
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+
+        let quality = 0.88;
+        let blob = await canvasBlob(canvas, 'image/jpeg', quality);
+
+        while (blob.size > MAX_BYTES && quality > 0.45) {
+            quality -= 0.08;
+            blob = await canvasBlob(canvas, 'image/jpeg', quality);
+        }
+
+        if (blob.size > MAX_BYTES) {
+            let scale = 0.85;
+
+            while (blob.size > MAX_BYTES && scale >= 0.45) {
+                width = Math.max(600, Math.round(width * scale));
+                height = Math.max(600, Math.round(height * scale));
+
+                canvas.width = width;
+                canvas.height = height;
+
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, width, height);
+                ctx.drawImage(img, 0, 0, width, height);
+
+                blob = await canvasBlob(canvas, 'image/jpeg', 0.72);
+                scale -= 0.10;
+            }
+        }
+
+        if (blob.size >= file.size) {
+            return file;
+        }
+
+        const baseName = file.name.replace(/\.[^/.]+$/, '') || 'product-image';
+
+        return new File(
+            [blob],
+            baseName + '.jpg',
+            {
+                type: 'image/jpeg',
+                lastModified: Date.now()
+            }
+        );
+    }
+
+    function setFiles(input, files) {
+        const dt = new DataTransfer();
+
+        Array.from(files).forEach(file => dt.items.add(file));
+        input.files = dt.files;
+    }
+
+    function showCompressionStatus(message, error = false) {
+        let box = document.getElementById('imageUploadStatus');
+
+        if (!box) {
+            box = document.createElement('div');
+            box.id = 'imageUploadStatus';
+            box.style.cssText =
+                'margin:12px 0;padding:12px 14px;border-radius:10px;' +
+                'font:600 13px Inter,Arial,sans-serif;border:1px solid #dbe5f4;';
+            form.prepend(box);
+        }
+
+        box.textContent = message;
+        box.style.background = error ? '#fef2f2' : '#eff6ff';
+        box.style.color = error ? '#b91c1c' : '#1d4ed8';
+        box.style.borderColor = error ? '#fecaca' : '#bfdbfe';
+    }
+
+    let preparing = false;
+
+    form.addEventListener('submit', async function (event) {
+        if (form.dataset.imagesPrepared === 'true') {
+            return;
+        }
+
+        if (preparing) {
+            event.preventDefault();
+            return;
+        }
+
+        const files = [];
+
+        imageInputs.forEach(input => {
+            Array.from(input.files || []).forEach(file => {
+                files.push({ input, file });
+            });
+        });
+
+        if (!files.length) {
+            return;
+        }
+
+        const oversized = files.filter(item => item.file.size > MAX_BYTES);
+
+        if (!oversized.length) {
+            return;
+        }
+
+        event.preventDefault();
+        preparing = true;
+
+        showCompressionStatus(
+            'Preparing product images for upload… Please wait.'
+        );
+
+        try {
+            for (const item of oversized) {
+                const compressed = await compressImage(item.file);
+
+                if (item.input.multiple) {
+                    const current = Array.from(item.input.files || []);
+                    const index = current.indexOf(item.file);
+
+                    if (index !== -1) {
+                        current[index] = compressed;
+                        setFiles(item.input, current);
+                    }
+                } else {
+                    setFiles(item.input, [compressed]);
+                }
+            }
+
+            form.dataset.imagesPrepared = 'true';
+            showCompressionStatus(
+                'Images prepared successfully. Uploading product…'
+            );
+
+            form.submit();
+        } catch (error) {
+            console.error(error);
+            preparing = false;
+            showCompressionStatus(
+                'The selected image could not be prepared. Please use JPG/PNG/WEBP under 2 MB.',
+                true
+            );
+        }
+    });
+})();
+let selectedPosterUrl = null;
+document.getElementById('videoPoster')?.addEventListener('change', function () {
+    const preview = document.getElementById('videoPosterPreview');
+    if (selectedPosterUrl) URL.revokeObjectURL(selectedPosterUrl);
+    selectedPosterUrl = this.files?.[0] ? URL.createObjectURL(this.files[0]) : null;
+    if (preview) {
+        preview.src = selectedPosterUrl || '';
+        preview.style.display = selectedPosterUrl ? 'block' : 'none';
+    }
+});
+window.addEventListener('beforeunload', () => {
+    if (selectedPosterUrl) URL.revokeObjectURL(selectedPosterUrl);
+});
+</script>
 </body>
 
 </html>

@@ -2249,7 +2249,7 @@
 
                                             <i class="fa-solid fa-money-bill-wave"></i>
 
-                                            COD
+                                            Cash
 
                                         </span>
 
@@ -3045,7 +3045,7 @@
 
                                             <i class="fa-solid fa-money-bill-wave me-1"></i>
 
-                                            Cash on Delivery
+                                            Cash
 
                                         </span>
 

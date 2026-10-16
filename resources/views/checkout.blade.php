@@ -106,7 +106,7 @@ html[data-theme="light"] .ai-hub-fab{background:linear-gradient(145deg,#fff,#eef
 html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f,#020711)!important}html[data-theme="dark"] .ai-hub-fab{background:linear-gradient(145deg,#1e293b,#050a14)!important}
 
 /* Robot launcher is hidden; its original panel remains fully functional */
-.sb-products-smart-ai-host>.smart-ai>.smart-ai__launch{opacity:0!important;visibility:hidden!important;pointer-events:none!important;position:fixed!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important}.sb-products-smart-ai-host [data-smart-ai-panel]{z-index:100001!important}
+
 
 @media(max-width:1350px){.sb-products-brand{flex-basis:185px;min-width:175px}.sb-pnav-btn{min-width:70px;padding:0 7px;font-size:10px}.sb-taskbar-user{flex-basis:125px}}
 @media(max-width:1120px){.sb-brand-copy{display:none}.sb-products-brand{flex-basis:65px;min-width:65px;justify-content:center;padding:5px}.sb-pnav-btn span{display:none}.sb-pnav-btn{min-width:52px;padding:0}.sb-taskbar-user{flex-basis:90px;min-width:90px}.sb-user-text strong{max-width:52px}}
@@ -2173,6 +2173,7 @@ body {
 }
 </style>
 
+    <link rel="stylesheet" href="{{ asset('css/customer-page-title.css') }}">
 </head>
 
 @php
@@ -2582,6 +2583,8 @@ body {
                      GRID
                 ================================================== -->
 
+                <x-customer-page-hero title="Complete Your Order" subtitle="Follow each step to safely place your order." />
+
                 <div class="checkout-grid">
 
 
@@ -2592,29 +2595,7 @@ body {
                     <div class="checkout-card">
 
                         <div class="checkout-header">
-
-                            <div class="title-wrap">
-
-                                <div class="title-icon">
-                                    🛍️
-                                </div>
-
-                                <div>
-
-                                    <h1 class="checkout-title">
-                                        Complete Your Order
-                                    </h1>
-
-                                    <p class="checkout-subtitle">
-                                        Follow each step to safely place your order.
-                                    </p>
-
-                                </div>
-
-                            </div>
-
-
-                            <div class="protected-badge">
+<div class="protected-badge">
                                 🛡️ Protected
                             </div>
 
@@ -3245,99 +3226,9 @@ body {
                                         </div>
 
 
-                                        <label
-                                            class="form-label"
-                                            for="upiId"
-                                        >
-                                            UPI ID
-                                        </label>
-
-
-                                        <div class="upi-id-wrap">
-
-                                            <input
-                                                type="text"
-                                                name="upi_id"
-                                                id="upiId"
-                                                class="form-control"
-                                                placeholder="example@upi"
-                                                autocomplete="off"
-                                            >
-
-
-                                            <button
-                                                type="button"
-                                                class="upi-copy-btn"
-                                                id="copyUpiBtn"
-                                            >
-                                                📋 Copy
-                                            </button>
-
+                <div class="payment-description mb-0">
+                                            UPI payments are opened and verified through Smart Basket's secure payment provider. Seller uploaded QR images are not used at checkout.
                                         </div>
-
-
-                                        @forelse($paymentSellers as $paymentSeller)
-
-                                            @if($paymentSeller->payment_qr)
-
-                                                <div class="qr-card">
-
-                                                    <div class="qr-label">
-                                                        🔐 SECURE SELLER PAYMENT
-                                                    </div>
-
-
-                                                    <div class="qr-pay-title">
-
-                                                        Pay
-                                                        {{ $paymentSeller->shop_name
-                                                            ?: $paymentSeller->seller_name }}
-
-                                                    </div>
-
-
-                                                    <img
-                                                       @php
-    $paymentQrPath = ltrim($paymentSeller->payment_qr, '/');
-
-    if (str_starts_with($paymentQrPath, 'storage/')) {
-        $paymentQrPath = substr($paymentQrPath, strlen('storage/'));
-    }
-
-    $paymentQrUrl = \Illuminate\Support\Facades\Storage::disk('public')->url(
-        $paymentQrPath
-    );
-@endphp
-
-<img
-    src="{{ $paymentQrUrl }}"
-    alt="Seller Payment QR"
-    loading="lazy"
->
-                                                        alt="Seller Payment QR"
-                                                    >
-
-
-                                                    <div class="qr-pay-title">
-                                                        Scan & Pay
-                                                    </div>
-
-
-                                                    <div class="qr-note">
-                                                        Open your UPI application and scan this QR code.
-                                                    </div>
-
-                                                </div>
-
-                                            @endif
-
-                                        @empty
-
-                                            <div class="payment-description mb-0">
-                                                Seller payment QR is not available.
-                                            </div>
-
-                                        @endforelse
 
                                     </div>
 

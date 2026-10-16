@@ -19,7 +19,6 @@
         @yield('title', 'Smart Basket')
     </title>
 
-
     {{-- =========================================================
          THEME — APPLY BEFORE PAGE PAINT
     ========================================================== --}}
@@ -1079,6 +1078,11 @@ document.addEventListener(
 );
 
 </script>
+
+
+<div class="customer-global-smart-ai">
+    <x-smart-ai-robot />
+</div>
 
 
 @stack('scripts')

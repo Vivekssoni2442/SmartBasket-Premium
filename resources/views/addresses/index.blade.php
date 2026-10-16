@@ -1,8 +1,9 @@
 @extends('layouts.customer')
 
 @section('content')
-<div class="container py-5" style="max-width:900px">
-    <div class="d-flex justify-content-between align-items-center mb-4"><div><h1 class="h3 mb-1">Delivery addresses</h1><p class="text-muted mb-0">Manage the addresses available at checkout.</p></div><a class="btn btn-outline-primary" href="{{ route('profile') }}">Profile</a></div>
+<div class="container-fluid py-4">
+    <x-customer-page-hero title="Delivery addresses" subtitle="Manage the addresses available at checkout." />
+    <div class="d-flex justify-content-end mb-4"><a class="btn btn-outline-primary" href="{{ route('profile') }}">Profile</a></div>
     @if(session('success')) <div class="alert alert-success">{{ session('success') }}</div> @endif
     @if($errors->any()) <div class="alert alert-danger">{{ $errors->first() }}</div> @endif
     <div class="row g-3 mb-4">@forelse($addresses as $address)<div class="col-md-6"><div class="card h-100 shadow-sm"><div class="card-body"><div class="d-flex justify-content-between"><strong>{{ $address->label }}</strong>@if($address->is_default)<span class="badge text-bg-primary">Default</span>@endif</div><p class="mb-1 mt-3">{{ $address->recipient_name }} · {{ $address->phone }}</p><p class="text-muted mb-3">{{ $address->address_line }}, {{ $address->city }}, {{ $address->state }} {{ $address->pincode }}</p><div class="d-flex gap-2"><form method="POST" action="{{ route('addresses.default', $address) }}">@csrf<button class="btn btn-sm btn-outline-primary" @disabled($address->is_default)>Set default</button></form><form method="POST" action="{{ route('addresses.destroy', $address) }}" onsubmit="return confirm('Remove this address?')">@csrf @method('DELETE')<button class="btn btn-sm btn-outline-danger">Remove</button></form></div></div></div></div>@empty <p class="text-muted">No saved addresses yet.</p>@endforelse</div>

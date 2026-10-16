@@ -35,6 +35,36 @@ class SellerPaymentHistoryTest extends TestCase
         $this->assertSame($rahul->customer_uid, $secondPaymentA->user->customer_uid);
     }
 
+    public function test_seller_payment_details_label_cod_as_cash_without_changing_unsettled_payment_state(): void
+    {
+        $seller = $this->seller('cod');
+        $product = Product::create(['seller_id' => $seller->id, 'name' => 'COD Product', 'category' => 'Test', 'price' => 500, 'stock' => 1]);
+        $customer = User::factory()->create();
+        $order = Order::create([
+            'user_id' => $customer->id,
+            'seller_id' => $seller->id,
+            'name' => $customer->name,
+            'mobile' => '9999999999',
+            'address' => 'Address',
+            'city' => 'Pune',
+            'total' => 500,
+            'amount' => 500,
+            'status' => 'Confirmed',
+            'payment_method' => 'COD',
+            'payment_status' => 'Pending',
+            'order_status' => 'Confirmed',
+            'delivery_status' => 'Pending',
+            'items' => [['product_id' => $product->id, 'seller_id' => $seller->id, 'name' => $product->name, 'quantity' => 1, 'price' => 500]],
+        ]);
+
+        $this->withSession(['seller_login' => true, 'seller_id' => $seller->id])
+            ->get(route('seller.payments.show', $order))
+            ->assertOk()
+            ->assertSee('Cash');
+
+        $this->assertSame('Pending', $order->fresh()->payment_status);
+    }
+
     private function seller(string $suffix): SellerProfile
     {
         return SellerProfile::create(['seller_name' => "Seller {$suffix}", 'shop_name' => "Shop {$suffix}", 'email' => "{$suffix}@example.test", 'mobile_number' => '9999999999', 'password' => bcrypt('Password1!'), 'online_payments_enabled' => true]);

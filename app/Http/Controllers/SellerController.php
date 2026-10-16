@@ -6,12 +6,17 @@ use App\Models\Product;
 use App\Models\Order;
 use App\Models\Notification;
 use App\Models\SellerProfile;
+use App\Services\SiteSettings;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\File\UploadedFile as SymfonyUploadedFile;
 
 class SellerController extends Controller
 {
@@ -44,6 +49,10 @@ class SellerController extends Controller
             'email',
             $credentials['email']
         )->first();
+
+        if ($seller && $seller->isBlocked()) {
+            return back()->withInput($request->only('email'))->with('error', 'This seller account is blocked. Please contact Smart Basket support for assistance.');
+        }
 
         if (
             !$seller ||
@@ -97,11 +106,13 @@ class SellerController extends Controller
 
     public function showRegistration()
     {
+        abort_unless(app(SiteSettings::class)->enabled('seller_registration_enabled'), 404);
         return view('auth.seller-register');
     }
 
     public function register(Request $request)
     {
+        abort_unless(app(SiteSettings::class)->enabled('seller_registration_enabled'), 404);
         $validated = $request->validate([
             'seller_name' => [
                 'required',
@@ -956,6 +967,11 @@ class SellerController extends Controller
         $sellerId =
             $this->currentSeller()->id;
 
+        $this->rejectPhpUploadErrors($request);
+
+        $maxVideoSizeKb = config('product-media.max_video_size_kb', 102400);
+        $maxVideoSizeMb = config('product-media.max_video_size_mb', 100);
+
         /*
         |--------------------------------------------------------------------------
         | VALIDATION
@@ -992,7 +1008,15 @@ class SellerController extends Controller
             */
 
             'video' =>
-                'nullable|file|mimetypes:video/mp4,video/webm,video/quicktime|max:20480',
+                'nullable|file|mimetypes:video/mp4,video/webm,video/quicktime|max:' . $maxVideoSizeKb,
+
+            'video_poster' =>
+                'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+
+            'videos' => 'nullable|array|max:8',
+            'videos.*' => 'nullable|file|mimetypes:video/mp4,video/webm,video/quicktime|max:' . $maxVideoSizeKb,
+            'remove_video_ids' => 'nullable|array|max:8',
+            'remove_video_ids.*' => 'integer|distinct',
 
             'rating' =>
                 'nullable|numeric|min:0|max:5',
@@ -1008,6 +1032,9 @@ class SellerController extends Controller
 
             'status' =>
                 'nullable|in:active,inactive',
+        ], [
+            'video.max' => "Product video must not exceed {$maxVideoSizeMb} MB.",
+            'videos.*.max' => "Each additional product video must not exceed {$maxVideoSizeMb} MB.",
         ]);
 
         /*
@@ -1124,6 +1151,13 @@ class SellerController extends Controller
                     $videoPath
                 )
             ) {
+                Log::error('Seller product video storage verification failed.', [
+                    'request_id' => $this->productUploadRequestId($request),
+                    'product_id' => $product->id,
+                    'field' => 'video',
+                    'path_returned' => (bool) $videoPath,
+                ]);
+
                 return back()
                     ->withInput()
                     ->withErrors([
@@ -1138,6 +1172,24 @@ class SellerController extends Controller
             $product->save();
         }
 
+        if ($request->hasFile('video_poster')) {
+            $posterPath = $request->file('video_poster')->store('product-video-posters', 'public');
+            if (!$posterPath || !Storage::disk('public')->exists($posterPath)) {
+                Log::error('Seller product poster storage verification failed.', [
+                    'request_id' => $this->productUploadRequestId($request),
+                    'product_id' => $product->id,
+                    'field' => 'video_poster',
+                    'path_returned' => (bool) $posterPath,
+                ]);
+
+                return back()->withInput()->withErrors([
+                    'video_poster' => 'The video poster could not be saved. Please try again.',
+                ]);
+            }
+            $product->video_poster = $posterPath;
+            $product->save();
+        }
+
         /*
         |--------------------------------------------------------------------------
         | ADDITIONAL PRODUCT IMAGES
@@ -1148,6 +1200,8 @@ class SellerController extends Controller
             $request,
             $product
         );
+
+        $this->storeAdditionalVideos($request, $product);
 
         /*
         |--------------------------------------------------------------------------
@@ -1187,7 +1241,7 @@ class SellerController extends Controller
                 'seller_id',
                 $this->currentSeller()->id
             )
-                ->with('images')
+                ->with(['images', 'videos'])
                 ->findOrFail(
                     $id
                 );
@@ -1238,6 +1292,11 @@ class SellerController extends Controller
                     $id
                 );
 
+        $this->rejectPhpUploadErrors($request);
+
+        $maxVideoSizeKb = config('product-media.max_video_size_kb', 102400);
+        $maxVideoSizeMb = config('product-media.max_video_size_mb', 100);
+
         /*
         |--------------------------------------------------------------------------
         | VALIDATION
@@ -1274,7 +1333,12 @@ class SellerController extends Controller
             */
 
             'video' =>
-                'nullable|file|mimetypes:video/mp4,video/webm,video/quicktime|max:20480',
+                'nullable|file|mimetypes:video/mp4,video/webm,video/quicktime|max:' . $maxVideoSizeKb,
+
+            'videos' => 'nullable|array|max:8',
+            'videos.*' => 'nullable|file|mimetypes:video/mp4,video/webm,video/quicktime|max:' . $maxVideoSizeKb,
+            'remove_video_ids' => 'nullable|array|max:8',
+            'remove_video_ids.*' => 'integer|distinct',
 
             'video_poster' =>
                 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
@@ -1314,6 +1378,9 @@ class SellerController extends Controller
 
             'status' =>
                 'nullable|in:active,inactive',
+        ], [
+            'video.max' => "Product video must not exceed {$maxVideoSizeMb} MB.",
+            'videos.*.max' => "Each additional product video must not exceed {$maxVideoSizeMb} MB.",
         ]);
 
         /*
@@ -1419,6 +1486,9 @@ class SellerController extends Controller
                 $imageName;
         }
 
+        $oldVideoPath = $product->video;
+        $oldPosterPath = $product->video_poster;
+
         /*
         |--------------------------------------------------------------------------
         | REMOVE EXISTING VIDEO
@@ -1430,20 +1500,9 @@ class SellerController extends Controller
                 'remove_video'
             )
         ) {
-            if (
-                !empty(
-                    $product->video
-                )
-            ) {
-                Storage::disk(
-                    'public'
-                )->delete(
-                    $product->video
-                );
-            }
-
             $data['video'] =
                 null;
+            $data['video_poster'] = null;
         }
 
         /*
@@ -1457,24 +1516,6 @@ class SellerController extends Controller
                 'video'
             )
         ) {
-            /*
-            |----------------------------------------------------------------------
-            | DELETE OLD VIDEO
-            |----------------------------------------------------------------------
-            */
-
-            if (
-                !empty(
-                    $product->video
-                )
-            ) {
-                Storage::disk(
-                    'public'
-                )->delete(
-                    $product->video
-                );
-            }
-
             /*
             |----------------------------------------------------------------------
             | NEW VIDEO
@@ -1511,6 +1552,13 @@ class SellerController extends Controller
                     $videoPath
                 )
             ) {
+                Log::error('Seller product video storage verification failed.', [
+                    'request_id' => $this->productUploadRequestId($request),
+                    'product_id' => $product->id,
+                    'field' => 'video',
+                    'path_returned' => (bool) $videoPath,
+                ]);
+
                 return back()
                     ->withInput()
                     ->withErrors([
@@ -1521,6 +1569,29 @@ class SellerController extends Controller
 
             $data['video'] =
                 $videoPath;
+
+            // A poster belongs to the video it was uploaded with. Clear the old
+            // one on replacement unless the seller supplies a replacement poster.
+            if (!$request->hasFile('video_poster')) {
+                $data['video_poster'] = null;
+            }
+        }
+
+        if ($request->hasFile('video_poster')) {
+            $posterPath = $request->file('video_poster')->store('product-video-posters', 'public');
+            if (!$posterPath || !Storage::disk('public')->exists($posterPath)) {
+                Log::error('Seller product poster storage verification failed.', [
+                    'request_id' => $this->productUploadRequestId($request),
+                    'product_id' => $product->id,
+                    'field' => 'video_poster',
+                    'path_returned' => (bool) $posterPath,
+                ]);
+
+                return back()->withInput()->withErrors([
+                    'video_poster' => 'The video poster could not be saved. Please try again.',
+                ]);
+            }
+            $data['video_poster'] = $posterPath;
         }
 
         /*
@@ -1533,6 +1604,20 @@ class SellerController extends Controller
             $data
         );
 
+        if (
+            !empty($oldVideoPath) &&
+            array_key_exists('video', $data) &&
+            $oldVideoPath !== $data['video']
+        ) {
+            Storage::disk('public')->delete($oldVideoPath);
+        }
+
+        if (!empty($oldPosterPath) && array_key_exists('video_poster', $data) && $oldPosterPath !== $data['video_poster']) {
+            Storage::disk('public')->delete($oldPosterPath);
+        }
+
+        $this->removeAdditionalVideos($request, $product);
+
         /*
         |--------------------------------------------------------------------------
         | ADDITIONAL IMAGES
@@ -1543,6 +1628,8 @@ class SellerController extends Controller
             $request,
             $product
         );
+
+        $this->storeAdditionalVideos($request, $product);
 
         /*
         |--------------------------------------------------------------------------
@@ -1602,6 +1689,10 @@ class SellerController extends Controller
             )->delete(
                 $product->video
             );
+        }
+
+        foreach ($product->videos as $extraVideo) {
+            Storage::disk('public')->delete($extraVideo->path);
         }
 
         $product->delete();
@@ -2486,8 +2577,25 @@ class SellerController extends Controller
         Request $request,
         Product $product
     ): void {
-        $request->validate([
+        /*
+        |--------------------------------------------------------------------------
+        | ADDITIONAL IMAGE UPLOAD
+        |--------------------------------------------------------------------------
+        |
+        | The old implementation used only Laravel's `image` rule. When PHP
+        | rejects an uploaded file before Laravel can process it (for example
+        | because upload_max_filesize/post_max_size is too small), Laravel
+        | reports `images.0 failed to upload`.
+        |
+        | This version validates the array first, checks every UploadedFile's
+        | actual upload status, stores each image on the public disk, verifies
+        | that the file really exists, and only then creates the DB record.
+        |
+        | Maximum: 8 gallery images, 8 MB each.
+        |--------------------------------------------------------------------------
+        */
 
+        $request->validate([
             'images' => [
                 'nullable',
                 'array',
@@ -2495,29 +2603,183 @@ class SellerController extends Controller
             ],
 
             'images.*' => [
+                'nullable',
+                'file',
                 'image',
                 'mimes:jpeg,jpg,png,webp',
-                'max:2048',
+                'max:8192',
             ],
         ]);
 
-        foreach (
-            $request->file(
-                'images',
-                []
-            ) as $index => $image
-        ) {
+        $files = $request->file('images', []);
+
+        if (!is_array($files)) {
+            $files = [$files];
+        }
+
+        foreach ($files as $index => $image) {
+            if (!$image) {
+                continue;
+            }
+
+            if (!$image->isValid()) {
+                $error = $image->getError();
+                $message = $image->getErrorMessage();
+
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    "images.$index" =>
+                        'Image upload failed. ' . $message .
+                        ($error === UPLOAD_ERR_INI_SIZE
+                            ? ' Increase PHP upload_max_filesize and post_max_size.'
+                            : ''),
+                ]);
+            }
+
+            $path = $image->store('product-images', 'public');
+
+            if (!$path || !Storage::disk('public')->exists($path)) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    "images.$index" =>
+                        'The additional product image could not be saved. Please try again.',
+                ]);
+            }
+
             $product->images()->create([
-
-                'path' =>
-                    $image->store(
-                        'product-images',
-                        'public'
-                    ),
-
-                'sort_order' =>
-                    $index,
+                'path' => $path,
+                'sort_order' => (int) $index,
             ]);
         }
+    }
+
+    /** Log PHP-level upload failures before Laravel's generic `uploaded` message hides the cause. */
+    private function rejectPhpUploadErrors(Request $request): void
+    {
+        $inspect = function ($files, string $field = '') use (&$inspect, $request): void {
+            foreach ((array) $files as $key => $file) {
+                $name = $field === '' ? (string) $key : $field . '.' . $key;
+
+                if (is_array($file)) {
+                    $inspect($file, $name);
+                    continue;
+                }
+
+                if (! $file instanceof SymfonyUploadedFile) {
+                    continue;
+                }
+
+                $error = $file->getError();
+                if ($error === UPLOAD_ERR_OK || $error === UPLOAD_ERR_NO_FILE) {
+                    continue;
+                }
+
+                $messages = [
+                    UPLOAD_ERR_INI_SIZE => 'The file exceeds the server per-file upload limit (' . ini_get('upload_max_filesize') . ').',
+                    UPLOAD_ERR_FORM_SIZE => 'The file exceeds the upload limit for this form.',
+                    UPLOAD_ERR_PARTIAL => 'The file upload was interrupted. Please retry the upload.',
+                    UPLOAD_ERR_NO_TMP_DIR => 'The server could not receive the file. Please contact support.',
+                    UPLOAD_ERR_CANT_WRITE => 'The server could not write the uploaded file. Please contact support.',
+                    UPLOAD_ERR_EXTENSION => 'The server blocked this file upload. Please contact support.',
+                ];
+                $message = $messages[$error] ?? 'The server could not receive this file. Please retry the upload.';
+                $requestId = $this->productUploadRequestId($request);
+                $tempDirectory = ini_get('upload_tmp_dir') ?: sys_get_temp_dir();
+
+                Log::warning('Seller product file rejected by PHP upload handling.', [
+                    'request_id' => $requestId,
+                    'field' => $name,
+                    'php_upload_error' => $error,
+                    'php_version' => PHP_VERSION,
+                    'php_sapi' => PHP_SAPI,
+                    'upload_max_filesize' => ini_get('upload_max_filesize'),
+                    'post_max_size' => ini_get('post_max_size'),
+                    'file_uploads' => ini_get('file_uploads'),
+                    'upload_tmp_dir_configured' => (bool) ini_get('upload_tmp_dir'),
+                    'upload_tmp_dir_writable' => is_dir($tempDirectory) && is_writable($tempDirectory),
+                ]);
+
+                throw ValidationException::withMessages([$name => $message]);
+            }
+        };
+
+        $inspect($request->allFiles());
+    }
+
+    private function productUploadRequestId(Request $request): string
+    {
+        $requestId = $request->attributes->get('product_upload_request_id');
+        if (! is_string($requestId) || ! Str::isUuid($requestId)) {
+            $requestId = (string) Str::uuid();
+            $request->attributes->set('product_upload_request_id', $requestId);
+        }
+
+        return $requestId;
+    }
+
+    /** Store additional product videos without replacing the legacy primary video. */
+    private function storeAdditionalVideos(Request $request, Product $product): void
+    {
+        $files = $request->file('videos', []);
+        if (! is_array($files)) {
+            $files = [$files];
+        }
+
+        $files = array_values(array_filter($files));
+        if ($product->videos()->count() + count($files) > 8) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'videos' => 'A product can have up to 8 additional videos.',
+            ]);
+        }
+
+        foreach ($files as $index => $video) {
+            if (! $video) {
+                continue;
+            }
+
+            if (! $video->isValid()) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    "videos.$index" => 'Video upload failed. Please try a smaller file.',
+                ]);
+            }
+
+            $path = $video->store('product-videos', 'public');
+            if (! $path || ! Storage::disk('public')->exists($path)) {
+                Log::error('Additional seller product video storage verification failed.', [
+                    'request_id' => $this->productUploadRequestId($request),
+                    'product_id' => $product->id,
+                    'field' => "videos.$index",
+                    'path_returned' => (bool) $path,
+                ]);
+
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    "videos.$index" => 'The product video could not be saved. Please try again.',
+                ]);
+            }
+
+            $product->videos()->create([
+                'path' => $path,
+                'mime_type' => $video->getMimeType(),
+                'sort_order' => (int) ($product->videos()->max('sort_order') ?? -1) + 1,
+            ]);
+        }
+    }
+
+    /** Remove only records belonging to this seller-owned product. */
+    private function removeAdditionalVideos(Request $request, Product $product): void
+    {
+        $ids = array_map('intval', $request->input('remove_video_ids', []));
+        if ($ids === []) {
+            return;
+        }
+
+        $videos = $product->videos()->whereIn('id', $ids)->get();
+        if ($videos->count() !== count(array_unique($ids))) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'remove_video_ids' => 'One or more selected videos do not belong to this product.',
+            ]);
+        }
+
+        $paths = $videos->pluck('path')->all();
+        $product->videos()->whereIn('id', $ids)->delete();
+        Storage::disk('public')->delete($paths);
     }
 }

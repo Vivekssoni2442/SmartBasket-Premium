@@ -20,7 +20,15 @@
 
     <link
         rel="stylesheet"
-        href="{{ asset('css/premium-dark-theme.css') }}"
+        href="{{ asset('css/smartbasket-theme.css') }}"
+    >
+    <link rel="stylesheet" href="{{ asset('css/customer-page-title.css') }}">
+
+    {{-- Font Awesome 6.5.2 matches the icon classes used by the shared
+         customer Taskbar and AI HUB navigation. --}}
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     >
 
 
@@ -242,18 +250,26 @@
          GLOBAL CUSTOMER PAGE
     ====================================================== --}}
 
+    @php
+        $isAiHubPage = request()->routeIs(
+            'ai-hub', 'overview', 'ai-camera', 'budget-shopping', 'gift-finder',
+            'trending-products', 'compare-products', 'ai.chat.page',
+            'ai-camera-assistant', 'ai-camera-assistant.history',
+            'ai-camera-assistant.virtual-try-on', 'ai-camera-assistant*'
+        );
+    @endphp
+
+    {{-- Keep the shared AI Hub controls outside page wrappers so page-level
+         stacking contexts and clipping cannot trap the Smart AI panel. --}}
+    @if($isAiHubPage)
+        @include('ai-hub.partials.navigation')
+    @endif
+
     <div class="sb-page">
 
-        {{-- =================================================
-             GLOBAL AI HUB
-
-             IMPORTANT:
-             AI HUB YAHAN SIRF EK BAAR HOGA.
-             Kisi individual page me dobara include nahi karna.
-        ================================================== --}}
-
-        @include('ai-hub.partials.navigation')
-
+        @unless($isAiHubPage)
+            @include('ai-hub.partials.navigation')
+        @endunless
 
         {{-- =================================================
              PAGE CONTENT
@@ -262,17 +278,6 @@
         @yield('content')
 
     </div>
-
-
-    {{-- =====================================================
-         GLOBAL AI HUB JAVASCRIPT
-         ONLY ONE COPY
-    ====================================================== --}}
-
-    <script
-        src="{{ asset('js/ai-hub-sidebar.js') }}"
-        defer>
-    </script>
 
 
     {{-- =====================================================

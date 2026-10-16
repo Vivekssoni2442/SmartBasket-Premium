@@ -665,6 +665,35 @@
             align-items: flex-start;
         }
     }
+    /* Keep this page aligned with the Visual Website Editor's blue palette. */
+    body.admin-layout .admin-content .sb-settings-page .sb-settings-header { background: radial-gradient(circle at 90% 20%, rgba(41,121,255,.10), transparent 30%), #fff; }
+    body.admin-layout .admin-content .sb-settings-page .sb-settings-main-icon,
+    body.admin-layout .admin-content .sb-settings-page .sb-settings-card-icon,
+    body.admin-layout .admin-content .sb-settings-page .sb-quick-setting-icon { color: #155EEF; background: #EDF5FF; border-color: #D1E3FF; }
+    .sb-settings-status { color: #1552B5; background: #EDF5FF; border-color: #D1E3FF; }
+    body.admin-layout .admin-content .sb-settings-page .sb-settings-nav-button:hover { background: #F5F9FF; color: #113F9B; }
+    body.admin-layout .admin-content .sb-settings-page .sb-settings-nav-button.active { border-left-color: #155EEF; background: #EDF5FF; color: #103D91; }
+    body.admin-layout .admin-content .sb-settings-page .sb-settings-nav-button:focus-visible { outline: 3px solid rgba(41,121,255,.48); outline-offset: 2px; }
+    body.admin-layout .admin-content .sb-settings-page .sb-btn { min-height: 42px; padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 700; box-shadow: 0 2px 5px rgba(7,21,47,.06); }
+    body.admin-layout .admin-content .sb-settings-page .sb-btn-primary { color: #fff; background: #155EEF; border-color: #155EEF; }
+    body.admin-layout .admin-content .sb-settings-page .sb-btn-primary:hover { color: #fff; background: #0E4FD4; border-color: #0E4FD4; box-shadow: 0 6px 16px rgba(21,94,239,.22); transform: translateY(-1px); }
+    body.admin-layout .admin-content .sb-settings-page .sb-btn-secondary { color: #1D3556; background: #fff; border-color: #C9D7E8; }
+    body.admin-layout .admin-content .sb-settings-page .sb-btn-secondary:hover { color: #113F9B; background: #F0F6FF; border-color: #94B8F6; }
+    body.admin-layout .admin-content .sb-settings-page .sb-btn:focus-visible { outline: 3px solid rgba(41,121,255,.48); outline-offset: 2px; }
+    body.admin-layout .admin-content .sb-settings-page .sb-form-label { font-size: 13px; }
+    body.admin-layout .admin-content .sb-settings-page .sb-form-help { font-size: 12px; }
+    body.admin-layout .admin-content .sb-settings-page .sb-form-control { font-size: 14px; }
+    body.admin-layout .admin-content .sb-settings-page .sb-form-control:focus { border-color: #155EEF; box-shadow: 0 0 0 3px rgba(21,94,239,.14); }
+    .sb-toggle input[type="checkbox"] { display: block; position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+    .sb-toggle input[type="checkbox"]:focus-visible + .sb-toggle-slider { outline: 3px solid rgba(41,121,255,.48); outline-offset: 3px; }
+    body.admin-layout .admin-content .sb-settings-page .sb-toggle-slider { background: #E8EEF6; border-color: #C9D7E8; }
+    body.admin-layout .admin-content .sb-settings-page .sb-toggle input:checked + .sb-toggle-slider { background: #DCEAFF; border-color: #78A9FA; }
+    body.admin-layout .admin-content .sb-settings-page .sb-toggle input:checked + .sb-toggle-slider::after { background: #155EEF; }
+    @media (max-width: 650px) {
+        body.admin-layout .admin-content .sb-settings-page .sb-settings-actions .sb-btn { width: 100%; }
+        body.admin-layout .admin-content .sb-settings-page .sb-settings-nav-button { min-height: 42px; }
+    }
+
 </style>
 
 @endsection
@@ -711,8 +740,8 @@
 
 
         <div class="sb-settings-status">
-            <i class="fas fa-circle"></i>
-            Store Online
+            <i class="fas fa-sliders" aria-hidden="true"></i>
+            Settings center
         </div>
 
     </div>
@@ -842,6 +871,16 @@
 
 
             <div class="sb-settings-nav-divider"></div>
+
+
+            <button
+                type="button"
+                class="sb-settings-nav-button"
+                data-settings-tab="about"
+            >
+                <i class="fas fa-circle-info"></i>
+                About Smart Basket
+            </button>
 
 
             <button
@@ -1063,6 +1102,46 @@
                 class="sb-settings-section"
                 data-settings-section="shopping"
             >
+
+                <div class="sb-section-top">
+                    <div>
+                        <h2>Storefront Features</h2>
+                        <p>These saved controls are enforced on the corresponding registration and return submission routes.</p>
+                    </div>
+                </div>
+
+                <form method="POST" action="{{ route('admin.settings.features.update') }}">
+                    @csrf
+                    @method('PUT')
+                    <div class="sb-settings-card">
+                        <div class="sb-settings-card-header">
+                            <div class="sb-settings-card-icon"><i class="fas fa-sliders"></i></div>
+                            <div><h3>Availability controls</h3><p>Changes take effect immediately after saving.</p></div>
+                        </div>
+                        <div class="sb-settings-card-body">
+                            @foreach([
+                                'customer_registration_enabled' => ['Customer registration', 'Allow new customer accounts to be created.'],
+                                'seller_registration_enabled' => ['Seller registration', 'Allow new seller applications to be submitted.'],
+                                'return_requests_enabled' => ['Customer return requests', 'Allow customers to submit return requests for eligible orders.'],
+                            ] as $key => [$label, $description])
+                                <div class="sb-setting-row">
+                                    <div class="sb-setting-info">
+                                        <div class="sb-setting-name">{{ $label }}</div>
+                                        <div class="sb-setting-description">{{ $description }}</div>
+                                    </div>
+                                    <label class="sb-toggle">
+                                        <input type="hidden" name="{{ $key }}" value="0">
+                                        <input type="checkbox" name="{{ $key }}" value="1" @checked($featureSettings[$key] ?? true) aria-label="{{ $label }}">
+                                        <span class="sb-toggle-slider"></span>
+                                    </label>
+                                </div>
+                            @endforeach
+                            <div class="sb-settings-actions">
+                                <button type="submit" class="sb-btn sb-btn-primary"><i class="fas fa-floppy-disk"></i> Save feature settings</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
 
                 <div class="sb-section-top">
 
@@ -1994,6 +2073,69 @@
             {{-- =====================================================
                  SYSTEM
                  ===================================================== --}}
+
+            <section
+                class="sb-settings-section"
+                data-settings-section="about"
+            >
+                <div class="sb-section-top">
+                    <div>
+                        <h2>About Smart Basket</h2>
+                        <p>Manage the public information customers see in their settings page.</p>
+                    </div>
+                </div>
+
+                <form method="POST" action="{{ route('admin.settings.about.update') }}">
+                    @csrf
+                    @method('PUT')
+                    <div class="sb-settings-card">
+                        <div class="sb-settings-card-header">
+                            <div class="sb-settings-card-icon"><i class="fas fa-circle-info"></i></div>
+                            <div><h3>About content</h3><p>Plain text only. Line breaks are preserved for customers.</p></div>
+                        </div>
+                        <div class="sb-settings-card-body">
+                            <div class="sb-form-grid">
+                                <div class="sb-form-group full">
+                                    <label class="sb-form-label" for="about-title">Section title</label>
+                                    <input id="about-title" class="sb-form-control" name="title" maxlength="120" value="{{ old('title', $aboutContent?->title ?? 'About Smart Basket') }}">
+                                    @error('title')<div class="sb-form-help">{{ $message }}</div>@enderror
+                                </div>
+                                <div class="sb-form-group full">
+                                    <label class="sb-form-label" for="about-introduction">Store introduction</label>
+                                    <textarea id="about-introduction" class="sb-form-control" name="introduction" rows="4" maxlength="5000">{{ old('introduction', $aboutContent?->introduction) }}</textarea>
+                                    @error('introduction')<div class="sb-form-help">{{ $message }}</div>@enderror
+                                </div>
+                                <div class="sb-form-group">
+                                    <label class="sb-form-label" for="about-mission">Our mission</label>
+                                    <textarea id="about-mission" class="sb-form-control" name="mission" rows="4" maxlength="3000">{{ old('mission', $aboutContent?->mission) }}</textarea>
+                                    @error('mission')<div class="sb-form-help">{{ $message }}</div>@enderror
+                                </div>
+                                <div class="sb-form-group">
+                                    <label class="sb-form-label" for="about-vision">Our vision</label>
+                                    <textarea id="about-vision" class="sb-form-control" name="vision" rows="4" maxlength="3000">{{ old('vision', $aboutContent?->vision) }}</textarea>
+                                    @error('vision')<div class="sb-form-help">{{ $message }}</div>@enderror
+                                </div>
+                                <div class="sb-form-group full">
+                                    <label class="sb-form-label" for="about-services">Our services</label>
+                                    <textarea id="about-services" class="sb-form-control" name="services" rows="4" maxlength="5000">{{ old('services', $aboutContent?->services) }}</textarea>
+                                    @error('services')<div class="sb-form-help">{{ $message }}</div>@enderror
+                                </div>
+                                <div class="sb-form-group full">
+                                    <label class="sb-form-label" for="about-extra">Additional information</label>
+                                    <textarea id="about-extra" class="sb-form-control" name="additional_information" rows="4" maxlength="5000">{{ old('additional_information', $aboutContent?->additional_information) }}</textarea>
+                                    @error('additional_information')<div class="sb-form-help">{{ $message }}</div>@enderror
+                                </div>
+                            </div>
+                            <div style="display:flex;justify-content:flex-end;margin-top:18px;">
+                                <button type="submit" class="sb-btn sb-btn-primary">
+                                    <i class="fas fa-floppy-disk"></i> Save About Information
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </section>
+
 
             <section
                 class="sb-settings-section"

@@ -32,6 +32,7 @@
         href="{{ asset('css/ai-hub-sidebar.css') }}"
     >
 
+    <link rel="stylesheet" href="{{ asset('css/customer-page-title.css') }}">
 </head>
 
 
@@ -71,9 +72,11 @@
                     YOUR SAVED ANALYSES
                 </span>
 
-                <h1>
+                <x-customer-page-hero>
+<h1 class="sb-customer-page-title">
                     AI Analysis History 📜
                 </h1>
+</x-customer-page-hero>
 
                 <p>
                     Review your previous AI Camera Assistant

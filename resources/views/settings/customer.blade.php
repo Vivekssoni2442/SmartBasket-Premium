@@ -1419,42 +1419,10 @@
         }
 
 
-        .sb-products-smart-ai-host
-        > .smart-ai
-        > .smart-ai__launch {
-
-            opacity:
-                0 !important;
-
-            visibility:
-                hidden !important;
-
-            pointer-events:
-                none !important;
-
-            position:
-                fixed !important;
-
-            width:
-                1px !important;
-
-            height:
-                1px !important;
-
-            overflow:
-                hidden !important;
-
-            clip:
-                rect(0,0,0,0) !important;
-        }
+        
 
 
-        .sb-products-smart-ai-host
-        [data-smart-ai-panel] {
-
-            z-index:
-                100001 !important;
-        }
+        
 
 
         /* =========================================================
@@ -3134,8 +3102,31 @@
             }
         }
 
+        .settings-hero-actions {
+            position: relative;
+            z-index: 2;
+            justify-content: flex-start;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .settings-hero-actions .settings-chip {
+            padding: 8px 12px;
+            border-color: rgba(255,255,255,.25);
+            background: rgba(255,255,255,.12);
+            color: #fff;
+        }
+
+        .settings-hero-actions .settings-chip i { color: #c8d7ff; }
+        .settings-header-content .settings-title span { color: #c8d7ff !important; }
+
+        @media(max-width:480px) {
+            .settings-hero-actions { gap: 7px; }
+            .settings-hero-actions .settings-chip { padding: 7px 9px; font-size: 11px; }
+        }
     </style>
 
+    <link rel="stylesheet" href="{{ asset('css/customer-page-title.css') }}">
 </head>
 
 
@@ -3659,56 +3650,25 @@
              HEADER
         ====================================================== --}}
 
-        <div class="settings-header">
+        <div class="settings-header-content">
 
-            <div class="settings-header-top">
+            <x-customer-page-hero>
+<h1 class="settings-title sb-customer-page-title">
 
-                <div class="settings-header-actions">
-
-                    <span class="settings-chip">
-
-                        <i class="fa-solid fa-shield-heart"></i>
-
-                        Secure Account
-
-                    </span>
-
-
-                    <span class="settings-chip">
-
-                        <i class="fa-solid fa-bolt"></i>
-
-                        Preferences Sync
-
-                    </span>
-
-                </div>
-
-            </div>
-
-
-            <div class="brand-text">
-                SMART BASKET
-            </div>
-
-
-            <h1 class="settings-title">
-
-                Customer
+                Customer 
                 <span>
-                    Settings
+                      Settings
                 </span>
 
             </h1>
+                <div class="settings-header-actions settings-hero-actions">
+                    <span class="settings-chip"><i class="fa-solid fa-shield-heart"></i>Secure Account</span>
+                    <span class="settings-chip"><i class="fa-solid fa-bolt"></i>Preferences Sync</span>
+                </div>
+</x-customer-page-hero>
 
 
-            <p class="settings-subtitle">
 
-                Manage your shopping preferences, language,
-                notifications, appearance and account security —
-                all from one premium control center.
-
-            </p>
 
         </div>
 
@@ -4562,6 +4522,41 @@
             </div>
 
         </form>
+
+        {{-- Read-only, database-backed About information --}}
+        <section class="settings-card" id="aboutSmartBasket" aria-labelledby="aboutSmartBasketTitle">
+            <div class="settings-card-header">
+                <div class="settings-icon"><i class="fa-solid fa-circle-info"></i></div>
+                <div>
+                    <h2 class="settings-card-title" id="aboutSmartBasketTitle">{{ $aboutContent?->title ?: 'About Smart Basket' }}</h2>
+                    <p class="settings-card-description">Learn more about our store and what we offer.</p>
+                </div>
+            </div>
+
+            @php
+                $aboutSections = [
+                    'About Smart Basket' => $aboutContent?->introduction,
+                    'Our mission' => $aboutContent?->mission,
+                    'Our vision' => $aboutContent?->vision,
+                    'Our services' => $aboutContent?->services,
+                    'Additional information' => $aboutContent?->additional_information,
+                ];
+                $hasAboutContent = collect($aboutSections)->contains(fn ($content) => filled($content));
+            @endphp
+
+            @if($hasAboutContent)
+                @foreach($aboutSections as $heading => $content)
+                    @if(filled($content))
+                        <div style="padding:14px 0;border-bottom:1px solid var(--sb-border);">
+                            <h3 style="margin:0 0 7px;color:var(--sb-text);font-size:15px;font-weight:800;">{{ $heading }}</h3>
+                            <div style="color:var(--sb-text-secondary);line-height:1.75;white-space:normal;">{!! nl2br(e($content)) !!}</div>
+                        </div>
+                    @endif
+                @endforeach
+            @else
+                <p style="margin:0;color:var(--sb-text-secondary);">About information will be available here soon.</p>
+            @endif
+        </section>
 
     </div>
 

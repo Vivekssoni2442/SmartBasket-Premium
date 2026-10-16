@@ -16,14 +16,8 @@ class ProductController extends Controller
     {
         $user = Auth::user();
 
-        $products = Product::query()
+        $products = Product::query()->customerVisible()
             ->with('seller')
-            ->where(
-                fn ($query) =>
-                    $query
-                        ->whereNull('status')
-                        ->orWhere('status', 'active')
-            )
             ->latest()
             ->limit(8)
             ->get();
@@ -92,15 +86,8 @@ class ProductController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $sellerProducts = Product::query()
+        $sellerProducts = Product::query()->customerVisible()
             ->with('seller')
-            ->where(function ($query) {
-
-                $query
-                    ->whereNull('status')
-                    ->orWhere('status', 'active');
-
-            })
             ->latest()
             ->get();
 
@@ -217,7 +204,7 @@ class ProductController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $categories = Product::query()
+        $categories = Product::query()->customerVisible()
             ->select('category')
             ->distinct()
             ->pluck('category')
@@ -263,8 +250,10 @@ class ProductController extends Controller
 
         $product->load([
             'images',
+            'videos',
             'seller',
         ]);
+        abort_if($product->seller_id && (! $product->seller || $product->seller->isBlocked()), 404);
 
 
         /*
@@ -288,17 +277,11 @@ class ProductController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $relatedProducts = Product::query()
+        $relatedProducts = Product::query()->customerVisible()
             ->whereKeyNot($product->id)
             ->where(
                 'category',
                 $product->category
-            )
-            ->where(
-                fn ($query) =>
-                    $query
-                        ->whereNull('status')
-                        ->orWhere('status', 'active')
             )
             ->latest()
             ->limit(4)

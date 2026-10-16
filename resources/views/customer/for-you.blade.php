@@ -23,6 +23,8 @@
         h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
         .customer-page { min-height: 100vh; }
     </style>
+    <style data-visual-design>{!! app(\App\Services\WebsiteDesignService::class)->renderCss('customer.home') . app(\App\Services\WebsiteDesignService::class)->renderCss('customer.shared') !!}</style>
+    <link rel="stylesheet" href="{{ asset('css/customer-page-title.css') }}">
 </head>
 <body>
     @include('customer.partials.sidebar')
@@ -31,18 +33,20 @@
         <header class="customer-topbar">
             <div>
                 <span class="customer-eyebrow">SMART BASKET / HOME</span>
-                <h1>Good to see you, {{ $user->name }}.</h1>
+                <x-customer-page-hero>
+<h1 class="sb-customer-page-title">Good to see you, {{ $user->name }}.</h1>
+</x-customer-page-hero>
                 <p>Your smarter shopping journey starts here.</p>
             </div>
             <a href="{{ route('products.index') }}" class="customer-action"><i class="fa-solid fa-magnifying-glass"></i> Explore Products</a>
         </header>
 
-        <section class="customer-hero">
+        <section class="customer-hero" data-ve="customer.home.hero">
             <span class="customer-eyebrow">CURATED FOR YOUR EVERYDAY</span>
-            <h2>Find something <span>worth bringing home.</span></h2>
-            <p>Quality picks, useful intelligence, and better prices in one considered shopping experience.</p>
+            <h2>{{ app(\App\Services\WebsiteDesignService::class)->content('customer.home', 'hero', 'title', 'Find something worth bringing home.') }}</h2>
+            <p>{{ app(\App\Services\WebsiteDesignService::class)->content('customer.home', 'hero', 'body', 'Quality picks, useful intelligence, and better prices in one considered shopping experience.') }}</p>
             <div class="customer-hero-actions">
-                <a href="{{ route('products.index') }}"><i class="fa-solid fa-arrow-right"></i> Explore Products</a>
+                <a href="{{ route('products.index') }}"><i class="fa-solid fa-arrow-right"></i> {{ app(\App\Services\WebsiteDesignService::class)->content('customer.home', 'hero', 'button_label', 'Explore Products') }}</a>
                 <a href="{{ route('ai-hub') }}"><i class="fa-solid fa-wand-magic-sparkles"></i> Open AI HUB</a>
             </div>
         </section>
@@ -97,5 +101,7 @@
             }
         });
     </script>
+@include('customer.partials.smart-ai-robot')
+
 </body>
 </html>

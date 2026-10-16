@@ -2989,20 +2989,9 @@ html[data-theme="dark"] .ai-hub-fab{
     background:linear-gradient(145deg,#1e293b,#050a14)!important
 }
 
-.sb-products-smart-ai-host>.smart-ai>.smart-ai__launch{
-    opacity:0!important;
-    visibility:hidden!important;
-    pointer-events:none!important;
-    position:fixed!important;
-    width:1px!important;
-    height:1px!important;
-    overflow:hidden!important;
-    clip:rect(0,0,0,0)!important
-}
 
-.sb-products-smart-ai-host [data-smart-ai-panel]{
-    z-index:100001!important
-}
+
+
 
 @media(max-width:1350px){
     .sb-products-brand{
@@ -3107,6 +3096,9 @@ html[data-theme="dark"] .ai-hub-fab{
 }
 </style>
 
+<style data-visual-design>{!! app(\App\Services\WebsiteDesignService::class)->renderCss('customer.products') . app(\App\Services\WebsiteDesignService::class)->renderCss('customer.shared') !!}</style>
+
+    <link rel="stylesheet" href="{{ asset('css/customer-page-title.css') }}">
 </head>
 
 <body>
@@ -3126,6 +3118,7 @@ html[data-theme="dark"] .ai-hub-fab{
 
 <nav
     class="sb-products-taskbar"
+    data-ve="customer.shared.taskbar"
     id="sbProductsTaskbar"
     aria-label="Customer Navigation"
 >
@@ -3668,7 +3661,7 @@ html[data-theme="dark"] .ai-hub-fab{
 
     {{-- HERO --}}
 
-    <section class="hero">
+    <x-customer-page-hero data-ve="customer.products.hero" :stat="$pagedProducts->total()" stat-label="Products">
 
         <div class="hero-glow one"></div>
         <div class="hero-glow two"></div>
@@ -3688,29 +3681,12 @@ html[data-theme="dark"] .ai-hub-fab{
             </span>
 
 
-            <h1>
-
-                Shop smarter.
-
-                <br>
-
-                <span class="hero-gradient">
-                    Live better.
-                </span>
-
-            </h1>
+            <h1 class="sb-customer-page-title"><span class="hero-gradient">{{ app(\App\Services\WebsiteDesignService::class)->content('customer.products', 'hero', 'title', 'Shop smarter. Live better.') }}</span></h1>
 
 
             <p class="hero-subtitle">
 
-                Discover
-
-                <strong>
-                    quality products
-                </strong>
-
-                with a beautiful, fast and intelligent
-                shopping experience designed for you.
+                {{ app(\App\Services\WebsiteDesignService::class)->content('customer.products', 'hero', 'body', 'Discover quality products with a beautiful, fast and intelligent shopping experience designed for you.') }}
 
             </p>
 
@@ -3724,7 +3700,7 @@ html[data-theme="dark"] .ai-hub-fab{
 
                     <i class="fa-solid fa-bag-shopping"></i>
 
-                    Explore Products
+                    {{ app(\App\Services\WebsiteDesignService::class)->content('customer.products', 'hero', 'button_label', 'Explore Products') }}
 
                     <i class="fa-solid fa-arrow-right"></i>
 
@@ -3811,7 +3787,7 @@ html[data-theme="dark"] .ai-hub-fab{
 
         </div>
 
-    </section>
+    </x-customer-page-hero>
 
 
     {{-- PRODUCTS HEADER --}}
@@ -3994,6 +3970,7 @@ html[data-theme="dark"] .ai-hub-fab{
 
                     <article
                         class="product-card product-card--clickable"
+                        data-ve="customer.products.card"
                         data-smart-ai-product-id="{{ $product->id }}"
                         data-product-url="{{ route('product.show', $product) }}"
                         tabindex="0"

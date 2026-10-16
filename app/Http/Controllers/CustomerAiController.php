@@ -29,6 +29,12 @@ class CustomerAiController extends Controller
                 'integer',
             ],
 
+            'context.current_page' => [
+                'nullable',
+                'string',
+                'in:products,product,cart,orders,wishlist,profile,settings,ai_hub,other',
+            ],
+
             'context.visible_product_ids' => [
                 'nullable',
                 'array',
@@ -47,5 +53,20 @@ class CustomerAiController extends Controller
         );
 
         return response()->json($result);
+    }
+
+    public function clearHistory(Request $request, CustomerAiService $assistant): JsonResponse
+    {
+        $assistant->clearHistory($request->user());
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function history(Request $request, CustomerAiService $assistant): JsonResponse
+    {
+        return response()->json([
+            'ok' => true,
+            'messages' => $assistant->history($request->user()),
+        ])->header('Cache-Control', 'private, no-store');
     }
 }

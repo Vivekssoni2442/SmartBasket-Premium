@@ -668,9 +668,11 @@
         </div>
 
 
-        <h1 class="security-title">
+        <x-customer-page-hero>
+<h1 class="security-title sb-customer-page-title">
             Manage Security PIN
         </h1>
+</x-customer-page-hero>
 
 
         <p class="security-subtitle">
@@ -1210,6 +1212,8 @@
 
 </script>
 
+
+@include('customer.partials.smart-ai-robot')
 
 </body>
 

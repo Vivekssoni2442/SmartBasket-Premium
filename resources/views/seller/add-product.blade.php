@@ -3089,7 +3089,7 @@
 
                                         <br>
 
-                                        Maximum file size: 20MB
+                                        Maximum file size: {{ config('product-media.max_video_size_mb', 100) }} MB per video
 
                                     </div>
 
@@ -3113,6 +3113,13 @@
                                     accept="video/mp4,video/webm,video/quicktime"
                                     onchange="previewVideo(this)"
                                 >
+
+                                <label class="form-label mt-3" for="videoPoster">Video poster (optional)</label>
+                                <input type="file" name="video_poster" id="videoPoster" class="form-control" accept="image/jpeg,image/png,image/webp">
+                                <img id="videoPosterPreview" alt="Selected video poster preview" style="display:none;max-width:240px;max-height:140px;margin-top:10px;border-radius:10px;">
+
+                                <label class="form-label mt-3" for="additionalVideos">Additional videos (up to 8, {{ config('product-media.max_video_size_mb', 100) }} MB each)</label>
+                                <input type="file" name="videos[]" id="additionalVideos" class="form-control" accept="video/mp4,video/webm,video/quicktime" multiple>
 
 
                                 <div
@@ -3162,7 +3169,7 @@
 
                                         Optional product video. Supported formats:
                                         MP4, WEBM and MOV. Maximum file size:
-                                        20MB. A short, clear video is recommended.
+                                        {{ config('product-media.max_video_size_mb', 100) }} MB per video. A short, clear video is recommended.
 
                                     </span>
 
@@ -3608,10 +3615,11 @@
            VIDEO SIZE VALIDATION
         ====================================================== */
 
-        if (file.size > 20 * 1024 * 1024) {
+        const maxVideoSizeMb = {{ config('product-media.max_video_size_mb', 100) }};
+        if (file.size > maxVideoSizeMb * 1024 * 1024) {
 
             alert(
-                'Video size must be less than 20MB.'
+                `Video size must not exceed ${maxVideoSizeMb} MB.`
             );
 
             input.value = '';
@@ -3913,6 +3921,27 @@
 
         }
     );
+    let selectedPosterUrl = null;
+    document.getElementById('additionalVideos')?.addEventListener('change', function () {
+        const maxVideoSizeMb = {{ config('product-media.max_video_size_mb', 100) }};
+        const tooLarge = Array.from(this.files || []).some(file => file.size > maxVideoSizeMb * 1024 * 1024);
+        if (tooLarge) {
+            alert(`Each video must be no larger than ${maxVideoSizeMb} MB.`);
+            this.value = '';
+        }
+    });
+    document.getElementById('videoPoster')?.addEventListener('change', function () {
+        const preview = document.getElementById('videoPosterPreview');
+        if (selectedPosterUrl) URL.revokeObjectURL(selectedPosterUrl);
+        selectedPosterUrl = this.files?.[0] ? URL.createObjectURL(this.files[0]) : null;
+        if (preview) {
+            preview.src = selectedPosterUrl || '';
+            preview.style.display = selectedPosterUrl ? 'block' : 'none';
+        }
+    });
+    window.addEventListener('beforeunload', () => {
+        if (selectedPosterUrl) URL.revokeObjectURL(selectedPosterUrl);
+    });
 </script>
 
 

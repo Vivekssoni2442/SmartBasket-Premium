@@ -3073,6 +3073,8 @@
 
     </style>
 
+<style data-visual-design>{!! app(\App\Services\WebsiteDesignService::class)->renderCss('seller.dashboard') !!}</style>
+
 </head>
 
 
@@ -3313,7 +3315,7 @@
                  HERO
                  ================================================= --}}
 
-            <section class="sb-hero">
+            <section class="sb-hero" data-ve="seller.dashboard.hero">
 
                 <div class="sb-hero-copy">
 
@@ -3329,21 +3331,10 @@
                     </span>
 
 
-                    <h2 class="sb-hero-title">
-
-                        Grow your store.
-                        <br>
-                        Sell smarter.
-
-                    </h2>
+                    <h2 class="sb-hero-title">{{ app(\App\Services\WebsiteDesignService::class)->content('seller.dashboard', 'hero', 'title', 'Grow your store. Sell smarter.') }}</h2>
 
 
-                    <p class="sb-hero-text">
-
-                        Manage your products, orders, payments and seller
-                        account from one powerful SmartBasket workspace.
-
-                    </p>
+                    <p class="sb-hero-text">{{ app(\App\Services\WebsiteDesignService::class)->content('seller.dashboard', 'hero', 'body', 'Manage your products, orders, payments and seller account from one powerful SmartBasket workspace.') }}</p>
 
                 </div>
 
@@ -3360,7 +3351,7 @@
                             aria-hidden="true"
                         ></i>
 
-                        Add Product
+                        {{ app(\App\Services\WebsiteDesignService::class)->content('seller.dashboard', 'hero', 'button_label', 'Add Product') }}
 
                     </a>
 
@@ -3719,6 +3710,15 @@
                                 aria-hidden="true"
                             ></i>
 
+                        </a>
+
+                        <a href="{{ route('seller.payment-qr.manage') }}" class="sb-action">
+                            <span class="sb-action-icon"><i class="fa-solid fa-qrcode" aria-hidden="true"></i></span>
+                            <span class="sb-action-content">
+                                <span class="sb-action-title">Seller QR Code</span>
+                                <span class="sb-action-text">Upload, preview, replace, or remove your payment QR.</span>
+                            </span>
+                            <i class="fa-solid fa-arrow-right sb-action-arrow" aria-hidden="true"></i>
                         </a>
 
 

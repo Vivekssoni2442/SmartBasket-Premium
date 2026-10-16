@@ -1239,10 +1239,13 @@
         }
     </style>
 
+    <link rel="stylesheet" href="{{ asset('css/customer-page-title.css') }}">
 </head>
 
 
 <body>
+
+@include('ai-hub.partials.navigation')
 
 <div class="sb-vto-page">
 
@@ -1272,9 +1275,11 @@
 
                     </span>
 
-                    <h1>
+                    <x-customer-page-hero>
+<h1 class="sb-customer-page-title">
                         Virtual Try-On 👗
                     </h1>
+</x-customer-page-hero>
 
                     <p>
                         Upload your photo, choose an outfit and

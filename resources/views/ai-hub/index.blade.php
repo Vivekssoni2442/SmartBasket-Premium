@@ -1016,10 +1016,8 @@
 
     {{-- =====================================================
          GLOBAL AI HUB
-         
+
          DO NOT INCLUDE:
-         @include('ai-hub.partials.navigation')
-         
          layouts.app already provides the single global
          AI HUB floating button + sidebar.
     ====================================================== --}}
@@ -1045,9 +1043,11 @@
 
                     </span>
 
-                    <h1>
+                    <x-customer-page-hero>
+<h1 class="sb-customer-page-title">
                         Your AI HUB 🤖
                     </h1>
+</x-customer-page-hero>
 
                     <p>
                         Explore smarter ways to discover,

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AboutContent;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\App;
@@ -72,7 +74,7 @@ class CustomerSettingsController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $notifications = $user->notifications ?? 'enabled';
+        $notifications = $user->getAttributes()['notifications'] ?? 'enabled';
 
         if (!in_array($notifications, ['enabled', 'disabled'], true)) {
             $notifications = 'enabled';
@@ -90,6 +92,7 @@ class CustomerSettingsController extends Controller
             'language' => $language,
             'languages' => $locales,
             'notifications' => $notifications,
+            'aboutContent' => AboutContent::find(1),
         ]);
     }
 

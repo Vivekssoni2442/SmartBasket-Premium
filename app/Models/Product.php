@@ -42,8 +42,15 @@ class Product extends Model
 
     public function scopeCustomerVisible($query)
     {
-        return $query->where(function ($products) {
-            $products->whereNull('status')->orWhere('status', 'active');
+        return $query
+            ->where(function ($products) {
+                $products->whereNull('status')->orWhere('status', 'active');
+            })
+            ->where(function ($products) {
+                $products->whereNull('seller_id')
+                    ->orWhereHas('seller', function ($seller) {
+                        $seller->whereNull('blocked_at');
+                    });
         });
     }
 
@@ -68,6 +75,8 @@ class Product extends Model
         'image',
 
         'video',
+
+        'video_poster',
 
         'price',
 
@@ -128,5 +137,10 @@ class Product extends Model
             ProductImage::class
         )
         ->orderBy('sort_order');
+    }
+
+    public function videos()
+    {
+        return $this->hasMany(ProductVideo::class)->orderBy('sort_order');
     }
 }

@@ -34,6 +34,12 @@ class SellerAuth
             return redirect('/seller-login')->with('error', 'Your seller session is no longer valid. Please sign in again.');
         }
 
+        if ($seller->isBlocked()) {
+            session()->forget(['seller_login', 'seller_email', 'seller_id']);
+
+            return redirect('/seller-login')->with('error', 'This seller account is blocked. Please contact Smart Basket support for assistance.');
+        }
+
         // Verification routes are deliberately available to a signed-in seller
         // so incomplete, pending, and rejected applications can be completed
         // or reviewed. Every other seller route requires administrator approval.

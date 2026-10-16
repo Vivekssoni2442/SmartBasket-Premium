@@ -1985,9 +1985,11 @@
 
             </span>
 
-            <h1>
+            <x-customer-page-hero>
+<h1 class="sb-customer-page-title">
                 Compare Products
             </h1>
+</x-customer-page-hero>
 
             <p>
                 Put two Smart Basket products side-by-side and

@@ -24,10 +24,10 @@ class SellerSettingsController extends Controller
                 : []
         );
 
-        return view('seller.settings', compact(
-            'seller',
-            'preferences'
-        ));
+        return view('seller.settings', [
+            'seller' => $seller,
+            'preferences' => $preferences,
+        ]);
     }
 
     /**
@@ -37,13 +37,74 @@ class SellerSettingsController extends Controller
     {
         $seller = $this->currentSeller();
 
+        /*
+        |--------------------------------------------------------------------------
+        | Validation
+        |--------------------------------------------------------------------------
+        */
         $validated = $request->validate([
-            'theme' => 'required|in:light,dark,system',
-            'notifications_enabled' => 'nullable|boolean',
-            'online_payments_enabled' => 'nullable|boolean',
+            'theme' => [
+                'required',
+                'in:light,dark,system',
+            ],
 
-            'preferences' => 'nullable|array',
+            'notifications_enabled' => [
+                'nullable',
+                'boolean',
+            ],
 
+            'online_payments_enabled' => [
+                'nullable',
+                'boolean',
+            ],
+
+            'payment_upi_id' => [
+                'nullable',
+                'string',
+                'max:100',
+                'regex:/^[a-zA-Z0-9][a-zA-Z0-9._-]{1,252}@[a-zA-Z][a-zA-Z0-9.-]{1,63}$/',
+            ],
+
+            'payment_mobile_number' => [
+                'nullable',
+                'string',
+                'max:20',
+                'regex:/^(?:(?:\+91|91)[ -]?)?[6-9][0-9]{9}$/',
+            ],
+
+            'payment_business_name' => [
+                'nullable',
+                'string',
+                'max:150',
+            ],
+
+            'payment_status' => [
+                'nullable',
+                'in:enabled,disabled,verification_pending,verified,manual_review',
+            ],
+
+            'preferences' => [
+                'nullable',
+                'array',
+            ],
+
+            /*
+            |--------------------------------------------------------------------------
+            | UPI PAYMENT
+            |--------------------------------------------------------------------------
+            */
+            'preferences.upi_id' => [
+                'nullable',
+                'string',
+                'max:100',
+                'regex:/^[a-zA-Z0-9][a-zA-Z0-9._-]{1,252}@[a-zA-Z][a-zA-Z0-9.-]{1,63}$/',
+            ],
+
+            /*
+            |--------------------------------------------------------------------------
+            | Delivery
+            |--------------------------------------------------------------------------
+            */
             'preferences.shipping_enabled' => 'nullable|boolean',
             'preferences.seller_delivery' => 'nullable|boolean',
             'preferences.platform_delivery' => 'nullable|boolean',
@@ -55,15 +116,30 @@ class SellerSettingsController extends Controller
             'preferences.free_shipping_threshold' => 'nullable|numeric|min:0|max:10000000',
             'preferences.estimated_delivery_days' => 'nullable|integer|min:1|max:365',
 
+            /*
+            |--------------------------------------------------------------------------
+            | Orders
+            |--------------------------------------------------------------------------
+            */
             'preferences.auto_accept_orders' => 'nullable|boolean',
             'preferences.allow_order_cancellation' => 'nullable|boolean',
             'preferences.allow_return_requests' => 'nullable|boolean',
             'preferences.allow_exchange_requests' => 'nullable|boolean',
             'preferences.auto_update_order_status' => 'nullable|boolean',
 
+            /*
+            |--------------------------------------------------------------------------
+            | Notifications
+            |--------------------------------------------------------------------------
+            */
             'preferences.order_confirmation_notification' => 'nullable|boolean',
             'preferences.delivery_status_notification' => 'nullable|boolean',
 
+            /*
+            |--------------------------------------------------------------------------
+            | Products
+            |--------------------------------------------------------------------------
+            */
             'preferences.default_product_status' => 'nullable|in:active,inactive',
             'preferences.default_rating' => 'nullable|numeric|min:0|max:5',
             'preferences.low_stock_threshold' => 'nullable|integer|min:0|max:100000',
@@ -74,12 +150,22 @@ class SellerSettingsController extends Controller
             'preferences.product_visibility_enabled' => 'nullable|boolean',
             'preferences.auto_hide_out_of_stock' => 'nullable|boolean',
 
+            /*
+            |--------------------------------------------------------------------------
+            | Visibility
+            |--------------------------------------------------------------------------
+            */
             'preferences.profile_visibility' => 'nullable|boolean',
             'preferences.shop_visibility' => 'nullable|boolean',
             'preferences.show_mobile_number' => 'nullable|boolean',
             'preferences.show_email' => 'nullable|boolean',
             'preferences.show_business_information' => 'nullable|boolean',
 
+            /*
+            |--------------------------------------------------------------------------
+            | Customer communication
+            |--------------------------------------------------------------------------
+            */
             'preferences.allow_customer_messages' => 'nullable|boolean',
             'preferences.auto_reply' => 'nullable|boolean',
 
@@ -88,6 +174,11 @@ class SellerSettingsController extends Controller
             'preferences.cancellation_message' => 'nullable|string|max:1000',
             'preferences.delivery_message' => 'nullable|string|max:1000',
 
+            /*
+            |--------------------------------------------------------------------------
+            | Invoice
+            |--------------------------------------------------------------------------
+            */
             'preferences.show_seller_logo_on_invoice' => 'nullable|boolean',
             'preferences.show_gst_on_invoice' => 'nullable|boolean',
             'preferences.show_seller_address_on_invoice' => 'nullable|boolean',
@@ -98,12 +189,22 @@ class SellerSettingsController extends Controller
             'preferences.invoice_prefix' => 'nullable|string|max:30',
             'preferences.invoice_footer' => 'nullable|string|max:1000',
 
+            /*
+            |--------------------------------------------------------------------------
+            | Store
+            |--------------------------------------------------------------------------
+            */
             'preferences.store_active' => 'nullable|boolean',
             'preferences.temporarily_closed' => 'nullable|boolean',
             'preferences.vacation_mode' => 'nullable|boolean',
         ]);
 
-        $current = array_merge(
+        /*
+        |--------------------------------------------------------------------------
+        | Existing preferences
+        |--------------------------------------------------------------------------
+        */
+        $currentPreferences = array_merge(
             $this->defaultPreferences(),
             is_array($seller->preferences)
                 ? $seller->preferences
@@ -111,10 +212,41 @@ class SellerSettingsController extends Controller
         );
 
         /*
-         * Checkboxes that are unchecked are not submitted by HTML forms.
-         * Therefore we explicitly convert every checkbox into 0/1.
-         */
+        |--------------------------------------------------------------------------
+        | Incoming preferences
+        |--------------------------------------------------------------------------
+        */
+        $incomingPreferences = $validated['preferences'] ?? [];
+
+        /*
+        |--------------------------------------------------------------------------
+        | UPI ID
+        |--------------------------------------------------------------------------
+        |
+        | UPI ID database ke preferences JSON me permanently save hoti hai.
+        | Session/localStorage par depend nahi karti.
+        |
+        */
+        if ($request->has('preferences.upi_id')) {
+            $upiId = trim(
+                (string) $request->input('preferences.upi_id')
+            );
+
+            $incomingPreferences['upi_id'] =
+                $upiId !== '' ? $upiId : null;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Checkbox fields
+        |--------------------------------------------------------------------------
+        |
+        | HTML unchecked checkboxes submit nahi hote.
+        | request->boolean() checked/unchecked ko safely handle karta hai.
+        |
+        */
         $booleanFields = [
+            // Delivery
             'shipping_enabled',
             'seller_delivery',
             'platform_delivery',
@@ -122,30 +254,36 @@ class SellerSettingsController extends Controller
             'same_day_delivery',
             'express_delivery',
 
+            // Orders
             'auto_accept_orders',
             'allow_order_cancellation',
             'allow_return_requests',
             'allow_exchange_requests',
             'auto_update_order_status',
 
+            // Notifications
             'order_confirmation_notification',
             'delivery_status_notification',
 
+            // Products
             'allow_customer_reviews',
             'allow_customer_questions',
             'show_stock_quantity',
             'product_visibility_enabled',
             'auto_hide_out_of_stock',
 
+            // Visibility
             'profile_visibility',
             'shop_visibility',
             'show_mobile_number',
             'show_email',
             'show_business_information',
 
+            // Customer communication
             'allow_customer_messages',
             'auto_reply',
 
+            // Invoice
             'show_seller_logo_on_invoice',
             'show_gst_on_invoice',
             'show_seller_address_on_invoice',
@@ -153,21 +291,23 @@ class SellerSettingsController extends Controller
             'show_payment_details_on_invoice',
             'show_qr_on_invoice',
 
+            // Store
             'store_active',
             'temporarily_closed',
             'vacation_mode',
         ];
 
-        $incomingPreferences = $validated['preferences'] ?? [];
-
         foreach ($booleanFields as $field) {
-            $incomingPreferences[$field] =
-                $request->boolean("preferences.$field");
+            $incomingPreferences[$field] = $request->boolean(
+                "preferences.$field"
+            );
         }
 
         /*
-         * Keep non-checkbox values.
-         */
+        |--------------------------------------------------------------------------
+        | Non-checkbox fields
+        |--------------------------------------------------------------------------
+        */
         $valueFields = [
             'delivery_charge',
             'free_shipping_threshold',
@@ -193,31 +333,92 @@ class SellerSettingsController extends Controller
             }
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Merge old + new preferences
+        |--------------------------------------------------------------------------
+        */
         $preferences = array_merge(
-            $current,
+            $currentPreferences,
             $incomingPreferences
         );
 
         /*
-         * Store logic:
-         * Vacation mode or temporary close means store is effectively closed.
-         */
+        |--------------------------------------------------------------------------
+        | Store status protection
+        |--------------------------------------------------------------------------
+        |
+        | Vacation mode OR temporary close automatically closes store.
+        |
+        */
         if (
-            $preferences['vacation_mode'] ||
-            $preferences['temporarily_closed']
+            !empty($preferences['vacation_mode']) ||
+            !empty($preferences['temporarily_closed'])
         ) {
             $preferences['store_active'] = false;
         }
 
-        $seller->update([
-            'theme' => $validated['theme'],
-            'notifications_enabled' =>
-                $request->boolean('notifications_enabled'),
-            'online_payments_enabled' =>
-                $request->boolean('online_payments_enabled'),
-            'preferences' => $preferences,
-        ]);
+        /*
+        |--------------------------------------------------------------------------
+        | Save seller settings
+        |--------------------------------------------------------------------------
+        |
+        | online_payments_enabled:
+        | Direct seller_profiles database column.
+        |
+        | UPI ID:
+        | preferences JSON ke andar database me permanent.
+        |
+        | Dono session/localStorage par dependent nahi hain.
+        |
+        */
+        $seller->theme = $validated['theme'];
 
+        $seller->notifications_enabled =
+            $request->boolean('notifications_enabled');
+
+        $onlinePaymentsEnabled = $request->boolean('online_payments_enabled');
+
+        $paymentUpiId = trim((string) ($request->input('payment_upi_id') ?? $incomingPreferences['upi_id'] ?? $seller->payment_upi_id ?? ''));
+        $paymentMobileNumber = trim((string) ($request->input('payment_mobile_number') ?? $seller->payment_mobile_number ?? $seller->mobile_number ?? $seller->phone ?? ''));
+        $paymentBusinessName = trim((string) ($request->input('payment_business_name') ?? $seller->payment_business_name ?? $seller->shop_name ?? $seller->seller_name ?? ''));
+
+        if ($onlinePaymentsEnabled && ($paymentUpiId === '' || $paymentMobileNumber === '')) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'payment_upi_id' => 'Enter a valid UPI ID and Indian mobile number before enabling UPI payments.',
+            ]);
+        }
+
+        $destinationChanged = $paymentUpiId !== (string) $seller->payment_upi_id
+            || $paymentMobileNumber !== (string) $seller->payment_mobile_number
+            || $paymentBusinessName !== (string) $seller->payment_business_name;
+
+        if ($paymentUpiId !== '') {
+            $incomingPreferences['upi_id'] = $paymentUpiId;
+        }
+
+        $seller->payment_upi_id = $paymentUpiId !== '' ? $paymentUpiId : null;
+        $seller->payment_mobile_number = $paymentMobileNumber !== '' ? $paymentMobileNumber : null;
+        $seller->payment_business_name = $paymentBusinessName !== '' ? $paymentBusinessName : null;
+        $seller->payment_status = $onlinePaymentsEnabled ? 'enabled' : 'disabled';
+        $seller->payment_provider = 'upi';
+        if ($destinationChanged) {
+            $seller->payment_verification_status = 'verification_pending';
+            $seller->payment_verified_at = null;
+        } elseif (! $seller->payment_verification_status) {
+            $seller->payment_verification_status = 'verification_pending';
+        }
+        $seller->payment_enabled = $onlinePaymentsEnabled;
+        $seller->online_payments_enabled = $onlinePaymentsEnabled;
+        $seller->preferences = $preferences;
+
+        $seller->save();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Return
+        |--------------------------------------------------------------------------
+        */
         return back()->with(
             'success',
             'All seller settings saved successfully.'
@@ -257,11 +458,11 @@ class SellerSettingsController extends Controller
             ]);
         }
 
-        $seller->update([
-            'password' => Hash::make(
-                $validated['password']
-            ),
-        ]);
+        $seller->password = Hash::make(
+            $validated['password']
+        );
+
+        $seller->save();
 
         return back()->with(
             'success',
@@ -285,37 +486,25 @@ class SellerSettingsController extends Controller
             ],
         ]);
 
-        if ($seller->payment_qr) {
-            $oldPath = ltrim(
-                $seller->payment_qr,
-                '/'
-            );
-
-            if (str_starts_with(
-                $oldPath,
-                'storage/'
-            )) {
-                $oldPath = substr(
-                    $oldPath,
-                    strlen('storage/')
-                );
-            }
-
-            Storage::disk('public')->delete(
-                $oldPath
-            );
-        }
-
         $path = $validated['payment_qr']->store(
             'seller-payment-qr',
             'public'
         );
 
-        $seller->update([
-            'payment_qr' => $path,
-        ]);
+        $oldPath = ltrim((string) $seller->payment_qr, '/');
+        if (str_starts_with($oldPath, 'storage/')) {
+            $oldPath = substr($oldPath, strlen('storage/'));
+        }
 
-        return back()->with(
+        $seller->payment_qr = $path;
+        $seller->save();
+
+        // Keep the previous image available unless the new upload was saved.
+        if ($oldPath !== '' && $oldPath !== $path) {
+            Storage::disk('public')->delete($oldPath);
+        }
+
+        return redirect()->route('seller.settings')->with(
             'success',
             'Payment QR updated successfully.'
         );
@@ -327,33 +516,20 @@ class SellerSettingsController extends Controller
     public function deletePaymentQr()
     {
         $seller = $this->currentSeller();
+        $oldPath = ltrim((string) $seller->payment_qr, '/');
 
-        if ($seller->payment_qr) {
-            $oldPath = ltrim(
-                $seller->payment_qr,
-                '/'
-            );
-
-            if (str_starts_with(
-                $oldPath,
-                'storage/'
-            )) {
-                $oldPath = substr(
-                    $oldPath,
-                    strlen('storage/')
-                );
-            }
-
-            Storage::disk('public')->delete(
-                $oldPath
-            );
+        if (str_starts_with($oldPath, 'storage/')) {
+            $oldPath = substr($oldPath, strlen('storage/'));
         }
 
-        $seller->update([
-            'payment_qr' => null,
-        ]);
+        $seller->payment_qr = null;
+        $seller->save();
 
-        return back()->with(
+        if ($oldPath !== '') {
+            Storage::disk('public')->delete($oldPath);
+        }
+
+        return redirect()->route('seller.settings')->with(
             'success',
             'Payment QR removed successfully.'
         );
@@ -365,6 +541,18 @@ class SellerSettingsController extends Controller
     private function defaultPreferences(): array
     {
         return [
+            /*
+            |--------------------------------------------------------------------------
+            | UPI PAYMENT
+            |--------------------------------------------------------------------------
+            */
+            'upi_id' => null,
+
+            /*
+            |--------------------------------------------------------------------------
+            | Delivery
+            |--------------------------------------------------------------------------
+            */
             'shipping_enabled' => true,
             'seller_delivery' => true,
             'platform_delivery' => false,
@@ -376,15 +564,30 @@ class SellerSettingsController extends Controller
             'free_shipping_threshold' => 0,
             'estimated_delivery_days' => 3,
 
+            /*
+            |--------------------------------------------------------------------------
+            | Orders
+            |--------------------------------------------------------------------------
+            */
             'auto_accept_orders' => false,
             'allow_order_cancellation' => true,
             'allow_return_requests' => true,
             'allow_exchange_requests' => false,
             'auto_update_order_status' => false,
 
+            /*
+            |--------------------------------------------------------------------------
+            | Notifications
+            |--------------------------------------------------------------------------
+            */
             'order_confirmation_notification' => true,
             'delivery_status_notification' => true,
 
+            /*
+            |--------------------------------------------------------------------------
+            | Products
+            |--------------------------------------------------------------------------
+            */
             'default_product_status' => 'active',
             'default_rating' => 4.5,
             'low_stock_threshold' => 5,
@@ -395,12 +598,22 @@ class SellerSettingsController extends Controller
             'product_visibility_enabled' => true,
             'auto_hide_out_of_stock' => false,
 
+            /*
+            |--------------------------------------------------------------------------
+            | Visibility
+            |--------------------------------------------------------------------------
+            */
             'profile_visibility' => true,
             'shop_visibility' => true,
             'show_mobile_number' => false,
             'show_email' => false,
             'show_business_information' => true,
 
+            /*
+            |--------------------------------------------------------------------------
+            | Customer communication
+            |--------------------------------------------------------------------------
+            */
             'allow_customer_messages' => true,
             'auto_reply' => false,
 
@@ -409,6 +622,11 @@ class SellerSettingsController extends Controller
             'cancellation_message' => '',
             'delivery_message' => '',
 
+            /*
+            |--------------------------------------------------------------------------
+            | Invoice
+            |--------------------------------------------------------------------------
+            */
             'show_seller_logo_on_invoice' => true,
             'show_gst_on_invoice' => true,
             'show_seller_address_on_invoice' => true,
@@ -419,6 +637,11 @@ class SellerSettingsController extends Controller
             'invoice_prefix' => 'SB-',
             'invoice_footer' => '',
 
+            /*
+            |--------------------------------------------------------------------------
+            | Store
+            |--------------------------------------------------------------------------
+            */
             'store_active' => true,
             'temporarily_closed' => false,
             'vacation_mode' => false,
@@ -437,8 +660,6 @@ class SellerSettingsController extends Controller
             401
         );
 
-        return SellerProfile::findOrFail(
-            $sellerId
-        );
+        return SellerProfile::findOrFail($sellerId);
     }
 }

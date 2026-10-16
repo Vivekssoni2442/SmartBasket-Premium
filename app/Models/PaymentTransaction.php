@@ -8,6 +8,7 @@ class PaymentTransaction extends Model
 {
     protected $fillable = [
         'payment_id',
+        'root_transaction_id',
         'user_id',
         'access_token',
         'gateway',
@@ -55,6 +56,11 @@ class PaymentTransaction extends Model
     public function payment()
     {
         return $this->belongsTo(Payment::class);
+    }
+
+    public function rootTransaction()
+    {
+        return $this->belongsTo(self::class, 'root_transaction_id');
     }
 
     public function refunds()

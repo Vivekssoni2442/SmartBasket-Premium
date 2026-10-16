@@ -51,6 +51,15 @@ $sellerNavItems = [
     ],
 
     [
+        'route' => 'seller.returns.index',
+        'label' => 'Returns',
+        'icon' => 'fa-solid fa-arrow-rotate-left',
+        'match' => [
+            'seller.returns.*',
+        ],
+    ],
+
+    [
         'route' => 'seller.payments.index',
         'label' => 'Payments',
         'icon' => 'fa-solid fa-wallet',
