@@ -3,6 +3,10 @@
 
 <head>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
     <meta charset="UTF-8">
 
     <meta
@@ -209,11 +213,11 @@
 
         .sb-brand-mark {
 
-            width: 50px;
+            width: 72px;
 
-            height: 50px;
+            height: 72px;
 
-            min-width: 50px;
+            min-width: 72px;
 
             display: flex;
 
@@ -221,7 +225,7 @@
 
             justify-content: center;
 
-            border-radius: 15px;
+            border-radius: 20px;
 
             color: #fff;
 
@@ -236,8 +240,18 @@
                 0 12px 28px
                 rgba(79,70,229,.25);
 
-            font-size: 17px;
+            font-size: 24px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,.75);
+            flex: 0 0 auto;
 
+        }
+
+        .sb-brand-mark img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: cover;
         }
 
 
@@ -494,6 +508,8 @@
                 0 25px 65px
                 rgba(79,70,229,.20);
 
+            isolation: isolate;
+
         }
 
 
@@ -515,6 +531,8 @@
 
             background:
                 rgba(255,255,255,.075);
+
+            animation: sb-hero-orbit 18s ease-in-out infinite alternate;
 
         }
 
@@ -538,7 +556,30 @@
             background:
                 rgba(255,255,255,.07);
 
+            animation: sb-hero-drift 12s ease-in-out infinite alternate;
+
         }
+
+        .sb-hero {
+            background-size: 180% 180%;
+            animation: sb-hero-gradient 14s ease-in-out infinite;
+        }
+
+        @keyframes sb-hero-orbit {
+            from { transform: translate3d(-28px, 22px, 0) scale(.92); opacity: .58; }
+            to { transform: translate3d(16px, -12px, 0) scale(1.08); opacity: 1; }
+        }
+
+        @keyframes sb-hero-drift {
+            from { transform: translate3d(0, 18px, 0) scale(.9); }
+            to { transform: translate3d(-22px, -14px, 0) scale(1.12); }
+        }
+
+        @keyframes sb-hero-gradient {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
 
 
         .sb-hero-copy {
@@ -2765,13 +2806,13 @@
 
             .sb-brand-mark {
 
-                width: 43px;
+                width: 58px;
 
-                height: 43px;
+                height: 58px;
 
-                min-width: 43px;
+                min-width: 58px;
 
-                border-radius: 12px;
+                border-radius: 16px;
 
             }
 
@@ -3055,21 +3096,6 @@
            REDUCE MOTION
            ========================================================= */
 
-        @media (prefers-reduced-motion: reduce) {
-
-            .sb-dashboard-page *,
-            .sb-dashboard-page *::before,
-            .sb-dashboard-page *::after {
-
-                transition:
-                    none !important;
-
-                animation:
-                    none !important;
-
-            }
-
-        }
 
     </style>
 
@@ -3099,10 +3125,19 @@
 
     @php
 
-        $sellerName = $seller->business_name
-            ?? $seller->name
-            ?? $seller->owner_name
-            ?? 'Seller';
+        $sellerName = $seller->shop_name
+            ?: ($seller->business_name
+            ?: ($seller->name
+            ?: ($seller->seller_name ?: 'Your Shop')));
+
+        $sellerLogoPath = ltrim((string) $seller->shop_logo, '/');
+        if (str_starts_with($sellerLogoPath, 'storage/')) {
+            $sellerLogoPath = substr($sellerLogoPath, strlen('storage/'));
+        }
+        $sellerLogoUrl = $sellerLogoPath !== ''
+            && \Illuminate\Support\Facades\Storage::disk('public')->exists($sellerLogoPath)
+                ? \Illuminate\Support\Facades\Storage::disk('public')->url($sellerLogoPath)
+                : null;
 
 
         $sellerInitial = strtoupper(
@@ -3253,11 +3288,11 @@
                 <div class="sb-command-left">
 
                     <div class="sb-brand-mark">
-
-                        <i
-                            class="fa-solid fa-store"
-                            aria-hidden="true"
-                        ></i>
+                        @if($sellerLogoUrl)
+                            <img src="{{ $sellerLogoUrl }}?v={{ optional($seller->updated_at)->timestamp ?? time() }}" alt="{{ $sellerName }} logo">
+                        @else
+                            <i class="fa-solid fa-store" aria-hidden="true"></i>
+                        @endif
 
                     </div>
 
@@ -3305,70 +3340,6 @@
                         {{ $sellerDashboardStatus }}
 
                     </div>
-
-                </div>
-
-            </section>
-
-
-            {{-- =================================================
-                 HERO
-                 ================================================= --}}
-
-            <section class="sb-hero" data-ve="seller.dashboard.hero">
-
-                <div class="sb-hero-copy">
-
-                    <span class="sb-hero-label">
-
-                        <i
-                            class="fa-solid fa-chart-line"
-                            aria-hidden="true"
-                        ></i>
-
-                        Seller Dashboard
-
-                    </span>
-
-
-                    <h2 class="sb-hero-title">{{ app(\App\Services\WebsiteDesignService::class)->content('seller.dashboard', 'hero', 'title', 'Grow your store. Sell smarter.') }}</h2>
-
-
-                    <p class="sb-hero-text">{{ app(\App\Services\WebsiteDesignService::class)->content('seller.dashboard', 'hero', 'body', 'Manage your products, orders, payments and seller account from one powerful SmartBasket workspace.') }}</p>
-
-                </div>
-
-
-                <div class="sb-hero-actions">
-
-                    <a
-                        href="{{ route('seller.product.add') }}"
-                        class="sb-primary-btn"
-                    >
-
-                        <i
-                            class="fa-solid fa-plus"
-                            aria-hidden="true"
-                        ></i>
-
-                        {{ app(\App\Services\WebsiteDesignService::class)->content('seller.dashboard', 'hero', 'button_label', 'Add Product') }}
-
-                    </a>
-
-
-                    <a
-                        href="{{ route('seller.orders.index') }}"
-                        class="sb-secondary-btn"
-                    >
-
-                        <i
-                            class="fa-solid fa-receipt"
-                            aria-hidden="true"
-                        ></i>
-
-                        View Orders
-
-                    </a>
 
                 </div>
 
@@ -3712,7 +3683,7 @@
 
                         </a>
 
-                        <a href="{{ route('seller.payment-qr.manage') }}" class="sb-action">
+                        <a href="{{ route('seller.profile') }}#seller-payment-qr" class="sb-action">
                             <span class="sb-action-icon"><i class="fa-solid fa-qrcode" aria-hidden="true"></i></span>
                             <span class="sb-action-content">
                                 <span class="sb-action-title">Seller QR Code</span>
@@ -4825,6 +4796,8 @@
     ></script>
 
 
+
+@include('seller.partials.login-welcome')
 </body>
 
 </html>

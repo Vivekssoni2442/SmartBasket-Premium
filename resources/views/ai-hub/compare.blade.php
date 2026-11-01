@@ -1881,22 +1881,6 @@
    REDUCED MOTION
 ========================================================= */
 
-@media (prefers-reduced-motion: reduce) {
-
-    .sb-result-panel,
-    .sb-product-compare-card,
-    .sb-product-image-wrap img,
-    .sb-compare-btn,
-    .sb-action-btn,
-    .sb-select-wrap select {
-
-        animation:
-            none !important;
-
-        transition:
-            none !important;
-    }
-}
 
 </style>
 

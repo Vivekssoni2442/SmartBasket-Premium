@@ -129,13 +129,13 @@
             <h3 style="margin: 0; font-size: 16px; font-weight: 700;">Order History</h3>
         </div>
         <span style="background: rgba(0,153,255,0.1); padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; color: #0099ff;">
-            {{ $user->orders()->count() }} Orders
+            {{ $user->orders->count() }} Orders
         </span>
     </div>
     
-    @if($user->orders()->count() > 0)
-        <div style="max-height: 300px; overflow-y: auto;">
-            @foreach($user->orders()->latest()->take(10)->get() as $order)
+    @if($user->orders->isNotEmpty())
+        <div>
+            @foreach($user->orders as $order)
             <div style="padding: 12px 0; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
                 <div>
                     <div style="color: var(--text-primary); font-weight: 600; font-size: 13px;">

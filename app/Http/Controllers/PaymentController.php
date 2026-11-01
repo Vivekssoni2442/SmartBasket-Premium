@@ -53,20 +53,148 @@ class PaymentController extends Controller
             ]);
         }
 
+        $gatewayConfigured = app(RazorpayPaymentGateway::class)->isConfigured();
+
         return view('payments.show', [
             'payment' => $payment,
             'razorpayKey' => config('services.razorpay.key'),
-            'gatewayReady' => app(RazorpayPaymentGateway::class)->isConfigured()
+            'sellerUpiPayments' => collect($payment->request_metadata['seller_payments'] ?? [])->values(),
+            'gatewayConfigured' => $gatewayConfigured,
+            'gatewayReady' => $gatewayConfigured
                 && filled($payment->gateway_order_id)
                 && in_array($payment->status, ['pending', 'processing'], true)
                 && empty($payment->order_ids),
         ]);
     }
 
+    /** Return the current seller UPI review result for the customer's open payment page. */
+    public function sellerUpiStatus(PaymentTransaction $payment)
+    {
+        abort_unless($payment->isAccessibleByCurrentSession(), 403);
+        abort_unless($payment->gateway === 'seller_upi', 404);
+
+        $payment->refresh();
+        $metadata = $payment->request_metadata ?? [];
+        if ($payment->status === 'paid' && ! empty($payment->order_ids)) {
+            session()->flash('order_success_order_ids', $payment->order_ids);
+        }
+        $sellerConfirmations = collect($metadata['seller_payments'] ?? [])
+            ->filter(fn ($target) => ($metadata['seller_upi_reviews'][(string) (int) $target['seller_id']]['status'] ?? 'pending') === 'paid')
+            ->map(function ($target) use ($metadata) {
+                $review = $metadata['seller_upi_reviews'][(string) (int) $target['seller_id']] ?? [];
+
+                return [
+                    'seller_id' => (int) $target['seller_id'],
+                    'seller_name' => $target['seller_name'],
+                    'amount' => $target['amount'],
+                    'order_ids' => collect($review['order_ids'] ?? [])->map(fn ($id) => 'SB-' . $id)->values(),
+                ];
+            })->values();
+
+        return response()->json([
+            'status' => $payment->status,
+            'order_ids' => collect($payment->order_ids ?? [])->map(fn ($id) => 'SB-' . $id)->values(),
+            'seller_confirmations' => $sellerConfirmations,
+            'message' => $payment->status === 'paid'
+                ? 'Your UPI payment was verified and your order is confirmed.'
+                : ($payment->status === 'failed' ? ($payment->failure_reason ?: 'Your UPI payment could not be verified.') : null),
+            'orders_url' => route('orders.index'),
+            'order_success_url' => route('order.success'),
+        ])->header('Cache-Control', 'no-store, private');
+    }
+
+    /** Save customer-submitted UPI reference and create unpaid orders for admin review. */
+    public function submitSellerUpiReference(Request $request, PaymentTransaction $payment, CheckoutOrderService $orders)
+    {
+        abort_unless($payment->isAccessibleByCurrentSession(), 403);
+        abort_unless($payment->gateway === 'seller_upi', 404);
+
+        if ($payment->status === 'manual_review' || $payment->status === 'paid') {
+            return redirect()->route('payments.show', $payment)
+                ->with('success', $payment->status === 'paid'
+                    ? 'This UPI payment has already been verified and your order is confirmed.'
+                    : 'Your UPI reference is already submitted and is waiting for seller verification.');
+        }
+
+        if ($payment->status !== 'pending' || ! empty($payment->order_ids)) {
+            return redirect()->route('payments.show', $payment)
+                ->with('error', 'This UPI payment can no longer accept a reference. Check its current status below.');
+        }
+
+        $sellerTargets = $payment->request_metadata['seller_payments'] ?? [];
+        $rules = ['upi_references' => ['required', 'array']];
+        foreach ($sellerTargets as $target) {
+            $rules['upi_references.' . (int) $target['seller_id']] = ['required', 'string', 'min:6', 'max:50', 'regex:/^[A-Za-z0-9-]+$/'];
+        }
+        $validated = $request->validate($rules);
+        $upiReferences = collect($sellerTargets)->mapWithKeys(function ($target) use ($validated) {
+            $sellerId = (int) $target['seller_id'];
+            return [$sellerId => trim((string) $validated['upi_references'][$sellerId])];
+        })->all();
+
+        if ($payment->expires_at?->isPast()) {
+            $payment->update(['status' => 'expired', 'failure_reason' => 'UPI payment session expired.']);
+
+            return back()->withErrors(['upi_reference' => 'This UPI payment session has expired. Start checkout again.']);
+        }
+
+        try {
+            $submitted = DB::transaction(function () use ($payment, $upiReferences, $orders) {
+                $locked = PaymentTransaction::whereKey($payment->id)->lockForUpdate()->firstOrFail();
+                if ($locked->status !== 'pending' || ! empty($locked->order_ids)) {
+                    return false;
+                }
+
+                $items = $locked->items_snapshot ?? [];
+                $orders->assertCheckoutCanProceed($items);
+                $orderIds = $orders->createConfirmedOrders(
+                    $items,
+                    $locked->customer_details ?? [],
+                    $locked->user_id,
+                    'Seller UPI',
+                    'Pending'
+                );
+
+                $metadata = $locked->request_metadata ?? [];
+                $metadata['upi_reference_submitted_at'] = now()->toIso8601String();
+                $metadata['upi_references'] = $upiReferences;
+                $metadata['seller_upi_reviews'] = collect($metadata['seller_payments'] ?? [])->mapWithKeys(function ($sellerPayment) {
+                    return [(string) (int) $sellerPayment['seller_id'] => ['status' => 'pending']];
+                })->all();
+                $locked->update([
+                    'gateway_transaction_id' => substr(implode(', ', array_values($upiReferences)), 0, 255),
+                    'order_ids' => $orderIds,
+                    'status' => 'manual_review',
+                    'request_metadata' => $metadata,
+                ]);
+                $locked->payment?->update(['status' => 'manual_review']);
+                $locked->payment?->orders()->sync($orderIds);
+
+                return true;
+            });
+        } catch (\RuntimeException $exception) {
+            return back()->withErrors(['upi_reference' => $exception->getMessage()]);
+        }
+
+        if (! $submitted) {
+            $payment->refresh();
+
+            return redirect()->route('payments.show', $payment)
+                ->with('success', $payment->status === 'paid'
+                    ? 'This UPI payment has already been verified and your order is confirmed.'
+                    : 'Your UPI reference is already submitted and is waiting for seller verification.');
+        }
+
+        $orders->clearCurrentCheckout($payment->user_id);
+
+        return redirect()->route('payments.show', $payment)->with('success', 'UPI reference submitted. Payment will remain pending until the admin verifies the seller account credit.');
+    }
+
     /** Start a new gateway attempt for the existing checkout transaction. */
     public function retry(Request $request, PaymentTransaction $payment, RazorpayPaymentGateway $gateway)
     {
         abort_unless($payment->isAccessibleByCurrentSession(), 403);
+        abort_unless($payment->gateway !== 'seller_upi', 422, 'Start a fresh checkout to generate new seller UPI payment references.');
 
         $payment = DB::transaction(function () use ($payment) {
             $locked = PaymentTransaction::whereKey($payment->id)->lockForUpdate()->firstOrFail();
@@ -212,6 +340,19 @@ class PaymentController extends Controller
             return $this->jsonFailure('Payment is pending. Please wait or retry.', 202, 'pending');
         }
 
+        if (strtoupper((string) $payment->payment_method) === 'UPI'
+            && strtolower((string) ($gatewayPayment['method'] ?? '')) !== 'upi') {
+            $payment->update([
+                'status' => 'manual_review',
+                'gateway_payment_id' => $validated['razorpay_payment_id'],
+                'failure_reason' => 'The gateway captured this payment using a method other than UPI.',
+                'verified_at' => now(),
+            ]);
+            $payment->payment?->update(['status' => 'manual_review', 'gateway_reference' => $validated['razorpay_payment_id']]);
+
+            return $this->jsonFailure('Payment was received using a different method and needs support review before order confirmation.', 409);
+        }
+
         try {
             $orderIds = DB::transaction(function () use ($payment, $orders, $validated) {
                 $locked = PaymentTransaction::whereKey($payment->id)->lockForUpdate()->firstOrFail();
@@ -274,6 +415,7 @@ class PaymentController extends Controller
         }
 
         $orders->clearCurrentCheckout($payment->user_id);
+        session()->flash('order_success_order_ids', $orderIds);
 
         return response()->json([
             'success' => true,
@@ -399,6 +541,24 @@ class PaymentController extends Controller
 
             if ($status === 'authorized') {
                 $webhook->update(['status' => 'processed', 'processed_at' => now(), 'payment_id' => $payment->payment_id]);
+                return;
+            }
+
+            if (strtoupper((string) $payment->payment_method) === 'UPI'
+                && strtolower((string) ($entity['method'] ?? '')) !== 'upi') {
+                $payment->update([
+                    'status' => 'manual_review',
+                    'gateway_payment_id' => $gatewayPaymentId,
+                    'failure_reason' => 'The gateway captured this payment using a method other than UPI.',
+                    'verified_at' => now(),
+                ]);
+                $payment->payment?->update(['status' => 'manual_review', 'gateway_reference' => $gatewayPaymentId]);
+                $webhook->update([
+                    'status' => 'manual_review',
+                    'failure_reason' => $payment->failure_reason,
+                    'processed_at' => now(),
+                    'payment_id' => $payment->payment_id,
+                ]);
                 return;
             }
 

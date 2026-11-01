@@ -8,6 +8,7 @@
 
 @section('content')
 
+@push('styles')
 <style>
     .review-page {
         --green: #16a34a;
@@ -209,6 +210,7 @@
         }
     }
 </style>
+@endpush
 
 <div class="review-page">
 
@@ -327,15 +329,6 @@
 
 
         <div class="review-actions">
-
-            <a
-                href="{{ route('seller.verification.bank-details') }}"
-                class="back-btn"
-            >
-                <i class="fa-solid fa-arrow-left"></i>
-                Back
-            </a>
-
 
             <form
                 method="POST"

@@ -1,0 +1,8 @@
+com.smartbasket.deliveryboy.app-pngs-0 C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\build\generated\res\pngs\debug
+com.smartbasket.deliveryboy.app-updated_navigation_xml-1 C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\build\generated\updated_navigation_xml\debug
+com.smartbasket.deliveryboy.app-packageDebugResources-2 C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\build\intermediates\incremental\debug\packageDebugResources\merged.dir
+com.smartbasket.deliveryboy.app-packageDebugResources-3 C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\build\intermediates\incremental\debug\packageDebugResources\stripped.dir
+com.smartbasket.deliveryboy.app-debug-4 C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\build\intermediates\merged_res\debug\mergeDebugResources
+com.smartbasket.deliveryboy.app-debug-5 C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\debug\res
+com.smartbasket.deliveryboy.app-main-6 C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\res
+gradleHome-0 C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\.tools\gradle-home

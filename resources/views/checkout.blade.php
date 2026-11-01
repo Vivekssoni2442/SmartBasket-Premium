@@ -28,75 +28,29 @@
 /* =========================================================
    PRODUCTS PAGE — FULL WIDTH PREMIUM TASKBAR
 ========================================================= */
-:root{
-    --sb-tbar-bg:rgba(255,255,255,.92);
-    --sb-tbar-panel:#ffffff;
-    --sb-tbar-text:#102033;
-    --sb-tbar-muted:#64748b;
-    --sb-tbar-border:rgba(37,99,235,.13);
-    --sb-tbar-blue:#2563eb;
-    --sb-tbar-blue2:#4f46e5;
-    --sb-tbar-soft:#eef4ff;
-    --sb-tbar-shadow:0 16px 45px rgba(15,23,42,.12);
-}
-html[data-theme="dark"],html[data-sb-theme="dark"]{
-    --sb-tbar-bg:rgba(5,11,22,.94);
-    --sb-tbar-panel:#0b1728;
-    --sb-tbar-text:#f7fbff;
-    --sb-tbar-muted:#9aacbf;
-    --sb-tbar-border:rgba(101,165,255,.20);
-    --sb-tbar-blue:#65a5ff;
-    --sb-tbar-blue2:#8b7cff;
-    --sb-tbar-soft:rgba(37,99,235,.16);
-    --sb-tbar-shadow:0 20px 60px rgba(0,0,0,.42);
-}
 
-.sb-products-taskbar{
-    position:sticky;top:0;left:0;right:0;z-index:99990;
-    width:100%;min-height:76px;padding:8px 12px;
-    display:flex;align-items:center;gap:9px;
-    background:var(--sb-tbar-bg);
-    border-bottom:1px solid var(--sb-tbar-border);
-    box-shadow:var(--sb-tbar-shadow);
-    backdrop-filter:blur(24px) saturate(155%);-webkit-backdrop-filter:blur(24px) saturate(155%);
-}
-.sb-products-taskbar:before{
-    content:"";position:absolute;left:0;right:0;bottom:-2px;height:2px;
-    background:linear-gradient(90deg,#00e5ff,#287bff,#8b35ff,#ff20c8,#ff405d,#ffe45c,#00e5ff);
-    background-size:600% 100%;animation:sbTaskbarRGB 8s linear infinite;pointer-events:none;
-}
-@keyframes sbTaskbarRGB{to{background-position:600% 50%}}
-.sb-products-brand{
-    flex:0 0 208px;min-width:190px;height:58px;padding:5px 10px 5px 6px;
-    display:flex;align-items:center;gap:10px;border-radius:18px;
-    color:var(--sb-tbar-text)!important;text-decoration:none!important;
-    border:1px solid transparent;transition:.22s ease;
-}
-.sb-products-brand:hover{background:var(--sb-tbar-soft);border-color:var(--sb-tbar-border);transform:translateY(-1px)}
-.sb-brand-mark{width:45px;height:45px;display:grid;place-items:center;border-radius:14px;color:#fff;
-    background:linear-gradient(135deg,#2563eb,#7c3aed);box-shadow:0 8px 22px rgba(37,99,235,.30),inset 0 1px rgba(255,255,255,.25);font-size:17px}
-.sb-brand-copy{display:flex;flex-direction:column;line-height:1.05;min-width:0}.sb-brand-copy strong{font-size:14px;letter-spacing:.4px}.sb-brand-copy small{margin-top:5px;font-size:8px;letter-spacing:1.25px;color:var(--sb-tbar-muted);font-weight:900}
-.sb-products-nav{display:flex;align-items:center;gap:6px;flex:1;min-width:0}
-.sb-pnav-btn{
-    position:relative;flex:1;min-width:82px;height:50px;padding:0 10px;
-    display:flex;align-items:center;justify-content:center;gap:7px;
-    border:1px solid rgba(37,99,235,.13);border-radius:14px;
-    background:linear-gradient(180deg,var(--sb-tbar-panel),var(--sb-tbar-soft));
-    color:var(--sb-tbar-muted)!important;font-size:11px;font-weight:900;
-    text-decoration:none!important;white-space:nowrap;cursor:pointer;
-    box-shadow:0 5px 16px rgba(37,99,235,.06);transition:.2s ease;
-}
-.sb-pnav-btn i{font-size:13px;width:16px;text-align:center}.sb-pnav-btn:hover{color:var(--sb-tbar-blue)!important;border-color:rgba(37,99,235,.32);transform:translateY(-2px);box-shadow:0 10px 25px rgba(37,99,235,.13)}
-.sb-pnav-btn.is-active{color:#fff!important;border-color:transparent;background:linear-gradient(135deg,#2563eb,#4f46e5);box-shadow:0 10px 28px rgba(37,99,235,.28)}
-.sb-pnav-aihub{color:#2563eb!important}.sb-pnav-aihub:hover{color:#fff!important;background:linear-gradient(135deg,#2563eb,#7c3aed);border-color:transparent}
-.sb-pnav-smart-ai{color:#4f46e5!important}.sb-pnav-smart-ai:hover{color:#fff!important;background:linear-gradient(135deg,#4f46e5,#9333ea);border-color:transparent}
-.sb-smart-orb{width:25px;height:25px;display:grid;place-items:center;border-radius:8px;color:#fff;background:linear-gradient(135deg,#4f46e5,#9333ea);box-shadow:0 5px 14px rgba(79,70,229,.25);font-size:11px}.sb-online-dot{position:absolute;top:7px;right:8px;width:6px;height:6px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.13)}
-.sb-taskbar-user{flex:0 1 145px;min-width:105px;height:50px;padding:0 10px;display:flex;align-items:center;gap:8px;border:1px solid var(--sb-tbar-border);border-radius:14px;background:var(--sb-tbar-panel);box-shadow:0 5px 16px rgba(37,99,235,.05);animation:sbHiFloat 3s ease-in-out infinite}
-@keyframes sbHiFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
-.sb-user-dot{width:31px;height:31px;display:grid;place-items:center;border-radius:10px;background:var(--sb-tbar-soft);color:var(--sb-tbar-blue);flex:0 0 31px}.sb-user-text{display:flex;flex-direction:column;min-width:0;line-height:1.05}.sb-user-text small{font-size:8px;color:var(--sb-tbar-muted);font-weight:800}.sb-user-text strong{margin-top:4px;font-size:10px;color:var(--sb-tbar-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:92px}
-.sb-products-more{flex:0 0 52px;height:50px;border:1px solid var(--sb-tbar-border);border-radius:14px;background:var(--sb-tbar-panel);color:var(--sb-tbar-text);cursor:pointer;font-size:17px;transition:.2s ease;box-shadow:0 5px 16px rgba(37,99,235,.06)}.sb-products-more:hover{color:#fff;background:linear-gradient(135deg,#2563eb,#7c3aed);border-color:transparent;transform:translateY(-2px)}
-.sb-products-more-menu{position:fixed;z-index:100000;top:84px;right:12px;width:290px;max-height:calc(100vh - 100px);overflow:auto;padding:10px;border:1px solid var(--sb-tbar-border);border-radius:22px;background:var(--sb-tbar-bg);box-shadow:0 30px 90px rgba(0,0,0,.28);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);display:none}.sb-products-more-menu.is-open{display:block;animation:sbMenuIn .2s ease}.sb-more-heading{padding:9px 10px 11px;border-bottom:1px solid var(--sb-tbar-border);margin-bottom:5px}.sb-more-heading span{display:block;color:var(--sb-tbar-text);font-size:11px;font-weight:950;letter-spacing:.7px}.sb-more-heading small{display:block;margin-top:4px;color:var(--sb-tbar-muted);font-size:8px}.sb-more-link{width:100%;min-height:42px;padding:0 11px;display:flex;align-items:center;gap:10px;border:0;border-radius:12px;background:transparent;color:var(--sb-tbar-text)!important;text-decoration:none!important;font-size:10px;font-weight:850;cursor:pointer}.sb-more-link i{width:18px;text-align:center;color:var(--sb-tbar-blue)}.sb-more-link:hover{background:var(--sb-tbar-soft);color:var(--sb-tbar-blue)!important;transform:translateX(2px)}.sb-more-separator{height:1px;margin:7px 5px;background:var(--sb-tbar-border)}.sb-more-title{display:flex;gap:8px;align-items:center;padding:5px 10px 7px;color:var(--sb-tbar-muted);font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}.sb-theme-switcher{display:grid;grid-template-columns:1fr 1fr;gap:6px}.sb-theme-choice{height:38px;border:1px solid var(--sb-tbar-border);border-radius:11px;background:var(--sb-tbar-panel);color:var(--sb-tbar-text);font-size:10px;font-weight:850;cursor:pointer}.sb-theme-choice:hover,.sb-theme-choice.is-selected{color:#fff;background:linear-gradient(135deg,#2563eb,#7c3aed);border-color:transparent}.sb-theme-choice i{margin-right:5px}.sb-more-action{font-family:inherit;text-align:left}.sb-logout-form{margin:0}.sb-logout{color:#e05b72!important}.sb-logout i{color:#e05b72!important}
-@keyframes sbMenuIn{from{opacity:0;transform:translateY(-8px) scale(.98)}to{opacity:1;transform:none}}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* AI HUB left button: existing project component remains the single left-side AI HUB launcher */
 .ai-hub-fab{z-index:99980!important}.ai-hub-drawer{z-index:99999!important}
@@ -108,10 +62,12 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
 /* Robot launcher is hidden; its original panel remains fully functional */
 
 
-@media(max-width:1350px){.sb-products-brand{flex-basis:185px;min-width:175px}.sb-pnav-btn{min-width:70px;padding:0 7px;font-size:10px}.sb-taskbar-user{flex-basis:125px}}
-@media(max-width:1120px){.sb-brand-copy{display:none}.sb-products-brand{flex-basis:65px;min-width:65px;justify-content:center;padding:5px}.sb-pnav-btn span{display:none}.sb-pnav-btn{min-width:52px;padding:0}.sb-taskbar-user{flex-basis:90px;min-width:90px}.sb-user-text strong{max-width:52px}}
-@media(max-width:700px){.sb-products-taskbar{padding:7px;gap:5px;overflow-x:auto;scrollbar-width:none}.sb-products-taskbar::-webkit-scrollbar{display:none}.sb-products-brand{position:sticky;left:0;z-index:2;flex-basis:52px;min-width:52px;height:48px}.sb-brand-mark{width:39px;height:39px}.sb-products-nav{flex:0 0 auto}.sb-pnav-btn{height:46px;min-width:48px;flex:0 0 48px;border-radius:12px}.sb-taskbar-user{flex:0 0 110px;height:46px}.sb-products-more{flex:0 0 46px;height:46px}.sb-products-more-menu{top:66px;right:7px;width:min(290px,calc(100vw - 14px))}}
+
+
+
 </style>
+
+
 
     <style>
         /* =========================================================
@@ -357,6 +313,7 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
         }
 
         .secure-mini {
+            margin-left: auto;
             display: flex;
             align-items: center;
             gap: 7px;
@@ -547,23 +504,7 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
         }
 
         .checkout-card::before {
-            content: "";
-
-            position: absolute;
-
-            top: 0;
-            left: 0;
-            right: 0;
-
-            height: 3px;
-
-            background:
-                linear-gradient(
-                    90deg,
-                    #2563eb,
-                    #7c3aed,
-                    #06b6d4
-                );
+            content: none;
         }
 
         /* =========================================================
@@ -1079,6 +1020,16 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
             display: block;
         }
 
+        .checkout-upi-sellers { display: grid; gap: 14px; margin-top: 18px; }
+        .checkout-upi-seller { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 18px; border: 1px solid #dbe4f0; border-radius: 16px; background: #fff; }
+        .checkout-upi-seller h3 { margin: 5px 0; color: #17243a; font-size: 1.05rem; }
+        .checkout-upi-seller p { margin: 0 0 8px; color: #64748b; }
+        .checkout-upi-seller strong { display: block; color: #17243a; font-size: 1.25rem; }
+        .checkout-upi-seller small { display: block; margin: 3px 0 9px; color: #64748b; }
+        .checkout-upi-seller a { color: #4f46e5; font-weight: 700; }
+        .checkout-upi-label { color: #64748b; font-size: .72rem; font-weight: 800; letter-spacing: .1em; }
+        @media (max-width: 600px) { .checkout-upi-seller { align-items: flex-start; flex-direction: column; } }
+
         @keyframes paymentIn {
             from {
                 opacity: 0;
@@ -1164,6 +1115,17 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
             font-size: 10px;
             font-weight: 850;
         }
+
+        .payment-icon { min-height: 58px; flex-direction: column; gap: 3px; text-decoration: none; transition: transform .18s ease, box-shadow .18s ease; }
+        .payment-icon:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(37,99,235,.12); }
+        .payment-icon__emoji { font-size: 21px; line-height: 1; }
+        .payment-icon__name { font-size: 11px; }
+        .payment-icon[data-upi-app="gpay"] { color: #168447; background: #f0fbf4; border-color: #ccebd7; }
+        .payment-icon[data-upi-app="phonepe"] { color: #5f259f; background: #f7f1ff; border-color: #e5d6fa; }
+        .payment-icon[data-upi-app="paytm"] { color: #0874b9; background: #eff8ff; border-color: #cfe9fb; }
+        .payment-icon[data-upi-app="bhim"] { color: #c45b19; background: #fff7ed; border-color: #fed7aa; }
+        .checkout-upi-app-group { margin: 16px 0; padding: 14px; border: 1px solid rgba(37,99,235,.12); border-radius: 16px; background: rgba(255,255,255,.72); }
+        .checkout-upi-app-group > strong { display: block; margin-bottom: 10px; color: var(--sb-heading); font-size: 13px; }
 
         /* =========================================================
            UPI
@@ -1980,10 +1942,19 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
             display: inline-block;
         }
 
+        .final-confirm-btn.loading {
+            cursor: wait;
+            animation: confirmPulse 1.1s ease-in-out infinite alternate;
+        }
+
         @keyframes spin {
             to {
                 transform: rotate(360deg);
             }
+        }
+
+        @keyframes confirmPulse {
+            to { box-shadow: 0 16px 36px rgba(79, 70, 229, .42); }
         }
 
         /* =========================================================
@@ -2173,6 +2144,54 @@ body {
 }
 </style>
 
+<style>
+/* Premium payment selection and seller UPI details. */
+[data-step="3"] .step-heading { align-items:center; gap:15px; margin-bottom:22px; }
+[data-step="3"] .step-heading-icon { flex:0 0 54px; width:54px; height:54px; display:grid; place-items:center; border:1px solid rgba(255,255,255,.55); border-radius:17px; background:linear-gradient(145deg,#172b4d,#31557f); box-shadow:0 10px 24px rgba(23,43,77,.2); color:#fff; font-size:24px; }
+[data-step="3"] .step-heading h2 { margin:0; color:var(--sb-heading,#17243a); font-size:clamp(22px,3vw,30px); font-weight:900; letter-spacing:-.04em; }
+[data-step="3"] .step-heading p { margin:5px 0 0; color:var(--sb-muted,#64748b); font-size:13px; }
+[data-step="3"] .payment-box { padding:clamp(18px,3vw,30px); border:1px solid rgba(148,163,184,.2); border-radius:25px; background:linear-gradient(145deg,rgba(255,255,255,.98),rgba(247,249,252,.98)); box-shadow:0 20px 50px rgba(15,23,42,.075),inset 0 1px 0 #fff; }
+[data-step="3"] .payment-box::before { display:none; }
+[data-step="3"] .payment-option-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin-bottom:24px; }
+[data-step="3"] .payment-option { min-height:148px; padding:20px; overflow:hidden; border:1px solid #e3e9f1; border-radius:19px; background:#fff; box-shadow:0 5px 16px rgba(15,23,42,.035); }
+[data-step="3"] .payment-option::after { position:absolute; top:13px; right:13px; display:grid; width:23px; height:23px; place-items:center; border:1px solid #dbe3ed; border-radius:50%; background:#fff; color:transparent; content:"✓"; font-size:12px; font-weight:900; }
+[data-step="3"] .payment-option:hover { transform:translateY(-3px); border-color:#b8c8dc; box-shadow:0 13px 27px rgba(27,48,78,.09); }
+[data-step="3"] .payment-option.selected { border-color:#25856c; background:linear-gradient(145deg,#f0fbf7,#fff 80%); box-shadow:0 0 0 3px rgba(37,133,108,.09),0 14px 28px rgba(27,80,67,.08); }
+[data-step="3"] .payment-option.selected::after { border-color:#25856c; background:#25856c; color:#fff; }
+[data-step="3"] .payment-option-icon { display:grid; width:45px; height:45px; place-items:center; margin-bottom:15px; border:1px solid #e8edf4; border-radius:14px; background:#f7f9fc; font-size:22px; }
+[data-step="3"] .payment-option-title { color:#18263d; font-size:14px; font-weight:850; }
+[data-step="3"] .payment-option-text { margin-top:5px; color:#738096; font-size:11px; line-height:1.5; }
+[data-step="3"] .payment-details { margin-top:21px; padding-top:22px; border-top:1px solid #e8edf3; }
+[data-step="3"] .payment-title { gap:12px; color:#1a2941; font-size:18px; font-weight:900; }
+[data-step="3"] .payment-title-icon { width:44px; height:44px; border:1px solid rgba(37,133,108,.16); border-radius:14px; background:#eaf7f2; color:#23765f; font-size:20px; }
+[data-step="3"] .payment-description { margin:10px 0 18px; color:#68768a; font-size:12px; line-height:1.7; }
+[data-step="3"] .checkout-upi-app-group { margin:14px 0; padding:17px; border:1px solid #e5eaf1; border-radius:17px; background:#fff; box-shadow:0 7px 20px rgba(15,23,42,.035); }
+[data-step="3"] .checkout-upi-app-group>strong { margin-bottom:13px; color:#263650; font-size:13px; font-weight:850; }
+[data-step="3"] .payment-icons { gap:10px; margin-bottom:0; }
+[data-step="3"] .payment-icon { min-height:70px; border-radius:15px; box-shadow:0 4px 12px rgba(15,23,42,.025); }
+.payment-icon__brand { display:grid; width:36px; height:36px; place-items:center; border-radius:11px; background:#fff; box-shadow:0 3px 9px rgba(15,23,42,.1); font-size:23px; font-weight:950; line-height:1; }
+.payment-icon__brand--gpay { background:conic-gradient(from 35deg,#4285f4 0 28%,#34a853 28% 52%,#fbbc05 52% 74%,#ea4335 74% 88%,#4285f4 88%); background-clip:text; color:transparent; }
+.payment-icon__brand--phonepe { background:#5f259f; color:#fff; }
+.payment-icon__brand--paytm { color:#00a9e8; font-size:12px; letter-spacing:-.08em; }
+.payment-icon__brand--bhim { background:linear-gradient(145deg,#f28c28 0 48%,#fff 49% 56%,#138808 57%); color:#174caa; font-size:18px; }
+[data-step="3"] .checkout-upi-sellers { grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr)); gap:14px; margin-top:15px; }
+[data-step="3"] .checkout-upi-seller { min-width:0; align-items:stretch; padding:19px; border:1px solid #e3e9f0; border-radius:19px; background:linear-gradient(145deg,#fff,#f9fbfd); box-shadow:0 8px 22px rgba(15,23,42,.045); }
+[data-step="3"] .checkout-upi-label { display:inline-flex; margin-bottom:4px; padding:5px 9px; border:1px solid #e4eaf1; border-radius:999px; background:#f5f7fa; color:#748197; font-size:9px; letter-spacing:.12em; }
+[data-step="3"] .checkout-upi-seller h3 { margin:7px 0 4px; color:#1b2b43; font-size:17px; font-weight:850; letter-spacing:-.02em; }
+[data-step="3"] .checkout-upi-seller p { margin:0 0 14px; color:#68768a; font-size:12px; }
+[data-step="3"] .checkout-upi-seller strong { width:fit-content; padding:9px 12px; border:1px solid #e6edf1; border-radius:12px; background:#f5faf8; color:#1d6855; font-size:18px; }
+[data-step="3"] .checkout-upi-seller small { margin:8px 0 13px; color:#7b8798; font-size:10px; }
+[data-step="3"] .checkout-upi-seller .checkout-upi-open { display:inline-flex; width:fit-content; align-items:center; justify-content:center; gap:8px; padding:10px 14px; border:1px solid #1f745e; border-radius:11px; background:linear-gradient(135deg,#256f5b,#1f5b4d); box-shadow:0 7px 16px rgba(31,91,77,.16); color:#fff; font-size:11px; font-weight:800; text-decoration:none; }
+[data-step="3"] .checkout-upi-seller .checkout-upi-open:hover { color:#fff; filter:brightness(1.08); transform:translateY(-1px); }
+@media(max-width:760px) {
+    [data-step="3"] .payment-option-grid { grid-template-columns:1fr; gap:10px; }
+    [data-step="3"] .payment-option { min-height:0; padding:15px 17px 15px 74px; }
+    [data-step="3"] .payment-option-icon { position:absolute; top:50%; left:16px; width:43px; height:43px; margin:0; transform:translateY(-50%); }
+    [data-step="3"] .payment-option-title { padding-right:24px; }
+    [data-step="3"] .checkout-upi-sellers { grid-template-columns:1fr; }
+}
+</style>
+
     <link rel="stylesheet" href="{{ asset('css/customer-page-title.css') }}">
 </head>
 
@@ -2232,7 +2251,7 @@ body {
 
 
 
-        
+
             fn($item) =>
                 $item['product']
                 ?? $item->product
@@ -2263,172 +2282,10 @@ body {
     $ordersRoute = Route::has('orders.index') ? 'orders.index' : (Route::has('orders') ? 'orders' : null);
 @endphp
 
-<nav class="sb-products-taskbar" id="sbProductsTaskbar" aria-label="Customer Navigation">
-    <a href="{{ route('products.index') }}" class="sb-products-brand" aria-label="Smart Basket Products">
-        <span class="sb-brand-mark"><i class="fa-solid fa-basket-shopping"></i></span>
-        <span class="sb-brand-copy">
-            <strong>SMART BASKET</strong>
-            <small>CUSTOMER PANEL</small>
-        </span>
-    </a>
-
-    <div class="sb-products-nav">
-        @if(Route::has('products.index'))
-            <a href="{{ route('products.index') }}" class="sb-pnav-btn {{ $currentRoute === 'products.index' ? 'is-active' : '' }}">
-                <i class="fa-solid fa-store"></i><span>Products</span>
-            </a>
-        @endif
-
-        @if($ordersRoute)
-            <a href="{{ route($ordersRoute) }}" class="sb-pnav-btn {{ $currentRoute === $ordersRoute ? 'is-active' : '' }}">
-                <i class="fa-solid fa-box"></i><span>Orders</span>
-            </a>
-        @endif
-
-        @if(Route::has('cart.index'))
-            <a href="{{ route('cart.index') }}" class="sb-pnav-btn {{ $currentRoute === 'cart.index' ? 'is-active' : '' }}">
-                <i class="fa-solid fa-cart-shopping"></i><span>Cart</span>
-            </a>
-        @endif
-
-        @if(Route::has('wishlist'))
-            <a href="{{ route('wishlist') }}" class="sb-pnav-btn {{ $currentRoute === 'wishlist' ? 'is-active' : '' }}">
-                <i class="fa-regular fa-heart"></i><span>Wishlist</span>
-            </a>
-        @endif
-
-        @if(Route::has('profile'))
-            <a href="{{ route('profile') }}" class="sb-pnav-btn {{ $currentRoute === 'profile' ? 'is-active' : '' }}">
-                <i class="fa-regular fa-user"></i><span>Profile</span>
-            </a>
-        @endif
-
-        @if(Route::has('settings'))
-            <a href="{{ route('settings') }}" class="sb-pnav-btn {{ $currentRoute === 'settings' ? 'is-active' : '' }}">
-                <i class="fa-solid fa-gear"></i><span>Settings</span>
-            </a>
-        @endif
-
-        <button type="button" class="sb-pnav-btn sb-pnav-aihub" id="sbProductsAIHub" data-sb-ai-hub-open title="Open AI Hub">
-            <i class="fa-solid fa-wand-magic-sparkles"></i><span>AI HUB</span>
-        </button>
-
-        <button type="button" class="sb-pnav-btn sb-pnav-smart-ai" id="sbProductsSmartAI" title="Open Smart AI">
-            <span class="sb-smart-orb"><i class="fa-solid fa-robot"></i></span><span>Smart AI</span><b class="sb-online-dot"></b>
-        </button>
-    </div>
-
-    <div class="sb-taskbar-user">
-        <span class="sb-user-dot"><i class="fa-regular fa-user"></i></span>
-        <span class="sb-user-text"><small>Hi,</small><strong>{{ auth()->user()->name ?? 'Customer' }}</strong></span>
-    </div>
-
-    <button type="button" class="sb-products-more" id="sbProductsMore" aria-expanded="false" aria-controls="sbProductsMoreMenu" title="More options">
-        <i class="fa-solid fa-ellipsis-vertical"></i>
-    </button>
-</nav>
-
-<div class="sb-products-more-menu" id="sbProductsMoreMenu" aria-hidden="true">
-    <div class="sb-more-heading"><span>SMART BASKET</span><small>More options</small></div>
-
-    @if(Route::has('products.index'))
-        <a href="{{ route('products.index') }}" class="sb-more-link"><i class="fa-solid fa-house"></i><span>Products Home</span></a>
-    @endif
-    @if($ordersRoute)
-        <a href="{{ route($ordersRoute) }}" class="sb-more-link"><i class="fa-solid fa-box"></i><span>My Orders</span></a>
-    @endif
-    @if(Route::has('cart.index'))
-        <a href="{{ route('cart.index') }}" class="sb-more-link"><i class="fa-solid fa-cart-shopping"></i><span>Cart</span></a>
-    @endif
-    @if(Route::has('wishlist'))
-        <a href="{{ route('wishlist') }}" class="sb-more-link"><i class="fa-regular fa-heart"></i><span>Wishlist</span></a>
-    @endif
-    @if(Route::has('profile'))
-        <a href="{{ route('profile') }}" class="sb-more-link"><i class="fa-regular fa-user"></i><span>Profile</span></a>
-    @endif
-    @if(Route::has('settings'))
-        <a href="{{ route('settings') }}" class="sb-more-link"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
-    @endif
-
-    <div class="sb-more-separator"></div>
-    <div class="sb-more-title"><i class="fa-solid fa-palette"></i><span>Theme</span></div>
-    <div class="sb-theme-switcher">
-        <button type="button" class="sb-theme-choice" data-sb-set-theme="light"><i class="fa-solid fa-sun"></i><span>Light</span></button>
-        <button type="button" class="sb-theme-choice" data-sb-set-theme="dark"><i class="fa-solid fa-moon"></i><span>Dark</span></button>
-    </div>
-
-    <div class="sb-more-separator"></div>
-    <button type="button" class="sb-more-link sb-more-action" data-sb-more-aihub><i class="fa-solid fa-wand-magic-sparkles"></i><span>Open AI HUB</span></button>
-    <button type="button" class="sb-more-link sb-more-action" data-sb-more-smart-ai><i class="fa-solid fa-robot"></i><span>Open Smart AI</span></button>
-
-    @if(Route::has('logout'))
-        <div class="sb-more-separator"></div>
-        <form method="POST" action="{{ route('logout') }}" class="sb-logout-form">
-            @csrf
-            <button type="submit" class="sb-more-link sb-logout"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></button>
-        </form>
-    @endif
-</div>
+<x-products-customer-taskbar :include-robot="false" />
 @endauth
 
-<script>
-(function(){
-    'use strict';
-    if(window.__SBProductsPremiumTaskbar) return;
-    window.__SBProductsPremiumTaskbar=true;
 
-    const more=document.getElementById('sbProductsMore');
-    const menu=document.getElementById('sbProductsMoreMenu');
-    const aiHubBtn=document.getElementById('sbProductsAIHub');
-    const smartAiBtn=document.getElementById('sbProductsSmartAI');
-
-    function closeMore(){
-        if(menu){menu.classList.remove('is-open');menu.setAttribute('aria-hidden','true');}
-        if(more) more.setAttribute('aria-expanded','false');
-    }
-    function openMore(){
-        if(menu){menu.classList.add('is-open');menu.setAttribute('aria-hidden','false');}
-        if(more) more.setAttribute('aria-expanded','true');
-    }
-    if(more){
-        more.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();menu&&menu.classList.contains('is-open')?closeMore():openMore();});
-    }
-    document.addEventListener('click',function(e){if(menu&&more&&!menu.contains(e.target)&&!more.contains(e.target))closeMore();});
-    document.addEventListener('keydown',function(e){if(e.key==='Escape')closeMore();});
-
-    function openHub(){
-        const trigger=document.querySelector('[data-ai-hub-open]');
-        if(trigger) trigger.click();
-        closeMore();
-    }
-    function openRobot(){
-        const trigger=document.querySelector('[data-smart-ai-open]');
-        if(trigger) trigger.click();
-        closeMore();
-    }
-    if(aiHubBtn) aiHubBtn.addEventListener('click',openHub);
-    if(smartAiBtn) smartAiBtn.addEventListener('click',openRobot);
-    document.querySelectorAll('[data-sb-more-aihub]').forEach(b=>b.addEventListener('click',openHub));
-    document.querySelectorAll('[data-sb-more-smart-ai]').forEach(b=>b.addEventListener('click',openRobot));
-
-    function setTheme(theme){
-        if(!['light','dark'].includes(theme)) return;
-        localStorage.setItem('sb-theme',theme);
-        document.documentElement.setAttribute('data-theme',theme);
-        document.documentElement.setAttribute('data-sb-theme',theme);
-        document.body.setAttribute('data-sb-theme',theme);
-        window.SB_THEME=theme;
-        try{window.dispatchEvent(new CustomEvent('sb-theme-changed',{detail:{theme:theme}}));}catch(e){}
-        try{window.dispatchEvent(new CustomEvent('smartbasket-theme-changed',{detail:{theme:theme}}));}catch(e){}
-        updateThemeButtons(theme);
-    }
-    function updateThemeButtons(theme){
-        document.querySelectorAll('[data-sb-set-theme]').forEach(function(btn){btn.classList.toggle('is-selected',btn.getAttribute('data-sb-set-theme')===theme);});
-    }
-    document.querySelectorAll('[data-sb-set-theme]').forEach(function(btn){btn.addEventListener('click',function(){setTheme(btn.getAttribute('data-sb-set-theme'));});});
-    updateThemeButtons(document.documentElement.getAttribute('data-theme')||localStorage.getItem('sb-theme')||'dark');
-})();
-</script>
 
     <!-- =========================================================
          AMBIENT BACKGROUND
@@ -2454,24 +2311,13 @@ body {
 
             <div class="topbar">
 
-                <div class="brand">
-
-                    <div class="brand-logo">
-                        🛒
-                    </div>
-
-                    SMART BASKET
-
-                </div>
-
-                <div class="secure-mini">
-                    🔒 Secure Checkout
-                </div>
 
             </div>
 
 
             @if(count($checkoutItems) > 0)
+
+                <x-customer-page-hero title="Complete Your Order" subtitle="Follow each step to safely place your order." />
 
 
                 <!-- =================================================
@@ -2583,8 +2429,6 @@ body {
                      GRID
                 ================================================== -->
 
-                <x-customer-page-hero title="Complete Your Order" subtitle="Follow each step to safely place your order." />
-
                 <div class="checkout-grid">
 
 
@@ -2615,6 +2459,18 @@ body {
 
                             @csrf
 
+                            @if(session('error'))
+                                <div class="alert alert-danger" role="alert">{{ session('error') }}</div>
+                            @endif
+                            @if(session('success'))
+                                <div class="alert alert-success" role="status">{{ session('success') }}</div>
+                            @endif
+                            @if($errors->any())
+                                <div class="alert alert-danger" role="alert">
+                                    <ul class="mb-0">@foreach($errors->all() as $message)<li>{{ $message }}</li>@endforeach</ul>
+                                </div>
+                            @endif
+
 
                             <!-- =================================================
                                  STEP 1 — DETAILS
@@ -2624,21 +2480,6 @@ body {
                                 class="checkout-step active"
                                 data-step="1"
                             >
-
-                                @if($addresses->isNotEmpty())
-                                    <div class="mb-4">
-                                        <label class="form-label" for="savedAddress">Use a saved delivery address</label>
-                                        <select class="form-select" id="savedAddress" name="address_id">
-                                            <option value="">Enter delivery details manually</option>
-                                            @foreach($addresses as $savedAddress)
-                                                <option value="{{ $savedAddress->id }}" @selected(old('address_id', $addresses->firstWhere('is_default', true)?->id) == $savedAddress->id)>
-                                                    {{ $savedAddress->label }} — {{ $savedAddress->address_line }}, {{ $savedAddress->city }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                        <small class="text-muted">Manage saved addresses from <a href="{{ route('addresses.index') }}">Addresses</a>.</small>
-                                    </div>
-                                @endif
 
                                 <div class="step-heading">
 
@@ -2653,7 +2494,7 @@ body {
                                         </h2>
 
                                         <p>
-                                            Enter your details and verify your profile mobile number before continuing.
+                                            Enter your contact details and delivery information to continue.
                                         </p>
 
                                     </div>
@@ -2703,7 +2544,7 @@ body {
                                                 id="customerMobile"
                                                 class="form-control"
                                                 value="{{ old('mobile', auth()->user()?->phone) }}"
-                                                placeholder="Enter profile mobile number"
+                                                placeholder="Enter your mobile number"
                                                 autocomplete="tel"
                                                 maxlength="15"
                                                 inputmode="tel"
@@ -2715,7 +2556,7 @@ body {
                                                 class="verify-mobile-btn"
                                                 id="verifyMobileBtn"
                                             >
-                                                ✓ Verify Mobile
+                                                ✓ Check Profile Number (optional)
                                             </button>
 
                                         </div>
@@ -2725,7 +2566,7 @@ body {
                                             class="profile-mobile-hint"
                                             id="profileMobileHint"
                                         >
-                                            Your mobile must match the number saved in your Smart Basket profile.
+                                        Enter a mobile number where the delivery team can reach you.
                                         </div>
 
 
@@ -2752,7 +2593,7 @@ body {
                                         </div>
 
                                         <div class="delivery-info-text">
-                                            Mobile is checked against your profile.
+                                            Profile matching is optional; your mobile is used for delivery updates.
                                         </div>
 
                                     </div>
@@ -2797,14 +2638,13 @@ body {
                                 <div class="step-actions">
 
                                     <span class="step-hint">
-                                        Verify your mobile to continue
+                                        Your mobile number is required for delivery updates.
                                     </span>
 
                                     <button
                                         type="button"
                                         class="step-next-btn"
                                         id="step1Next"
-                                        disabled
                                     >
                                         Continue to Address →
                                     </button>
@@ -2842,6 +2682,22 @@ body {
                                     </div>
 
                                 </div>
+
+
+                                @if($addresses->isNotEmpty())
+                                    <div class="mb-4">
+                                        <label class="form-label" for="savedAddress">Use a saved delivery address</label>
+                                        <select class="form-select" id="savedAddress" name="address_id">
+                                            <option value="">Enter delivery details manually</option>
+                                            @foreach($addresses as $savedAddress)
+                                                <option value="{{ $savedAddress->id }}" data-name="{{ $savedAddress->recipient_name }}" data-address="{{ $savedAddress->address_line }}" data-city="{{ $savedAddress->city }}" data-pin="{{ $savedAddress->pincode }}" @selected(old('address_id', $addresses->firstWhere('is_default', true)?->id) == $savedAddress->id)>
+                                                    {{ $savedAddress->label }} — {{ $savedAddress->address_line }}, {{ $savedAddress->city }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <small class="text-muted">Manage saved addresses from <a href="{{ route('addresses.index') }}">Addresses</a>.</small>
+                                    </div>
+                                @endif
 
 
                                 <div class="mb-3">
@@ -3090,6 +2946,9 @@ body {
                                             </label>
 
 
+                                        @endif
+
+                                        @if($cardPaymentAvailable ?? false)
                                             <!-- CARD -->
 
                                             <label
@@ -3112,7 +2971,7 @@ body {
                                                 </div>
 
                                                 <div class="payment-option-text">
-                                                    Pay securely with your card.
+                                                    Pay through the secure card gateway.
                                                 </div>
 
                                             </label>
@@ -3201,202 +3060,57 @@ body {
 
 
                                         <p class="payment-description">
-                                            Pay quickly using your preferred UPI application.
+                                            Choose UPI here. Seller QR codes and exact payment instructions will be available on the Payment Details page after checkout.
                                         </p>
 
 
-                                        <div class="payment-icons">
+                                        @foreach(($checkoutSellerPayments ?? collect()) as $sellerPayment)
+                                            <div class="checkout-upi-app-group">
+                                                <strong>Pay {{ $sellerPayment['seller_name'] }} &middot; &#8377;{{ number_format((float) $sellerPayment['amount'], 2) }}</strong>
+                                                <div class="payment-icons">
+                                                    <a class="payment-icon" href="{{ $sellerPayment['upi_uri'] }}" data-upi-app="gpay" data-upi-uri="{{ $sellerPayment['upi_uri'] }}" aria-label="Open this payment in Google Pay"><span class="payment-icon__brand payment-icon__brand--gpay" aria-hidden="true">G</span><span class="payment-icon__name">Google Pay</span></a>
+                                                    <a class="payment-icon" href="{{ $sellerPayment['upi_uri'] }}" data-upi-app="phonepe" data-upi-uri="{{ $sellerPayment['upi_uri'] }}" aria-label="Open this payment in PhonePe"><span class="payment-icon__brand payment-icon__brand--phonepe" aria-hidden="true">पे</span><span class="payment-icon__name">PhonePe</span></a>
+                                                    <a class="payment-icon" href="{{ $sellerPayment['upi_uri'] }}" data-upi-app="paytm" data-upi-uri="{{ $sellerPayment['upi_uri'] }}" aria-label="Open this payment in Paytm"><span class="payment-icon__brand payment-icon__brand--paytm" aria-hidden="true">paytm</span><span class="payment-icon__name">Paytm</span></a>
+                                                    <a class="payment-icon" href="{{ $sellerPayment['upi_uri'] }}" data-upi-app="bhim" data-upi-uri="{{ $sellerPayment['upi_uri'] }}" aria-label="Open this payment in BHIM UPI"><span class="payment-icon__brand payment-icon__brand--bhim" aria-hidden="true">B</span><span class="payment-icon__name">BHIM UPI</span></a>
+                                                </div>
+                                            </div>
+                                        @endforeach
 
-                                            <span class="payment-icon">
-                                                Google Pay
-                                            </span>
 
-                                            <span class="payment-icon">
-                                                PhonePe
-                                            </span>
+                                        <div class="payment-description mb-0">
+                                            After paying, enter the UPI reference (UTR) for each seller. The order stays pending until payment is verified.
+                                        </div>
 
-                                            <span class="payment-icon">
-                                                Paytm
-                                            </span>
-
-                                            <span class="payment-icon">
-                                                BHIM
-                                            </span>
-
+                                        <div class="checkout-upi-sellers">
+                                            @forelse(($checkoutSellerPayments ?? collect()) as $sellerPayment)
+                                                <article class="checkout-upi-seller">
+                                                    <div>
+                                                        <span class="checkout-upi-label">PAY THIS SELLER</span>
+                                                        <h3>{{ $sellerPayment['seller_name'] }}</h3>
+                                                        <p>{{ $sellerPayment['upi_id'] }}</p>
+                                                        <strong>&#8377;{{ number_format((float) $sellerPayment['amount'], 2) }}</strong>
+                                                        <small>Exact amount pre-filled &middot; includes delivery</small>
+                                                        <a class="checkout-upi-open" href="{{ $sellerPayment['upi_uri'] }}" data-upi-chooser data-upi-uri="{{ $sellerPayment['upi_uri'] }}" aria-label="Open this payment in an available UPI app for {{ $sellerPayment['seller_name'] }}"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Open any UPI app</a>
+                                                    </div>
+                                                </article>
+                                            @empty
+                                                <p class="payment-description">Seller UPI details are unavailable. Please choose Cash on Delivery.</p>
+                                            @endforelse
                                         </div>
 
 
-                <div class="payment-description mb-0">
-                                            UPI payments are opened and verified through Smart Basket's secure payment provider. Seller uploaded QR images are not used at checkout.
-                                        </div>
 
                                     </div>
 
 
-                                    <!-- =================================================
-                                         CARD DETAILS
-                                    ================================================== -->
-
-                                    <div
-                                        class="payment-details"
-                                        id="cardDetails"
-                                        data-payment-details="Card"
-                                    >
-
-                                        <div class="card-visual">
-
-                                            <div class="card-chip"></div>
-
-                                            <div class="card-brand">
-                                                SMART BASKET
-                                            </div>
-
-
-                                            <div
-                                                class="card-number-preview"
-                                                id="cardNumberPreview"
-                                            >
-                                                •••• •••• •••• ••••
-                                            </div>
-
-
-                                            <div class="card-bottom">
-
-                                                <div>
-
-                                                    <div class="card-preview-label">
-                                                        Card Holder
-                                                    </div>
-
-                                                    <div
-                                                        class="card-preview-value"
-                                                        id="cardNamePreview"
-                                                    >
-                                                        YOUR NAME
-                                                    </div>
-
-                                                </div>
-
-
-                                                <div>
-
-                                                    <div class="card-preview-label">
-                                                        Expiry
-                                                    </div>
-
-                                                    <div
-                                                        class="card-preview-value"
-                                                        id="cardExpiryPreview"
-                                                    >
-                                                        MM/YY
-                                                    </div>
-
-                                                </div>
-
-                                            </div>
-
-                                        </div>
-
-
-                                        <div class="payment-title">
-                                            💳 Card Payment
-                                        </div>
-
-
-                                        <p class="payment-description">
-                                            Enter your card information securely.
-                                        </p>
-
-
-                                        <div class="mb-3">
-
-                                            <label
-                                                class="form-label"
-                                                for="cardNumber"
-                                            >
-                                                Card Number
-                                            </label>
-
-                                            <input
-                                                type="text"
-                                                name="card_number"
-                                                id="cardNumber"
-                                                class="form-control"
-                                                maxlength="19"
-                                                inputmode="numeric"
-                                                autocomplete="cc-number"
-                                                placeholder="XXXX XXXX XXXX XXXX"
-                                            >
-
-                                        </div>
-
-
-                                        <div class="row">
-
-                                            <div class="col-6">
-
-                                                <label
-                                                    class="form-label"
-                                                    for="cardExpiry"
-                                                >
-                                                    Expiry
-                                                </label>
-
-                                                <input
-                                                    type="text"
-                                                    name="card_expiry"
-                                                    id="cardExpiry"
-                                                    class="form-control"
-                                                    maxlength="5"
-                                                    inputmode="numeric"
-                                                    autocomplete="cc-exp"
-                                                    placeholder="MM/YY"
-                                                >
-
-                                            </div>
-
-
-                                            <div class="col-6">
-
-                                                <label
-                                                    class="form-label"
-                                                    for="cardCvv"
-                                                >
-                                                    CVV
-                                                </label>
-
-                                                <div class="cvv-wrap">
-
-                                                    <input
-                                                        type="password"
-                                                        name="card_cvv"
-                                                        id="cardCvv"
-                                                        class="form-control"
-                                                        maxlength="4"
-                                                        inputmode="numeric"
-                                                        autocomplete="cc-csc"
-                                                        placeholder="CVV"
-                                                    >
-
-
-                                                    <button
-                                                        type="button"
-                                                        class="cvv-toggle"
-                                                        id="cvvToggle"
-                                                    >
-                                                        👁️
-                                                    </button>
-
-                                                </div>
-
-                                            </div>
-
-                                        </div>
-
+                                    <!-- Secure hosted card payment -->
+                                    <div class="payment-details" id="cardDetails" data-payment-details="Card">
+                                        <div class="payment-title"><i class="fa-solid fa-credit-card" aria-hidden="true"></i> Secure card payment</div>
+                                        <p class="payment-description">Continue to the payment provider?s secure checkout to enter your card details. Your card number, security code, and bank OTP are handled by the provider and are never entered or stored on this page.</p>
+                                        <div class="payment-description mb-0"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Your bank may ask you to approve the payment with an OTP inside the provider?s checkout.</div>
                                     </div>
 
                                 </div>
-
 
                                 <div class="step-actions">
 
@@ -3635,6 +3349,7 @@ body {
                                 </div>
 
 
+
                                 <div class="step-actions">
 
                                     <button
@@ -3704,21 +3419,6 @@ body {
 
                         <!-- CONTINUE SHOPPING -->
 
-                        <a
-                            href="{{ route('products.index') }}"
-                            class="back-link"
-                            style="
-                                display:flex;
-                                justify-content:center;
-                                margin-top:19px;
-                                color:var(--sb-muted);
-                                text-decoration:none;
-                                font-size:11px;
-                                font-weight:800;
-                            "
-                        >
-                            ← Continue Shopping
-                        </a>
 
                     </div>
 
@@ -4036,6 +3736,22 @@ body {
             const profileMobile =
                 @json($profileMobile);
 
+            const savedAddressSelect = document.getElementById("savedAddress");
+            const fillSavedAddress = () => {
+                const option = savedAddressSelect?.selectedOptions?.[0];
+                if (!option || !option.value) return;
+                const address = document.getElementById("customerAddress");
+                const city = document.getElementById("customerCity");
+                const pin = document.getElementById("customerPin");
+                if (address) address.value = option.dataset.address || "";
+                if (city) city.value = option.dataset.city || "";
+                if (pin) pin.value = option.dataset.pin || "";
+            };
+            if (savedAddressSelect) {
+                savedAddressSelect.addEventListener("change", fillSavedAddress);
+                fillSavedAddress();
+            }
+
 
             function normalizeMobile(value) {
 
@@ -4061,6 +3777,10 @@ body {
                 document.getElementById(
                     "verifyMobileBtn"
                 );
+
+            if (verifyMobileBtn) verifyMobileBtn.textContent = "Confirm mobile number";
+            const profileMobileHint = document.getElementById("profileMobileHint");
+            if (profileMobileHint) profileMobileHint.textContent = "Your profile number is prefilled. You can change it; any valid 10-digit mobile number is accepted.";
 
             const mobileStatus =
                 document.getElementById(
@@ -4099,6 +3819,10 @@ body {
                 mobileStatus.className =
                     "mobile-status " + type;
 
+                if (type === "success") {
+                    message = "Number accepted for delivery. It does not need to match your profile number.";
+                }
+
                 mobileStatus.innerHTML =
                     message;
 
@@ -4109,10 +3833,6 @@ body {
 
                 mobileVerified = false;
 
-                if (step1Next) {
-                    step1Next.disabled = true;
-                }
-
                 if (mobileInput) {
                     mobileInput.classList.remove(
                         "verified-input"
@@ -4121,7 +3841,7 @@ body {
 
                 showMobileStatus(
                     "error",
-                    "⚠️ Please verify your mobile number before continuing."
+                    "Confirm a valid 10-digit number. It does not need to match your profile."
                 );
 
             }
@@ -4144,19 +3864,12 @@ body {
                                     : ""
                             );
 
-                        const profile =
-                            normalizeMobile(
-                                profileMobile
-                            );
+                        const profile = entered;
 
 
                         if (!entered) {
 
                             mobileVerified = false;
-
-                            if (step1Next) {
-                                step1Next.disabled = true;
-                            }
 
                             showMobileStatus(
                                 "error",
@@ -4175,10 +3888,6 @@ body {
 
                             mobileVerified = false;
 
-                            if (step1Next) {
-                                step1Next.disabled = true;
-                            }
-
                             showMobileStatus(
                                 "error",
                                 "⚠️ Please enter a valid 10-digit mobile number."
@@ -4192,10 +3901,6 @@ body {
 
                             mobileVerified = false;
 
-                            if (step1Next) {
-                                step1Next.disabled = true;
-                            }
-
                             showMobileStatus(
                                 "error",
                                 "⚠️ No mobile number is saved in your profile. Please update your profile first."
@@ -4208,10 +3913,6 @@ body {
                         if (entered === profile) {
 
                             mobileVerified = true;
-
-                            if (step1Next) {
-                                step1Next.disabled = false;
-                            }
 
                             if (mobileInput) {
                                 mobileInput.classList.add(
@@ -4227,10 +3928,6 @@ body {
                         } else {
 
                             mobileVerified = false;
-
-                            if (step1Next) {
-                                step1Next.disabled = true;
-                            }
 
                             if (mobileInput) {
                                 mobileInput.classList.remove(
@@ -4267,10 +3964,6 @@ body {
                                 .slice(0, 15);
 
                         mobileVerified = false;
-
-                        if (step1Next) {
-                            step1Next.disabled = true;
-                        }
 
                         this.classList.remove(
                             "verified-input"
@@ -4475,6 +4168,10 @@ body {
                     document.getElementById(
                         "customerName"
                     );
+                const mobile =
+                    document.getElementById(
+                        "customerMobile"
+                    );
 
 
                 if (!validateField(name)) {
@@ -4486,13 +4183,9 @@ body {
                     return false;
                 }
 
-
-                if (!mobileVerified) {
-
-                    alert(
-                        "Please verify your mobile number before continuing."
-                    );
-
+                if (!validateField(mobile) || !/^[+\d][\d\s()-]{7,14}$/.test(mobile.value.trim())) {
+                    alert("Please enter a valid mobile number for delivery updates.");
+                    mobile.focus();
                     return false;
                 }
 
@@ -4595,129 +4288,6 @@ body {
                     getSelectedPayment();
 
 
-                if (method === "UPI") {
-
-                    const upi =
-                        document.getElementById(
-                            "upiId"
-                        );
-
-
-                    if (!upi || !upi.value.trim()) {
-
-                        alert(
-                            "Please enter your UPI ID."
-                        );
-
-                        if (upi) {
-                            upi.focus();
-                        }
-
-                        return false;
-                    }
-
-
-                    const upiPattern =
-                        /^[\w.\-]{2,}@[A-Za-z]{2,}$/;
-
-
-                    if (
-                        !upiPattern.test(
-                            upi.value.trim()
-                        )
-                    ) {
-
-                        alert(
-                            "Please enter a valid UPI ID, for example example@upi."
-                        );
-
-                        upi.focus();
-
-                        return false;
-                    }
-
-                }
-
-
-                if (method === "Card") {
-
-                    const number =
-                        document.getElementById(
-                            "cardNumber"
-                        );
-
-                    const expiry =
-                        document.getElementById(
-                            "cardExpiry"
-                        );
-
-                    const cvv =
-                        document.getElementById(
-                            "cardCvv"
-                        );
-
-
-                    const cleanNumber =
-                        number
-                            ? number.value.replace(/\D/g, "")
-                            : "";
-
-
-                    if (
-                        cleanNumber.length < 13 ||
-                        cleanNumber.length > 19
-                    ) {
-
-                        alert(
-                            "Please enter a valid card number."
-                        );
-
-                        if (number) {
-                            number.focus();
-                        }
-
-                        return false;
-                    }
-
-
-                    if (
-                        !expiry ||
-                        !/^\d{2}\/\d{2}$/.test(
-                            expiry.value
-                        )
-                    ) {
-
-                        alert(
-                            "Please enter card expiry in MM/YY format."
-                        );
-
-                        if (expiry) {
-                            expiry.focus();
-                        }
-
-                        return false;
-                    }
-
-
-                    if (
-                        !cvv ||
-                        !/^\d{3,4}$/.test(
-                            cvv.value
-                        )
-                    ) {
-
-                        alert(
-                            "Please enter a valid CVV."
-                        );
-
-                        if (cvv) {
-                            cvv.focus();
-                        }
-
-                        return false;
-                    }
-
-                }
 
 
                 return true;
@@ -4929,248 +4499,6 @@ body {
 
 
             /* =====================================================
-               CARD NUMBER
-            ===================================================== */
-
-            const cardNumber =
-                document.getElementById(
-                    "cardNumber"
-                );
-
-            const cardNumberPreview =
-                document.getElementById(
-                    "cardNumberPreview"
-                );
-
-
-            if (cardNumber) {
-
-                cardNumber.addEventListener(
-                    "input",
-                    function () {
-
-                        let value =
-                            this.value
-                                .replace(/\D/g, "")
-                                .substring(0, 19);
-
-
-                        const formatted =
-                            value
-                                .match(/.{1,4}/g)
-                                ?.join(" ")
-                                || "";
-
-
-                        this.value =
-                            formatted;
-
-
-                        if (cardNumberPreview) {
-
-                            if (!value) {
-
-                                cardNumberPreview.textContent =
-                                    "•••• •••• •••• ••••";
-
-                            }
-                            else {
-
-                                const groups =
-                                    formatted.split(" ");
-
-                                cardNumberPreview.textContent =
-                                    groups
-                                        .map(
-                                            function (
-                                                part,
-                                                index
-                                            ) {
-
-                                                if (
-                                                    index <
-                                                    groups.length - 1
-                                                ) {
-                                                    return "••••";
-                                                }
-
-                                                return part.padEnd(
-                                                    4,
-                                                    "•"
-                                                );
-
-                                            }
-                                        )
-                                        .join(" ");
-
-                            }
-
-                        }
-
-                    }
-                );
-
-            }
-
-
-            /* =====================================================
-               CARD EXPIRY
-            ===================================================== */
-
-            const cardExpiry =
-                document.getElementById(
-                    "cardExpiry"
-                );
-
-            const cardExpiryPreview =
-                document.getElementById(
-                    "cardExpiryPreview"
-                );
-
-
-            if (cardExpiry) {
-
-                cardExpiry.addEventListener(
-                    "input",
-                    function () {
-
-                        let value =
-                            this.value
-                                .replace(/\D/g, "")
-                                .substring(0, 4);
-
-
-                        if (value.length >= 3) {
-
-                            value =
-                                value.substring(0, 2)
-                                + "/"
-                                + value.substring(2);
-
-                        }
-
-
-                        this.value =
-                            value;
-
-
-                        if (cardExpiryPreview) {
-
-                            cardExpiryPreview.textContent =
-                                value || "MM/YY";
-
-                        }
-
-                    }
-                );
-
-            }
-
-
-            /* =====================================================
-               CARD HOLDER
-            ===================================================== */
-
-            const customerName =
-                document.getElementById(
-                    "customerName"
-                );
-
-            const cardNamePreview =
-                document.getElementById(
-                    "cardNamePreview"
-                );
-
-
-            function updateCardName() {
-
-                if (
-                    !customerName ||
-                    !cardNamePreview
-                ) {
-                    return;
-                }
-
-
-                const value =
-                    customerName.value.trim();
-
-
-                cardNamePreview.textContent =
-                    value
-                        ? value
-                            .substring(0, 22)
-                            .toUpperCase()
-                        : "YOUR NAME";
-
-            }
-
-
-            if (customerName) {
-
-                customerName.addEventListener(
-                    "input",
-                    updateCardName
-                );
-
-                updateCardName();
-
-            }
-
-
-            /* =====================================================
-               CVV SHOW / HIDE
-            ===================================================== */
-
-            const cardCvv =
-                document.getElementById(
-                    "cardCvv"
-                );
-
-            const cvvToggle =
-                document.getElementById(
-                    "cvvToggle"
-                );
-
-
-            if (
-                cardCvv &&
-                cvvToggle
-            ) {
-
-                cvvToggle.addEventListener(
-                    "click",
-                    function () {
-
-                        if (
-                            cardCvv.type ===
-                            "password"
-                        ) {
-
-                            cardCvv.type =
-                                "text";
-
-                            cvvToggle.textContent =
-                                "🙈";
-
-                        }
-                        else {
-
-                            cardCvv.type =
-                                "password";
-
-                            cvvToggle.textContent =
-                                "👁️";
-
-                        }
-
-                    }
-                );
-
-            }
-
-
-            /* =====================================================
                UPI COPY
             ===================================================== */
 
@@ -5247,6 +4575,8 @@ body {
                 );
 
             }
+
+
 
 
             /* =====================================================
@@ -5518,20 +4848,6 @@ body {
                         -------------------------------------------------
                         */
 
-                        if (!mobileVerified) {
-
-                            event.preventDefault();
-
-                            showStep(1);
-
-                            alert(
-                                "Please verify your profile mobile number before placing the order."
-                            );
-
-                            return;
-                        }
-
-
                         if (
                             !validateStep1()
                         ) {
@@ -5585,7 +4901,9 @@ body {
                         if (buttonText) {
 
                             buttonText.textContent =
-                                "Processing your order...";
+                                ["UPI", "CARD"].includes(getSelectedPayment().toUpperCase())
+                                    ? "Connecting to secure payment..."
+                                    : "Placing your order...";
 
                         }
 
@@ -5813,6 +5131,25 @@ body {
 
         })();
 
+    </script>
+    <script>
+    (() => {
+        const packages = {
+            gpay: 'com.google.android.apps.nbu.paisa.user',
+            phonepe: 'com.phonepe.app',
+            paytm: 'net.one97.paytm',
+            bhim: 'in.org.npci.upiapp'
+        };
+        const isAndroid = /Android/i.test(navigator.userAgent);
+        document.querySelectorAll('[data-upi-app][data-upi-uri]').forEach((link) => {
+            if (!isAndroid) return;
+            try {
+                const uri = new URL(link.dataset.upiUri);
+                link.href = `intent://pay${uri.search}#Intent;scheme=upi;package=${packages[link.dataset.upiApp]};end`;
+            } catch (_) {}
+        });
+
+    })();
     </script>
 
 </body>

@@ -833,7 +833,7 @@ th {
                 </div>
 
                 <div class="status-value">
-                    {{ $paymentId ?? 'NOT AVAILABLE' }}
+                    {{ $customerUpiReference ?: ($paymentId ?: ($payment?->gateway_transaction_id ?: 'NOT AVAILABLE')) }}
                 </div>
 
             </td>
@@ -1033,12 +1033,12 @@ th {
 
 
                     <div class="payment-label">
-                        Payment ID
+                        Payment / UPI Reference
                     </div>
 
 
                     <div class="payment-value">
-                        {{ $paymentId ?? 'Not available' }}
+                        {{ $customerUpiReference ?: ($paymentId ?: ($payment?->gateway_transaction_id ?: 'Not available')) }}
                     </div>
 
 

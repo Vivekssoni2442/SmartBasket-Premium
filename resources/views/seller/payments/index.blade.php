@@ -3,6 +3,10 @@
 
 <head>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
     <meta charset="utf-8">
 
     <meta
@@ -1813,17 +1817,6 @@
            REDUCED MOTION
         ========================================================= */
 
-        @media (prefers-reduced-motion: reduce) {
-
-            .payment-page *,
-            .payment-page *::before,
-            .payment-page *::after {
-
-                transition: none !important;
-
-                animation: none !important;
-            }
-        }
 
     </style>
 

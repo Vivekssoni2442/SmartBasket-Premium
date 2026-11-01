@@ -3,14 +3,17 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Laravel\Passkeys\Contracts\PasskeyUser;
+use Laravel\Passkeys\Passkey;
+use Laravel\Passkeys\PasskeyAuthenticatable;
 
-class SellerProfile extends Model
+class SellerProfile extends Authenticatable implements PasskeyUser
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, PasskeyAuthenticatable;
 
     /*
     |--------------------------------------------------------------------------
@@ -74,6 +77,7 @@ class SellerProfile extends Model
         'shop_name',
 
         'email',
+        'face_unlock_enabled',
         'phone',
         'mobile',
         'mobile_number',
@@ -230,6 +234,13 @@ class SellerProfile extends Model
         'payment_verified_at',
         'payment_enabled',
 
+        'whatsapp_business_phone',
+        'whatsapp_phone_number_id',
+        'whatsapp_access_token',
+        'whatsapp_invoice_template',
+        'whatsapp_template_language',
+        'whatsapp_invoice_enabled',
+
         'online_payments_enabled',
 
         /*
@@ -258,6 +269,8 @@ class SellerProfile extends Model
     protected function casts(): array
     {
         return [
+
+            'face_unlock_enabled' => 'boolean',
 
             /*
             |--------------------------------------------------------------------------
@@ -340,6 +353,9 @@ class SellerProfile extends Model
 
             'preferences' => 'array',
 
+            'whatsapp_access_token' => 'encrypted',
+            'whatsapp_invoice_enabled' => 'boolean',
+
             /*
             |--------------------------------------------------------------------------
             | Payment
@@ -377,6 +393,30 @@ class SellerProfile extends Model
     public function isBlocked(): bool
     {
         return $this->blocked_at !== null;
+    }
+
+    public function preference(string $key, mixed $default = null): mixed
+    {
+        $preferences = is_array($this->preferences) ? $this->preferences : [];
+
+        return array_key_exists($key, $preferences)
+            ? $preferences[$key]
+            : $default;
+    }
+
+    public function isStoreVisibleToCustomers(): bool
+    {
+        return ! $this->isBlocked();
+    }
+
+    public function allowsCustomerCancellation(): bool
+    {
+        return (bool) $this->preference('allow_order_cancellation', true);
+    }
+
+    public function allowsCustomerReturns(): bool
+    {
+        return (bool) $this->preference('allow_return_requests', true);
     }
 
     /*
@@ -431,17 +471,12 @@ class SellerProfile extends Model
     public function hasValidPaymentConfiguration(): bool
     {
         $upiId = $this->getPaymentUpiId();
-        $mobile = $this->getPaymentMobileNumber();
         $businessName = $this->getPaymentBusinessName();
 
         return $upiId !== ''
             && preg_match(
                 '/^[a-zA-Z0-9][a-zA-Z0-9._-]{1,252}@[a-zA-Z][a-zA-Z0-9.-]{1,63}$/',
                 $upiId
-            ) === 1
-            && preg_match(
-                '/^(?:\+91)?[6-9][0-9]{9}$/',
-                preg_replace('/[\s()\-]/', '', $mobile)
             ) === 1
             && $businessName !== '';
     }
@@ -509,6 +544,23 @@ class SellerProfile extends Model
         return $this->belongsTo(
             User::class,
             'user_id'
+        );
+    }
+
+    /**
+     * Seller passkeys use the package's `user_id` foreign key, even though
+     * this authenticatable model is named SellerProfile.
+     */
+    public function passkeys(): HasMany
+    {
+        return $this->hasMany(Passkey::class, 'user_id');
+    }
+
+    public function products(): HasMany
+    {
+        return $this->hasMany(
+            Product::class,
+            'seller_id'
         );
     }
 

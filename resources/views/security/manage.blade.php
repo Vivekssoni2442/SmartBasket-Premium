@@ -631,20 +631,6 @@
 
         }
 
-        @media (prefers-reduced-motion: reduce) {
-
-            *,
-            *::before,
-            *::after {
-
-                animation-duration: 0.01ms !important;
-
-                animation-iteration-count: 1 !important;
-
-                transition-duration: 0.01ms !important;
-            }
-
-        }
 
     </style>
 
@@ -1215,6 +1201,7 @@
 
 @include('customer.partials.smart-ai-robot')
 
+<script src="{{ asset('js/customer-page-title.js') }}?v=20261019-purple-blue-4" defer></script>
 </body>
 
 </html>

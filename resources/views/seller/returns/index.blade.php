@@ -1,8 +1,10 @@
 @extends('seller.partials.premium-layout')
 
-@section('title', 'Return Requests')
+@section('title', 'Returns & Cancellations')
 
 @section('content')
+
+@push('styles')
 <style>
     /* =========================================================
        SMART BASKET — SELLER RETURNS PREMIUM BLUE THEME
@@ -286,7 +288,7 @@
         overflow-x: auto;
         overscroll-behavior-x: contain;
         scrollbar-width: thin;
-        scrollbar-color: #b9cce8 #f3f7fd;
+        scrollbar-color: rgba(111, 145, 198, .78) transparent;
     }
 
     .sb-returns-page .sr-table {
@@ -548,6 +550,33 @@
         transform: translateY(0);
     }
 
+    .sb-returns-page .sr-decision-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .sb-returns-page .sr-decision-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-height: 39px;
+        padding: 8px 10px;
+        border: 1px solid transparent;
+        border-radius: 9px;
+        color: #fff;
+        font-size: 10px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: transform .18s ease, filter .18s ease;
+    }
+
+    .sb-returns-page .sr-decision-button:hover { transform: translateY(-1px); filter: brightness(1.05); }
+    .sb-returns-page .sr-decision-approve { border-color: #0d8a59; background: linear-gradient(135deg,#18a66c,#08774c); }
+    .sb-returns-page .sr-decision-reject { border-color: #c3384c; background: linear-gradient(135deg,#e25465,#b4233a); }
+
     /* Empty state */
     .sb-returns-page .sr-empty {
         padding: 60px 20px !important;
@@ -711,16 +740,8 @@
         }
     }
 
-    @media (prefers-reduced-motion: reduce) {
-        .sb-returns-page *,
-        .sb-returns-page *::before,
-        .sb-returns-page *::after {
-            animation-duration: .01ms !important;
-            animation-iteration-count: 1 !important;
-            transition-duration: .01ms !important;
-        }
-    }
-</style>
+    </style>
+@endpush
 
 <main class="sb-returns-page">
 
@@ -735,9 +756,10 @@
             <h1 class="sr-title">Return &amp; Refund Requests</h1>
 
             <p class="sr-description">
-                Review return requests related to your products, check customer reasons,
-                and communicate important information to customers and administrators.
-                Final approval and refund processing are managed by Smart Basket administrators.
+                Review return requests for your products, then accept or reject each request.
+                Your decision and note will appear in the customer's return history. Online-payment refunds
+                are handled by Smart Basket administrators; for a delivered cash-on-delivery return, use the
+                customer's saved UPI or bank details below to transfer the refund manually.
             </p>
         </div>
 
@@ -785,8 +807,8 @@
                 <i class="fas fa-shield-halved"></i>
             </div>
             <div>
-                <p class="sr-summary-label">Approval authority</p>
-                <p class="sr-summary-value">Smart Basket Admin</p>
+                <p class="sr-summary-label">Return decision</p>
+                <p class="sr-summary-value">You accept or reject requests</p>
             </div>
         </article>
 
@@ -795,8 +817,8 @@
                 <i class="fas fa-comments"></i>
             </div>
             <div>
-                <p class="sr-summary-label">Seller communication</p>
-                <p class="sr-summary-value">Notes to customer &amp; admin</p>
+                <p class="sr-summary-label">Refund processing</p>
+                <p class="sr-summary-value">Online refunds go to admin; COD return payouts use the saved details below</p>
             </div>
         </article>
 
@@ -844,6 +866,7 @@
                             $status = strtolower((string) $return->status);
                             $statusClass = preg_replace('/[^a-z0-9_-]/', '', $status);
                             $statusLabel = ucfirst(str_replace('_', ' ', $status));
+                            $sellerReturnAmount = collect($return->seller_items ?? [])->sum(fn ($item) => (float) ($item['unit_price'] ?? $item['price'] ?? 0) * (int) ($item['quantity'] ?? 0));
                         @endphp
 
                         <tr>
@@ -904,6 +927,21 @@
                                 @else
                                     <span class="sr-muted">No additional description.</span>
                                 @endif
+
+                                @if($return->refund_method)
+                                    <div class="sr-note mt-2">
+                                        <span class="sr-note-label"><i class="fas fa-building-columns" aria-hidden="true"></i> Customer payout details ({{ strtoupper($return->refund_method) }})</span>
+                                        @if($return->order?->isCashOnDelivery() && $return->reason !== 'replace')
+                                            <div>Requested COD refund amount: <strong>&#8377;{{ number_format($sellerReturnAmount, 2) }}</strong></div>
+                                            <div class="sr-muted">After approving the return, transfer this amount to the customer's UPI or bank details above.</div>
+                                        @endif
+                                        @if($return->refund_method === 'upi')
+                                            UPI ID: {{ $return->refund_upi_id }}
+                                        @else
+                                            {{ $return->refund_account_holder }} · {{ $return->refund_bank_name }} · A/C {{ $return->refund_account_number }} · IFSC {{ $return->refund_ifsc }}
+                                        @endif
+                                    </div>
+                                @endif
                             </td>
 
                             {{-- Status, admin decision and seller notes --}}
@@ -937,31 +975,46 @@
                                     </div>
                                 @endif
 
-                                @if(in_array($return->status, ['requested', 'approved'], true))
+                                @if($return->status === 'requested')
                                     <form
                                         method="POST"
-                                        action="{{ route('seller.returns.note', $return) }}"
+                                        action="{{ route('seller.returns.decision', $return) }}"
                                         class="sr-note-form"
+                                        onsubmit="return confirm(event.submitter?.value === 'approved' ? 'Accept this return request?' : 'Reject this return request?')"
                                     >
                                         @csrf
 
                                         <label for="seller-return-note-{{ $return->id }}">
-                                            <i class="fas fa-pen-to-square" aria-hidden="true"></i>
-                                            Add a note
+                                            <i class="fas fa-comment-dots" aria-hidden="true"></i>
+                                            Optional note for customer
                                         </label>
 
                                         <textarea
                                             id="seller-return-note-{{ $return->id }}"
                                             name="note"
                                             maxlength="2000"
-                                            required
-                                            placeholder="Write a note for the customer and administrator..."
+                                            placeholder="Add a short explanation (optional)..."
                                         ></textarea>
 
-                                        <button class="sr-note-submit" type="submit">
-                                            <i class="fas fa-paper-plane" aria-hidden="true"></i>
-                                            Add Note
-                                        </button>
+                                        <div class="sr-decision-actions">
+                                            <button class="sr-decision-button sr-decision-approve" type="submit" name="decision" value="approved">
+                                                <i class="fas fa-check" aria-hidden="true"></i>Accept
+                                            </button>
+                                            <button class="sr-decision-button sr-decision-reject" type="submit" name="decision" value="rejected">
+                                                <i class="fas fa-xmark" aria-hidden="true"></i>Reject
+                                            </button>
+                                        </div>
+                                    </form>
+                                @elseif($return->status === 'approved')
+                                    <form
+                                        method="POST"
+                                        action="{{ route('seller.returns.note', $return) }}"
+                                        class="sr-note-form"
+                                    >
+                                        @csrf
+                                        <label for="seller-return-note-{{ $return->id }}"><i class="fas fa-pen-to-square" aria-hidden="true"></i>Add a note</label>
+                                        <textarea id="seller-return-note-{{ $return->id }}" name="note" maxlength="2000" required placeholder="Write an update for the customer..."></textarea>
+                                        <button class="sr-note-submit" type="submit"><i class="fas fa-paper-plane" aria-hidden="true"></i>Add Note</button>
                                     </form>
                                 @endif
                             </td>
@@ -994,6 +1047,8 @@
             {{ $returns->links() }}
         </div>
     @endif
+
+    @include('seller.order-cancellations._content')
 
 </main>
 @endsection

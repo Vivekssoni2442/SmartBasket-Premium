@@ -96,8 +96,9 @@
 
             }
 
-            $qrUrl = Storage::disk('public')
-                ->url($qrPath);
+            if (Storage::disk('public')->exists($qrPath)) {
+                $qrUrl = Storage::disk('public')->url($qrPath);
+            }
 
         }
 
@@ -363,9 +364,13 @@
 
             z-index: 2;
 
+            box-sizing: border-box;
+
             width: 100%;
 
             max-width: none;
+
+            min-width: 0;
 
             margin: 0;
 
@@ -1203,6 +1208,8 @@
 
             display: grid;
 
+            min-width: 0;
+
             grid-template-columns:
                 minmax(0, 1.62fr)
                 minmax(300px, .68fr);
@@ -1221,7 +1228,11 @@
 
             display: grid;
 
-            gap: 17px;
+            grid-template-columns: minmax(0, 1fr);
+
+            row-gap: 17px;
+
+            align-content: start;
 
             min-width: 0;
 
@@ -3393,16 +3404,9 @@
                 display: grid;
 
                 grid-template-columns:
-                    repeat(2, minmax(0, 1fr));
+                    minmax(0, 1fr);
 
                 align-items: start;
-
-            }
-
-
-            .side-stack .card {
-
-                height: 100%;
 
             }
 
@@ -3992,27 +3996,6 @@
            REDUCED MOTION
         ========================================================== */
 
-        @media (prefers-reduced-motion: reduce) {
-
-            *,
-            *::before,
-            *::after {
-
-                scroll-behavior:
-                    auto !important;
-
-                animation-duration:
-                    .01ms !important;
-
-                animation-iteration-count:
-                    1 !important;
-
-                transition-duration:
-                    .01ms !important;
-
-            }
-
-        }
 
     </style>
 
@@ -4162,6 +4145,26 @@
         </div>
 
     @endif
+
+
+    <section class="profile-security-card" style="margin:0 0 28px;padding:24px;border:1px solid #dce4ef;border-radius:20px;background:#fff;box-shadow:0 12px 32px rgba(24,39,75,.07)">
+        <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap">
+            <div style="width:48px;height:48px;display:grid;place-items:center;border-radius:15px;background:#eef4ff;color:#2455a6;font-size:21px"><i class="fa-solid fa-shield-halved"></i></div>
+            <div style="flex:1;min-width:240px">
+                <h2 style="margin:0 0 6px;font-size:20px;color:#15233b">Face unlock for seller login</h2>
+                <p style="margin:0 0 14px;color:#617087;line-height:1.6">After your password, verify with this device's built-in face unlock, fingerprint, or screen lock. Smart Basket stores a passkey, not a face photo.</p>
+                <div id="sellerFaceUnlockStatus" role="status" style="margin:0 0 12px;color:#43536b">
+                    {{ $seller->face_unlock_enabled ? 'Enabled' : 'Not enabled' }}
+                    · {{ $seller->passkeys()->count() }} device{{ $seller->passkeys()->count() === 1 ? '' : 's' }} registered
+                </div>
+                <button type="button" id="sellerRegisterPasskey" style="min-height:44px;padding:0 16px;border:0;border-radius:12px;background:#174ea6;color:#fff;font-weight:700;cursor:pointer">Register this device</button>
+                @if($seller->face_unlock_enabled)
+                    <button type="button" id="sellerDisableFaceUnlock" style="min-height:44px;margin-left:8px;padding:0 16px;border:1px solid #d5dce7;border-radius:12px;background:#fff;color:#28374d;font-weight:700;cursor:pointer">Turn off</button>
+                @endif
+                <div id="sellerFaceUnlockMessage" aria-live="polite" style="margin-top:10px;color:#52647d"></div>
+            </div>
+        </div>
+    </section>
 
 
     {{-- =========================================================
@@ -4898,11 +4901,58 @@
         <div class="side-stack">
 
 
-            <section class="card">
-                <div class="card-header"><div class="section-title"><div class="section-icon"><i class="fa-solid fa-qrcode"></i></div><span>UPI Payment Settings</span></div></div>
-                <div class="info-body">
-                    <p>Manage your UPI ID and mobile number in Seller Settings. A manual QR image is not required.</p>
-                    <a href="{{ route('seller.settings') }}" class="btn btn-secondary">Manage UPI settings</a>
+            <section class="card" id="seller-payment-qr">
+                <div class="card-header">
+                    <div class="section-title">
+                        <div class="section-icon"><i class="fa-solid fa-qrcode" aria-hidden="true"></i></div>
+                        <span>Payment QR Management</span>
+                    </div>
+                </div>
+                <div class="qr-body">
+                    <div class="qr-box">
+                        @if($qrUrl)
+                            <img src="{{ $qrUrl }}?v={{ optional($seller->updated_at)->timestamp ?? time() }}" alt="Current payment QR code">
+                        @else
+                            <div class="qr-empty"><i class="fa-solid fa-qrcode" aria-hidden="true"></i><br>No QR uploaded</div>
+                        @endif
+                    </div>
+                    <div class="qr-title">{{ $qrUrl ? 'Your payment QR is saved' : 'Add your payment QR' }}</div>
+                    <p class="qr-description">Customers can scan this QR to open your payment details. Upload a clear image so it remains easy to scan.</p>
+                    @if($qrUrl)
+                        <span class="qr-live-badge"><i class="fa-solid fa-circle" aria-hidden="true"></i> QR image active</span>
+                    @endif
+
+                    <div class="qr-management">
+                        <div class="qr-management-title"><i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>{{ $qrUrl ? 'Replace payment QR' : 'Upload payment QR' }}</div>
+                        <p class="qr-management-description">PNG, JPG or WebP · Maximum 2 MB. Review the preview before saving.</p>
+                        <form id="paymentQrForm" method="POST" action="{{ route('seller.payment-qr.update') }}" enctype="multipart/form-data">
+                            @csrf
+                            <input type="hidden" name="return_to" value="profile">
+                            <div class="qr-upload">
+                                <label class="visually-hidden" for="paymentQrInput">Choose payment QR image</label>
+                                <input id="paymentQrInput" type="file" name="payment_qr" accept="image/png,image/jpeg,image/webp" required>
+                                <div class="qr-upload-note">Select a sharp, square QR image with a clean white margin.</div>
+                                <div class="qr-new-preview" id="qrNewPreview">
+                                    <div class="qr-new-preview-title"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> New image preview</div>
+                                    <div class="qr-new-image"><img id="qrNewPreviewImage" src="" alt="Preview of the new payment QR"></div>
+                                </div>
+                            </div>
+                            <div class="qr-actions">
+                                <button class="qr-action-btn qr-action-save" id="saveQrBtn" type="submit"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Save payment QR</button>
+                            </div>
+                        </form>
+                        @if($qrUrl)
+                            <form method="POST" action="{{ route('seller.payment-qr.delete') }}" onsubmit="return confirm('Remove your saved payment QR?')">
+                                @csrf
+                                @method('DELETE')
+                                <input type="hidden" name="return_to" value="profile">
+                                <div class="qr-actions">
+                                    <button class="qr-action-btn qr-action-delete" type="submit"><i class="fa-regular fa-trash-can" aria-hidden="true"></i> Remove saved QR</button>
+                                </div>
+                            </form>
+                        @endif
+                    </div>
+                    <p class="qr-description">Showing a QR code does not verify a payment or mark an order as paid.</p>
                 </div>
             </section>
 
@@ -6145,6 +6195,8 @@ document.addEventListener(
 
 </script>
 
+
+@vite('resources/js/seller-face-unlock.js')
 
 </body>
 

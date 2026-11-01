@@ -16,11 +16,23 @@ class ProductController extends Controller
     {
         $user = Auth::user();
 
-        $products = Product::query()->customerVisible()
+        $catalog = Product::query()->customerVisible()
             ->with('seller')
             ->latest()
-            ->limit(8)
+            ->limit(80)
             ->get();
+
+        // Spread the home recommendations across stores so one busy seller
+        // does not occupy every featured slot.
+        $storeGroups = $catalog->groupBy(fn ($product) => $product->seller_id ?: 'platform')
+            ->map(fn ($storeProducts) => $storeProducts->take(2));
+        $products = $storeGroups->flatten(1)->sortByDesc('created_at')->take(8)->values();
+        if ($products->count() < 8) {
+            $products = $products->concat(
+                $catalog->whereNotIn('id', $products->pluck('id'))
+                    ->take(8 - $products->count())
+            )->values();
+        }
 
         $orders = Order::query()
             ->where('user_id', $user->id)
@@ -90,6 +102,14 @@ class ProductController extends Controller
             ->with('seller')
             ->latest()
             ->get();
+
+        $sellerId = $request->integer('seller') ?: null;
+        $sellers = $sellerProducts
+            ->pluck('seller')
+            ->filter()
+            ->unique('id')
+            ->sortBy(fn ($seller) => mb_strtolower($seller->shop_name ?: $seller->seller_name ?: ''))
+            ->values();
 
 
         /*
@@ -162,6 +182,12 @@ class ProductController extends Controller
                 ->values();
         }
 
+        if ($sellerId) {
+            $sellerProducts = $sellerProducts
+                ->where('seller_id', $sellerId)
+                ->values();
+        }
+
 
         /*
         |--------------------------------------------------------------------------
@@ -230,6 +256,8 @@ class ProductController extends Controller
                 'categories',
                 'search',
                 'category',
+                'sellerId',
+                'sellers',
                 'showWelcome'
             )
         );
@@ -245,15 +273,18 @@ class ProductController extends Controller
     /** Display the selected real product with its own images and seller. */
     public function show(Product $product)
     {
-        // A guessed product URL must not expose listings the seller has hidden.
-        abort_if($product->status !== null && $product->status !== 'active', 404);
+        // Apply the exact same seller visibility rules as the customer catalog.
+        abort_unless(
+            Product::query()->customerVisible()->whereKey($product->getKey())->exists(),
+            404
+        );
 
         $product->load([
             'images',
             'videos',
             'seller',
         ]);
-        abort_if($product->seller_id && (! $product->seller || $product->seller->isBlocked()), 404);
+        abort_if($product->seller_id && (! $product->seller || ! $product->seller->isStoreVisibleToCustomers()), 404);
 
 
         /*

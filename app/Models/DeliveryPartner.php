@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class DeliveryPartner extends Model
 {
@@ -17,11 +18,22 @@ protected $fillable = [
         'expected_time',
         'notes',
         'current_location',
+        'seller_id',
+        'portal_token',
     ];
 
     protected $casts = [
         'delivery_date' => 'date',
     ];
+
+    protected static function booted(): void
+    {
+        static::saving(function (DeliveryPartner $partner) {
+            if (! $partner->portal_token) {
+                $partner->portal_token = Str::random(48);
+            }
+        });
+    }
 
     public function deliveryDetails()
     {

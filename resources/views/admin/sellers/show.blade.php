@@ -279,6 +279,40 @@
         color: #111827;
     }
 
+    .seller-product-summary {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        min-width: 210px;
+    }
+
+    .seller-product-thumb {
+        display: grid;
+        width: 46px;
+        height: 46px;
+        flex: 0 0 46px;
+        place-items: center;
+        overflow: hidden;
+        border: 1px solid #d8e6fb;
+        border-radius: 12px;
+        background: linear-gradient(145deg, #eff6ff, #dbeafe);
+        color: #2563eb;
+    }
+
+    .seller-product-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .seller-product-meta {
+        display: block;
+        margin-top: 3px;
+        color: #64748b;
+        font-size: 11px;
+        font-weight: 500;
+    }
+
     .seller-price {
         font-weight: 800;
         color: #111827;
@@ -422,14 +456,6 @@
         </div>
 
         <div class="seller-actions">
-
-            @if(Route::has('admin.sellers.index'))
-                <a href="{{ route('admin.sellers.index') }}"
-                   class="seller-back-btn">
-                    <i class="fas fa-arrow-left"></i>
-                    Back
-                </a>
-            @endif
 
             @if(Route::has('admin.seller-verifications.show'))
                 <a class="seller-kyc-btn"
@@ -627,8 +653,10 @@
 
                         <tr>
                             <th>Product</th>
+                            <th>Category</th>
                             <th>Price</th>
                             <th>Stock</th>
+                            <th>Status</th>
                             <th>Action</th>
                         </tr>
 
@@ -641,10 +669,22 @@
                             <tr>
 
                                 <td>
-                                    <div class="seller-product-name">
-                                        {{ $product->name ?? 'Unnamed Product' }}
+                                    <div class="seller-product-summary">
+                                        <span class="seller-product-thumb">
+                                            @if($product->image)
+                                                <img src="{{ asset('products/' . $product->image) }}" alt="">
+                                            @else
+                                                <i class="fas fa-box-open" aria-hidden="true"></i>
+                                            @endif
+                                        </span>
+                                        <span>
+                                            <span class="seller-product-name">{{ $product->name ?? 'Unnamed Product' }}</span>
+                                            <small class="seller-product-meta">Product #{{ $product->id }}</small>
+                                        </span>
                                     </div>
                                 </td>
+
+                                <td>{{ $product->category ?: 'Uncategorized' }}</td>
 
                                 <td>
                                     <span class="seller-price">
@@ -655,6 +695,12 @@
                                 <td>
                                     <span class="seller-stock">
                                         {{ $product->stock ?? 0 }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="seller-status">
+                                        {{ ucfirst($product->status ?: 'active') }}
                                     </span>
                                 </td>
 
@@ -687,7 +733,7 @@
 
                             <tr>
 
-                                <td colspan="4" class="seller-empty">
+                                <td colspan="6" class="seller-empty">
 
                                     <div class="seller-empty-icon">
                                         <i class="fas fa-box-open"></i>

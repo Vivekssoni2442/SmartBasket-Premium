@@ -3,6 +3,10 @@
 
 <head>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
     <meta charset="utf-8">
 
     <meta
@@ -212,6 +216,7 @@
         ========================================================= */
 
         .payment-detail-page > .top-bar,
+        .payment-detail-page > .payment-title-hero,
         .payment-detail-page > .hero-card,
         .payment-detail-page > .detail-grid {
 
@@ -1635,21 +1640,22 @@
            REDUCED MOTION
         ========================================================= */
 
-        @media (prefers-reduced-motion: reduce) {
 
-            .payment-detail-page *,
-            .payment-detail-page *::before,
-            .payment-detail-page *::after {
-
-                transition:
-                    none !important;
-
-                animation:
-                    none !important;
-            }
-
-        }
-
+        /* =========================================================
+           PAYMENT PAGE TITLE
+        ========================================================= */
+        .hero-card{isolation:isolate;position:relative;width:100%;max-width:none;min-height:150px;margin:0 0 24px;padding:clamp(22px,2.2vw,32px);overflow:hidden;border:1px solid rgba(194,205,255,.35);border-radius:22px;background:radial-gradient(ellipse at 82% 0%,rgba(151,137,255,.42),transparent 38%),linear-gradient(118deg,#173b9a 0%,#2453d4 50%,#5144b8 100%);box-shadow:0 20px 48px rgba(49,65,150,.2);transition:box-shadow .25s ease}
+        .hero-card:hover{box-shadow:0 25px 58px rgba(49,65,150,.27)}
+        .hero-card::before{z-index:1;left:0;top:0;bottom:0;width:4px;height:auto;background:linear-gradient(180deg,#78e9ff,#c0b3ff);opacity:1}
+        .hero-card::after{z-index:0;right:-120px;top:-190px;width:360px;height:360px;transform:none;border:1px solid rgba(255,255,255,.12);background:radial-gradient(circle,rgba(255,255,255,.15),rgba(116,214,255,.055) 48%,transparent 70%);box-shadow:0 0 0 36px rgba(255,255,255,.025),0 0 0 82px rgba(255,255,255,.018)}
+        .hero-content{position:relative;z-index:2}.hero-heading{display:block;min-width:0;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}.hero-label{display:block;color:#dbeafe;font-size:9px;font-weight:850;letter-spacing:.16em}.hero-label i{display:none}
+        .payment-detail-page .hero-title{display:block;margin:6px 0;color:#fff;font-size:clamp(25px,2.2vw,34px);font-weight:900;letter-spacing:-.8px;text-shadow:0 5px 20px rgba(0,0,0,.16);background:transparent!important;border:0!important;border-radius:0!important;padding:0!important;box-shadow:none!important}.hero-order{color:rgba(235,243,255,.8);font-size:11px;letter-spacing:.02em}.hero-order strong{color:#fff;font-weight:800}.hero-amount-wrap{position:relative;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;backdrop-filter:none;text-align:right}.hero-amount-label{color:rgba(226,238,255,.76);font-size:9px;letter-spacing:.14em}.hero-amount{color:#fff;font-size:clamp(31px,3.3vw,44px);text-shadow:0 5px 24px rgba(0,0,0,.16)}.hero-amount-wrap .status-pill{margin-top:11px}.hero-card .successful{color:#bbf7d0;background:rgba(22,163,74,.2);border-color:rgba(187,247,208,.35)}.hero-card .pending{color:#ffedbb;background:rgba(217,119,6,.2);border-color:rgba(255,237,187,.35)}.hero-card .failed{color:#fecdd3;background:rgba(220,38,38,.2);border-color:rgba(254,205,211,.35)}.hero-card .refunded{color:#e9d5ff;background:rgba(124,58,237,.22);border-color:rgba(233,213,255,.35)}
+        @media(max-width:767px){.hero-card{min-height:0;margin-bottom:18px;padding:20px 17px;border-radius:17px}.hero-card::after{right:-155px;width:260px;height:260px;opacity:.65}.hero-amount-wrap{text-align:left;margin-top:18px;padding:0}.hero-title{margin-top:5px;font-size:25px;letter-spacing:-.55px}}
+        .payment-title-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:24px;width:100%;min-height:172px;margin:0 0 20px;padding:clamp(24px,3vw,38px);overflow:hidden;border:1px solid rgba(194,205,255,.35);border-radius:22px;background:radial-gradient(ellipse at 82% 0%,rgba(151,137,255,.4),transparent 40%),linear-gradient(118deg,#173b9a 0%,#2453d4 50%,#5144b8 100%);box-shadow:0 20px 48px rgba(49,65,150,.22)}
+        .payment-title-hero::after{position:absolute;z-index:-1;content:"";width:280px;height:280px;right:-75px;top:-160px;border:1px solid rgba(255,255,255,.12);border-radius:50%;box-shadow:0 0 0 28px rgba(255,255,255,.025),0 0 0 62px rgba(255,255,255,.018)}
+        .payment-title-copy{min-width:0}.payment-title-hero h1{margin:0;color:#fff;font-size:clamp(27px,2.4vw,36px);font-weight:900;letter-spacing:-.8px;text-shadow:0 4px 18px rgba(0,0,0,.16)}.payment-title-order{margin-top:12px;color:rgba(235,243,255,.78);font-size:12px;letter-spacing:.025em}.payment-title-order strong{color:#fff;font-weight:850}
+        .payment-title-total{text-align:right;white-space:nowrap}.payment-title-total-label{color:rgba(226,238,255,.72);font-size:9px;font-weight:850;letter-spacing:.16em;text-transform:uppercase}.payment-title-total-amount{margin-top:3px;color:#fff;font-size:clamp(34px,3.4vw,48px);font-weight:950;letter-spacing:-1.3px;line-height:1.1;text-shadow:0 5px 24px rgba(0,0,0,.16)}.payment-title-total .status-pill{margin-top:11px}.payment-title-hero .successful{color:#bbf7d0;background:rgba(22,163,74,.2);border-color:rgba(187,247,208,.35)}.payment-title-hero .pending{color:#ffedbb;background:rgba(217,119,6,.2);border-color:rgba(255,237,187,.35)}.payment-title-hero .failed{color:#fecdd3;background:rgba(220,38,38,.2);border-color:rgba(254,205,211,.35)}.payment-title-hero .refunded{color:#e9d5ff;background:rgba(124,58,237,.22);border-color:rgba(233,213,255,.35)}
+        @media(max-width:767px){.payment-title-hero{grid-template-columns:1fr;gap:20px;min-height:0;margin-bottom:16px;padding:22px 19px;border-radius:17px}.payment-title-total{text-align:left}.payment-title-total-amount{font-size:38px}.payment-title-order{margin-top:9px;font-size:11px}}
     </style>
 
 </head>
@@ -1680,176 +1686,38 @@
              TOP ACTION BAR
         ====================================================== --}}
 
-        <div class="top-bar">
-
-
-            {{-- PAYMENT HISTORY --}}
-
-            <a
-                href="{{ route('seller.payments.index') }}"
-                class="back-btn"
-            >
-
-                <i class="fa-solid fa-arrow-left"></i>
-
-                Payment History
-
-            </a>
-
-
-
-            {{-- PAYMENT RECEIPT --}}
-
-            <a
-                href="{{ route('seller.payments.receipt', $order) }}"
-                class="receipt-btn"
-            >
-
-                <i class="fa-solid fa-file-pdf"></i>
-
-                Download Payment Receipt
-
-            </a>
-
-
+        <section class="payment-title-hero" aria-label="Payment details summary">
+    <div class="payment-title-copy">
+        <h1>Payment Details</h1>
+        <div class="payment-title-order">
+            Order <strong>#SB-{{ $order->id }}</strong>
+            <span class="mx-1" aria-hidden="true">&#183;</span>
+            {{ $order->created_at?->format('d M Y · h:i A') }}
         </div>
-
-
-
-        {{-- =====================================================
-             HERO
-        ====================================================== --}}
-
-        <section class="hero-card">
-
-            <div class="hero-content">
-
-                <div class="row align-items-center">
-
-
-                    {{-- HERO INFORMATION --}}
-
-                    <div class="col-md-7">
-
-                        <div class="hero-label">
-
-                            <i class="fa-solid fa-shield-halved"></i>
-
-                            Smart Basket Payment
-
-                        </div>
-
-
-                        <h1 class="hero-title">
-                            Payment Details
-                        </h1>
-
-
-                        <div class="hero-order">
-
-                            Order
-
-                            <strong>
-                                #SB-{{ $order->id }}
-                            </strong>
-
-                            <span class="mx-1">
-                                ·
-                            </span>
-
-                            {{ $order->created_at?->format('d M Y · h:i A') }}
-
-                        </div>
-
-                    </div>
-
-
-
-                    {{-- HERO AMOUNT --}}
-
-                    <div class="col-md-5">
-
-                        <div class="hero-amount-wrap">
-
-                            <div class="hero-amount-label">
-                                Total Payment
-                            </div>
-
-
-                            <div class="hero-amount">
-
-                                ₹{{ number_format((float)$order->total, 2) }}
-
-                            </div>
-
-
-
-                            @if($paymentStatus === 'Successful')
-
-                                <span class="status-pill successful">
-
-                                    <i class="fa-solid fa-circle-check"></i>
-
-                                    Successful
-
-                                </span>
-
-
-                            @elseif($paymentStatus === 'Cash')
-
-                                <span class="status-pill" style="color:#1552b5;background:#edf5ff;border:1px solid #d1e3ff">
-
-                                    <i class="fa-solid fa-money-bill-wave"></i>
-
-                                    Cash
-
-                                </span>
-
-
-                            @elseif($paymentStatus === 'Pending')
-
-                                <span class="status-pill pending">
-
-                                    <i class="fa-solid fa-clock"></i>
-
-                                    Pending
-
-                                </span>
-
-
-                            @elseif($paymentStatus === 'Refunded')
-
-                                <span class="status-pill refunded">
-
-                                    <i class="fa-solid fa-rotate-left"></i>
-
-                                    Refunded
-
-                                </span>
-
-
-                            @else
-
-                                <span class="status-pill failed">
-
-                                    <i class="fa-solid fa-circle-xmark"></i>
-
-                                    {{ $paymentStatus }}
-
-                                </span>
-
-                            @endif
-
-                        </div>
-
-                    </div>
-
-
-                </div>
-
-            </div>
-
-        </section>
+    </div>
+    <div class="payment-title-total">
+        <div class="payment-title-total-label">Total Payment</div>
+        <div class="payment-title-total-amount">&#8377;{{ number_format((float) $order->total, 2) }}</div>
+        @if($paymentStatus === 'Successful')
+            <span class="status-pill successful"><i class="fa-solid fa-circle-check"></i> Successful</span>
+        @elseif($paymentStatus === 'Cash')
+            <span class="status-pill" style="color:#1552b5;background:#edf5ff;border:1px solid #d1e3ff"><i class="fa-solid fa-money-bill-wave"></i> Cash</span>
+        @elseif($paymentStatus === 'Pending')
+            <span class="status-pill pending"><i class="fa-solid fa-clock"></i> Pending</span>
+        @elseif($paymentStatus === 'Refunded')
+            <span class="status-pill refunded"><i class="fa-solid fa-rotate-left"></i> Refunded</span>
+        @else
+            <span class="status-pill failed"><i class="fa-solid fa-circle-xmark"></i> {{ $paymentStatus }}</span>
+        @endif
+    </div>
+</section>
+
+<div class="top-bar payment-receipt-actions">
+            <a href="{{ route('seller.payments.receipt', $order) }}" class="receipt-btn">
+                <i class="fa-solid fa-file-pdf"></i>
+                Download Payment Receipt
+            </a>
+        </div>
 
 
 
@@ -2014,6 +1882,17 @@
                     </span>
 
                 </div>
+
+                @if($paymentTransaction?->gateway === 'seller_upi')
+                    <div class="info-row">
+                        <span class="info-label">Customer UPI Reference</span>
+                        <span class="info-value">{{ $paymentTransaction->request_metadata['upi_references'][$seller->id] ?? 'Not submitted' }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Verification</span>
+                        <span class="info-value">{{ $paymentTransaction->status === 'manual_review' ? 'Awaiting seller verification' : ucfirst(str_replace('_', ' ', $paymentTransaction->status)) }}</span>
+                    </div>
+                @endif
 
 
 

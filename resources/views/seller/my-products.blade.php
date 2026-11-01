@@ -1866,19 +1866,6 @@
            REDUCED MOTION
         ========================================================= */
 
-        @media (prefers-reduced-motion: reduce) {
-
-            .sb-products-page *,
-            .sb-products-page *::before,
-            .sb-products-page *::after {
-
-                scroll-behavior: auto !important;
-
-                transition: none !important;
-
-                animation: none !important;
-            }
-        }
 
     </style>
 

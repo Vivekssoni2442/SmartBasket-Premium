@@ -72,8 +72,12 @@ html[data-theme="dark"], html[data-sb-theme="dark"] {
 .customer-topbar p { margin: 7px 0 0; color: var(--customer-muted); font-size: 12px; }
 .customer-action { display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 15px; border-radius: 10px; color: #fff !important; background: var(--customer-primary); font-size: 11px; font-weight: 800; }
 .customer-action:hover { color: #fff !important; background: var(--customer-accent); transform: translateY(-2px); }
-.customer-hero { position: relative; overflow: hidden; max-width: 1240px; margin: 0 auto 22px; padding: clamp(28px, 5vw, 58px); border-radius: 24px; color: #fff; background: linear-gradient(118deg, #101e3c, #194a70 60%, #276a75); box-shadow: 0 22px 52px rgba(16, 30, 60, .18); }
-.customer-hero::after { content: ''; position: absolute; right: -70px; top: -110px; width: 320px; height: 320px; border: 1px solid rgba(255,255,255,.17); border-radius: 50%; box-shadow: 0 0 0 35px rgba(255,255,255,.035), 0 0 0 70px rgba(255,255,255,.025); }
+.customer-hero { position: relative; isolation: isolate; overflow: hidden; max-width: 1240px; margin: 0 auto 22px; padding: clamp(28px, 5vw, 58px); border-radius: 24px; color: #fff; background: linear-gradient(118deg, #101e3c, #194a70 60%, #276a75); background-size: 180% 180%; box-shadow: 0 22px 52px rgba(16, 30, 60, .18); animation: customer-hero-gradient 16s ease-in-out infinite; }
+.customer-hero::before { content: ''; position: absolute; z-index: 0; left: 42%; bottom: -250px; width: 380px; height: 380px; border-radius: 50%; background: radial-gradient(circle, rgba(83, 190, 230, .24), rgba(83, 190, 230, 0) 68%); filter: blur(8px); pointer-events: none; animation: customer-hero-glow 11s ease-in-out infinite alternate; }
+.customer-hero::after { content: ''; position: absolute; right: -70px; top: -110px; width: 320px; height: 320px; border: 1px solid rgba(255,255,255,.17); border-radius: 50%; box-shadow: 0 0 0 35px rgba(255,255,255,.035), 0 0 0 70px rgba(255,255,255,.025); animation: customer-hero-orbit 18s ease-in-out infinite alternate; }
+@keyframes customer-hero-gradient { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+@keyframes customer-hero-glow { from { transform: translate3d(-24px, 12px, 0) scale(.9); opacity: .65; } to { transform: translate3d(30px, -30px, 0) scale(1.12); opacity: 1; } }
+@keyframes customer-hero-orbit { from { transform: translate3d(-20px, 18px, 0) scale(.94); } to { transform: translate3d(15px, -14px, 0) scale(1.08); } }
 .customer-hero > * { position: relative; z-index: 1; }
 .customer-hero h2 { max-width: 600px; margin: 10px 0; color: #fff; font-size: clamp(29px, 4vw, 52px); line-height: 1.05; }
 .customer-hero h2 span { color: #f3c65b; }

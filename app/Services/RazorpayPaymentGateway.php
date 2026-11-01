@@ -111,6 +111,7 @@ class RazorpayPaymentGateway implements PaymentGatewayInterface
             'amount' => (int) $response->json('amount'),
             'currency' => $response->json('currency'),
             'order_id' => $response->json('order_id'),
+            'method' => $response->json('method'),
         ];
     }
 

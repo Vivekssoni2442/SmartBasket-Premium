@@ -48,7 +48,10 @@ class AiHubController extends Controller
         if ($budget !== null && $budget !== '') {
             $validated = $request->validate(['budget' => 'numeric|min:0']);
             $budget = $validated['budget'];
-            $products = Product::query()->where('price', '<=', $budget)->orderByDesc('rating')->get();
+            $products = Product::customerVisible()
+                ->where('price', '<=', $budget)
+                ->orderByDesc('rating')
+                ->get();
         }
 
         return $this->respond($request, 'budget', compact('budget', 'products'), 'ai-hub.budget');

@@ -14,6 +14,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Trust the local Cloudflare Tunnel process so generated asset URLs
+        // retain HTTPS. LAN clients cannot spoof forwarded headers directly.
+        $middleware->trustProxies(at: ['127.0.0.1', '::1']);
+
         // Resolve the authenticated customer preference (or a safe guest fallback)
         // before any controller or Blade view is executed.
         $middleware->appendToGroup('web', \App\Http\Middleware\SetUserLocale::class);

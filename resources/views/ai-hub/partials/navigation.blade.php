@@ -1,3 +1,5 @@
+@once
+@unless (request()->routeIs('delivery.driver'))
 @php
     $usesProductsTaskbar = request()->routeIs(
         'ai-hub',
@@ -7,15 +9,17 @@
         'gift-finder',
         'trending-products',
         'compare-products',
-        'ai.chat.page',
-        'ai-camera-assistant',
-        'ai-camera-assistant.history',
-        'ai-camera-assistant.virtual-try-on',
-        'ai-camera-assistant*'
+        'ai.*',
+        'customer-ai.*',
+        'ai-camera*'
     );
 @endphp
 
 @if($usesProductsTaskbar)
+    @once
+        <x-products-customer-taskbar />
+    @endonce
+@elseif(request()->routeIs('returns.*'))
     @once
         <x-products-customer-taskbar />
     @endonce
@@ -32,6 +36,26 @@
     rel="stylesheet"
     href="{{ asset('css/ai-hub-sidebar.css') }}"
 >
+
+<style>
+    .ai-hub-main .sb-customer-page-hero,
+    .ai-hub-main .sb-ai-hero,
+    .ai-hub-main .sb-trending-hero,
+    .ai-hub-main .sb-budget-hero,
+    .ai-hub-main .sb-gift-hero,
+    .ai-hub-main .sb-vto-hero {
+        width: 100%;
+        max-width: none;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    .ai-hub-main .ai-hub-heading > div:first-child,
+    .ai-hub-main .sb-ai-hero > div:first-child {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+</style>
 
 {{-- =========================================================
      FLOATING AI HUB BUTTON
@@ -310,3 +334,5 @@
 ========================================================= --}}
 
 <script src="{{ asset('js/ai-hub-sidebar.js') }}"></script>
+@endunless
+@endonce

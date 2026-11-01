@@ -45,7 +45,7 @@
     <x-customer-page-hero :stat="$wishlistItems->count()" :stat-label="$wishlistItems->count() === 1 ? 'Saved product' : 'Saved products'">
         <div class="hero-copy">
             <span class="eyebrow"><i class="fa-solid fa-heart"></i> SAVED FOR LATER</span>
-            <h1 class="wishlist-title sb-customer-page-title">Your Wishlist ❤️</h1>
+            <h1 class="wishlist-title sb-customer-page-title">Your Wishlist</h1>
             <p class="wishlist-subtitle">Save your favourite products and move them to your Smart Basket cart whenever you're ready.</p>
         </div>
     </x-customer-page-hero>

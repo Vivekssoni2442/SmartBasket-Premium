@@ -977,33 +977,55 @@ body.seller,
    SCROLLBAR
    ========================================================= */
 
+html,
+body,
+.seller-layout-content,
+.seller-layout-content *,
+.seller-main-nav {
+    scrollbar-width: thin !important;
+    scrollbar-color: rgba(111, 145, 198, .78) transparent !important;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+.seller-layout-content *::-webkit-scrollbar,
 .seller-page ::-webkit-scrollbar,
 .seller-layout ::-webkit-scrollbar {
-
-    width:
-        8px;
-
-    height:
-        8px;
+    width: 5px !important;
+    height: 5px !important;
 }
 
-
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track,
+.seller-layout-content *::-webkit-scrollbar-track,
 .seller-page ::-webkit-scrollbar-track,
 .seller-layout ::-webkit-scrollbar-track {
-
-    background:
-        #020617;
+    background: transparent;
 }
 
-
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb,
+.seller-layout-content *::-webkit-scrollbar-thumb,
 .seller-page ::-webkit-scrollbar-thumb,
 .seller-layout ::-webkit-scrollbar-thumb {
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(145, 177, 226, .9), rgba(78, 111, 164, .8));
+    background-clip: padding-box;
+}
 
-    background:
-        #334155;
+.seller-main-nav::-webkit-scrollbar {
+    display: block !important;
+    height: 5px !important;
+}
 
-    border-radius:
-        999px;
+html::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover,
+.seller-layout-content *::-webkit-scrollbar-thumb:hover,
+.seller-page ::-webkit-scrollbar-thumb:hover,
+.seller-layout ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #a9c8f4, #688bc1);
+    background-clip: padding-box;
 }
 
 

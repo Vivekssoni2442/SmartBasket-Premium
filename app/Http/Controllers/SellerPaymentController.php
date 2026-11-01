@@ -3,12 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\Notification;
+use App\Models\PaymentAuditRecord;
 use App\Models\Product;
+use App\Models\SellerEarning;
 use App\Models\SellerProfile;
 use App\Models\PaymentTransaction;
+
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class SellerPaymentController extends Controller
@@ -77,6 +82,140 @@ class SellerPaymentController extends Controller
         );
     }
 
+    /** Seller-only UPI payments waiting for this seller's credit confirmation. */
+    public function upiReviews()
+    {
+        $seller = $this->currentSeller();
+        $transactions = PaymentTransaction::query()
+            ->with('user')
+            ->where('gateway', 'seller_upi')
+            ->where('status', 'manual_review')
+            ->latest()
+            ->get()
+            ->filter(function (PaymentTransaction $transaction) use ($seller) {
+                $targets = collect($transaction->request_metadata['seller_payments'] ?? []);
+                $target = $targets->first(fn ($row) => (int) ($row['seller_id'] ?? 0) === (int) $seller->id);
+                if (! $target) {
+                    return false;
+                }
+                $review = $transaction->request_metadata['seller_upi_reviews'][(string) $seller->id] ?? [];
+
+                return ($review['status'] ?? 'pending') === 'pending';
+            })
+            ->values()
+            ->map(function (PaymentTransaction $transaction) use ($seller) {
+                $metadata = $transaction->request_metadata ?? [];
+                $target = collect($metadata['seller_payments'] ?? [])->first(
+                    fn ($row) => (int) ($row['seller_id'] ?? 0) === (int) $seller->id
+                );
+
+                return [
+                    'transaction' => $transaction,
+                    'target' => $target,
+                    'reference' => $metadata['upi_references'][$seller->id] ?? 'Not submitted',
+                    'orders' => Order::whereIn('id', $transaction->order_ids ?? [])
+                        ->where('seller_id', $seller->id)
+                        ->with('user')
+                        ->get(),
+                ];
+            });
+
+        return view('seller.payments.upi-reviews', compact('seller', 'transactions'));
+    }
+
+    /** Accept only the current seller's UPI credit and confirm only their order. */
+    public function acceptSellerUpi(Request $request, PaymentTransaction $transaction)
+    {
+        $seller = $this->currentSeller();
+        abort_unless($transaction->gateway === 'seller_upi', 404);
+
+        $accepted = DB::transaction(function () use ($request, $seller, $transaction) {
+            $locked = PaymentTransaction::whereKey($transaction->id)->lockForUpdate()->firstOrFail();
+            if ($locked->gateway !== 'seller_upi' || $locked->status !== 'manual_review') {
+                return false;
+            }
+
+            $metadata = $locked->request_metadata ?? [];
+            $target = collect($metadata['seller_payments'] ?? [])->first(
+                fn ($row) => (int) ($row['seller_id'] ?? 0) === (int) $seller->id
+            );
+            $reference = trim((string) ($metadata['upi_references'][$seller->id] ?? ''));
+            abort_unless($target && $reference !== '', 403, 'This UPI payment does not belong to your seller account.');
+
+            $reviews = $metadata['seller_upi_reviews'] ?? [];
+            if (($reviews[(string) $seller->id]['status'] ?? 'pending') !== 'pending') {
+                return false;
+            }
+
+            $orders = Order::whereIn('id', $locked->order_ids ?? [])
+                ->where('seller_id', $seller->id)
+                ->lockForUpdate()
+                ->get();
+            abort_unless($orders->isNotEmpty(), 422, 'No order for your seller account is linked to this payment.');
+
+            $reviews[(string) $seller->id] = [
+                'status' => 'paid',
+                'reviewed_at' => now()->toIso8601String(),
+                'seller_id' => (int) $seller->id,
+                'order_ids' => $orders->pluck('id')->map(fn ($id) => (int) $id)->all(),
+            ];
+            $metadata['seller_upi_reviews'] = $reviews;
+            $allAccepted = collect($metadata['seller_payments'] ?? [])->every(
+                fn ($row) => ($reviews[(string) (int) $row['seller_id']]['status'] ?? 'pending') === 'paid'
+            );
+
+            foreach ($orders as $order) {
+                $order->update(['status' => 'Confirmed', 'order_status' => 'Confirmed', 'payment_status' => 'Paid']);
+                if ($order->user_id && $seller->preference('order_confirmation_notification', true)) {
+                    Notification::create([
+                        'user_id' => $order->user_id,
+                        'role' => 'user',
+                        'type' => 'order',
+                        'title' => 'UPI payment verified',
+                        'message' => 'Seller verified your UPI payment and order #' . $order->id . ' is confirmed.',
+                        'data' => ['order_id' => $order->id, 'payment_transaction_id' => $locked->id],
+                    ]);
+                }
+                SellerEarning::firstOrCreate(
+                    ['seller_id' => $seller->id, 'order_id' => $order->id],
+                    ['payment_id' => $locked->payment_id, 'gross_amount' => $order->amount ?? $order->total, 'platform_fee' => 0, 'net_amount' => $order->amount ?? $order->total, 'status' => 'pending']
+                );
+            }
+
+            $locked->update([
+                'request_metadata' => $metadata,
+                'status' => $allAccepted ? 'paid' : 'manual_review',
+                'verified_at' => $allAccepted ? now() : $locked->verified_at,
+                'completed_at' => $allAccepted ? now() : $locked->completed_at,
+            ]);
+            if ($allAccepted) {
+                // Seller UPI references are manual customer-entered UTRs stored on
+                // the payment transaction. They are not unique gateway IDs.
+                $locked->payment?->update(['status' => 'paid', 'captured_at' => now()]);
+
+            }
+
+            PaymentAuditRecord::create([
+                'payment_id' => $locked->payment_id,
+                'payment_transaction_id' => $locked->id,
+                'user_id' => $seller->user_id,
+                'event' => 'seller_upi.seller_verified',
+                'from_status' => 'pending',
+                'to_status' => 'paid',
+                'metadata' => ['seller_id' => $seller->id, 'order_ids' => $orders->pluck('id')->all(), 'reference' => $reference],
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
+            return true;
+        });
+
+        return redirect()->route('seller.payments.upi-reviews')
+            ->with($accepted ? 'success' : 'info', $accepted
+                ? 'UPI payment accepted. Your seller order is now confirmed and the customer has been notified.'
+                : 'This UPI payment has already been reviewed.');
+    }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -117,6 +256,7 @@ class SellerPaymentController extends Controller
             ->keyBy('id');
 
         $paymentStatus = $this->status($order);
+        $paymentTransaction = $this->paymentTransactionForOrder($order);
         if ($paymentStatus === 'Pending' && $order->isCashOnDelivery()) {
             $paymentStatus = 'Cash';
         }
@@ -131,6 +271,7 @@ class SellerPaymentController extends Controller
                 'sellerItems',
                 'products',
                 'paymentStatus',
+                'paymentTransaction',
                 'customer'
             )
         );
@@ -212,6 +353,10 @@ class SellerPaymentController extends Controller
 
         $paymentId = $payment?->gateway_payment_id;
         $gatewayOrderId = $payment?->gateway_order_id;
+        $upiReferences = $payment?->request_metadata['upi_references'] ?? [];
+        $customerUpiReference = $payment?->gateway === 'seller_upi'
+            ? ($upiReferences[(string) $seller->id] ?? $upiReferences[$seller->id] ?? null)
+            : null;
 
         /*
         |--------------------------------------------------------------------------
@@ -449,6 +594,8 @@ class SellerPaymentController extends Controller
             'payment' => $payment,
 
             'paymentId' => $paymentId,
+
+            'customerUpiReference' => $customerUpiReference,
 
             'gatewayOrderId' => $gatewayOrderId,
 

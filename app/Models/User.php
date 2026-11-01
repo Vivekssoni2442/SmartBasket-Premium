@@ -29,6 +29,7 @@ class User extends Authenticatable
         'customer_uid',
         'username',
         'email',
+        'google_id',
         'password',
         'phone',
         'date_of_birth',
@@ -54,6 +55,11 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'refund_upi_id',
+        'refund_account_holder',
+        'refund_bank_name',
+        'refund_account_number',
+        'refund_ifsc',
     ];
 
 
@@ -63,6 +69,11 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'blocked_at' => 'datetime',
+            'refund_upi_id' => 'encrypted',
+            'refund_account_holder' => 'encrypted',
+            'refund_bank_name' => 'encrypted',
+            'refund_account_number' => 'encrypted',
+            'refund_ifsc' => 'encrypted',
         ];
     }
 

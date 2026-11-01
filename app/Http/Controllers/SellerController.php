@@ -10,6 +10,7 @@ use App\Services\SiteSettings;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -72,12 +73,28 @@ class SellerController extends Controller
         }
 
         $request->session()->regenerate();
+        $request->session()->forget(['seller_face_pending_id', 'seller_face_unlocked_at']);
+
+        if ($seller->face_unlock_enabled) {
+            if (! $seller->hasPasskeysEnabled()) {
+                return back()->withInput($request->only('email'))->with('error', 'Face unlock is enabled but this account has no registered device. Contact support to restore access.');
+            }
+
+            Auth::guard('seller')->logout();
+            $request->session()->put('seller_face_pending_id', $seller->id);
+
+            return redirect()->route('seller.face-unlock');
+        }
+
+        Auth::guard('seller')->login($seller);
 
         $request->session()->put([
             'seller_login' => true,
             'seller_email' => $seller->email,
             'seller_id' => $seller->id,
         ]);
+
+        $request->session()->flash('seller_login_welcome', true);
 
         if ($seller->isApproved() || $seller->isActive()) {
             return redirect()->route('seller.dashboard');
@@ -964,8 +981,11 @@ class SellerController extends Controller
             );
         }
 
-        $sellerId =
-            $this->currentSeller()->id;
+        $seller = $this->currentSeller();
+        $sellerId = $seller->id;
+        $sellerPreferences = is_array($seller->preferences)
+            ? $seller->preferences
+            : [];
 
         $this->rejectPhpUploadErrors($request);
 
@@ -994,6 +1014,20 @@ class SellerController extends Controller
 
             'discount_price' =>
                 'nullable|numeric|min:0',
+
+            'sale_title' => 'nullable|string|max:255',
+            'sale_offer' => 'nullable|string|max:500',
+            'sale_price' => 'nullable|numeric|min:0|lt:price|required_with:sale_starts_at,sale_ends_at',
+            'sale_starts_at' => 'nullable|date|required_with:sale_ends_at,sale_price',
+            'sale_ends_at' => 'nullable|date|after:sale_starts_at|required_with:sale_starts_at,sale_price',
+            'coupon_title' => 'nullable|string|max:255',
+            'coupon_code' => 'nullable|string|max:80',
+            'coupon_description' => 'nullable|string|max:500',
+            'coupon_discount_type' => 'nullable|in:percent,fixed',
+            'coupon_discount_value' => ['nullable', 'numeric', 'min:0', 'required_with:coupon_discount_type', Rule::when($request->input('coupon_discount_type') === 'percent', ['max:100'])],
+            'coupon_starts_at' => 'nullable|date|required_with:coupon_title,coupon_code',
+            'coupon_ends_at' => 'nullable|date|after:coupon_starts_at|required_with:coupon_title,coupon_code',
+            'coupon_design' => 'nullable|in:royal,sunset,emerald,gold',
 
             'description' =>
                 'nullable|string',
@@ -1092,9 +1126,23 @@ class SellerController extends Controller
                 'discount_price' =>
                     $request->discount_price,
 
+                'sale_title' => $request->sale_title,
+                'sale_offer' => $request->sale_offer,
+                'sale_price' => $request->sale_price,
+                'sale_starts_at' => $request->sale_starts_at,
+                'sale_ends_at' => $request->sale_ends_at,
+                'coupon_title' => $request->coupon_title,
+                'coupon_code' => filled($request->coupon_code) ? strtoupper(trim($request->coupon_code)) : null,
+                'coupon_description' => $request->coupon_description,
+                'coupon_discount_type' => $request->coupon_discount_type,
+                'coupon_discount_value' => $request->coupon_discount_value,
+                'coupon_starts_at' => $request->coupon_starts_at,
+                'coupon_ends_at' => $request->coupon_ends_at,
+                'coupon_design' => $request->coupon_design,
+
                 'rating' =>
                     $request->rating
-                    ?? 4.5,
+                    ?? ($sellerPreferences['default_rating'] ?? 4.5),
 
                 'stock' =>
                     $request->stock,
@@ -1107,7 +1155,7 @@ class SellerController extends Controller
 
                 'status' =>
                     $request->status
-                    ?? 'active',
+                    ?? ($sellerPreferences['default_product_status'] ?? 'active'),
             ]);
 
         /*
@@ -1320,6 +1368,20 @@ class SellerController extends Controller
             'discount_price' =>
                 'nullable|numeric|min:0',
 
+            'sale_title' => 'nullable|string|max:255',
+            'sale_offer' => 'nullable|string|max:500',
+            'sale_price' => 'nullable|numeric|min:0|lt:price|required_with:sale_starts_at,sale_ends_at',
+            'sale_starts_at' => 'nullable|date|required_with:sale_ends_at,sale_price',
+            'sale_ends_at' => 'nullable|date|after:sale_starts_at|required_with:sale_starts_at,sale_price',
+            'coupon_title' => 'nullable|string|max:255',
+            'coupon_code' => 'nullable|string|max:80',
+            'coupon_description' => 'nullable|string|max:500',
+            'coupon_discount_type' => 'nullable|in:percent,fixed',
+            'coupon_discount_value' => ['nullable', 'numeric', 'min:0', 'required_with:coupon_discount_type', Rule::when($request->input('coupon_discount_type') === 'percent', ['max:100'])],
+            'coupon_starts_at' => 'nullable|date|required_with:coupon_title,coupon_code',
+            'coupon_ends_at' => 'nullable|date|after:coupon_starts_at|required_with:coupon_title,coupon_code',
+            'coupon_design' => 'nullable|in:royal,sunset,emerald,gold',
+
             'description' =>
                 'nullable|string',
 
@@ -1408,6 +1470,20 @@ class SellerController extends Controller
 
             'discount_price' =>
                 $request->discount_price,
+
+            'sale_title' => $request->sale_title,
+            'sale_offer' => $request->sale_offer,
+            'sale_price' => $request->sale_price,
+            'sale_starts_at' => $request->sale_starts_at,
+            'sale_ends_at' => $request->sale_ends_at,
+            'coupon_title' => $request->coupon_title,
+            'coupon_code' => filled($request->coupon_code) ? strtoupper(trim($request->coupon_code)) : null,
+            'coupon_description' => $request->coupon_description,
+            'coupon_discount_type' => $request->coupon_discount_type,
+            'coupon_discount_value' => $request->coupon_discount_value,
+            'coupon_starts_at' => $request->coupon_starts_at,
+            'coupon_ends_at' => $request->coupon_ends_at,
+            'coupon_design' => $request->coupon_design,
 
             'rating' =>
                 $request->rating
@@ -1742,6 +1818,12 @@ class SellerController extends Controller
         ]);
 
         $currentStatus = $order->order_status ?: $order->status ?: 'Placed';
+        if (str_contains(strtolower((string) $order->payment_method), 'upi')
+            && ! in_array(strtolower((string) $order->payment_status), ['paid', 'successful', 'verified'], true)
+            && in_array($validated['order_status'], ['Confirmed', 'Packed', 'Picked By Delivery Partner', 'Out For Delivery', 'Near Customer', 'Delivered'], true)) {
+            return back()->with('error', 'Verify the UPI credit in UPI Payment Reviews before confirming or dispatching this order.');
+        }
+
         $allowedTransitions = [
             'Placed' => ['Confirmed', 'Cancelled'],
             'Confirmed' => ['Packed', 'Cancelled'],

@@ -2,6 +2,10 @@
 <html lang="en">
 
 <head>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -508,11 +512,11 @@
             overflow-y: hidden;
 
             scrollbar-width: thin;
-            scrollbar-color: #bcc9da transparent;
+            scrollbar-color: rgba(111, 145, 198, .78) transparent;
         }
 
         .table-wrapper::-webkit-scrollbar {
-            height: 7px;
+            height: 5px;
         }
 
         .table-wrapper::-webkit-scrollbar-track {
@@ -520,7 +524,7 @@
         }
 
         .table-wrapper::-webkit-scrollbar-thumb {
-            background: #c4d0df;
+            background: linear-gradient(180deg, rgba(145, 177, 226, .9), rgba(78, 111, 164, .8));
             border-radius: 999px;
         }
 
@@ -998,7 +1002,9 @@
         ========================================================= */
 
         .modal-backdrop.show {
-            opacity: .5;
+            opacity: .62;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
         }
 
         .premium-modal {
@@ -1022,13 +1028,10 @@
             padding: 18px 21px;
 
             background:
-                linear-gradient(
-                    135deg,
-                    #ffffff,
-                    #f3f8ff
-                );
+                radial-gradient(ellipse at 92% 0%, rgba(159,138,255,.3), transparent 40%),
+                linear-gradient(115deg,#101F50 0%,#283879 52%,#5143A2 100%);
 
-            border-bottom: 1px solid var(--sb-border);
+            border-bottom: 1px solid rgba(196,190,255,.35);
         }
 
         .premium-modal .modal-header::after {
@@ -1054,14 +1057,25 @@
         }
 
         .premium-modal .modal-title {
-            color: var(--sb-text);
+            color: #fff;
 
             font-size: 15px;
             font-weight: 900;
         }
 
         .premium-modal .modal-title i {
-            color: var(--sb-blue) !important;
+            color: #c9c0ff !important;
+        }
+
+        .premium-modal .modal-title small { color: #d2d9f3 !important; }
+        .premium-modal .btn-close { filter: brightness(0) invert(1); opacity: .78; }
+        .premium-modal .btn-close:hover { opacity: 1; }
+        .modal.fade .modal-dialog { transform: translateY(18px) scale(.985); transition: transform .24s cubic-bezier(.2,.8,.2,1); }
+        .modal.show .modal-dialog { transform: translateY(0) scale(1); animation: sellerModalEnter .28s cubic-bezier(.2,.8,.2,1) both; }
+        @keyframes sellerModalEnter { from { opacity: .5; transform: translateY(16px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @media(prefers-reduced-motion: reduce) {
+            .modal.fade .modal-dialog,
+            .modal.show .modal-dialog { animation: none !important; transition: none !important; }
         }
 
         .premium-modal .modal-body {
@@ -1869,24 +1883,83 @@
             }
         }
 
+        /* Centered premium order dialogs shared by Delivery and View. */
+        .seller-order-modal {
+            z-index: 100100 !important;
+            padding: 0 12px !important;
+            overflow-y: auto;
+        }
+
+        .modal-backdrop.show { z-index: 100000 !important; }
+
+        .seller-order-modal .modal-dialog {
+            position: relative;
+            z-index: 100101;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            max-width: 860px;
+            min-height: calc(100% - 2rem);
+            margin: 1rem auto;
+        }
+
+        .seller-order-modal .modal-dialog > form {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            max-height: calc(100vh - 2rem);
+            margin: 0;
+        }
+
+        .seller-order-modal .premium-modal {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-height: calc(100vh - 2rem);
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,.78);
+            border-radius: 28px;
+            background: #fff;
+            box-shadow: 0 32px 90px rgba(8,18,38,.34), 0 8px 24px rgba(8,18,38,.12);
+        }
+
+        .seller-order-modal .modal-header {
+            flex: 0 0 auto;
+            min-height: 82px;
+            padding: 20px 25px;
+            border: 0;
+            background: radial-gradient(circle at 92% 0%, rgba(107,139,207,.35), transparent 34%), linear-gradient(125deg,#111a2d 0%,#1d2c49 58%,#2a4169 100%);
+        }
+
+        .seller-order-modal .modal-header::after { display: none; }
+        .seller-order-modal .modal-title { display: flex; align-items: center; gap: 9px; color: #fff; font-size: 16px; font-weight: 850; letter-spacing: -.02em; }
+        .seller-order-modal .modal-title i { color: #b9d2ff !important; }
+        .seller-order-modal .modal-title small { margin-left: 3px !important; padding: 5px 9px; border: 1px solid rgba(255,255,255,.18); border-radius: 999px; background: rgba(255,255,255,.1); color: #e0eaff !important; font-size: 10px; font-weight: 750; }
+        .seller-order-modal .modal-body { flex: 1 1 auto; min-height: 0; max-height: calc(100vh - 190px); overflow-y: auto; padding: 24px 25px; background: linear-gradient(180deg,#f8faff 0%,#f3f6fb 100%); }
+        .seller-order-modal .modal-footer { flex: 0 0 auto; padding: 14px 22px; border-top: 1px solid #e8edf4; background: #fff; }
+        .seller-order-modal .btn-close { padding: 10px; border-radius: 11px; background-color: rgba(255,255,255,.12); opacity: .9; }
+        .seller-order-modal .btn-close:hover { background-color: rgba(255,255,255,.2); }
+        .seller-order-modal .info-box { height: 100%; padding: 14px 15px; border: 1px solid #e5eaf2; border-radius: 14px; background: #fff; box-shadow: 0 5px 16px rgba(20,37,65,.035); }
+        .seller-order-modal .modal-section-title { margin: 3px 0 13px; color: #1d2b45; font-size: 12px; font-weight: 850; letter-spacing: .015em; }
+        .seller-order-modal hr { border-color: #e2e8f0 !important; }
+
+        @media (max-width: 576px) {
+            .seller-order-modal { padding: 0 8px !important; }
+            .seller-order-modal .modal-dialog { min-height: calc(100% - 1rem); margin: .5rem auto; }
+            .seller-order-modal .modal-dialog > form,
+            .seller-order-modal .premium-modal { max-height: calc(100dvh - 1rem); }
+            .seller-order-modal .modal-body { max-height: calc(100dvh - 155px); padding: 17px 15px; }
+            .seller-order-modal .modal-header { min-height: 70px; padding: 16px 17px; }
+            .seller-order-modal .modal-title { flex-wrap: wrap; padding-right: 8px; font-size: 14px !important; }
+            .seller-order-modal .modal-title small { margin-left: 0 !important; }
+            .seller-order-modal .modal-footer { padding: 12px 14px; }
+        }
+
         /* =========================================================
            REDUCED MOTION
         ========================================================= */
 
-        @media (prefers-reduced-motion: reduce) {
-
-            html {
-                scroll-behavior: auto !important;
-            }
-
-            *,
-            *::before,
-            *::after {
-                transition: none !important;
-                animation: none !important;
-            }
-        }
-    </style>
+            </style>
 </head>
 
 <body>
@@ -2431,7 +2504,7 @@
     ====================================================== --}}
 
     <div
-        class="modal fade"
+        class="modal fade seller-order-modal seller-delivery-modal"
         id="deliveryModal{{ $order->id }}"
         tabindex="-1"
         aria-hidden="true"
@@ -2514,192 +2587,17 @@
                         @endif
 
 
-                        <div class="row g-3">
-
-                            <div class="col-md-6">
-
-                                <label class="form-label">
-                                    Delivery Boy Photo
-                                </label>
-
-                                <input
-                                    type="file"
-                                    name="image"
-                                    class="form-control"
-                                    accept="image/jpeg,image/png,image/webp"
-                                >
-
-                            </div>
-
-
-                            <div class="col-md-6">
-
-                                <label class="form-label">
-                                    Name *
-                                </label>
-
-                                <input
-                                    type="text"
-                                    name="name"
-                                    class="form-control"
-                                    value="{{ old('name', $partner?->name) }}"
-                                    required
-                                >
-
-                            </div>
-
-
-                            <div class="col-md-6">
-
-                                <label class="form-label">
-                                    Mobile Number *
-                                </label>
-
-                                <input
-                                    type="text"
-                                    name="phone"
-                                    class="form-control"
-                                    value="{{ old('phone', $partner?->phone) }}"
-                                    required
-                                >
-
-                            </div>
-
-
-                            <div class="col-md-6">
-
-                                <label class="form-label">
-                                    Email
-                                </label>
-
-                                <input
-                                    type="email"
-                                    name="email"
-                                    class="form-control"
-                                    value="{{ old('email', $partner?->email) }}"
-                                >
-
-                            </div>
-
-
-                            <div class="col-md-6">
-
-                                <label class="form-label">
-                                    Vehicle Type
-                                </label>
-
-                                <input
-                                    type="text"
-                                    name="vehicle_type"
-                                    class="form-control"
-                                    value="{{ old('vehicle_type', $partner?->vehicle_type) }}"
-                                    placeholder="Bike / Scooter / Van"
-                                >
-
-                            </div>
-
-
-                            <div class="col-md-6">
-
-                                <label class="form-label">
-                                    Vehicle Number
-                                </label>
-
-                                <input
-                                    type="text"
-                                    name="vehicle_number"
-                                    class="form-control"
-                                    value="{{ old('vehicle_number', $partner?->vehicle_number) }}"
-                                >
-
-                            </div>
-
-
-                            <div class="col-md-6">
-
-                                <label class="form-label">
-                                    Delivery Date
-                                </label>
-
-                                <input
-                                    type="date"
-                                    name="delivery_date"
-                                    class="form-control"
-                                    value="{{ old('delivery_date', $partner?->delivery_date?->format('Y-m-d')) }}"
-                                >
-
-                            </div>
-
-
-                            <div class="col-md-6">
-
-                                <label class="form-label">
-                                    Expected Delivery Time
-                                </label>
-
-                                <input
-                                    type="time"
-                                    name="expected_time"
-                                    class="form-control"
-                                    value="{{ old('expected_time', $partner?->expected_time) }}"
-                                >
-
-                            </div>
-
-
-                            <div class="col-md-6">
-
-                                <label class="form-label">
-                                    Current Delivery Status
-                                </label>
-
-                                <select
-                                    name="status"
-                                    class="form-select"
-                                >
-
-                                    @foreach([
-                                        'Order Placed',
-                                        'Seller Confirmed',
-                                        'Packed',
-                                        'Picked By Delivery Partner',
-                                        'Out For Delivery',
-                                        'Near Customer',
-                                        'Delivered'
-                                    ] as $status)
-
-                                        <option
-                                            value="{{ $status }}"
-                                            {{ old('status', $delivery?->status ?? 'Order Placed') == $status ? 'selected' : '' }}
-                                        >
-                                            {{ $status }}
-                                        </option>
-
-                                    @endforeach
-
-                                </select>
-
-                            </div>
-
-
-                            <div class="col-12">
-
-                                <label class="form-label">
-                                    Delivery Notes
-                                </label>
-
-                                <textarea
-                                    name="notes"
-                                    class="form-control"
-                                    rows="3"
-                                    placeholder="Add special instructions, delivery notes or customer instructions..."
-                                >{{ old('notes', $partner?->notes) }}</textarea>
-
-                            </div>
-
-                        </div>
-
-                    </div>
+                        <div class="mb-3">
+    <label class="form-label fw-bold" for="partnerSearch{{ $order->id }}">Search saved delivery boys</label>
+    <input id="partnerSearch{{ $order->id }}" type="search" class="form-control mb-2" placeholder="Name, mobile or vehicle" data-partner-search="{{ $order->id }}">
+    <select name="delivery_partner_id" class="form-select" required data-partner-select="{{ $order->id }}">
+        <option value="">Choose a delivery boy</option>
+        @foreach($deliveryPartners as $savedPartner)
+            <option value="{{ $savedPartner->id }}" data-search="{{ strtolower($savedPartner->name.' '.$savedPartner->phone.' '.$savedPartner->vehicle_type.' '.$savedPartner->vehicle_number) }}" @selected($delivery?->delivery_partner_id == $savedPartner->id)>{{ $savedPartner->name }} · {{ $savedPartner->phone }} · {{ $savedPartner->vehicle_type ?: 'Vehicle not set' }}</option>
+        @endforeach
+    </select>
+    @if($deliveryPartners->isEmpty())<small class="text-muted d-block mt-2">Add profiles first from <a href="{{ route('seller.delivery-boys.index') }}">Delivery Boy</a>.</small>@endif
+</div></div>
 
 
                     <div class="modal-footer">
@@ -2740,7 +2638,7 @@
     ====================================================== --}}
 
     <div
-        class="modal fade"
+        class="modal fade seller-order-modal seller-view-modal"
         id="viewModal{{ $order->id }}"
         tabindex="-1"
         aria-hidden="true"
@@ -3288,6 +3186,16 @@
         });
 
     });
+</script>
+
+<script>
+document.querySelectorAll('[data-partner-search]').forEach((input) => input.addEventListener('input', () => {
+    const select = document.querySelector(`[data-partner-select="${input.dataset.partnerSearch}"]`);
+    if (!select) return;
+    const query = input.value.trim().toLowerCase();
+    [...select.options].forEach((option, index) => { if (index) option.hidden = !option.dataset.search.includes(query); });
+    if (select.selectedOptions[0]?.hidden) select.value = '';
+}));
 </script>
 
 </body>

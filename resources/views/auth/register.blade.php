@@ -262,6 +262,31 @@ button:hover{
 
 }
 
+.google-signin{
+    width:100%;
+    height:52px;
+    margin:0 0 18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+    border:1px solid #d5d9e0;
+    border-radius:16px;
+    background:#fff;
+    color:#202124;
+    font-size:15px;
+    font-weight:600;
+    text-decoration:none;
+    transition:background .2s ease,box-shadow .2s ease;
+}
+
+.google-signin:hover{
+    background:#f8faff;
+    box-shadow:0 4px 14px rgba(0,0,0,.16);
+}
+
+.google-mark{font-size:20px;font-weight:800;color:#4285f4;}
+
 
 
 /* Error */
@@ -329,6 +354,8 @@ CREATE YOUR PREMIUM SHOPPING ACCOUNT
 @endif
 
 
+
+<a class="google-signin" href="{{ route('google.redirect') }}"><span class="google-mark" aria-hidden="true">G</span> Continue with Google</a>
 
 <form method="POST" action="{{ route('register.submit') }}">
 

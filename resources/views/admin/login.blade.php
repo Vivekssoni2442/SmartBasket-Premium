@@ -832,16 +832,6 @@
         }
     }
 
-    @media (prefers-reduced-motion: reduce) {
-        *,
-        *::before,
-        *::after {
-            scroll-behavior: auto !important;
-            animation-duration: .01ms !important;
-            animation-iteration-count: 1 !important;
-            transition-duration: .01ms !important;
-        }
-    }
 </style>
 
 
@@ -1053,12 +1043,10 @@
 
     const grid = document.querySelector('.rgb-grid');
     const ring = document.querySelector('.energy-ring');
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-
     let parallaxFrame = null;
 
     document.addEventListener('mousemove', (event) => {
-        if (reduceMotion.matches || window.innerWidth < 700) {
+        if (window.innerWidth < 700) {
             return;
         }
 

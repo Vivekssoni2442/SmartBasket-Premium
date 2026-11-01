@@ -21,13 +21,16 @@
     <style>
         body { font-family: 'Manrope', sans-serif; }
         h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
-        .customer-page { min-height: 100vh; }
+        .customer-page { min-height: 100vh; margin-left: 0; }
+        @media (max-width: 760px) { .customer-page { padding-top: 18px; } .customer-topbar { padding-left: 0; } }
     </style>
     <style data-visual-design>{!! app(\App\Services\WebsiteDesignService::class)->renderCss('customer.home') . app(\App\Services\WebsiteDesignService::class)->renderCss('customer.shared') !!}</style>
     <link rel="stylesheet" href="{{ asset('css/customer-page-title.css') }}">
+    <script src="{{ asset('js/customer-page-title.js') }}?v=20261019-purple-blue-4" defer></script>
 </head>
 <body>
-    @include('customer.partials.sidebar')
+    <x-products-customer-taskbar :include-robot="false" />
+    <x-ai-hub-sidebar :without-menu="true" />
 
     <main class="customer-page">
         <header class="customer-topbar">

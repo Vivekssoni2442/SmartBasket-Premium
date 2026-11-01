@@ -1,14 +1,21 @@
+@props(['includeRobot' => true])
+
 @php
     $currentRoute = request()->route()?->getName();
     $ordersRoute = Route::has('orders.index') ? 'orders.index' : (Route::has('orders') ? 'orders' : null);
+    $isProductsPage = request()->routeIs('dashboard', 'products.*');
+    $isOrdersPage = is_string($currentRoute) && str_starts_with($currentRoute, 'orders.');
+    $isCartPage = is_string($currentRoute) && str_starts_with($currentRoute, 'cart.');
+    $isAiHubPage = request()->routeIs('ai-hub', 'overview', 'ai-camera', 'budget-shopping', 'gift-finder', 'trending-products', 'compare-products', 'ai.*', 'customer-ai.*', 'ai-camera*');
 @endphp
 
 <style>
-:root{--sb-customer-title-top:#6aa8ff;--sb-customer-title-mid:#3479e8;--sb-customer-title-bottom:#1c52b5;--sb-customer-title-border:rgba(255,255,255,.36);--sb-customer-title-text:#fff;--sb-customer-title-shadow:0 5px 0 #17458f,0 11px 0 #123b7a,0 20px 34px rgba(15,66,150,.3)}
+:root{--sb-customer-title-top:#5143a2;--sb-customer-title-mid:#34307f;--sb-customer-title-bottom:#241a5e;--sb-customer-title-border:rgba(218,210,255,.42);--sb-customer-title-text:#fff;--sb-customer-title-shadow:0 16px 38px rgba(31,25,91,.3),inset 0 1px 0 rgba(255,255,255,.17)}
 html[data-theme="dark"],html[data-sb-theme="dark"]{--sb-customer-title-top:#4385e8;--sb-customer-title-mid:#2057ae;--sb-customer-title-bottom:#12366f;--sb-customer-title-border:rgba(177,210,255,.42);--sb-customer-title-shadow:0 5px 0 #0b2854,0 11px 0 #071d3e,0 20px 34px rgba(0,0,0,.42)}
-h1.sb-customer-page-title{position:relative!important;display:block!important;width:100%!important;min-width:0!important;min-height:78px!important;box-sizing:border-box!important;padding:20px 28px!important;margin:0 0 34px!important;color:var(--sb-customer-title-text)!important;background:linear-gradient(180deg,var(--sb-customer-title-top) 0%,var(--sb-customer-title-mid) 48%,var(--sb-customer-title-bottom) 100%)!important;border:1px solid var(--sb-customer-title-border)!important;border-radius:17px!important;box-shadow:var(--sb-customer-title-shadow)!important;font-size:clamp(1.35rem,2.2vw,1.75rem)!important;font-weight:850!important;line-height:1.2!important;letter-spacing:-.025em!important;text-wrap:balance;overflow-wrap:anywhere;isolation:isolate}
+h1.sb-customer-page-title{position:relative!important;display:flex!important;align-items:center!important;gap:13px!important;width:100%!important;min-width:0!important;min-height:78px!important;box-sizing:border-box!important;padding:20px 28px!important;margin:0 0 34px!important;color:var(--sb-customer-title-text)!important;background:linear-gradient(112deg,#241a5e 0%,#34307f 52%,#24518c 100%)!important;border:1px solid var(--sb-customer-title-border)!important;border-radius:17px!important;box-shadow:var(--sb-customer-title-shadow)!important;font-size:clamp(1.35rem,2.2vw,1.75rem)!important;font-weight:850!important;line-height:1.2!important;letter-spacing:-.025em!important;text-wrap:balance;overflow-wrap:anywhere;isolation:isolate}
+h1.sb-customer-page-title .sb-customer-page-icon{display:inline-grid;flex:0 0 50px;width:50px;height:50px;place-items:center;border:1px solid rgba(255,255,255,.32);border-radius:15px;background:linear-gradient(145deg,rgba(255,255,255,.24),rgba(255,255,255,.08));box-shadow:inset 0 1px 0 rgba(255,255,255,.24),0 7px 18px rgba(7,28,75,.2);font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;font-size:30px;line-height:1}
 h1.sb-customer-page-title::before{content:"";position:absolute;inset:1px 1px auto;height:44%;border-radius:15px 15px 50% 50%/15px 15px 20% 20%;background:linear-gradient(180deg,rgba(255,255,255,.24),rgba(255,255,255,0));pointer-events:none;z-index:-1}
-@media(max-width:600px){h1.sb-customer-page-title{min-height:68px!important;padding:17px 19px!important;margin-bottom:29px!important;border-radius:15px!important}}
+@media(max-width:600px){h1.sb-customer-page-title{min-height:68px!important;padding:17px 19px!important;margin-bottom:29px!important;border-radius:15px!important;gap:10px!important}h1.sb-customer-page-title .sb-customer-page-icon{flex-basis:44px;width:44px;height:44px;border-radius:13px;font-size:27px}}
 /* =========================================================
    PRODUCTS PAGE — FULL WIDTH PREMIUM TASKBAR
 ========================================================= */
@@ -613,6 +620,29 @@ html[data-theme="dark"] .ai-hub-fab{
     }
 }
 
+/* Keep the shared customer taskbar identical on pages with different body styles. */
+.sb-products-taskbar,
+.sb-products-taskbar *,
+.sb-products-more-menu,
+.sb-products-more-menu *{
+    box-sizing:border-box
+}
+
+.sb-products-taskbar,
+.sb-products-taskbar a,
+.sb-products-taskbar button,
+.sb-products-more-menu,
+.sb-products-more-menu a,
+.sb-products-more-menu button{
+    font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
+}
+
+.sb-products-taskbar,
+.sb-products-more-menu{
+    margin:0;
+    line-height:1.2
+}
+
 </style>
 
 <style data-visual-design>{!! app(\App\Services\WebsiteDesignService::class)->renderCss('customer.shared') !!}</style>
@@ -629,19 +659,19 @@ html[data-theme="dark"] .ai-hub-fab{
 
     <div class="sb-products-nav">
         @if(Route::has('products.index'))
-            <a href="{{ route('products.index') }}" class="sb-pnav-btn {{ $currentRoute === 'products.index' ? 'is-active' : '' }}">
+            <a href="{{ route('products.index') }}" class="sb-pnav-btn {{ $isProductsPage ? 'is-active' : '' }}">
                 <i class="fa-solid fa-store"></i><span>Products</span>
             </a>
         @endif
 
         @if($ordersRoute)
-            <a href="{{ route($ordersRoute) }}" class="sb-pnav-btn {{ $currentRoute === $ordersRoute ? 'is-active' : '' }}">
+            <a href="{{ route($ordersRoute) }}" class="sb-pnav-btn {{ $isOrdersPage || $currentRoute === $ordersRoute ? 'is-active' : '' }}">
                 <i class="fa-solid fa-box"></i><span>Orders</span>
             </a>
         @endif
 
         @if(Route::has('cart.index'))
-            <a href="{{ route('cart.index') }}" class="sb-pnav-btn {{ $currentRoute === 'cart.index' ? 'is-active' : '' }}">
+            <a href="{{ route('cart.index') }}" class="sb-pnav-btn {{ $isCartPage ? 'is-active' : '' }}">
                 <i class="fa-solid fa-cart-shopping"></i><span>Cart</span>
             </a>
         @endif
@@ -664,7 +694,7 @@ html[data-theme="dark"] .ai-hub-fab{
             </a>
         @endif
 
-        <button type="button" class="sb-pnav-btn sb-pnav-aihub" id="sbProductsAIHub" data-sb-ai-hub-open title="Open AI Hub">
+        <button type="button" class="sb-pnav-btn sb-pnav-aihub {{ $isAiHubPage ? 'is-active' : '' }}" id="sbProductsAIHub" data-sb-ai-hub-open title="Open AI Hub">
             <i class="fa-solid fa-wand-magic-sparkles"></i><span>AI HUB</span>
         </button>
 
@@ -726,7 +756,12 @@ html[data-theme="dark"] .ai-hub-fab{
 </div>
 @endauth
 
-<div class="sb-products-smart-ai-host" aria-hidden="false"><x-smart-ai-robot /></div>
+@if($includeRobot)
+    <div class="sb-products-smart-ai-host" aria-hidden="false"><x-smart-ai-robot /></div>
+@endif
+@once
+    <script src="{{ asset('js/customer-page-title.js') }}?v=20261019-purple-blue-4" defer></script>
+@endonce
 <script>
 (function(){
     'use strict';
@@ -742,6 +777,8 @@ html[data-theme="dark"] .ai-hub-fab{
         if(menu){menu.classList.remove('is-open');menu.setAttribute('aria-hidden','true');}
         if(more) more.setAttribute('aria-expanded','false');
     }
+    // Profile page actions also close the shared taskbar menu through this hook.
+    window.closeMenu=closeMore;
     function openMore(){
         if(menu){menu.classList.add('is-open');menu.setAttribute('aria-hidden','false');}
         if(more) more.setAttribute('aria-expanded','true');

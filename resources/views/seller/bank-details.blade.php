@@ -8,6 +8,7 @@
 
 @section('content')
 
+@push('styles')
 <style>
 /* =========================================================
    SMART BASKET — BANK DETAILS
@@ -736,6 +737,7 @@
     }
 }
 </style>
+@endpush
 
 
 <div class="bank-page">

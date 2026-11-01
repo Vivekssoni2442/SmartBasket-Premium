@@ -51,7 +51,6 @@ body.admin-layout .admin-content .admin-verification-detail .empty { padding:22p
 body.admin-layout .admin-content .admin-verification-detail :focus-visible { outline:3px solid #22D3EE; outline-offset:3px; }
 @media (max-width:900px) { body.admin-layout .admin-content .admin-verification-detail .grid { grid-template-columns:minmax(0,1fr); } body.admin-layout .admin-content .admin-verification-detail .card.full { grid-column:auto; } }
 @media (max-width:620px) { body.admin-layout .admin-content .admin-verification-detail .card { padding:15px; } body.admin-layout .admin-content .admin-verification-detail .info-grid, body.admin-layout .admin-content .admin-verification-detail .documents { grid-template-columns:minmax(0,1fr); } body.admin-layout .admin-content .admin-verification-detail .actions, body.admin-layout .admin-content .admin-verification-detail .actions form { width:100%; } body.admin-layout .admin-content .admin-verification-detail .actions .btn { width:100%; } body.admin-layout .admin-content .admin-verification-detail .document img { height:200px; } }
-@media (prefers-reduced-motion:reduce) { body.admin-layout .admin-content .admin-verification-detail *, body.admin-layout .admin-content .admin-verification-detail *::before, body.admin-layout .admin-content .admin-verification-detail *::after { transition-duration:.01ms!important; animation-duration:.01ms!important; } }
 </style>
 @endsection
 
@@ -68,12 +67,6 @@ body.admin-layout .admin-content .admin-verification-detail :focus-visible { out
             </div>
         </div>
 
-        <a
-            href="{{ route('admin.seller-verifications.index') }}"
-            class="back-btn"
-        >
-            <i class="fas fa-arrow-left" aria-hidden="true"></i> Back to Verifications
-        </a>
     </div>
 
 
@@ -527,15 +520,6 @@ body.admin-layout .admin-content .admin-verification-detail :focus-visible { out
                         </button>
                     </form>
                 @endif
-
-
-                <a
-                    href="{{ route('admin.seller-verifications.index') }}"
-                    class="btn btn-secondary"
-                >
-                    Back
-                </a>
-
             </div>
 
         </div>

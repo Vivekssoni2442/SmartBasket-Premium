@@ -46,6 +46,38 @@ class AICameraAssistantController extends Controller
         return $this->respondView($request, $analysis, $recommendations);
     }
 
+    /** Search only customer-visible catalog items with a product image. */
+    public function searchProducts(Request $request)
+    {
+        $validated = $request->validate([
+            'q' => ['required', 'string', 'min:2', 'max:80'],
+        ]);
+        $term = trim($validated['q']);
+
+        $products = Product::customerVisible()
+            ->whereNotNull('image')
+            ->where('image', '!=', '')
+            ->where(function ($query) use ($term) {
+                $query->where('name', 'like', '%' . $term . '%')
+                    ->orWhere('brand', 'like', '%' . $term . '%')
+                    ->orWhere('category', 'like', '%' . $term . '%');
+            })
+            ->orderByDesc('rating')
+            ->limit(12)
+            ->get(['id', 'name', 'image', 'category', 'brand', 'price', 'discount_price', 'rating'])
+            ->map(fn (Product $product) => [
+                'id' => $product->id,
+                'name' => $product->name,
+                'image' => $product->image_url,
+                'category' => $product->category,
+                'brand' => $product->brand,
+                'price' => $product->effective_price,
+                'rating' => (float) ($product->rating ?? 0),
+            ]);
+
+        return response()->json(['products' => $products]);
+    }
+
     /**
      * POST /ai-camera-assistant
      * Validates the image, analyzes it in memory, and returns product
@@ -475,6 +507,7 @@ class AICameraAssistantController extends Controller
         $data = [
             'analysis'        => $analysis,
             'recommendations' => $recommendations,
+            'tryOnConfigured' => $this->virtualTryOnService->isConfigured(),
         ];
 
         return $request->boolean('sidebar')

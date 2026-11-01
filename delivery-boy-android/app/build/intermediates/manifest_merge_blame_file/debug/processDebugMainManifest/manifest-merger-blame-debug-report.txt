@@ -1,0 +1,91 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.smartbasket.deliveryboy"
+4    android:versionCode="1"
+5    android:versionName="1.0.0" >
+6
+7    <uses-sdk
+7-->INJECTED
+8        android:minSdkVersion="23"
+8-->INJECTED
+9        android:targetSdkVersion="35" />
+9-->INJECTED
+10
+11    <uses-permission android:name="android.permission.INTERNET" />
+11-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:2:5-67
+11-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:2:22-64
+12    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+12-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:3:5-79
+12-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:3:22-76
+13    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+13-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:4:5-81
+13-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:4:22-78
+14    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+14-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:5:5-77
+14-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:5:22-74
+15
+16    <application
+16-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:7:5-30:19
+17        android:allowBackup="false"
+17-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:8:9-36
+18        android:debuggable="true"
+19        android:extractNativeLibs="false"
+19-->INJECTED
+20        android:icon="@drawable/driver_icon"
+20-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:9:9-45
+21        android:label="Smart Basket Delivery"
+21-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:10:9-46
+22        android:roundIcon="@drawable/driver_icon"
+22-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:11:9-50
+23        android:theme="@android:style/Theme.Material.Light.NoActionBar"
+23-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:12:9-72
+24        android:usesCleartextTraffic="true" >
+24-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:13:9-44
+25        <activity
+25-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:14:9-29:20
+26            android:name="com.smartbasket.deliveryboy.MainActivity"
+26-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:15:13-41
+27            android:configChanges="orientation|screenSize|keyboardHidden"
+27-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:16:13-74
+28            android:exported="true" >
+28-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:17:13-36
+29            <intent-filter>
+29-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:18:13-21:29
+30                <action android:name="android.intent.action.MAIN" />
+30-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:19:17-69
+30-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:19:25-66
+31
+32                <category android:name="android.intent.category.LAUNCHER" />
+32-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:20:17-77
+32-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:20:27-74
+33            </intent-filter>
+34            <intent-filter>
+34-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:22:13-28:29
+35                <action android:name="android.intent.action.VIEW" />
+35-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:23:17-69
+35-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:23:25-66
+36
+37                <category android:name="android.intent.category.DEFAULT" />
+37-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:24:17-76
+37-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:24:27-73
+38                <category android:name="android.intent.category.BROWSABLE" />
+38-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:25:17-78
+38-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:25:27-75
+39
+40                <data
+40-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:26:17-87
+41                    android:pathPrefix="/delivery/driver/"
+41-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:26:46-84
+42                    android:scheme="https" />
+42-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:26:23-45
+43                <data
+43-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:26:17-87
+44                    android:pathPrefix="/delivery/driver/"
+44-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:26:46-84
+45                    android:scheme="http" />
+45-->C:\Minor project\Minor Project\Smart Basket\SmartBasket-Premium\delivery-boy-android\app\src\main\AndroidManifest.xml:26:23-45
+46            </intent-filter>
+47        </activity>
+48    </application>
+49
+50</manifest>

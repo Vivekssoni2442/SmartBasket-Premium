@@ -4,7 +4,7 @@
 <div class="admin-page-header">
 	<div>
 		<h1 class="admin-page-title"><i class="fas fa-money-check-dollar"></i>Transactions</h1>
-		<p class="admin-page-description">Gateway transactions and provider-confirmed refunds.</p>
+		<p class="admin-page-description">Gateway transactions, seller-verified UPI payments, and refunds.</p>
 	</div>
 </div>
 <form class="admin-toolbar" method="GET">
@@ -20,7 +20,7 @@
 <div class="admin-card">
 	<div class="admin-table-wrap">
 		<table class="admin-table">
-			<thead><tr><th>Transaction</th><th>Customer</th><th>Amount</th><th>Method</th><th>Status</th><th>Date</th><th>Refund</th></tr></thead>
+			<thead><tr><th>Transaction</th><th>Customer</th><th>Amount</th><th>Method</th><th>Status</th><th>Date</th><th>Review / Refund</th></tr></thead>
 			<tbody>
 			@forelse($transactions as $transaction)
 				@php
@@ -36,10 +36,20 @@
 					<td><span class="admin-badge admin-badge-{{ in_array($transaction->status, ['paid', 'verified']) ? 'success' : ($transaction->status === 'failed' ? 'danger' : 'warning') }}">{{ ucfirst(str_replace('_', ' ', $transaction->status)) }}</span></td>
 					<td>{{ $transaction->created_at?->format('d M Y, h:i A') }}</td>
 					<td>
+						@if($transaction->gateway === 'seller_upi')
+							<small>UTR: {{ $transaction->gateway_transaction_id ?: 'Not submitted' }}</small><br>
+							@foreach(($transaction->request_metadata['seller_payments'] ?? []) as $sellerPayment)
+								@php($sellerReviewStatus = $transaction->request_metadata['seller_upi_reviews'][(string) $sellerPayment['seller_id']]['status'] ?? 'pending')
+								<small>Seller review: {{ ucfirst($sellerReviewStatus) }}</small><br>
+								<small>{{ $sellerPayment['seller_name'] }} · ₹{{ number_format((float)$sellerPayment['amount'], 2) }} · UTR {{ $transaction->request_metadata['upi_references'][$sellerPayment['seller_id']] ?? '—' }}</small><br>
+							@endforeach
+						@endif
 						@if($refunds->isNotEmpty())
 							<small>Latest: {{ ucfirst(str_replace('_', ' ', $refunds->sortByDesc('created_at')->first()->status)) }}</small><br>
 						@endif
-						@if($transaction->status === 'paid' && $transaction->payment_id && $remainingRefundPaise > 0)
+						@if($transaction->gateway === 'seller_upi')
+							<small class="text-warning">Refund offline through the seller; provider refunds are unavailable for direct UPI transfers.</small>
+						@elseif($transaction->status === 'paid' && $transaction->payment_id && $remainingRefundPaise > 0)
 							@php($refundKey = (string) \Illuminate\Support\Str::uuid())
 							<form method="POST" action="{{ route('admin.transactions.refund', $transaction) }}">
 								@csrf

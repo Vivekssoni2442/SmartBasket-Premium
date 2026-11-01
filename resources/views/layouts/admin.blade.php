@@ -51,6 +51,41 @@
             $adminInitials = 'A';
         }
 
+        $currentAdminProfile = null;
+        $adminAvatarUrl = null;
+
+        try {
+            if (session()->filled('admin_id')) {
+                $currentAdminProfile = \App\Models\Admin::find(session('admin_id'));
+            }
+
+            if (filled($currentAdminProfile?->avatar)) {
+                $adminAvatarPath = 'admin-avatars/' . basename($currentAdminProfile->avatar);
+                $adminAvatarUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($adminAvatarPath);
+            }
+        } catch (\Throwable $e) {
+            $currentAdminProfile = null;
+            $adminAvatarUrl = null;
+        }
+
+        $adminBreadcrumbText = trim(strip_tags($__env->yieldContent('breadcrumbs')));
+        $adminBreadcrumbLabels = collect(preg_split('/\s*\/\s*/', $adminBreadcrumbText))
+            ->map(fn ($label) => trim(html_entity_decode($label)))
+            ->filter()
+            ->values();
+
+        if ($adminBreadcrumbLabels->isEmpty()) {
+            $adminRouteName = preg_replace('/^admin\./', '', (string) (request()->route()?->getName() ?? ''));
+            $adminRouteParts = explode('.', $adminRouteName);
+
+            if (in_array(end($adminRouteParts), ['index', 'show', 'edit', 'create', 'store', 'update', 'destroy'], true)) {
+                array_pop($adminRouteParts);
+            }
+
+            $adminBreadcrumbLabels = collect([\Illuminate\Support\Str::headline(implode(' ', $adminRouteParts))])
+                ->filter();
+        }
+
         /*
         |--------------------------------------------------------------------------
         | Safe Pending KYC Count
@@ -1579,6 +1614,10 @@
 
         .admin-page-header {
 
+            width: 100%;
+
+            max-width: none;
+
             margin-bottom: 23px;
 
             display: flex;
@@ -2646,21 +2685,6 @@
         }
 
 
-        @media(prefers-reduced-motion:reduce) {
-
-            *,
-            *::before,
-            *::after {
-
-                animation-duration: .01ms !important;
-
-                animation-iteration-count: 1 !important;
-
-                transition-duration: .01ms !important;
-
-                scroll-behavior: auto !important;
-            }
-        }
 
     </style>
 
@@ -2820,6 +2844,10 @@
         body.admin-layout .admin-card { padding: 18px; margin: 0 0 18px; }
         body.admin-layout .admin-card-title { margin: 0 0 14px; font-size: 1rem; font-weight: 750; }
         body.admin-layout .admin-page-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin: 0 0 22px; }
+        body.admin-layout .admin-content > .admin-page-header,
+        body.admin-layout .admin-content > .sb-dashboard-hero,
+        body.admin-layout .admin-content > .profile-hero,
+        body.admin-layout .admin-content > .sb-settings-header { width: 100%; max-width: none; box-sizing: border-box; }
         body.admin-layout .admin-page-title { display: flex; align-items: center; gap: 10px; margin: 0 0 5px; font-size: clamp(1.35rem, 2vw, 1.8rem); font-weight: 800; }
         body.admin-layout .admin-page-title > i { color: #93C5FD; font-size: .85em; }
         body.admin-layout .admin-page-description { margin: 0; line-height: 1.6; }
@@ -2974,9 +3002,6 @@
             body.admin-layout .admin-toolbar > button { flex: 1 1 100%; min-height: 42px; }
             body.admin-layout .sb-hero-content { align-items: flex-start; flex-direction: column; }
             body.admin-layout .sb-admin-chip { width: 100%; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-            body.admin-layout *, body.admin-layout *::before, body.admin-layout *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
         }
 
         /* Light content theme with the deep navy Admin navigation retained. */
@@ -3178,7 +3203,7 @@
 </head>
 
 
-<body class="admin-layout">
+<body class="admin-layout {{ request()->routeIs('admin.dashboard') ? 'admin-dashboard-page' : '' }}">
 
 
     <!-- =========================================================
@@ -3246,7 +3271,7 @@
                         class="admin-sidebar-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}"
                     >
 
-                        <i class="fas fa-grid-2"></i>
+                        <span class="admin-dashboard-emoji" aria-hidden="true">🏠</span>
 
                         <span>Dashboard</span>
 
@@ -3276,7 +3301,7 @@
                         class="admin-sidebar-link {{ request()->routeIs('admin.customers.index') ? 'active' : '' }}"
                     >
 
-                        <i class="fas fa-user-group"></i>
+                        <span class="admin-menu-emoji" aria-hidden="true">👥</span>
 
                         <span>All Customers</span>
 
@@ -3291,7 +3316,7 @@
                         class="admin-sidebar-link {{ request()->routeIs('admin.customers.activity') ? 'active' : '' }}"
                     >
 
-                        <i class="fas fa-clock-rotate-left"></i>
+                        <span class="admin-menu-emoji" aria-hidden="true">🕒</span>
 
                         <span>Customer Activity</span>
 
@@ -3321,7 +3346,7 @@
                         class="admin-sidebar-link {{ request()->routeIs('admin.sellers.*') ? 'active' : '' }}"
                     >
 
-                        <i class="fas fa-store"></i>
+                        <span class="admin-menu-emoji" aria-hidden="true">🏪</span>
 
                         <span>All Sellers</span>
 
@@ -3336,7 +3361,7 @@
                         class="admin-sidebar-link {{ request()->routeIs('admin.seller-verifications.*') ? 'active' : '' }}"
                     >
 
-                        <i class="fas fa-shield-halved"></i>
+                        <span class="admin-menu-emoji" aria-hidden="true">🛡️</span>
 
                         <span>KYC Verification</span>
 
@@ -3374,7 +3399,7 @@
                         class="admin-sidebar-link {{ request()->routeIs('admin.products.*') ? 'active' : '' }}"
                     >
 
-                        <i class="fas fa-boxes-stacked"></i>
+                        <span class="admin-menu-emoji" aria-hidden="true">📦</span>
 
                         <span>All Products</span>
 
@@ -3389,7 +3414,7 @@
                         class="admin-sidebar-link {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}"
                     >
 
-                        <i class="fas fa-tags"></i>
+                        <span class="admin-menu-emoji" aria-hidden="true">🏷️</span>
 
                         <span>Categories</span>
 
@@ -3419,10 +3444,19 @@
                         class="admin-sidebar-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}"
                     >
 
-                        <i class="fas fa-receipt"></i>
+                        <span class="admin-menu-emoji" aria-hidden="true">🧾</span>
 
                         <span>All Orders</span>
 
+                    </a>
+
+                </div>
+
+                <div class="admin-sidebar-item">
+
+                    <a href="{{ route('admin.deliveries.index') }}" class="admin-sidebar-link {{ request()->routeIs('admin.deliveries.*') ? 'active' : '' }}">
+                        <span class="admin-menu-emoji" aria-hidden="true">🚚</span>
+                        <span>Live Deliveries</span>
                     </a>
 
                 </div>
@@ -3434,7 +3468,7 @@
                         class="admin-sidebar-link {{ request()->routeIs('admin.returns.*') ? 'active' : '' }}"
                     >
 
-                        <i class="fas fa-arrow-rotate-left"></i>
+                        <span class="admin-menu-emoji" aria-hidden="true">↩️</span>
 
                         <span>Returns</span>
 
@@ -3464,7 +3498,7 @@
                         class="admin-sidebar-link {{ request()->routeIs('admin.transactions.*') ? 'active' : '' }}"
                     >
 
-                        <i class="fas fa-money-bill-transfer"></i>
+                        <span class="admin-menu-emoji" aria-hidden="true">💸</span>
 
                         <span>Transactions</span>
 
@@ -3479,7 +3513,7 @@
                         class="admin-sidebar-link {{ request()->routeIs('admin.revenue') ? 'active' : '' }}"
                     >
 
-                        <i class="fas fa-chart-pie"></i>
+                        <span class="admin-menu-emoji" aria-hidden="true">💰</span>
 
                         <span>Revenue</span>
 
@@ -3509,7 +3543,7 @@
                         class="admin-sidebar-link {{ request()->routeIs('admin.coupons.*') ? 'active' : '' }}"
                     >
 
-                        <i class="fas fa-ticket"></i>
+                        <span class="admin-menu-emoji" aria-hidden="true">🎟️</span>
 
                         <span>Coupons</span>
 
@@ -3524,7 +3558,7 @@
                         class="admin-sidebar-link {{ request()->routeIs('admin.offers.*') ? 'active' : '' }}"
                     >
 
-                        <i class="fas fa-fire"></i>
+                        <span class="admin-menu-emoji" aria-hidden="true">🔥</span>
 
                         <span>Offers & Deals</span>
 
@@ -3554,7 +3588,7 @@
                         class="admin-sidebar-link {{ request()->routeIs('admin.analytics.sales') ? 'active' : '' }}"
                     >
 
-                        <i class="fas fa-chart-area"></i>
+                        <span class="admin-menu-emoji" aria-hidden="true">📈</span>
 
                         <span>Sales</span>
 
@@ -3569,7 +3603,7 @@
                         class="admin-sidebar-link {{ request()->routeIs('admin.analytics.customers') ? 'active' : '' }}"
                     >
 
-                        <i class="fas fa-user-group"></i>
+                        <span class="admin-menu-emoji" aria-hidden="true">👥</span>
 
                         <span>Customers</span>
 
@@ -3598,7 +3632,7 @@
                         href="{{ route('admin.visual-editor.index') }}"
                         class="admin-sidebar-link {{ request()->routeIs('admin.visual-editor.*') ? 'active' : '' }}"
                     >
-                        <i class="fas fa-pen-ruler"></i>
+                        <span class="admin-menu-emoji" aria-hidden="true">🎨</span>
                         <span>Visual Website Editor</span>
                     </a>
 
@@ -3611,7 +3645,7 @@
                         class="admin-sidebar-link {{ request()->routeIs('admin.audit-logs.*') ? 'active' : '' }}"
                     >
 
-                        <i class="fas fa-file-shield"></i>
+                        <span class="admin-menu-emoji" aria-hidden="true">📋</span>
 
                         <span>Audit Logs</span>
 
@@ -3626,7 +3660,7 @@
                         class="admin-sidebar-link {{ request()->routeIs('admin.settings') ? 'active' : '' }}"
                     >
 
-                        <i class="fas fa-sliders"></i>
+                        <span class="admin-menu-emoji" aria-hidden="true">⚙️</span>
 
                         <span>Settings</span>
 
@@ -3707,9 +3741,10 @@
                         Admin
                     </a>
 
-                    <span>/</span>
-
-                    @yield('breadcrumbs')
+                    @foreach($adminBreadcrumbLabels as $breadcrumbLabel)
+                        <span class="admin-breadcrumb-separator">/</span>
+                        <span class="admin-breadcrumb-label">{{ $breadcrumbLabel }}</span>
+                    @endforeach
 
                 </div>
 
@@ -3721,17 +3756,23 @@
 
                 <!-- QUICK SEARCH -->
 
-                <div class="admin-top-search">
+                <div class="admin-top-search" role="search" aria-label="Search this admin page">
 
                     <i class="fas fa-magnifying-glass"></i>
 
-                    <span>
-                        Quick search
-                    </span>
+                    <input
+                        type="search"
+                        id="adminPageSearch"
+                        placeholder="Search this page..."
+                        autocomplete="off"
+                        aria-label="Search current admin page"
+                        aria-controls="adminPageSearchResults"
+                        aria-expanded="false"
+                    >
 
-                    <kbd>
-                        /
-                    </kbd>
+                    <kbd aria-hidden="true">/</kbd>
+
+                    <div class="admin-search-results" id="adminPageSearchResults" role="listbox" aria-label="Page search results" hidden></div>
 
                 </div>
 
@@ -3881,7 +3922,11 @@
                     >
 
                         <div class="admin-profile-avatar">
-                            {{ $adminInitials }}
+                            @if($adminAvatarUrl)
+                                <img src="{{ $adminAvatarUrl }}" alt="{{ $adminDisplayName }}">
+                            @else
+                                <i class="fas fa-user-tie" aria-hidden="true"></i>
+                            @endif
                         </div>
 
 
@@ -3921,7 +3966,11 @@
                                 <div class="admin-profile-dropdown-header-row">
 
                                     <div class="admin-mini-avatar">
-                                        {{ $adminInitials }}
+                                        @if($adminAvatarUrl)
+                                            <img src="{{ $adminAvatarUrl }}" alt="{{ $adminDisplayName }}">
+                                        @else
+                                            <i class="fas fa-user-tie" aria-hidden="true"></i>
+                                        @endif
                                     </div>
 
                                     <div>
@@ -4250,6 +4299,143 @@
 
         document.addEventListener('DOMContentLoaded', function () {
 
+            // Use clear, page-specific emoji for every admin navigation link.
+            const adminMenuEmoji = [
+                [/dashboard/i, '🏠'],
+                [/all customers|customers/i, '👥'],
+                [/customer activity/i, '🕒'],
+                [/all sellers|sellers/i, '🏪'],
+                [/kyc|verification/i, '🛡️'],
+                [/products/i, '📦'],
+                [/categor/i, '🏷️'],
+                [/orders/i, '🧾'],
+                [/returns/i, '↩️'],
+                [/transaction|payment/i, '💸'],
+                [/revenue/i, '💰'],
+                [/coupon/i, '🎟️'],
+                [/offer|deal/i, '🔥'],
+                [/sales|analytic/i, '📈'],
+                [/visual website editor/i, '🎨'],
+                [/audit/i, '📋'],
+                [/setting/i, '⚙️'],
+            ];
+
+            const adminPageEmoji = [
+                [/dashboard|overview|welcome back/i, '🏠'],
+                [/setting|configuration|preference/i, '⚙️'],
+                [/profile|administrator account/i, '👤'],
+                [/kyc|verification|security/i, '🛡️'],
+                [/activity/i, '🕒'],
+                [/customer/i, '👥'],
+                [/seller/i, '🏪'],
+                [/product|catalog|inventory/i, '📦'],
+                [/categor/i, '🏷️'],
+                [/order/i, '🧾'],
+                [/return|refund/i, '↩️'],
+                [/payment|transaction/i, '💳'],
+                [/revenue|payout/i, '💰'],
+                [/coupon/i, '🎟️'],
+                [/offer|deal/i, '🔥'],
+                [/analytic|sales/i, '📈'],
+                [/audit|log/i, '📋'],
+                [/editor|design/i, '🎨'],
+            ];
+            const adminRouteName = @json(request()->route()?->getName() ?? '');
+
+            document.querySelectorAll('.admin-sidebar-link').forEach(function (link) {
+                const label = Array.from(link.children)
+                    .filter(function (child) {
+                        return child.tagName === 'SPAN' &&
+                            !child.classList.contains('admin-sidebar-badge') &&
+                            !child.classList.contains('admin-dashboard-emoji') &&
+                            !child.classList.contains('admin-menu-emoji');
+                    })[0]?.textContent.trim() || '';
+                const matchedEmoji = adminMenuEmoji.find(function ([pattern]) {
+                    return pattern.test(label);
+                })?.[1] || '🔹';
+                let icon = link.querySelector(':scope > .admin-dashboard-emoji, :scope > .admin-menu-emoji');
+
+                if (!icon) {
+                    const oldIcon = link.querySelector(':scope > i');
+                    if (!oldIcon) return;
+
+                    icon = document.createElement('span');
+                    icon.className = 'admin-menu-emoji';
+                    icon.setAttribute('aria-hidden', 'true');
+                    oldIcon.replaceWith(icon);
+                }
+
+                icon.textContent = matchedEmoji;
+            });
+
+            // Give each admin page heading the same branded blue title hero.
+            const adminContent = document.querySelector('body.admin-layout .admin-content');
+            // The settings page had a separate gear beside the heading; the
+            // shared title emoji now owns that single visual icon spot.
+            if (/setting/i.test(adminRouteName)) {
+                adminContent?.querySelector('.sb-settings-main-icon')?.remove();
+            }
+
+            if (adminContent && !adminContent.querySelector('.ve-shell')) {
+                const pageTitle = Array.from(adminContent.querySelectorAll('h1')).find(function (heading) {
+                    return !heading.closest('.ve-shell, .modal, .dropdown-menu, .admin-content .admin-content');
+                });
+
+                if (pageTitle) {
+                    let titleHero = pageTitle.closest('.admin-page-header, .seller-page-header, .sb-dashboard-hero, .sb-settings-header, .profile-hero');
+
+                    if (!titleHero) {
+                        titleHero = document.createElement('section');
+                        titleHero.className = 'admin-title-hero';
+                        pageTitle.parentNode.insertBefore(titleHero, pageTitle);
+                        titleHero.appendChild(pageTitle);
+
+                        const subtitle = titleHero.nextElementSibling;
+                        if (subtitle && subtitle.tagName === 'P') {
+                            titleHero.appendChild(subtitle);
+                        }
+                    } else {
+                        titleHero.classList.add('admin-title-hero');
+                    }
+
+                    // Keep exactly one page icon: the emoji beside the title.
+                    titleHero.querySelectorAll('.admin-page-icon, .seller-page-icon, .sb-settings-main-icon')
+                        .forEach(function (icon) { icon.remove(); });
+
+                    const titleText = `${adminRouteName} ${pageTitle.textContent.replace(/\s+/g, ' ').trim()}`;
+                    const titleEmoji = adminPageEmoji.find(function ([pattern]) {
+                        return pattern.test(titleText);
+                    })?.[1] || '🗂️';
+                    let titleMark = pageTitle.querySelector(':scope > .admin-title-emoji');
+
+                    if (!titleMark) {
+                        titleMark = document.createElement('span');
+                        titleMark.className = 'admin-title-emoji';
+                        titleMark.setAttribute('aria-hidden', 'true');
+                        pageTitle.insertBefore(titleMark, pageTitle.firstChild);
+                    }
+
+                    titleMark.textContent = titleEmoji;
+                    pageTitle.querySelectorAll(':scope > i.fa, :scope > i.fas, :scope > i.far, :scope > i.fa-solid, :scope > i.fa-regular')
+                        .forEach(function (icon) { icon.remove(); });
+
+                }
+            }
+
+            const editorTitle = adminContent?.querySelector('.ve-shell .ve-heading h1');
+            if (editorTitle) {
+                const editorContext = `${adminRouteName} ${editorTitle.textContent.replace(/\s+/g, ' ').trim()}`;
+                const editorEmoji = adminPageEmoji.find(function ([pattern]) {
+                    return pattern.test(editorContext);
+                })?.[1] || '🎨';
+                const editorMark = editorTitle.closest('.ve-heading-top')?.querySelector('.ve-brand-icon');
+
+                if (editorMark) {
+                    editorMark.classList.add('admin-title-emoji-mark');
+                    editorMark.textContent = editorEmoji;
+                }
+            }
+
             /* =================================================
                ELEMENTS
             ================================================= */
@@ -4521,6 +4707,92 @@
                KEYBOARD
             ================================================= */
 
+            const pageSearchInput = document.getElementById('adminPageSearch');
+            const pageSearchResults = document.getElementById('adminPageSearchResults');
+            const pageSearchContent = document.querySelector('.admin-content');
+
+            if (pageSearchInput && pageSearchResults && pageSearchContent) {
+                const collectPageSearchTargets = function () {
+                    const tableRows = Array.from(pageSearchContent.querySelectorAll('table tbody tr'))
+                        .filter(function (row) { return !row.closest('.ve-shell') && row.textContent.trim(); });
+
+                    if (tableRows.length) return tableRows;
+
+                    const cardSelector = [
+                        '.sb-list-item', '.admin-list-item', '.seller-order-card', '.admin-product-card',
+                        '.seller-product-card', '.sb-quick-action', '.sb-stat-card', '.admin-stat-card',
+                        '.sb-settings-card', '.admin-info-card', '.seller-card', '.sb-card', '.admin-card'
+                    ].join(',');
+                    const cards = Array.from(pageSearchContent.querySelectorAll(cardSelector))
+                        .filter(function (card) { return !card.closest('.ve-shell') && card.textContent.trim(); });
+                    const leafCards = cards.filter(function (card) {
+                        return !cards.some(function (other) { return other !== card && card.contains(other); });
+                    });
+
+                    if (leafCards.length) return leafCards;
+
+                    return Array.from(pageSearchContent.querySelectorAll('h1, h2, h3, h4, p, li, td, dd, dt, label, a, button'))
+                        .filter(function (element) {
+                            return !element.closest('.ve-shell, .modal, .dropdown-menu') &&
+                                element.textContent.trim() &&
+                                !element.querySelector('h1, h2, h3, h4, p, li, td, dd, dt, label, a, button');
+                        });
+                };
+
+                const closePageSearchResults = function () {
+                    pageSearchResults.hidden = true;
+                    pageSearchResults.replaceChildren();
+                    pageSearchInput.setAttribute('aria-expanded', 'false');
+                };
+
+                pageSearchInput.addEventListener('input', function () {
+                    const query = this.value.trim().toLocaleLowerCase();
+                    pageSearchResults.replaceChildren();
+
+                    if (!query) {
+                        closePageSearchResults();
+                        return;
+                    }
+
+                    const matches = collectPageSearchTargets()
+                        .filter(function (element) { return element.textContent.toLocaleLowerCase().includes(query); })
+                        .slice(0, 8);
+
+                    if (!matches.length) {
+                        const empty = document.createElement('div');
+                        empty.className = 'admin-search-empty';
+                        empty.textContent = 'No matches on this page';
+                        pageSearchResults.appendChild(empty);
+                    } else {
+                        matches.forEach(function (element) {
+                            const result = document.createElement('button');
+                            result.type = 'button';
+                            result.className = 'admin-search-result';
+                            result.setAttribute('role', 'option');
+                            result.textContent = element.textContent.replace(/\s+/g, ' ').trim().slice(0, 150);
+                            result.addEventListener('click', function () {
+                                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                element.classList.add('admin-search-highlight');
+                                window.setTimeout(function () { element.classList.remove('admin-search-highlight'); }, 1800);
+                                closePageSearchResults();
+                            });
+                            pageSearchResults.appendChild(result);
+                        });
+                    }
+
+                    pageSearchResults.hidden = false;
+                    pageSearchInput.setAttribute('aria-expanded', 'true');
+                });
+
+                pageSearchInput.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape') closePageSearchResults();
+                });
+
+                document.addEventListener('click', function (event) {
+                    if (!event.target.closest('.admin-top-search')) closePageSearchResults();
+                });
+            }
+
             document.addEventListener(
                 'keydown',
                 function (event) {
@@ -4542,15 +4814,13 @@
 
                         event.preventDefault();
 
-                        const search =
-                            document.querySelector(
-                                '.admin-top-search'
-                            );
+                        const search = document.getElementById('adminPageSearch');
 
                         search?.scrollIntoView({
                             behavior: 'smooth',
                             block: 'nearest'
                         });
+                        search?.focus();
 
                     }
 

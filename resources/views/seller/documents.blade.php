@@ -8,6 +8,7 @@
 
 @section('content')
 
+@push('styles')
 <style>
 /* =========================================================
    SMART BASKET — SELLER DOCUMENTS
@@ -764,6 +765,7 @@
     }
 }
 </style>
+@endpush
 
 
 <div class="documents-page">

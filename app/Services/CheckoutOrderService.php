@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\Notification;
 use App\Models\Product;
 use App\Models\SellerProfile;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -18,10 +19,12 @@ class CheckoutOrderService
         $validated = $request->validate([
             'address_id' => ['nullable', 'integer'],
             'name' => ['required', 'string', 'max:255'],
-            'mobile' => ['required', 'string', 'max:15'],
+            'mobile' => ['required', 'string', 'max:15', 'regex:/^[+\d][\d\s()-]{7,14}$/'],
             'address' => ['required', 'string'],
             'city' => ['nullable', 'string', 'max:255'],
+            'pin_code' => ['required', 'digits:6'],
             'payment_method' => ['nullable', 'string', 'max:40'],
+
         ]);
 
         if (! empty($validated['address_id'])) {
@@ -36,18 +39,20 @@ class CheckoutOrderService
             }
 
             return [
-                'name' => $savedAddress->recipient_name,
-                'mobile' => $savedAddress->phone,
-                'address' => $savedAddress->address_line,
+                'name' => $validated['name'],
+                'mobile' => $validated['mobile'],
+                'address' => trim($savedAddress->address_line . ', ' . $savedAddress->city . ', ' . $savedAddress->state . ' - ' . $savedAddress->pincode . ', ' . $savedAddress->country),
                 'city' => $savedAddress->city,
+
             ];
         }
 
         return [
             'name' => $validated['name'],
             'mobile' => $validated['mobile'],
-            'address' => $validated['address'],
+            'address' => trim($validated['address'] . ', PIN: ' . $validated['pin_code']),
             'city' => $validated['city'] ?? 'N/A',
+
         ];
     }
 
@@ -88,7 +93,7 @@ class CheckoutOrderService
         return $itemsBySeller;
     }
 
-    public function assertCheckoutCanProceed(array $itemsBySeller, string $paymentMethod): void
+    public function assertCheckoutCanProceed(array $itemsBySeller, ?string $paymentMethod = null): void
     {
         if ($itemsBySeller === []) {
             throw new \RuntimeException('Your cart is empty.');
@@ -100,8 +105,12 @@ class CheckoutOrderService
 
         foreach ($itemsBySeller as $sellerId => $items) {
             $seller = SellerProfile::find($sellerId);
-            if (! $seller || $seller->isBlocked()) {
+            if (! $seller || ! $seller->isStoreVisibleToCustomers()) {
                 throw new \RuntimeException('A seller is currently unavailable. Please review your cart.');
+            }
+            if (strtoupper((string) $paymentMethod) === 'UPI'
+                && (! $seller->isOnlinePaymentEnabled() || ! $seller->hasValidPaymentConfiguration())) {
+                throw new \RuntimeException('A seller has not completed UPI payment setup. Choose Cash on Delivery or remove those products.');
             }
             foreach ($items as $item) {
                 $product = Product::find($item['product_id']);
@@ -111,15 +120,6 @@ class CheckoutOrderService
             }
         }
 
-        if ($this->isOnlineMethod($paymentMethod)
-            && SellerProfile::whereIn('id', array_keys($itemsBySeller))->where('online_payments_enabled', true)->count() !== count($itemsBySeller)) {
-            throw new \RuntimeException('Online payment is not enabled by every seller in this checkout.');
-        }
-    }
-
-    public function isOnlineMethod(string $paymentMethod): bool
-    {
-        return in_array($paymentMethod, ['Card', 'UPI', 'Google Pay', 'PhonePe', 'Net Banking'], true);
     }
 
     public function totalForItems(array $itemsBySeller): string
@@ -131,11 +131,32 @@ class CheckoutOrderService
     {
         $total = 0;
 
-        foreach (collect($itemsBySeller)->flatten(1) as $item) {
-            $total += $this->toMinorUnits($item['price']) * (int) $item['quantity'];
+        foreach ($itemsBySeller as $sellerId => $sellerItems) {
+            foreach ($sellerItems as $item) {
+                $total += $this->toMinorUnits($item['price']) * (int) $item['quantity'];
+            }
+
+            $seller = SellerProfile::find((int) $sellerId);
+            if ($seller) {
+                $total += $this->shippingAmountInPaise($seller, $sellerItems);
+            }
         }
 
         return $total;
+    }
+
+    public function shippingAmountForSubtotal(SellerProfile $seller, float $subtotal): float
+    {
+        if (! $seller->preference('shipping_enabled', true)) {
+            return 0.0;
+        }
+
+        $threshold = (float) $seller->preference('free_shipping_threshold', 0);
+        if ($threshold > 0 && $subtotal >= $threshold) {
+            return 0.0;
+        }
+
+        return (float) $seller->preference('delivery_charge', 0);
     }
 
     public function createConfirmedOrders(array $itemsBySeller, array $customerDetails, ?int $userId, string $paymentMethod, string $paymentStatus): array
@@ -145,11 +166,12 @@ class CheckoutOrderService
 
             foreach ($itemsBySeller as $sellerId => $sellerItems) {
                 $seller = SellerProfile::whereKey($sellerId)->lockForUpdate()->first();
-                if (! $seller || $seller->isBlocked()) {
+                if (! $seller || ! $seller->isStoreVisibleToCustomers()) {
                     throw new \RuntimeException('A seller is currently unavailable. Please review your cart.');
                 }
                 $sellerTotalPaise = $this->totalForItemsInPaise([$sellerId => $sellerItems]);
                 $sellerTotal = $this->formatMinorUnits($sellerTotalPaise);
+                $shippingAmount = $this->formatMinorUnits($this->shippingAmountInPaise($seller, $sellerItems));
 
                 foreach ($sellerItems as $item) {
                     $product = Product::lockForUpdate()->find($item['product_id']);
@@ -167,12 +189,19 @@ class CheckoutOrderService
                     'city' => $customerDetails['city'] ?? 'N/A',
                     'total' => $sellerTotal,
                     'amount' => $sellerTotal,
-                    'status' => 'Confirmed',
+                    'status' => str_contains(strtolower($paymentMethod), 'upi') && strtolower($paymentStatus) !== 'paid'
+                        ? 'Placed'
+                        : 'Confirmed',
                     'payment_status' => $paymentStatus,
                     'payment_method' => $paymentMethod,
-                    'order_status' => 'Placed',
+                    'order_status' => str_contains(strtolower($paymentMethod), 'upi') && strtolower($paymentStatus) !== 'paid'
+                        ? 'Placed'
+                        : ($seller->preference('auto_accept_orders', false) ? 'Confirmed' : 'Placed'),
                     'delivery_status' => 'Pending',
+                    'shipping_amount' => $shippingAmount,
+                    'estimated_delivery_days' => (int) $seller->preference('estimated_delivery_days', 3),
                     'items' => $sellerItems,
+
                 ]);
 
                 foreach ($sellerItems as $item) {
@@ -180,6 +209,7 @@ class CheckoutOrderService
                 }
 
                 $orderIds[] = $order->id;
+
 
                 // Funds are represented by an internal ledger; no money is sent to a
                 // seller until an administrator explicitly records a payout.
@@ -190,23 +220,30 @@ class CheckoutOrderService
                     );
                 }
 
-                Notification::create([
-                    'user_id' => $userId,
-                    'role' => 'user',
-                    'type' => 'order',
-                    'title' => 'Order confirmed',
-                    'message' => 'Your order #' . $order->id . ' has been confirmed.',
-                    'data' => ['order_id' => $order->id],
-                ]);
+                $orderIsCustomerConfirmed = strtoupper($paymentMethod) === 'COD'
+                    || in_array(strtolower($paymentStatus), ['paid', 'successful', 'verified'], true);
+                if ($userId && $orderIsCustomerConfirmed && $seller->preference('order_confirmation_notification', true)) {
+                    $message = trim((string) $seller->preference('order_message', ''));
+                    Notification::create([
+                        'user_id' => $userId,
+                        'role' => 'user',
+                        'type' => 'order',
+                        'title' => 'Order confirmed',
+                        'message' => 'Your order #' . $order->id . ' has been confirmed.' . ($message !== '' ? ' ' . $message : ''),
+                        'data' => ['order_id' => $order->id],
+                    ]);
+                }
 
-                Notification::create([
-                    'seller_id' => $sellerId,
-                    'role' => 'seller',
-                    'type' => 'order',
-                    'title' => 'New order received',
-                    'message' => 'Order #' . $order->id . ' is ready for processing.',
-                    'data' => ['order_id' => $order->id],
-                ]);
+                if ($orderIsCustomerConfirmed && $seller->notifications_enabled && $seller->preference('new_order_notification', true)) {
+                    Notification::create([
+                        'seller_id' => $sellerId,
+                        'role' => 'seller',
+                        'type' => 'order',
+                        'title' => 'New order received',
+                        'message' => 'Order #' . $order->id . ' is ready for processing.',
+                        'data' => ['order_id' => $order->id],
+                    ]);
+                }
             }
 
             return $orderIds;
@@ -221,6 +258,7 @@ class CheckoutOrderService
 
         session()->forget('cart');
         session()->forget('buy_product');
+        session()->forget('checkout_payment_nonce');
     }
 
     private function appendProduct(array &$itemsBySeller, Product $product, int $quantity): void
@@ -234,17 +272,21 @@ class CheckoutOrderService
         ];
     }
 
-    private function effectivePriceAsDecimal(Product $product): string
+    private function shippingAmountInPaise(SellerProfile $seller, array $items): int
     {
-        $price = (string) $product->getRawOriginal('price');
-        $discountPrice = $product->getRawOriginal('discount_price');
-
-        if ($discountPrice !== null
-            && $this->toMinorUnits((string) $discountPrice) < $this->toMinorUnits($price)) {
-            return (string) $discountPrice;
+        $subtotal = 0;
+        foreach ($items as $item) {
+            $subtotal += $this->toMinorUnits((string) $item['price']) * (int) $item['quantity'];
         }
 
-        return $price;
+        $shipping = $this->shippingAmountForSubtotal($seller, $subtotal / 100);
+
+        return $this->toMinorUnits(number_format($shipping, 2, '.', ''));
+    }
+
+    private function effectivePriceAsDecimal(Product $product): string
+    {
+        return number_format((float) $product->effective_price, 2, '.', '');
     }
 
     private function toMinorUnits(string|int|float $amount): int

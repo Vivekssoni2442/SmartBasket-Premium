@@ -29,4 +29,3 @@ html[data-theme="dark"] body :where(.form-control,.form-select)::placeholder{col
 html[data-theme="dark"] body :where(.table){--bs-table-bg:transparent;--bs-table-color:var(--sb-text-primary);--bs-table-border-color:var(--sb-border-color)}
 body :where(button,a,.card,.form-control,.form-select){transition:background-color .25s ease,color .25s ease,border-color .25s ease,box-shadow .25s ease,transform .25s ease}
 body :where(button,a,input,select,textarea):focus-visible{outline:3px solid color-mix(in srgb,var(--sb-primary-color) 42%,transparent);outline-offset:2px}
-@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important}}

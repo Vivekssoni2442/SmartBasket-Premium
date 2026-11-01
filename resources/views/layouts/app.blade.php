@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
@@ -22,7 +22,7 @@
         rel="stylesheet"
         href="{{ asset('css/smartbasket-theme.css') }}"
     >
-    <link rel="stylesheet" href="{{ asset('css/customer-page-title.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/customer-page-title.css') }}?v=20261019-purple-blue-4">
 
     {{-- Font Awesome 6.5.2 matches the icon classes used by the shared
          customer Taskbar and AI HUB navigation. --}}
@@ -253,10 +253,10 @@
     @php
         $isAiHubPage = request()->routeIs(
             'ai-hub', 'overview', 'ai-camera', 'budget-shopping', 'gift-finder',
-            'trending-products', 'compare-products', 'ai.chat.page',
-            'ai-camera-assistant', 'ai-camera-assistant.history',
-            'ai-camera-assistant.virtual-try-on', 'ai-camera-assistant*'
+            'trending-products', 'compare-products', 'ai.*',
+            'customer-ai.*', 'ai-camera*'
         );
+        $isDeliveryDriverApp = request()->routeIs('delivery.driver');
     @endphp
 
     {{-- Keep the shared AI Hub controls outside page wrappers so page-level
@@ -267,7 +267,7 @@
 
     <div class="sb-page">
 
-        @unless($isAiHubPage)
+        @unless($isAiHubPage || $isDeliveryDriverApp)
             @include('ai-hub.partials.navigation')
         @endunless
 
@@ -278,6 +278,8 @@
         @yield('content')
 
     </div>
+
+    <script src="{{ asset('js/customer-page-title.js') }}?v=20261019-purple-blue-4" defer></script>
 
 
     {{-- =====================================================

@@ -30,7 +30,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
 <link
-    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
     rel="stylesheet"
 >
 
@@ -263,7 +263,7 @@
     :root {
 
         --seller-font:
-            'Poppins',
+            'Inter',
             sans-serif;
 
         --seller-bg:
@@ -435,7 +435,13 @@
     .seller-layout-topbar {
 
         position:
-            relative;
+            fixed;
+
+        top:
+            0;
+
+        left:
+            0;
 
         z-index:
             99999;
@@ -526,7 +532,7 @@
             0;
 
         padding:
-            0;
+            76px 0 0;
 
         color:
             var(--seller-text);
@@ -594,30 +600,45 @@
             min-height:
                 calc(100vh - 68px);
 
-        }
-
-    }
-
-
-    @media (prefers-reduced-motion: reduce) {
-
-        *,
-        *::before,
-        *::after {
-
-            scroll-behavior:
-                auto !important;
-
-            animation:
-                none !important;
-
-            transition:
-                none !important;
+            padding:
+                68px 0 0;
 
         }
 
     }
 
+
+
+</style>
+
+<style>
+    .seller-layout-content h1.sb-page-brand-title {
+        position: relative;
+        padding-left: 68px !important;
+    }
+    .seller-layout-content h1.sb-page-brand-title::before {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        display: grid;
+        width: 40px;
+        height: 40px;
+        place-items: center;
+        transform: translateY(-50%);
+        border: 1px solid rgba(255,255,255,.24);
+        border-radius: 12px;
+        background: linear-gradient(145deg, rgba(52,211,153,.25), rgba(56,189,248,.14));
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 7px 18px rgba(0,0,0,.2);
+        color: #a7f3d0;
+        content: "\f54e";
+        font-family: "Font Awesome 6 Free";
+        font-size: 17px;
+        font-weight: 900;
+    }
+    @media (max-width: 600px) {
+        .seller-layout-content h1.sb-page-brand-title { padding-left: 62px !important; }
+        .seller-layout-content h1.sb-page-brand-title::before { left: 12px; width: 36px; height: 36px; }
+    }
 </style>
 
 @stack('styles')
@@ -640,6 +661,8 @@
 
 </div>
 
+@include('seller.partials.seller-menu')
+
 
 {{-- =========================================================
      PAGE CONTENT ONLY
@@ -650,6 +673,16 @@
     @yield('content')
 
 </main>
+
+<script>
+    (() => {
+        document.querySelectorAll('.seller-layout-content h1').forEach((title) => {
+            if (title.querySelector('img, svg, .fa-solid, .fa-regular, .fa-brands')) return;
+            if (title.closest('.profile-title-card')?.querySelector('.title-card-icon')) return;
+            title.classList.add('sb-page-brand-title');
+        });
+    })();
+</script>
 
 
 {{-- =========================================================
@@ -876,6 +909,9 @@
 
 
 @stack('scripts')
+
+
+@include('seller.partials.login-welcome')
 
 
 </body>

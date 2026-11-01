@@ -60,6 +60,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const virtualTryOnBtn =
         document.getElementById('caVirtualTryOnBtn');
+    const tryOnPanel = document.getElementById('caTryOn');
+    const productSearchInput = document.getElementById('caProductSearch');
+    const productSearchStatus = document.getElementById('caProductSearchStatus');
+    const tryOnProducts = document.getElementById('caTryOnProducts');
+    const tryOnConsent = document.getElementById('caTryOnConsent');
+    const tryOnProgress = document.getElementById('caTryOnProgress');
+    const tryOnProgressText = document.getElementById('caTryOnProgressText');
+    const tryOnResult = document.getElementById('caTryOnResult');
+    const tryOnResultImage = document.getElementById('caTryOnResultImage');
+    const tryOnResultTitle = document.getElementById('caTryOnResultTitle');
+    const tryOnDownload = document.getElementById('caTryOnDownload');
 
 
     /* =========================================================
@@ -70,6 +81,10 @@ document.addEventListener('DOMContentLoaded', function () {
     let selectedImageBlob = null;
     let selectedImageUrl = null;
     let lastAnalysisHtml = null;
+    let selectedTryOnProduct = null;
+    let productSearchTimer = null;
+    let productSearchSequence = 0;
+    let tryOnInProgress = false;
 
 
     /* =========================================================
@@ -175,9 +190,6 @@ document.addEventListener('DOMContentLoaded', function () {
             downloadBtn.disabled = !enabled;
         }
 
-        if (virtualTryOnBtn) {
-            virtualTryOnBtn.disabled = !enabled;
-        }
     }
 
 
@@ -431,6 +443,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 );
 
                 enableActionButtons(false);
+                if (virtualTryOnBtn) virtualTryOnBtn.disabled = false;
+                maybeGenerateTryOn();
 
             },
             'image/jpeg',
@@ -461,6 +475,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         uploadPreview.src =
             selectedImageUrl;
+
+        if (virtualTryOnBtn) virtualTryOnBtn.disabled = false;
 
         uploadPreview.classList.add(
             'active'
@@ -553,6 +569,8 @@ document.addEventListener('DOMContentLoaded', function () {
         );
 
         enableActionButtons(false);
+        if (virtualTryOnBtn) virtualTryOnBtn.disabled = false;
+        maybeGenerateTryOn();
     }
 
 
@@ -1090,6 +1108,15 @@ document.addEventListener('DOMContentLoaded', function () {
         stopCamera(false);
 
         selectedImageBlob = null;
+        selectedTryOnProduct = null;
+        if (virtualTryOnBtn) virtualTryOnBtn.disabled = true;
+        if (tryOnProducts) tryOnProducts.innerHTML = '';
+        if (tryOnResult) tryOnResult.classList.add('d-none');
+        if (tryOnResultImage) tryOnResultImage.removeAttribute('src');
+        if (tryOnDownload) tryOnDownload.removeAttribute('href');
+        if (tryOnConsent) tryOnConsent.checked = false;
+        if (productSearchInput) productSearchInput.value = '';
+        setProductSearchStatus('Upload a photo, then search for a product.');
 
         if (selectedImageUrl) {
 
@@ -1187,6 +1214,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function retakePhoto() {
 
         selectedImageBlob = null;
+        if (virtualTryOnBtn) virtualTryOnBtn.disabled = true;
 
         if (uploadPreview) {
 
@@ -1215,31 +1243,128 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================================
-       VIRTUAL TRY-ON
+       PRODUCT SEARCH + AI TRY-ON
     ========================================================== */
 
-    async function virtualTryOn() {
+    function setProductSearchStatus(message, type = '') {
+        if (!productSearchStatus) return;
+        productSearchStatus.textContent = message;
+        productSearchStatus.classList.toggle('is-error', type === 'error');
+    }
 
-        if (!selectedImageBlob) {
-
-            showAlert(
-                'Capture or upload an image first.',
-                'danger'
-            );
-
+    function renderTryOnProducts(products) {
+        if (!tryOnProducts) return;
+        if (!products.length) {
+            tryOnProducts.innerHTML = '<div class="ai-ca-empty">No matching products found.</div>';
             return;
         }
 
-        /*
-         * Your current PHP controller intentionally returns
-         * HTTP 422 because real Virtual Try-On belongs to
-         * the product details workflow.
-         */
+        tryOnProducts.innerHTML = products.map((product, index) => `
+            <button type="button" class="ai-ca-tryon-product ${selectedTryOnProduct?.id === product.id ? 'is-selected' : ''}" data-product-index="${index}" aria-pressed="${selectedTryOnProduct?.id === product.id ? 'true' : 'false'}">
+                <img src="${escapeHtml(product.image).replace(/"/g, '&quot;')}" alt="" loading="lazy">
+                <span><strong>${escapeHtml(product.name)}</strong><small>${escapeHtml(product.category || product.brand || 'Smart Basket product')} · ₹${Number(product.price || 0).toLocaleString('en-IN')}</small></span>
+            </button>
+        `).join('');
 
-        showAlert(
-            'Virtual Try-On is currently available from a product details page.',
-            'warning'
-        );
+        tryOnProducts.querySelectorAll('[data-product-index]').forEach(button => {
+            button.addEventListener('click', () => {
+                selectedTryOnProduct = products[Number(button.dataset.productIndex)] || null;
+                tryOnProducts.querySelectorAll('.ai-ca-tryon-product').forEach(item => {
+                    const selected = item === button;
+                    item.classList.toggle('is-selected', selected);
+                    item.setAttribute('aria-pressed', selected ? 'true' : 'false');
+                });
+                if (tryOnResult) tryOnResult.classList.add('d-none');
+                setProductSearchStatus(`Selected ${selectedTryOnProduct?.name || 'product'}.`);
+                maybeGenerateTryOn();
+            });
+        });
+    }
+
+    async function searchTryOnProducts() {
+        const term = productSearchInput?.value.trim() || '';
+        const sequence = ++productSearchSequence;
+        if (term.length < 2) {
+            if (tryOnProducts) tryOnProducts.innerHTML = '';
+            setProductSearchStatus('Type at least 2 letters to search the catalog.');
+            return;
+        }
+
+        setProductSearchStatus('Searching Smart Basket products…');
+        try {
+            const url = new URL(tryOnPanel.dataset.searchUrl, window.location.origin);
+            url.searchParams.set('q', term);
+            const response = await fetch(url, {
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                credentials: 'same-origin'
+            });
+            const data = await response.json();
+            if (sequence !== productSearchSequence) return;
+            if (!response.ok) throw new Error(data.message || 'Product search failed. Please try again.');
+            renderTryOnProducts(Array.isArray(data.products) ? data.products : []);
+            setProductSearchStatus(data.products?.length ? `${data.products.length} matching products. Select one to create its preview.` : 'No matching products found.');
+        } catch (error) {
+            if (sequence !== productSearchSequence) return;
+            setProductSearchStatus(error.message || 'Unable to search products right now.', 'error');
+        }
+    }
+
+    function maybeGenerateTryOn() {
+        if (!selectedTryOnProduct) return;
+        if (!selectedImageBlob) {
+            setProductSearchStatus('Upload or capture your photo to continue.');
+            return;
+        }
+        if (!tryOnConsent?.checked) {
+            setProductSearchStatus('Please agree to the private AI image processing notice to generate your preview.');
+            return;
+        }
+        virtualTryOn();
+    }
+
+    async function virtualTryOn() {
+        if (!selectedImageBlob || !selectedTryOnProduct || !tryOnConsent?.checked || tryOnInProgress) return;
+
+        tryOnInProgress = true;
+        if (tryOnProgress) tryOnProgress.classList.remove('d-none');
+        if (tryOnProgressText) tryOnProgressText.textContent = `Creating a preview with ${selectedTryOnProduct.name}…`;
+        if (tryOnResult) tryOnResult.classList.add('d-none');
+        setProductSearchStatus('The image model is creating your preview. This can take a little while.');
+        try {
+            const formData = new FormData();
+            formData.append('photo', selectedImageBlob, selectedImageBlob.name || 'customer-photo.jpg');
+            formData.append('privacy_consent', '1');
+
+            const generationUrl = tryOnPanel.dataset.generateUrlTemplate.replace('__PRODUCT__', encodeURIComponent(selectedTryOnProduct.id));
+            const response = await fetch(generationUrl, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': getCsrfToken(),
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                body: formData,
+                credentials: 'same-origin'
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok || !data.success) {
+                if (response.status === 401) throw new Error('Please log in to generate a private AI preview.');
+                throw new Error(data.message || 'AI preview could not be generated. Please try again.');
+            }
+
+            if (tryOnResultImage) tryOnResultImage.src = `${data.result_url}${data.result_url.includes('?') ? '&' : '?'}t=${Date.now()}`;
+            if (tryOnResultTitle) tryOnResultTitle.textContent = `AI preview · ${selectedTryOnProduct.name}`;
+            if (tryOnDownload) tryOnDownload.href = data.download_url;
+            if (tryOnResult) tryOnResult.classList.remove('d-none');
+            setProductSearchStatus('Your AI product preview is ready.');
+            tryOnResult?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } catch (error) {
+            setProductSearchStatus(error.message || 'AI preview failed. Please try again.', 'error');
+            showAlert(error.message || 'AI preview failed. Please try again.', 'danger');
+        } finally {
+            tryOnInProgress = false;
+            if (tryOnProgress) tryOnProgress.classList.add('d-none');
+        }
     }
 
 
@@ -1359,8 +1484,27 @@ document.addEventListener('DOMContentLoaded', function () {
 
         virtualTryOnBtn.addEventListener(
             'click',
-            virtualTryOn
+            function () {
+                tryOnPanel?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                if (!selectedTryOnProduct) {
+                    productSearchInput?.focus({ preventScroll: true });
+                    setProductSearchStatus('Search and select a product to create its preview.');
+                    return;
+                }
+                maybeGenerateTryOn();
+            }
         );
+    }
+
+    if (productSearchInput && tryOnPanel) {
+        productSearchInput.addEventListener('input', function () {
+            window.clearTimeout(productSearchTimer);
+            productSearchTimer = window.setTimeout(searchTryOnProducts, 280);
+        });
+    }
+
+    if (tryOnConsent) {
+        tryOnConsent.addEventListener('change', maybeGenerateTryOn);
     }
 
 

@@ -8,6 +8,7 @@
 
 @section('content')
 
+@push('styles')
 <style>
 /* =========================================================
    SMART BASKET — SELLER VERIFICATION
@@ -704,6 +705,7 @@
 }
 
 </style>
+@endpush
 
 
 <div class="sb-card">
@@ -969,17 +971,6 @@
     ====================================================== --}}
 
     <div class="sb-actions">
-
-
-        {{-- BACK --}}
-
-        <a
-            href="{{ route('seller.verification.bank-details') }}"
-            class="sb-btn"
-        >
-            <i class="fa-solid fa-arrow-left"></i>
-            Back
-        </a>
 
 
         {{-- SUBMIT --}}

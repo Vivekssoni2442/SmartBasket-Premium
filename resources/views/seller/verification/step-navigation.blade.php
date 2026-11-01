@@ -1201,17 +1201,7 @@
     |--------------------------------------------------------------------------
     */
 
-    @media (prefers-reduced-motion: reduce) {
-
-        .sb-wizard *,
-        .sb-wizard *::before,
-        .sb-wizard *::after {
-            scroll-behavior: auto !important;
-            transition: none !important;
-            animation: none !important;
-        }
-    }
-</style>
+    </style>
 
 
 <div class="sb-wizard">

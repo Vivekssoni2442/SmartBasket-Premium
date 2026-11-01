@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\SellerProfile;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -38,6 +39,12 @@ class SellerAuth
             session()->forget(['seller_login', 'seller_email', 'seller_id']);
 
             return redirect('/seller-login')->with('error', 'This seller account is blocked. Please contact Smart Basket support for assistance.');
+        }
+
+        // Keep the dedicated Laravel seller guard in sync with the legacy
+        // seller session so passkey management works for existing sessions.
+        if ((int) Auth::guard('seller')->id() !== (int) $seller->id) {
+            Auth::guard('seller')->login($seller);
         }
 
         // Verification routes are deliberately available to a signed-in seller

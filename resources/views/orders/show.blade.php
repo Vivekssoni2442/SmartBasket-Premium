@@ -24,6 +24,8 @@
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     >
 
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+
     <style>
 
         /* ==========================================================
@@ -208,81 +210,35 @@
 
 
         /* ==========================================================
-           EXACT CUSTOMER TASKBAR — SAME AS ORDERS/CART/PRODUCTS
+           EXACT CUSTOMER TASKBAR â€” SAME AS ORDERS/CART/PRODUCTS
         ========================================================== */
 
 /* =========================================================
-   PRODUCTS PAGE — FULL WIDTH PREMIUM TASKBAR
+   PRODUCTS PAGE â€” FULL WIDTH PREMIUM TASKBAR
 ========================================================= */
-:root{
-    --sb-tbar-bg:rgba(255,255,255,.92);
-    --sb-tbar-panel:#ffffff;
-    --sb-tbar-text:#102033;
-    --sb-tbar-muted:#64748b;
-    --sb-tbar-border:rgba(37,99,235,.13);
-    --sb-tbar-blue:#2563eb;
-    --sb-tbar-blue2:#4f46e5;
-    --sb-tbar-soft:#eef4ff;
-    --sb-tbar-shadow:0 16px 45px rgba(15,23,42,.12);
-}
-html[data-theme="dark"],html[data-sb-theme="dark"]{
-    --sb-tbar-bg:rgba(5,11,22,.94);
-    --sb-tbar-panel:#0b1728;
-    --sb-tbar-text:#f7fbff;
-    --sb-tbar-muted:#9aacbf;
-    --sb-tbar-border:rgba(101,165,255,.20);
-    --sb-tbar-blue:#65a5ff;
-    --sb-tbar-blue2:#8b7cff;
-    --sb-tbar-soft:rgba(37,99,235,.16);
-    --sb-tbar-shadow:0 20px 60px rgba(0,0,0,.42);
-}
 
-.sb-products-taskbar{
-    position:sticky;top:0;left:0;right:0;z-index:99990;
-    width:100%;min-height:76px;padding:8px 12px;
-    display:flex;align-items:center;gap:9px;
-    background:var(--sb-tbar-bg);
-    border-bottom:1px solid var(--sb-tbar-border);
-    box-shadow:var(--sb-tbar-shadow);
-    backdrop-filter:blur(24px) saturate(155%);-webkit-backdrop-filter:blur(24px) saturate(155%);
-}
-.sb-products-taskbar:before{
-    content:"";position:absolute;left:0;right:0;bottom:-2px;height:2px;
-    background:linear-gradient(90deg,#00e5ff,#287bff,#8b35ff,#ff20c8,#ff405d,#ffe45c,#00e5ff);
-    background-size:600% 100%;animation:sbTaskbarRGB 8s linear infinite;pointer-events:none;
-}
-@keyframes sbTaskbarRGB{to{background-position:600% 50%}}
-.sb-products-brand{
-    flex:0 0 208px;min-width:190px;height:58px;padding:5px 10px 5px 6px;
-    display:flex;align-items:center;gap:10px;border-radius:18px;
-    color:var(--sb-tbar-text)!important;text-decoration:none!important;
-    border:1px solid transparent;transition:.22s ease;
-}
-.sb-products-brand:hover{background:var(--sb-tbar-soft);border-color:var(--sb-tbar-border);transform:translateY(-1px)}
-.sb-brand-mark{width:45px;height:45px;display:grid;place-items:center;border-radius:14px;color:#fff;
-    background:linear-gradient(135deg,#2563eb,#7c3aed);box-shadow:0 8px 22px rgba(37,99,235,.30),inset 0 1px rgba(255,255,255,.25);font-size:17px}
-.sb-brand-copy{display:flex;flex-direction:column;line-height:1.05;min-width:0}.sb-brand-copy strong{font-size:14px;letter-spacing:.4px}.sb-brand-copy small{margin-top:5px;font-size:8px;letter-spacing:1.25px;color:var(--sb-tbar-muted);font-weight:900}
-.sb-products-nav{display:flex;align-items:center;gap:6px;flex:1;min-width:0}
-.sb-pnav-btn{
-    position:relative;flex:1;min-width:82px;height:50px;padding:0 10px;
-    display:flex;align-items:center;justify-content:center;gap:7px;
-    border:1px solid rgba(37,99,235,.13);border-radius:14px;
-    background:linear-gradient(180deg,var(--sb-tbar-panel),var(--sb-tbar-soft));
-    color:var(--sb-tbar-muted)!important;font-size:11px;font-weight:900;
-    text-decoration:none!important;white-space:nowrap;cursor:pointer;
-    box-shadow:0 5px 16px rgba(37,99,235,.06);transition:.2s ease;
-}
-.sb-pnav-btn i{font-size:13px;width:16px;text-align:center}.sb-pnav-btn:hover{color:var(--sb-tbar-blue)!important;border-color:rgba(37,99,235,.32);transform:translateY(-2px);box-shadow:0 10px 25px rgba(37,99,235,.13)}
-.sb-pnav-btn.is-active{color:#fff!important;border-color:transparent;background:linear-gradient(135deg,#2563eb,#4f46e5);box-shadow:0 10px 28px rgba(37,99,235,.28)}
-.sb-pnav-aihub{color:#2563eb!important}.sb-pnav-aihub:hover{color:#fff!important;background:linear-gradient(135deg,#2563eb,#7c3aed);border-color:transparent}
-.sb-pnav-smart-ai{color:#4f46e5!important}.sb-pnav-smart-ai:hover{color:#fff!important;background:linear-gradient(135deg,#4f46e5,#9333ea);border-color:transparent}
-.sb-smart-orb{width:25px;height:25px;display:grid;place-items:center;border-radius:8px;color:#fff;background:linear-gradient(135deg,#4f46e5,#9333ea);box-shadow:0 5px 14px rgba(79,70,229,.25);font-size:11px}.sb-online-dot{position:absolute;top:7px;right:8px;width:6px;height:6px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.13)}
-.sb-taskbar-user{flex:0 1 145px;min-width:105px;height:50px;padding:0 10px;display:flex;align-items:center;gap:8px;border:1px solid var(--sb-tbar-border);border-radius:14px;background:var(--sb-tbar-panel);box-shadow:0 5px 16px rgba(37,99,235,.05);animation:sbHiFloat 3s ease-in-out infinite}
-@keyframes sbHiFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
-.sb-user-dot{width:31px;height:31px;display:grid;place-items:center;border-radius:10px;background:var(--sb-tbar-soft);color:var(--sb-tbar-blue);flex:0 0 31px}.sb-user-text{display:flex;flex-direction:column;min-width:0;line-height:1.05}.sb-user-text small{font-size:8px;color:var(--sb-tbar-muted);font-weight:800}.sb-user-text strong{margin-top:4px;font-size:10px;color:var(--sb-tbar-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:92px}
-.sb-products-more{flex:0 0 52px;height:50px;border:1px solid var(--sb-tbar-border);border-radius:14px;background:var(--sb-tbar-panel);color:var(--sb-tbar-text);cursor:pointer;font-size:17px;transition:.2s ease;box-shadow:0 5px 16px rgba(37,99,235,.06)}.sb-products-more:hover{color:#fff;background:linear-gradient(135deg,#2563eb,#7c3aed);border-color:transparent;transform:translateY(-2px)}
-.sb-products-more-menu{position:fixed;z-index:100000;top:84px;right:12px;width:290px;max-height:calc(100vh - 100px);overflow:auto;padding:10px;border:1px solid var(--sb-tbar-border);border-radius:22px;background:var(--sb-tbar-bg);box-shadow:0 30px 90px rgba(0,0,0,.28);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);display:none}.sb-products-more-menu.is-open{display:block;animation:sbMenuIn .2s ease}.sb-more-heading{padding:9px 10px 11px;border-bottom:1px solid var(--sb-tbar-border);margin-bottom:5px}.sb-more-heading span{display:block;color:var(--sb-tbar-text);font-size:11px;font-weight:950;letter-spacing:.7px}.sb-more-heading small{display:block;margin-top:4px;color:var(--sb-tbar-muted);font-size:8px}.sb-more-link{width:100%;min-height:42px;padding:0 11px;display:flex;align-items:center;gap:10px;border:0;border-radius:12px;background:transparent;color:var(--sb-tbar-text)!important;text-decoration:none!important;font-size:10px;font-weight:850;cursor:pointer}.sb-more-link i{width:18px;text-align:center;color:var(--sb-tbar-blue)}.sb-more-link:hover{background:var(--sb-tbar-soft);color:var(--sb-tbar-blue)!important;transform:translateX(2px)}.sb-more-separator{height:1px;margin:7px 5px;background:var(--sb-tbar-border)}.sb-more-title{display:flex;gap:8px;align-items:center;padding:5px 10px 7px;color:var(--sb-tbar-muted);font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}.sb-theme-switcher{display:grid;grid-template-columns:1fr 1fr;gap:6px}.sb-theme-choice{height:38px;border:1px solid var(--sb-tbar-border);border-radius:11px;background:var(--sb-tbar-panel);color:var(--sb-tbar-text);font-size:10px;font-weight:850;cursor:pointer}.sb-theme-choice:hover,.sb-theme-choice.is-selected{color:#fff;background:linear-gradient(135deg,#2563eb,#7c3aed);border-color:transparent}.sb-theme-choice i{margin-right:5px}.sb-more-action{font-family:inherit;text-align:left}.sb-logout-form{margin:0}.sb-logout{color:#e05b72!important}.sb-logout i{color:#e05b72!important}
-@keyframes sbMenuIn{from{opacity:0;transform:translateY(-8px) scale(.98)}to{opacity:1;transform:none}}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* AI HUB left button: existing project component remains the single left-side AI HUB launcher */
 .ai-hub-fab{z-index:99980!important}.ai-hub-drawer{z-index:99999!important}
@@ -294,9 +250,9 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
 /* Robot launcher is hidden; its original panel remains fully functional */
 
 
-@media(max-width:1350px){.sb-products-brand{flex-basis:185px;min-width:175px}.sb-pnav-btn{min-width:70px;padding:0 7px;font-size:10px}.sb-taskbar-user{flex-basis:125px}}
-@media(max-width:1120px){.sb-brand-copy{display:none}.sb-products-brand{flex-basis:65px;min-width:65px;justify-content:center;padding:5px}.sb-pnav-btn span{display:none}.sb-pnav-btn{min-width:52px;padding:0}.sb-taskbar-user{flex-basis:90px;min-width:90px}.sb-user-text strong{max-width:52px}}
-@media(max-width:700px){.sb-products-taskbar{padding:7px;gap:5px;overflow-x:auto;scrollbar-width:none}.sb-products-taskbar::-webkit-scrollbar{display:none}.sb-products-brand{position:sticky;left:0;z-index:2;flex-basis:52px;min-width:52px;height:48px}.sb-brand-mark{width:39px;height:39px}.sb-products-nav{flex:0 0 auto}.sb-pnav-btn{height:46px;min-width:48px;flex:0 0 48px;border-radius:12px}.sb-taskbar-user{flex:0 0 110px;height:46px}.sb-products-more{flex:0 0 46px;height:46px}.sb-products-more-menu{top:66px;right:7px;width:min(290px,calc(100vw - 14px))}}
+
+
+
 
 
 
@@ -456,24 +412,7 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
 
 
         .order-header::before {
-
-            content: "";
-
-            position: absolute;
-
-            top: 0;
-            left: 0;
-            right: 0;
-
-            height: 3px;
-
-            background:
-                linear-gradient(
-                    90deg,
-                    #2563eb,
-                    #3b82f6,
-                    #6366f1
-                );
+            content: none;
         }
 
 
@@ -1215,6 +1154,42 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
                 rgba(220,38,38,.05);
         }
 
+        .return-order-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            min-height: 48px;
+            padding: 0 21px;
+            border: 1px solid rgba(255,255,255,.22);
+            border-radius: 15px;
+            background: linear-gradient(115deg,#087d70,#2363d2 58%,#6746c5);
+            box-shadow: 0 11px 24px rgba(35,94,177,.22), inset 0 1px 0 rgba(255,255,255,.22);
+            color: #fff !important;
+            font-size: 12px;
+            font-weight: 900;
+            text-decoration: none !important;
+            transition: transform .18s ease, box-shadow .18s ease;
+        }
+
+        .return-order-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 30px rgba(35,94,177,.3), inset 0 1px 0 rgba(255,255,255,.26);
+        }
+
+        .return-order-btn:focus-visible {
+            outline: 3px solid #86d9d0;
+            outline-offset: 3px;
+        }
+
+        .return-request-panel {
+            border-color: rgba(37,99,180,.2);
+            border-radius: 20px;
+            background: linear-gradient(135deg,rgba(37,99,180,.055),rgba(14,139,125,.06));
+            box-shadow: 0 12px 30px rgba(28,58,110,.06);
+        }
+
+
 
         .cancel-title {
 
@@ -1373,10 +1348,7 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
             }
 
 
-            .sb-user-text {
 
-                display: none;
-            }
         }
 
 
@@ -1514,10 +1486,7 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
             }
 
 
-            .sb-user-text {
 
-                display: none;
-            }
 
 
             .sb-three-dot-btn {
@@ -1630,7 +1599,7 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
             }
         }
 
-    
+
 /* =========================================================
    FINAL ORDER SHOW TASKBAR SAFETY OVERRIDES
    Keeps the customer taskbar full-width and above all order UI.
@@ -1638,27 +1607,15 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
 body{
     padding-top:0 !important;
 }
-.sb-products-taskbar{
-    width:100% !important;
-    max-width:none !important;
-    margin:0 !important;
-    left:0 !important;
-    right:0 !important;
-}
-.sb-products-taskbar:before{
-    z-index:5;
-}
-@media(max-width:1100px){
-    .sb-taskbar-user .sb-user-text{
-        display:flex !important;
-    }
-}
+
+
+
 @media(max-width:767px){
     body{padding-top:0 !important;}
-    .sb-taskbar-user .sb-user-text{
-        display:flex !important;
-    }
+
 }
+.live-map-card{margin:22px 0 26px;padding:17px;border:1px solid var(--order-border);border-radius:18px;background:var(--order-surface)}.live-map-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px}.live-map-heading strong{display:block;color:var(--order-heading);font-size:15px}.live-map-heading small{display:block;margin-top:4px;color:var(--order-muted);font-size:12px}.live-map-pulse{display:flex;align-items:center;gap:6px;color:#16a36a;font-size:10px;font-weight:800;letter-spacing:.12em}.live-map-pulse i{width:7px;height:7px;border-radius:50%;background:#20c982;box-shadow:0 0 0 4px rgba(32,201,130,.14);animation:livePulse 1.5s infinite}.live-map-pulse.is-ended{color:#77839a}.live-map-pulse.is-ended i{background:#9aa5b5;box-shadow:none;animation:none}.live-map-card #deliveryLiveMap{height:310px;overflow:hidden;border:1px solid var(--order-border);border-radius:13px;background:#dbeafe;z-index:0}.live-map-foot{display:flex;gap:7px;margin-top:11px;color:var(--order-muted);font-size:11px}.live-map-unavailable{display:flex;align-items:center;gap:11px;margin:18px 0;padding:15px;border:1px dashed var(--order-border-strong);border-radius:14px;color:var(--order-muted);font-size:13px}.live-map-unavailable i{color:var(--order-primary);font-size:18px}@keyframes livePulse{50%{box-shadow:0 0 0 7px rgba(32,201,130,0)}}
+    .live-map-coordinates{display:flex;align-items:center;gap:12px;min-height:108px;padding:20px;border:1px solid var(--order-border);border-radius:13px;background:linear-gradient(125deg,rgba(37,99,235,.08),rgba(34,197,94,.07));color:var(--order-heading);font:600 14px/1.6 ui-monospace,monospace}.live-map-coordinates i{color:var(--order-primary);font-size:25px}
 </style>
 
     <link rel="stylesheet" href="{{ asset('css/customer-page-title.css') }}">
@@ -1762,7 +1719,7 @@ body{
 
 @auth
 {{-- =========================================================
-     SMART BASKET — PRODUCTS PAGE PREMIUM CUSTOMER TASKBAR
+     SMART BASKET â€” PRODUCTS PAGE PREMIUM CUSTOMER TASKBAR
      Core navigation is kept here so this page has ONE taskbar.
 ========================================================= --}}
 @php
@@ -1770,112 +1727,7 @@ body{
     $ordersRoute = Route::has('orders.index') ? 'orders.index' : (Route::has('orders') ? 'orders' : null);
 @endphp
 
-<nav class="sb-products-taskbar" id="sbProductsTaskbar" aria-label="Customer Navigation">
-    <a href="{{ route('products.index') }}" class="sb-products-brand" aria-label="Smart Basket Products">
-        <span class="sb-brand-mark"><i class="fa-solid fa-basket-shopping"></i></span>
-        <span class="sb-brand-copy">
-            <strong>SMART BASKET</strong>
-            <small>CUSTOMER PANEL</small>
-        </span>
-    </a>
-
-    <div class="sb-products-nav">
-        @if(Route::has('products.index'))
-            <a href="{{ route('products.index') }}" class="sb-pnav-btn {{ $currentRoute === 'products.index' ? 'is-active' : '' }}">
-                <i class="fa-solid fa-store"></i><span>Products</span>
-            </a>
-        @endif
-
-        @if($ordersRoute)
-            <a href="{{ route($ordersRoute) }}" class="sb-pnav-btn {{ in_array($currentRoute, [$ordersRoute, 'orders.show'], true) ? 'is-active' : '' }}">
-                <i class="fa-solid fa-box"></i><span>Orders</span>
-            </a>
-        @endif
-
-        @if(Route::has('cart.index'))
-            <a href="{{ route('cart.index') }}" class="sb-pnav-btn {{ $currentRoute === 'cart.index' ? 'is-active' : '' }}">
-                <i class="fa-solid fa-cart-shopping"></i><span>Cart</span>
-            </a>
-        @endif
-
-        @if(Route::has('wishlist'))
-            <a href="{{ route('wishlist') }}" class="sb-pnav-btn {{ $currentRoute === 'wishlist' ? 'is-active' : '' }}">
-                <i class="fa-regular fa-heart"></i><span>Wishlist</span>
-            </a>
-        @endif
-
-        @if(Route::has('profile'))
-            <a href="{{ route('profile') }}" class="sb-pnav-btn {{ $currentRoute === 'profile' ? 'is-active' : '' }}">
-                <i class="fa-regular fa-user"></i><span>Profile</span>
-            </a>
-        @endif
-
-        @if(Route::has('settings'))
-            <a href="{{ route('settings') }}" class="sb-pnav-btn {{ $currentRoute === 'settings' ? 'is-active' : '' }}">
-                <i class="fa-solid fa-gear"></i><span>Settings</span>
-            </a>
-        @endif
-
-        <button type="button" class="sb-pnav-btn sb-pnav-aihub" id="sbProductsAIHub" data-sb-ai-hub-open title="Open AI Hub">
-            <i class="fa-solid fa-wand-magic-sparkles"></i><span>AI HUB</span>
-        </button>
-
-        <button type="button" class="sb-pnav-btn sb-pnav-smart-ai" id="sbProductsSmartAI" title="Open Smart AI">
-            <span class="sb-smart-orb"><i class="fa-solid fa-robot"></i></span><span>Smart AI</span><b class="sb-online-dot"></b>
-        </button>
-    </div>
-
-    <div class="sb-taskbar-user">
-        <span class="sb-user-dot"><i class="fa-regular fa-user"></i></span>
-        <span class="sb-user-text"><small>Hi,</small><strong>{{ auth()->user()->name ?? 'Customer' }}</strong></span>
-    </div>
-
-    <button type="button" class="sb-products-more" id="sbProductsMore" aria-expanded="false" aria-controls="sbProductsMoreMenu" title="More options">
-        <i class="fa-solid fa-ellipsis-vertical"></i>
-    </button>
-</nav>
-
-<div class="sb-products-more-menu" id="sbProductsMoreMenu" aria-hidden="true">
-    <div class="sb-more-heading"><span>SMART BASKET</span><small>More options</small></div>
-
-    @if(Route::has('products.index'))
-        <a href="{{ route('products.index') }}" class="sb-more-link"><i class="fa-solid fa-house"></i><span>Products Home</span></a>
-    @endif
-    @if($ordersRoute)
-        <a href="{{ route($ordersRoute) }}" class="sb-more-link"><i class="fa-solid fa-box"></i><span>My Orders</span></a>
-    @endif
-    @if(Route::has('cart.index'))
-        <a href="{{ route('cart.index') }}" class="sb-more-link"><i class="fa-solid fa-cart-shopping"></i><span>Cart</span></a>
-    @endif
-    @if(Route::has('wishlist'))
-        <a href="{{ route('wishlist') }}" class="sb-more-link"><i class="fa-regular fa-heart"></i><span>Wishlist</span></a>
-    @endif
-    @if(Route::has('profile'))
-        <a href="{{ route('profile') }}" class="sb-more-link"><i class="fa-regular fa-user"></i><span>Profile</span></a>
-    @endif
-    @if(Route::has('settings'))
-        <a href="{{ route('settings') }}" class="sb-more-link"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
-    @endif
-
-    <div class="sb-more-separator"></div>
-    <div class="sb-more-title"><i class="fa-solid fa-palette"></i><span>Theme</span></div>
-    <div class="sb-theme-switcher">
-        <button type="button" class="sb-theme-choice" data-sb-set-theme="light"><i class="fa-solid fa-sun"></i><span>Light</span></button>
-        <button type="button" class="sb-theme-choice" data-sb-set-theme="dark"><i class="fa-solid fa-moon"></i><span>Dark</span></button>
-    </div>
-
-    <div class="sb-more-separator"></div>
-    <button type="button" class="sb-more-link sb-more-action" data-sb-more-aihub><i class="fa-solid fa-wand-magic-sparkles"></i><span>Open AI HUB</span></button>
-    <button type="button" class="sb-more-link sb-more-action" data-sb-more-smart-ai><i class="fa-solid fa-robot"></i><span>Open Smart AI</span></button>
-
-    @if(Route::has('logout'))
-        <div class="sb-more-separator"></div>
-        <form method="POST" action="{{ route('logout') }}" class="sb-logout-form">
-            @csrf
-            <button type="submit" class="sb-more-link sb-logout"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></button>
-        </form>
-    @endif
-</div>
+<x-products-customer-taskbar :include-robot="false" />
 @endauth
 
 
@@ -1893,15 +1745,9 @@ body{
         <div class="order-topbar">
 
 
-           
 
-            <div class="secure-pill">
 
-                <i class="fa-solid fa-shield-halved"></i>
 
-                Secure Order
-
-            </div>
 
         </div>
 
@@ -2040,12 +1886,12 @@ body{
 
                                     <div class="product-meta">
 
-                                        ₹{{ number_format(
+                                        {{ number_format(
                                             $price,
                                             2
                                         ) }}
 
-                                        ×
+                                        Ã—
 
                                         {{ $quantity }}
 
@@ -2058,7 +1904,7 @@ body{
 
                                 <div class="product-total">
 
-                                    ₹{{ number_format(
+                                    {{ number_format(
                                         $lineTotal,
                                         2
                                     ) }}
@@ -2096,7 +1942,7 @@ body{
 
                             <div class="total-amount">
 
-                                ₹{{ number_format(
+                                {{ number_format(
                                     $orderTotal,
                                     2
                                 ) }}
@@ -2169,12 +2015,26 @@ body{
 
                         </div>
 
+                        @if($order->deliveryDetail?->tracking_token)
+                            <div class="live-map-card">
+                                <div class="live-map-heading">
+                                    <div><strong id="liveMapTitle">Live delivery location</strong><small id="liveMapStatus">Waiting for delivery partner GPSâ€¦</small></div>
+                                    <span class="live-map-pulse" id="liveMapBadge"><i></i><span>LIVE</span></span>
+                                </div>
+                                <div class="live-map-coordinates"><i class="fa-solid fa-location-crosshairs"></i><span id="liveMapCoordinates">Waiting for GPS signalâ€¦</span></div>
+                                <div class="live-map-foot"><i class="fa-solid fa-shield-halved"></i> Location is shared by your delivery partner while this order is on the way.</div>
+                            </div>
+                        @else
+                            <div class="live-map-unavailable"><i class="fa-solid fa-map-location-dot"></i><span>Live map will appear once a delivery partner is assigned.</span></div>
+                        @endif
+
 
                         <ol class="timeline">
 
                             @foreach($steps as $index => $step)
 
                                 <li
+                                    data-delivery-stage="{{ $step }}"
                                     class="
                                         timeline-item
                                         {{
@@ -2538,117 +2398,13 @@ body{
                 </section>
 
 
-                <!-- CANCEL ORDER -->
-
-                @if($order->isCancellable())
-
-                    <section class="cancel-box">
-
-                        <div class="cancel-title">
-
-                            <i
-                                class="fa-solid fa-circle-exclamation"
-                            ></i>
-
-                            Need to cancel this order?
-
-                        </div>
-
-
-                        <div class="cancel-description">
-
-                            You can cancel this order while it is
-                            still eligible for cancellation.
-
-                        </div>
-
-
-                        <form
-                            action="{{
-                                route(
-                                    'orders.cancel',
-                                    $order
-                                )
-                            }}"
-                            method="POST"
-                        >
-
-                            @csrf
-
-                            <button
-                                type="submit"
-                                class="cancel-btn"
-                                onclick="
-                                    return confirm(
-                                        'Are you sure you want to cancel this order?'
-                                    );
-                                "
-                            >
-
-                                <i
-                                    class="fa-solid fa-xmark"
-                                ></i>
-
-                                Cancel Order
-
-                            </button>
-
-                        </form>
-
+                                @if($order->isCancellable() || $canRequestReturn)
+                    <section class="cancel-box mt-3 return-request-panel" aria-labelledby="order-request-heading">
+                        <div class="cancel-title" id="order-request-heading"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Returns and cancellations</div>
+                        <p class="cancel-description mb-0">Manage a return, replacement, or cancellation for this order from one place.</p>
+                        <a href="{{ route('returns.options', $order) }}" class="return-order-btn mt-3"><i class="fa-solid fa-arrow-right-arrow-left" aria-hidden="true"></i> Return / Cancel Order</a>
                     </section>
-
                 @endif
-
-                <section class="cancel-box mt-3 return-request-panel" aria-labelledby="return-request-heading">
-                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-                        <h2 class="h5 mb-0" id="return-request-heading"><i class="fa-solid fa-rotate-left me-2" aria-hidden="true"></i>Return / Refund</h2>
-                        <a href="{{ route('returns.index') }}" class="btn btn-outline-primary btn-sm">My return requests</a>
-                    </div>
-                    @php
-                        $returnableItems = collect($order->items ?? [])->filter(function ($line) use ($reservedReturnQuantities) {
-                            $id = (int) ($line['product_id'] ?? 0);
-                            return (int) ($line['quantity'] ?? 1) > ($reservedReturnQuantities[$id] ?? 0);
-                        });
-                    @endphp
-                    @if($returnRequests->isNotEmpty())
-                        <p class="cancel-description">Existing requests for this order:</p>
-                        @foreach($returnRequests as $returnRequest)
-                            <p><a href="{{ route('returns.show', $returnRequest) }}">Return #{{ $returnRequest->id }} — {{ ucfirst(str_replace('_', ' ', $returnRequest->status)) }}</a></p>
-                        @endforeach
-                    @endif
-                    @if(app(\App\Services\SiteSettings::class)->enabled('return_requests_enabled') && $canRequestReturn && $returnableItems->isNotEmpty())
-                        <form action="{{ route('returns.store', $order) }}" method="POST" class="mt-3">
-                            @csrf
-                            <p class="cancel-description">Choose products and quantities. Return requests are reviewed by Smart Basket; submitting a request does not itself issue a refund.</p>
-                            @foreach($returnableItems as $line)
-                                @php
-                                    $productId = (int) ($line['product_id'] ?? 0);
-                                    $purchased = (int) ($line['quantity'] ?? 1);
-                                    $remaining = max(0, $purchased - ($reservedReturnQuantities[$productId] ?? 0));
-                                @endphp
-                                @if($remaining > 0)
-                                    <div class="mb-2">
-                                        <label for="return-qty-{{ $productId }}">{{ $line['name'] ?? ($products[$productId]->name ?? 'Product') }} — {{ $remaining }} eligible</label>
-                                        <input id="return-qty-{{ $productId }}" type="number" name="items[{{ $loop->index }}][quantity]" min="0" max="{{ $remaining }}" value="0" class="form-control" aria-label="Return quantity">
-                                        <input type="hidden" name="items[{{ $loop->index }}][product_id]" value="{{ $productId }}">
-                                    </div>
-                                @endif
-                            @endforeach
-                            <label for="return-reason-{{ $order->id }}">Reason</label>
-                            <select id="return-reason-{{ $order->id }}" name="reason" class="form-select mb-2" required>
-                                <option value="">Choose a reason</option>
-                                <option value="damaged">Damaged</option><option value="defective">Defective</option><option value="wrong_item">Wrong item</option><option value="not_as_described">Not as described</option><option value="changed_mind">Changed my mind</option><option value="other">Other</option>
-                            </select>
-                            <label for="return-description-{{ $order->id }}">Additional details (optional)</label>
-                            <textarea id="return-description-{{ $order->id }}" name="description" maxlength="2000" class="form-control mb-3"></textarea>
-                            <button type="submit" class="btn btn-primary px-4 py-2"><i class="fa-solid fa-paper-plane me-2" aria-hidden="true"></i>Submit return request</button>
-                        </form>
-                    @elseif($canRequestReturn && $returnableItems->isEmpty())
-                        <p class="cancel-description mb-0">All purchased quantities already have a return request.</p>
-                    @elseif($returnRequests->isEmpty())
-                        <p class="cancel-description mb-0">This order is not currently eligible. Returns require a paid, delivered order within {{ config('returns.window_days', 30) }} days of purchase.</p>
-                    @endif
-                </section>
 
 
             </div>
@@ -2681,64 +2437,7 @@ body{
      Exact same 3-dots / AI HUB / Smart AI / theme behavior.
 ========================================================= --}}
 
-<script>
-(function(){
-    'use strict';
-    if(window.__SBProductsPremiumTaskbar) return;
-    window.__SBProductsPremiumTaskbar=true;
 
-    const more=document.getElementById('sbProductsMore');
-    const menu=document.getElementById('sbProductsMoreMenu');
-    const aiHubBtn=document.getElementById('sbProductsAIHub');
-    const smartAiBtn=document.getElementById('sbProductsSmartAI');
-
-    function closeMore(){
-        if(menu){menu.classList.remove('is-open');menu.setAttribute('aria-hidden','true');}
-        if(more) more.setAttribute('aria-expanded','false');
-    }
-    function openMore(){
-        if(menu){menu.classList.add('is-open');menu.setAttribute('aria-hidden','false');}
-        if(more) more.setAttribute('aria-expanded','true');
-    }
-    if(more){
-        more.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();menu&&menu.classList.contains('is-open')?closeMore():openMore();});
-    }
-    document.addEventListener('click',function(e){if(menu&&more&&!menu.contains(e.target)&&!more.contains(e.target))closeMore();});
-    document.addEventListener('keydown',function(e){if(e.key==='Escape')closeMore();});
-
-    function openHub(){
-        const trigger=document.querySelector('[data-ai-hub-open]');
-        if(trigger) trigger.click();
-        closeMore();
-    }
-    function openRobot(){
-        const trigger=document.querySelector('[data-smart-ai-open]');
-        if(trigger) trigger.click();
-        closeMore();
-    }
-    if(aiHubBtn) aiHubBtn.addEventListener('click',openHub);
-    if(smartAiBtn) smartAiBtn.addEventListener('click',openRobot);
-    document.querySelectorAll('[data-sb-more-aihub]').forEach(b=>b.addEventListener('click',openHub));
-    document.querySelectorAll('[data-sb-more-smart-ai]').forEach(b=>b.addEventListener('click',openRobot));
-
-    function setTheme(theme){
-        if(!['light','dark'].includes(theme)) return;
-        localStorage.setItem('sb-theme',theme);
-        document.documentElement.setAttribute('data-theme',theme);
-        document.documentElement.setAttribute('data-sb-theme',theme);
-        document.body.setAttribute('data-sb-theme',theme);
-        window.SB_THEME=theme;
-        try{window.dispatchEvent(new CustomEvent('sb-theme-changed',{detail:{theme:theme}}));}catch(e){}
-        try{window.dispatchEvent(new CustomEvent('smartbasket-theme-changed',{detail:{theme:theme}}));}catch(e){}
-        updateThemeButtons(theme);
-    }
-    function updateThemeButtons(theme){
-        document.querySelectorAll('[data-sb-set-theme]').forEach(function(btn){btn.classList.toggle('is-selected',btn.getAttribute('data-sb-set-theme')===theme);});
-    }
-    document.querySelectorAll('[data-sb-set-theme]').forEach(function(btn){btn.addEventListener('click',function(){setTheme(btn.getAttribute('data-sb-set-theme'));});});
-    updateThemeButtons(document.documentElement.getAttribute('data-theme')||localStorage.getItem('sb-theme')||'dark');
-})();
-</script>
 
 <!-- ==========================================================
      FINAL THEME SYNC
@@ -2901,6 +2600,48 @@ body{
 
 </script>
 
+@if($order->deliveryDetail?->tracking_token)
+<script>
+(() => {
+    const label = document.getElementById('liveMapStatus');
+    const title = document.getElementById('liveMapTitle');
+    const coords = document.getElementById('liveMapCoordinates');
+    const badge = document.getElementById('liveMapBadge');
+    const stages = @json($steps);
+    const url = @json(route('orders.live-location', $order));
+    const updateTimeline = (status) => {
+        const currentIndex = stages.indexOf(status);
+        document.querySelectorAll('[data-delivery-stage]').forEach((item, index) => {
+            item.classList.toggle('active', currentIndex >= 0 && index <= currentIndex);
+            const icon = item.querySelector('.timeline-dot i');
+            if (icon) icon.className = index <= currentIndex ? 'fa-solid fa-check' : 'fa-solid fa-circle';
+        });
+    };
+    const refresh = async () => {
+        try {
+            const response = await fetch(url, {headers:{Accept:'application/json'},cache:'no-store'});
+            if (!response.ok) throw new Error('unavailable');
+            const point = await response.json();
+            if (point.status) updateTimeline(point.status);
+            if (!point.available) {
+                const status = String(point.status || '').toLowerCase();
+                const complete = ['delivered', 'cancelled'].includes(status);
+                if (title && complete) title.textContent = status === 'delivered' ? 'Location - Delivered' : 'Location - Cancelled';
+                label.textContent = point.status || 'Waiting for delivery partner GPSâ€¦';
+                coords.textContent = complete ? 'Delivery tracking has ended.' : 'Location will show here when the delivery partner starts sharing.';
+                if (badge) { badge.classList.toggle('is-ended', complete); badge.querySelector('span').textContent = complete ? 'ENDED' : 'LIVE'; }
+                return;
+            }
+            if (badge) { badge.classList.remove('is-ended'); badge.querySelector('span').textContent = 'LIVE'; }
+            coords.textContent = `${Number(point.latitude).toFixed(5)}, ${Number(point.longitude).toFixed(5)}${point.vehicle_type ? ' Â· ' + point.vehicle_type : ''}`;
+            label.textContent = `${point.status || 'On the way'}${point.updated_at ? ' Â· Updated ' + new Date(point.updated_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : ''}`;
+        } catch (_) { label.textContent = 'Reconnecting to delivery partnerâ€¦'; }
+    };
+    refresh();
+    window.setInterval(refresh, 10000);
+})();
+</script>
+@endif
 </body>
 
 </html>

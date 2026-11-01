@@ -8,6 +8,7 @@
 
 @section('content')
 
+@push('styles')
 <style>
 /* =========================================================
    SMARTBASKET — STEP 3 AADHAAR VERIFICATION
@@ -740,6 +741,7 @@
     }
 }
 </style>
+@endpush
 
 
 <div class="aadhaar-page">

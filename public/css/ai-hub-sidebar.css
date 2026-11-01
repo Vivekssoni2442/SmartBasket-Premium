@@ -850,17 +850,6 @@ body.ai-hub-open {
    REDUCED MOTION
 ========================================================= */
 
-@media (prefers-reduced-motion: reduce) {
-
-    .ai-hub-fab,
-    .ai-hub-overlay,
-    .ai-hub-drawer,
-    .ai-hub-drawer-nav a,
-    .ai-hub-overview {
-        transition: none !important;
-    }
-
-}
 /* =========================================================
    AI HUB — ALWAYS ABOVE PAGE CONTENT
 ========================================================= */

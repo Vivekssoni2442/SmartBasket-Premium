@@ -134,6 +134,16 @@ class SellerSettingsController extends Controller
             */
             'preferences.order_confirmation_notification' => 'nullable|boolean',
             'preferences.delivery_status_notification' => 'nullable|boolean',
+            'preferences.new_order_notification' => 'nullable|boolean',
+            'preferences.order_cancellation_notification' => 'nullable|boolean',
+            'preferences.payment_received_notification' => 'nullable|boolean',
+            'preferences.payment_failed_notification' => 'nullable|boolean',
+            'preferences.low_stock_alert' => 'nullable|boolean',
+            'preferences.customer_message_notification' => 'nullable|boolean',
+            'preferences.seller_verification_notification' => 'nullable|boolean',
+            'preferences.promotional_notifications' => 'nullable|boolean',
+            'preferences.email_notifications' => 'nullable|boolean',
+            'preferences.browser_notifications' => 'nullable|boolean',
 
             /*
             |--------------------------------------------------------------------------
@@ -264,6 +274,16 @@ class SellerSettingsController extends Controller
             // Notifications
             'order_confirmation_notification',
             'delivery_status_notification',
+            'new_order_notification',
+            'order_cancellation_notification',
+            'payment_received_notification',
+            'payment_failed_notification',
+            'low_stock_alert',
+            'customer_message_notification',
+            'seller_verification_notification',
+            'promotional_notifications',
+            'email_notifications',
+            'browser_notifications',
 
             // Products
             'allow_customer_reviews',
@@ -298,9 +318,11 @@ class SellerSettingsController extends Controller
         ];
 
         foreach ($booleanFields as $field) {
-            $incomingPreferences[$field] = $request->boolean(
-                "preferences.$field"
-            );
+            if ($request->has("preferences.$field")) {
+                $incomingPreferences[$field] = $request->boolean(
+                    "preferences.$field"
+                );
+            }
         }
 
         /*
@@ -374,42 +396,56 @@ class SellerSettingsController extends Controller
         */
         $seller->theme = $validated['theme'];
 
-        $seller->notifications_enabled =
-            $request->boolean('notifications_enabled');
+        if ($request->has('notifications_enabled')) {
+            $seller->notifications_enabled =
+                $request->boolean('notifications_enabled');
+        }
 
-        $onlinePaymentsEnabled = $request->boolean('online_payments_enabled');
+        $onlinePaymentsEnabled = $request->has('online_payments_enabled')
+            ? $request->boolean('online_payments_enabled')
+            : (bool) $seller->online_payments_enabled;
 
         $paymentUpiId = trim((string) ($request->input('payment_upi_id') ?? $incomingPreferences['upi_id'] ?? $seller->payment_upi_id ?? ''));
         $paymentMobileNumber = trim((string) ($request->input('payment_mobile_number') ?? $seller->payment_mobile_number ?? $seller->mobile_number ?? $seller->phone ?? ''));
         $paymentBusinessName = trim((string) ($request->input('payment_business_name') ?? $seller->payment_business_name ?? $seller->shop_name ?? $seller->seller_name ?? ''));
 
-        if ($onlinePaymentsEnabled && ($paymentUpiId === '' || $paymentMobileNumber === '')) {
+        $paymentSettingsSubmitted = $request->has('payment_upi_id')
+            || $request->has('payment_mobile_number')
+            || $request->has('payment_business_name');
+
+        if ($paymentSettingsSubmitted && $onlinePaymentsEnabled && $paymentUpiId === '') {
             throw \Illuminate\Validation\ValidationException::withMessages([
-                'payment_upi_id' => 'Enter a valid UPI ID and Indian mobile number before enabling UPI payments.',
+                'payment_upi_id' => 'Enter a valid seller UPI ID before enabling UPI payments.',
             ]);
         }
 
-        $destinationChanged = $paymentUpiId !== (string) $seller->payment_upi_id
-            || $paymentMobileNumber !== (string) $seller->payment_mobile_number
-            || $paymentBusinessName !== (string) $seller->payment_business_name;
+        $onlinePaymentToggleChanged = $request->has('online_payments_enabled')
+            && $onlinePaymentsEnabled !== (bool) $seller->online_payments_enabled;
 
-        if ($paymentUpiId !== '') {
-            $incomingPreferences['upi_id'] = $paymentUpiId;
-        }
+        if ($paymentSettingsSubmitted || $onlinePaymentToggleChanged) {
+            $destinationChanged = $paymentUpiId !== (string) $seller->payment_upi_id
+                || $paymentMobileNumber !== (string) $seller->payment_mobile_number
+                || $paymentBusinessName !== (string) $seller->payment_business_name;
 
-        $seller->payment_upi_id = $paymentUpiId !== '' ? $paymentUpiId : null;
-        $seller->payment_mobile_number = $paymentMobileNumber !== '' ? $paymentMobileNumber : null;
-        $seller->payment_business_name = $paymentBusinessName !== '' ? $paymentBusinessName : null;
-        $seller->payment_status = $onlinePaymentsEnabled ? 'enabled' : 'disabled';
-        $seller->payment_provider = 'upi';
-        if ($destinationChanged) {
-            $seller->payment_verification_status = 'verification_pending';
-            $seller->payment_verified_at = null;
-        } elseif (! $seller->payment_verification_status) {
-            $seller->payment_verification_status = 'verification_pending';
+            if ($paymentUpiId !== '') {
+                $incomingPreferences['upi_id'] = $paymentUpiId;
+                $preferences['upi_id'] = $paymentUpiId;
+            }
+
+            $seller->payment_upi_id = $paymentUpiId !== '' ? $paymentUpiId : null;
+            $seller->payment_mobile_number = $paymentMobileNumber !== '' ? $paymentMobileNumber : null;
+            $seller->payment_business_name = $paymentBusinessName !== '' ? $paymentBusinessName : null;
+            $seller->payment_status = $onlinePaymentsEnabled ? 'enabled' : 'disabled';
+            $seller->payment_provider = 'upi';
+            if ($destinationChanged) {
+                $seller->payment_verification_status = 'verification_pending';
+                $seller->payment_verified_at = null;
+            } elseif (! $seller->payment_verification_status) {
+                $seller->payment_verification_status = 'verification_pending';
+            }
+            $seller->payment_enabled = $onlinePaymentsEnabled;
+            $seller->online_payments_enabled = $onlinePaymentsEnabled;
         }
-        $seller->payment_enabled = $onlinePaymentsEnabled;
-        $seller->online_payments_enabled = $onlinePaymentsEnabled;
         $seller->preferences = $preferences;
 
         $seller->save();
@@ -484,6 +520,7 @@ class SellerSettingsController extends Controller
                 'mimes:jpg,jpeg,png,webp',
                 'max:2048',
             ],
+            'return_to' => ['nullable', 'in:profile,settings'],
         ]);
 
         $path = $validated['payment_qr']->store(
@@ -504,7 +541,9 @@ class SellerSettingsController extends Controller
             Storage::disk('public')->delete($oldPath);
         }
 
-        return redirect()->route('seller.settings')->with(
+        $destination = ($validated['return_to'] ?? null) === 'profile' ? 'seller.profile' : 'seller.settings';
+
+        return redirect()->route($destination)->with(
             'success',
             'Payment QR updated successfully.'
         );
@@ -513,8 +552,11 @@ class SellerSettingsController extends Controller
     /**
      * Delete payment QR.
      */
-    public function deletePaymentQr()
+    public function deletePaymentQr(Request $request)
     {
+        $destination = $request->validate([
+            'return_to' => ['nullable', 'in:profile,settings'],
+        ])['return_to'] ?? null;
         $seller = $this->currentSeller();
         $oldPath = ltrim((string) $seller->payment_qr, '/');
 
@@ -529,7 +571,7 @@ class SellerSettingsController extends Controller
             Storage::disk('public')->delete($oldPath);
         }
 
-        return redirect()->route('seller.settings')->with(
+        return redirect()->route($destination === 'profile' ? 'seller.profile' : 'seller.settings')->with(
             'success',
             'Payment QR removed successfully.'
         );
@@ -582,6 +624,16 @@ class SellerSettingsController extends Controller
             */
             'order_confirmation_notification' => true,
             'delivery_status_notification' => true,
+            'new_order_notification' => true,
+            'order_cancellation_notification' => true,
+            'payment_received_notification' => true,
+            'payment_failed_notification' => true,
+            'low_stock_alert' => true,
+            'customer_message_notification' => true,
+            'seller_verification_notification' => true,
+            'promotional_notifications' => false,
+            'email_notifications' => true,
+            'browser_notifications' => false,
 
             /*
             |--------------------------------------------------------------------------

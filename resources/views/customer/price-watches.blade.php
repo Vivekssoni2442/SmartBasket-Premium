@@ -46,5 +46,6 @@
 </main>
 @include('customer.partials.smart-ai-robot')
 
+<script src="{{ asset('js/customer-page-title.js') }}?v=20261019-purple-blue-4" defer></script>
 </body>
 </html>

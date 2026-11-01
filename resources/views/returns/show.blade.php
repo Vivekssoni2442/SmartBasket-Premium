@@ -3,8 +3,7 @@
 @section('title', 'Return Request #' . $returnRequest->id)
 
 @section('content')
-<x-products-customer-taskbar />
-
+{{-- The shared customer taskbar is rendered by layouts.app navigation. --}}
 @php
 $returnStatus = strtolower((string) ($returnRequest->status ?? 'requested'));
 
@@ -709,17 +708,7 @@ $returnHistory = $returnRequest->history ?? [];
         }
     }
 
-    @media (prefers-reduced-motion: reduce) {
-        .sb-return-details *,
-        .sb-return-details *::before,
-        .sb-return-details *::after {
-            scroll-behavior: auto !important;
-            transition-duration: .01ms !important;
-            animation-duration: .01ms !important;
-            animation-iteration-count: 1 !important;
-        }
-    }
-</style>
+    </style>
 
 <main class="sb-return-details">
   

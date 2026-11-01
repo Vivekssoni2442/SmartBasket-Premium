@@ -8,6 +8,7 @@
 
 @section('content')
 
+@push('styles')
 <style>
 /* =========================================================
    SMART BASKET — SELLER VERIFICATION
@@ -965,17 +966,8 @@
    REDUCED MOTION
 ========================================================= */
 
-@media (prefers-reduced-motion: reduce) {
-
-    .bd-field,
-    .bd-input,
-    .bd-select,
-    .bd-btn,
-    .bd-btn-primary span {
-        transition: none !important;
-    }
-}
 </style>
+@endpush
 
 
 <div class="business-page">

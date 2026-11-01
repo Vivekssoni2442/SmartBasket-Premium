@@ -57,6 +57,36 @@
     color: var(--hub-text);
 }
 
+/* Shared full-width title and hero treatment across AI Hub pages. */
+.ai-hub-layout .ai-hub-main,
+.ai-hub-full-page .ai-hub-main {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.ai-hub-main .sb-customer-page-hero,
+.ai-hub-main .sb-vto-hero,
+.ai-hub-layout .sb-customer-page-hero,
+.ai-hub-full-page .sb-customer-page-hero,
+.ai-hub-layout .sb-ai-hero,
+.ai-hub-layout .sb-trending-hero,
+.ai-hub-layout .sb-budget-hero,
+.ai-hub-layout .sb-gift-hero,
+.ai-hub-layout .sb-vto-hero,
+.ai-hub-full-page .sb-ai-hero {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.ai-hub-main .ai-hub-heading > div:first-child,
+.ai-hub-layout .sb-ai-hero > div:first-child {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
 
 /* =========================================================
    HEADING

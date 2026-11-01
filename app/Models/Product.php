@@ -27,6 +27,20 @@ class Product extends Model
     public function getEffectivePriceAttribute(): float
     {
         $price = (float) $this->price;
+        $now = now();
+        $saleStarts = $this->sale_starts_at;
+        $saleEnds = $this->sale_ends_at;
+        $saleIsActive = $this->sale_price !== null
+            && (float) $this->sale_price >= 0
+            && (float) $this->sale_price < $price
+            && $saleStarts && $saleEnds
+            && $now->greaterThanOrEqualTo($saleStarts)
+            && $now->lessThan($saleEnds);
+
+        if ($saleIsActive) {
+            return (float) $this->sale_price;
+        }
+
         $discount = $this->discount_price;
 
         return $discount !== null && (float) $discount >= 0 && (float) $discount < $price
@@ -51,6 +65,9 @@ class Product extends Model
                     ->orWhereHas('seller', function ($seller) {
                         $seller->whereNull('blocked_at');
                     });
+            })
+            ->where(function ($products) {
+                $products->where('stock', '>', 0);
         });
     }
 
@@ -82,6 +99,21 @@ class Product extends Model
 
         'discount_price',
 
+        'sale_title',
+        'sale_offer',
+        'sale_price',
+        'sale_starts_at',
+        'sale_ends_at',
+
+        'coupon_title',
+        'coupon_code',
+        'coupon_description',
+        'coupon_discount_type',
+        'coupon_discount_value',
+        'coupon_starts_at',
+        'coupon_ends_at',
+        'coupon_design',
+
         'rating',
 
         'stock',
@@ -110,6 +142,18 @@ class Product extends Model
 
         'season',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'sale_price' => 'decimal:2',
+            'sale_starts_at' => 'datetime',
+            'sale_ends_at' => 'datetime',
+            'coupon_discount_value' => 'decimal:2',
+            'coupon_starts_at' => 'datetime',
+            'coupon_ends_at' => 'datetime',
+        ];
+    }
 
     /*
     |--------------------------------------------------------------------------

@@ -2634,6 +2634,18 @@ body {
 
                             @csrf
 
+                            @if(session('error'))
+                                <div class="alert alert-danger" role="alert">{{ session('error') }}</div>
+                            @endif
+                            @if(session('success'))
+                                <div class="alert alert-success" role="status">{{ session('success') }}</div>
+                            @endif
+                            @if($errors->any())
+                                <div class="alert alert-danger" role="alert">
+                                    <ul class="mb-0">@foreach($errors->all() as $message)<li>{{ $message }}</li>@endforeach</ul>
+                                </div>
+                            @endif
+
 
                             <!-- =================================================
                                  STEP 1 — DETAILS
@@ -2657,7 +2669,7 @@ body {
                                         </h2>
 
                                         <p>
-                                            Enter your details and verify your profile mobile number before continuing.
+                                            Enter your contact details and delivery information to continue.
                                         </p>
 
                                     </div>
@@ -2707,7 +2719,7 @@ body {
                                                 id="customerMobile"
                                                 class="form-control"
                                                 value="{{ old('mobile', auth()->user()?->phone) }}"
-                                                placeholder="Enter profile mobile number"
+                                                placeholder="Enter your mobile number"
                                                 autocomplete="tel"
                                                 maxlength="15"
                                                 inputmode="tel"
@@ -2719,7 +2731,7 @@ body {
                                                 class="verify-mobile-btn"
                                                 id="verifyMobileBtn"
                                             >
-                                                ✓ Verify Mobile
+                                                ✓ Check Profile Number (optional)
                                             </button>
 
                                         </div>
@@ -2729,7 +2741,7 @@ body {
                                             class="profile-mobile-hint"
                                             id="profileMobileHint"
                                         >
-                                            Your mobile must match the number saved in your Smart Basket profile.
+                                            This optional check compares your number with your profile. It is not required to place an order.
                                         </div>
 
 
@@ -2756,7 +2768,7 @@ body {
                                         </div>
 
                                         <div class="delivery-info-text">
-                                            Mobile is checked against your profile.
+                                            Profile matching is optional; your mobile is used for delivery updates.
                                         </div>
 
                                     </div>
@@ -2808,7 +2820,6 @@ body {
                                         type="button"
                                         class="step-next-btn"
                                         id="step1Next"
-                                        disabled
                                     >
                                         Continue to Address →
                                     </button>
@@ -4203,10 +4214,6 @@ body {
 
                 mobileVerified = false;
 
-                if (step1Next) {
-                    step1Next.disabled = true;
-                }
-
                 if (mobileInput) {
                     mobileInput.classList.remove(
                         "verified-input"
@@ -4215,7 +4222,7 @@ body {
 
                 showMobileStatus(
                     "error",
-                    "⚠️ Please verify your mobile number before continuing."
+                    "Profile matching is optional and does not block checkout."
                 );
 
             }
@@ -4248,10 +4255,6 @@ body {
 
                             mobileVerified = false;
 
-                            if (step1Next) {
-                                step1Next.disabled = true;
-                            }
-
                             showMobileStatus(
                                 "error",
                                 "⚠️ Please enter your mobile number."
@@ -4269,10 +4272,6 @@ body {
 
                             mobileVerified = false;
 
-                            if (step1Next) {
-                                step1Next.disabled = true;
-                            }
-
                             showMobileStatus(
                                 "error",
                                 "⚠️ Please enter a valid 10-digit mobile number."
@@ -4286,10 +4285,6 @@ body {
 
                             mobileVerified = false;
 
-                            if (step1Next) {
-                                step1Next.disabled = true;
-                            }
-
                             showMobileStatus(
                                 "error",
                                 "⚠️ No mobile number is saved in your profile. Please update your profile first."
@@ -4302,10 +4297,6 @@ body {
                         if (entered === profile) {
 
                             mobileVerified = true;
-
-                            if (step1Next) {
-                                step1Next.disabled = false;
-                            }
 
                             if (mobileInput) {
                                 mobileInput.classList.add(
@@ -4321,10 +4312,6 @@ body {
                         } else {
 
                             mobileVerified = false;
-
-                            if (step1Next) {
-                                step1Next.disabled = true;
-                            }
 
                             if (mobileInput) {
                                 mobileInput.classList.remove(
@@ -4361,10 +4348,6 @@ body {
                                 .slice(0, 15);
 
                         mobileVerified = false;
-
-                        if (step1Next) {
-                            step1Next.disabled = true;
-                        }
 
                         this.classList.remove(
                             "verified-input"
@@ -4569,6 +4552,10 @@ body {
                     document.getElementById(
                         "customerName"
                     );
+                const mobile =
+                    document.getElementById(
+                        "customerMobile"
+                    );
 
 
                 if (!validateField(name)) {
@@ -4580,13 +4567,9 @@ body {
                     return false;
                 }
 
-
-                if (!mobileVerified) {
-
-                    alert(
-                        "Please verify your mobile number before continuing."
-                    );
-
+                if (!validateField(mobile) || !/^[+\d][\d\s()-]{7,14}$/.test(mobile.value.trim())) {
+                    alert("Please enter a valid mobile number for delivery updates.");
+                    mobile.focus();
                     return false;
                 }
 
@@ -5611,20 +5594,6 @@ body {
                         Final security checks
                         -------------------------------------------------
                         */
-
-                        if (!mobileVerified) {
-
-                            event.preventDefault();
-
-                            showStep(1);
-
-                            alert(
-                                "Please verify your profile mobile number before placing the order."
-                            );
-
-                            return;
-                        }
-
 
                         if (
                             !validateStep1()

@@ -479,7 +479,7 @@ class AdminController extends Controller
                 )->count(),
 
             'total_products' =>
-                \App\Models\Product::count(),
+                \App\Models\Product::customerVisible()->count(),
 
             'total_orders' =>
                 \App\Models\Order::count(),
@@ -553,9 +553,12 @@ class AdminController extends Controller
                 ->orderByDesc('total')
                 ->get();
 
+        $currentAdmin = Admin::find(session('admin_id'));
+
         return view(
             'admin.dashboard',
             compact(
+                'currentAdmin',
                 'stats',
                 'recentOrders',
                 'recentCustomers',
@@ -637,8 +640,7 @@ class AdminController extends Controller
         $user->load([
             'orders' => function ($orders) {
                 $orders
-                    ->latest()
-                    ->limit(10);
+                    ->latest();
             },
             'wishlists',
             'carts',
@@ -816,9 +818,6 @@ class AdminController extends Controller
     /**
      * Show seller details.
      *
-     * IMPORTANT:
-     * Products relation is intentionally not loaded.
-     * The current database mapping is not confirmed.
      */
     public function sellerShow(
         \App\Models\SellerProfile $seller
@@ -830,7 +829,7 @@ class AdminController extends Controller
             |--------------------------------------------------------------------------
             */
 
-            $seller->load('user');
+            $seller->load(['user', 'products']);
         } catch (\Throwable $e) {
 
             Log::warning(
@@ -864,7 +863,7 @@ class AdminController extends Controller
         Request $request
     ) {
         $query =
-            \App\Models\Product::query();
+            \App\Models\Product::customerVisible();
 
         if ($request->filled('search')) {
             $search = trim(
@@ -1054,6 +1053,10 @@ class AdminController extends Controller
             );
         }
 
+        if ($request->filled('customer')) {
+            $query->where('user_id', $request->input('customer'));
+        }
+
         if ($request->filled('payment_status')) {
             $query->where(
                 'payment_status',
@@ -1093,7 +1096,7 @@ class AdminController extends Controller
         $order->load(
             'user',
             'seller',
-            'deliveryDetail'
+            'deliveryDetail.deliveryPartner'
         );
 
         return view(
@@ -1138,6 +1141,97 @@ class AdminController extends Controller
     /**
      * List transactions.
      */
+    public function reviewSellerUpiPayment(Request $request, \App\Models\PaymentTransaction $transaction)
+    {
+        $validated = $request->validate([
+            'decision' => ['required', 'in:paid,rejected'],
+            'note' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        abort_unless($transaction->gateway === 'seller_upi' && $transaction->status === 'manual_review', 422, 'Only seller UPI payments awaiting review can be processed.');
+        abort_unless(filled($transaction->gateway_transaction_id) && ! empty($transaction->order_ids), 422, 'The customer reference and linked orders are required.');
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($transaction, $validated, $request) {
+            $locked = \App\Models\PaymentTransaction::whereKey($transaction->id)->lockForUpdate()->firstOrFail();
+            abort_unless($locked->gateway === 'seller_upi' && $locked->status === 'manual_review', 422, 'This payment has already been reviewed.');
+
+            $orders = \App\Models\Order::whereIn('id', $locked->order_ids ?? [])->lockForUpdate()->get();
+            abort_unless($orders->isNotEmpty(), 422, 'No orders are linked to this payment.');
+
+            if ($validated['decision'] === 'paid') {
+                $locked->update(['status' => 'paid', 'verified_at' => now(), 'completed_at' => now(), 'failure_reason' => null]);
+                // Keep manually submitted seller UTRs on the transaction record;
+                // payments.gateway_reference is reserved for unique gateway IDs.
+                $locked->payment?->update(['status' => 'paid', 'captured_at' => now()]);
+
+                foreach ($orders as $order) {
+                    $order->update([
+                        'status' => 'Confirmed',
+                        'order_status' => 'Confirmed',
+                        'payment_status' => 'Paid',
+                    ]);
+                    $seller = $order->seller;
+                    if ($order->user_id && (! $seller || $seller->preference('order_confirmation_notification', true))) {
+                        \App\Models\Notification::create([
+                            'user_id' => $order->user_id,
+                            'role' => 'user',
+                            'type' => 'order',
+                            'title' => 'Order confirmed',
+                            'message' => 'Your UPI payment was verified and order #' . $order->id . ' is confirmed.',
+                            'data' => ['order_id' => $order->id],
+                        ]);
+                    }
+                    if ($seller && $seller->notifications_enabled && $seller->preference('new_order_notification', true)) {
+                        \App\Models\Notification::create([
+                            'seller_id' => $seller->id,
+                            'role' => 'seller',
+                            'type' => 'order',
+                            'title' => 'UPI payment verified',
+                            'message' => 'Payment verified for order #' . $order->id . '.',
+                            'data' => ['order_id' => $order->id],
+                        ]);
+                    }
+                    if ($order->seller_id) {
+                        \App\Models\SellerEarning::firstOrCreate(
+                            ['seller_id' => $order->seller_id, 'order_id' => $order->id],
+                            ['payment_id' => $locked->payment_id, 'gross_amount' => $order->amount ?? $order->total, 'platform_fee' => 0, 'net_amount' => $order->amount ?? $order->total, 'status' => 'pending']
+                        );
+                    }
+                }
+            } else {
+                $locked->update(['status' => 'failed', 'failure_reason' => $validated['note'] ?: 'UPI credit could not be confirmed by the admin.']);
+                $locked->payment?->update(['status' => 'failed', 'failed_at' => now()]);
+
+                foreach ($orders as $order) {
+                    if (! in_array(strtolower((string) $order->payment_status), ['paid', 'successful', 'verified'], true)) {
+                        foreach ($order->items ?? [] as $item) {
+                            if (! empty($item['product_id']) && ! empty($item['quantity'])) {
+                                \App\Models\Product::whereKey($item['product_id'])->increment('stock', (int) $item['quantity']);
+                            }
+                        }
+                        $order->update(['status' => 'Cancelled', 'order_status' => 'Cancelled', 'payment_status' => 'Failed', 'cancellation_reason' => $validated['note'] ?: 'UPI payment could not be confirmed.', 'cancelled_at' => now()]);
+                    }
+                }
+            }
+
+            \App\Models\PaymentAuditRecord::create([
+                'payment_id' => $locked->payment_id,
+                'payment_transaction_id' => $locked->id,
+                'user_id' => $request->user()?->id,
+                'event' => $validated['decision'] === 'paid' ? 'seller_upi.admin_verified' : 'seller_upi.admin_rejected',
+                'from_status' => 'manual_review',
+                'to_status' => $validated['decision'] === 'paid' ? 'paid' : 'failed',
+                'metadata' => ['note' => $validated['note'] ?? null, 'reference' => $locked->gateway_transaction_id],
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+        });
+
+        return back()->with('success', $validated['decision'] === 'paid'
+            ? 'Seller UPI payment verified and orders marked paid.'
+            : 'UPI reference rejected; unpaid orders were cancelled and stock restored.');
+    }
+
     public function transactionIndex(
         Request $request
     ) {

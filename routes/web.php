@@ -21,6 +21,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SecurityController;
 use App\Http\Controllers\SellerController;
 use App\Http\Controllers\SellerOrderController;
+use App\Http\Controllers\SellerDeliveryPartnerController;
+use App\Http\Controllers\SellerOrderCancellationController;
 use App\Http\Controllers\SellerPaymentController;
 use App\Http\Controllers\SellerPayoutController;
 use App\Http\Controllers\AdminPayoutController;
@@ -30,6 +32,8 @@ use App\Http\Controllers\CustomerAddressController;
 use App\Http\Controllers\SellerSettingsController;
 use App\Http\Controllers\SellerVerificationController;
 use App\Http\Controllers\VirtualTryOnController;
+use App\Http\Controllers\SellerFaceUnlockController;
+use App\Http\Controllers\GoogleAuthController;
 
 use App\Mail\FailedLoginAlert;
 
@@ -42,6 +46,14 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/delivery/live/{token}', [DeliveryController::class, 'liveShare'])->where('token', '[A-Za-z0-9]+')->name('delivery.live-share');
+Route::post('/delivery/live/{token}/location', [DeliveryController::class, 'updateLiveLocation'])->where('token', '[A-Za-z0-9]+')->middleware('throttle:30,1')->name('delivery.live-location');
+Route::get('/delivery/driver/{token}', [DeliveryController::class, 'driverPortal'])->where('token', '[A-Za-z0-9]+')->name('delivery.driver');
+Route::get('/delivery/driver/{token}/manifest', [DeliveryController::class, 'driverManifest'])->where('token', '[A-Za-z0-9]+')->name('delivery.driver.manifest');
+Route::post('/delivery/driver/{token}/location', [DeliveryController::class, 'updatePartnerLocation'])->where('token', '[A-Za-z0-9]+')->middleware('throttle:30,1')->name('delivery.driver.location');
+Route::get('/delivery/driver/{token}/notifications', [DeliveryController::class, 'driverNotifications'])->where('token', '[A-Za-z0-9]+')->middleware('throttle:30,1')->name('delivery.driver.notifications');
+Route::post('/delivery/driver/{token}/orders/{order}/status', [DeliveryController::class, 'updatePartnerOrderStatus'])->where('token', '[A-Za-z0-9]+')->middleware('throttle:30,1')->name('delivery.driver.status');
 
 
 /*
@@ -214,6 +226,13 @@ Route::post('/register', function (Request $request) {
 
 })->name('register.submit');
 
+Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])
+    ->middleware('throttle:10,1')
+    ->name('google.redirect');
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])
+    ->middleware('throttle:10,1')
+    ->name('google.callback');
+
 
 Route::post('/send-otp', [
     OtpController::class,
@@ -248,6 +267,10 @@ Route::post('/seller-login', [
     'login',
 ])->name('seller.login.submit');
 
+Route::get('/seller/face-unlock', [SellerFaceUnlockController::class, 'challenge'])
+    ->middleware('throttle:10,1')
+    ->name('seller.face-unlock');
+
 
 Route::get('/seller-register', [
     SellerController::class,
@@ -270,10 +293,14 @@ Route::post('/seller-register', [
 Route::middleware('seller.auth')->group(function () {
 
     Route::get('/seller/returns', [OrderReturnController::class, 'sellerIndex'])->name('seller.returns.index');
+    Route::post('/seller/returns/{returnRequest}/decision', [OrderReturnController::class, 'sellerDecision'])->name('seller.returns.decision');
     Route::post('/seller/returns/{returnRequest}/note', [OrderReturnController::class, 'sellerNote'])->name('seller.returns.note');
 
     Route::get('/seller/payouts', [SellerPayoutController::class, 'index'])->name('seller.payouts.index');
     Route::post('/seller/payouts', [SellerPayoutController::class, 'request'])->name('seller.payouts.request');
+
+    Route::get('/seller/order-cancellations', [SellerOrderCancellationController::class, 'index'])->name('seller.order-cancellations.index');
+    Route::post('/seller/order-cancellations/{cancellation}/refund-sent', [SellerOrderCancellationController::class, 'markRefundSent'])->name('seller.order-cancellations.refund-sent');
 
     Route::get('/seller-dashboard', [
         SellerController::class,
@@ -343,6 +370,13 @@ Route::middleware('seller.auth')->group(function () {
 
 Route::middleware('seller.auth')->group(function () {
 
+    Route::post('/seller/face-unlock/enable', [SellerFaceUnlockController::class, 'enable'])
+        ->middleware('throttle:5,1')
+        ->name('seller.face-unlock.enable');
+    Route::post('/seller/face-unlock/disable', [SellerFaceUnlockController::class, 'disable'])
+        ->middleware('throttle:5,1')
+        ->name('seller.face-unlock.disable');
+
     Route::get('/seller-profile', [
         SellerController::class,
         'profile',
@@ -365,6 +399,7 @@ Route::middleware('seller.auth')->group(function () {
 */
 
 Route::middleware('seller.auth')->group(function () {
+
 
     Route::get('/seller-settings', [
         SellerSettingsController::class,
@@ -409,10 +444,14 @@ Route::middleware('seller.auth')->group(function () {
 
 Route::post('/seller-logout', function (Request $request) {
 
+    Auth::guard('seller')->logout();
+
     session()->forget([
         'seller_login',
         'seller_email',
         'seller_id',
+        'seller_face_pending_id',
+        'seller_face_unlocked_at',
     ]);
 
     $request->session()->invalidate();
@@ -711,6 +750,10 @@ Route::middleware('seller.auth')->group(function () {
 
 Route::middleware('seller.auth')->group(function () {
 
+    Route::get('/seller/delivery-boys', [SellerDeliveryPartnerController::class, 'index'])->name('seller.delivery-boys.index');
+    Route::post('/seller/delivery-boys', [SellerDeliveryPartnerController::class, 'store'])->name('seller.delivery-boys.store');
+    Route::put('/seller/delivery-boys/{partner}', [SellerDeliveryPartnerController::class, 'update'])->name('seller.delivery-boys.update');
+
     Route::get('/seller/orders', [
         SellerOrderController::class,
         'index',
@@ -734,6 +777,11 @@ Route::middleware('seller.auth')->group(function () {
         'storeDelivery',
     ])->name('seller.orders.delivery.store');
 
+    Route::post('/seller/orders/{order}/delivery/notify-partner', [
+        SellerOrderController::class,
+        'notifyDeliveryPartner',
+    ])->name('seller.orders.delivery.notify');
+
 
     Route::put('/seller/orders/{order}/delivery', [
         SellerOrderController::class,
@@ -746,10 +794,12 @@ Route::middleware('seller.auth')->group(function () {
         'destroyDelivery',
     ])->name('seller.orders.delivery.destroy');
 
+    Route::get('/seller/orders/{order}/delivery-location', [DeliveryController::class, 'sellerLocation'])->name('seller.orders.delivery.location');
+
 
     Route::post('/assign-delivery/{order}', [
-        DeliveryController::class,
-        'assign',
+        SellerOrderController::class,
+        'storeDelivery',
     ])->name('delivery.assign');
 
 });
@@ -762,6 +812,16 @@ Route::middleware('seller.auth')->group(function () {
 */
 
 Route::middleware('seller.auth')->group(function () {
+
+    Route::get('/seller/payments/upi-reviews', [
+        SellerPaymentController::class,
+        'upiReviews',
+    ])->name('seller.payments.upi-reviews');
+
+    Route::post('/seller/payments/{transaction}/upi-accept', [
+        SellerPaymentController::class,
+        'acceptSellerUpi',
+    ])->name('seller.payments.upi-accept');
 
     Route::get('/seller/payments', [
         SellerPaymentController::class,
@@ -974,6 +1034,10 @@ Route::post('/ai-camera-assistant', [
     'analyze',
 ])->name('ai-camera-assistant.analyze');
 
+Route::get('/ai-camera-assistant/products', [
+    AICameraAssistantController::class,
+    'searchProducts',
+])->middleware('throttle:30,1')->name('ai-camera-assistant.products');
 
 Route::get('/ai-camera-assistant/history', [
     AICameraAssistantController::class,
@@ -1015,6 +1079,26 @@ Route::post('/products/{product}/virtual-try-on', [
     VirtualTryOnController::class,
     'generate',
 ])->middleware('throttle:3,1')->name('products.virtual-try-on.generate');
+
+Route::post('/products/{product}/ai-image', [
+    VirtualTryOnController::class,
+    'generateProductImage',
+])->middleware('throttle:3,1')->name('products.ai-image.generate');
+
+Route::get('/products/{product}/ai-image/result/{token}', [
+    VirtualTryOnController::class,
+    'productImageResult',
+])->where('token', '[A-Za-z0-9]{40}')->name('products.ai-image.result');
+
+Route::get('/products/{product}/ai-image/result/{token}/download', [
+    VirtualTryOnController::class,
+    'downloadProductImage',
+])->where('token', '[A-Za-z0-9]{40}')->name('products.ai-image.download');
+
+Route::delete('/products/{product}/ai-image/result/{token}', [
+    VirtualTryOnController::class,
+    'discardProductImage',
+])->where('token', '[A-Za-z0-9]{40}')->name('products.ai-image.discard');
 
 
 Route::get(
@@ -1148,44 +1232,108 @@ Route::middleware('auth')->group(function () {
             }
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | CHECK SELLER ONLINE PAYMENT AVAILABILITY
-        |--------------------------------------------------------------------------
-        */
+        $subtotal = $total;
+        $sellerSubtotals = [];
+        foreach ($cartItems as $item) {
+            $product = is_array($item) ? ($item['product'] ?? null) : ($item->product ?? null);
+            if (! $product || ! $product->seller) {
+                continue;
+            }
+            $quantity = max(1, (int) (is_array($item) ? ($item['quantity'] ?? 1) : $item->quantity));
+            $sellerSubtotals[$product->seller->id] = ($sellerSubtotals[$product->seller->id] ?? 0)
+                + ((float) $product->effective_price * $quantity);
+        }
 
-        $checkoutSellers = collect($cartItems)
-            ->map(
-                fn ($item) =>
-                    is_array($item)
-                        ? ($item['product'] ?? null)
-                        : ($item->product ?? null)
-            )
-            ->filter()
-            ->map(
-                fn ($product) =>
-                    $product->seller
-            )
-            ->filter()
-            ->unique('id');
+        $sellerDeliveryFees = [];
+        $sellerDeliveryDays = [];
+        $sellerModels = \App\Models\SellerProfile::whereIn('id', array_keys($sellerSubtotals))->get()->keyBy('id');
+        $checkoutService = app(\App\Services\CheckoutOrderService::class);
+        foreach ($sellerSubtotals as $sellerId => $sellerSubtotal) {
+            $seller = $sellerModels->get($sellerId);
+            if (! $seller) {
+                continue;
+            }
+            $sellerDeliveryFees[$sellerId] = $checkoutService->shippingAmountForSubtotal($seller, $sellerSubtotal);
+            $sellerDeliveryDays[] = (int) $seller->preference('estimated_delivery_days', 3);
+        }
+        $shippingTotal = array_sum($sellerDeliveryFees);
+        $estimatedDeliveryDays = $sellerDeliveryDays ? max($sellerDeliveryDays) : 3;
+        $total = $subtotal + $shippingTotal;
 
+        $checkoutSellerPayments = collect();
+        $checkoutSellers = $sellerModels->values();
+        $onlinePaymentAvailable = $checkoutSellers->isNotEmpty()
+            && $checkoutSellers->every(fn ($seller) => $seller->isOnlinePaymentEnabled() && $seller->hasValidPaymentConfiguration());
+        if ($onlinePaymentAvailable) {
+            $itemsBySeller = [];
+            foreach ($cartItems as $item) {
+                $product = is_array($item) ? ($item['product'] ?? null) : ($item->product ?? null);
+                if (! $product || ! $product->seller) {
+                    continue;
+                }
+                $itemsBySeller[(int) $product->seller->id][] = [
+                    'product_id' => $product->id,
+                    'seller_id' => $product->seller->id,
+                    'name' => $product->name,
+                    'quantity' => max(1, (int) (is_array($item) ? ($item['quantity'] ?? 1) : $item->quantity)),
+                    'price' => number_format((float) $product->effective_price, 2, '.', ''),
+                ];
+            }
+            foreach ($itemsBySeller as $sellerId => $sellerItems) {
+                $seller = $sellerModels->get($sellerId);
+                if (! $seller) {
+                    continue;
+                }
+                $amount = $checkoutService->totalForItems([$sellerId => $sellerItems]);
+                $reference = 'SB-' . strtoupper(substr(hash('sha256', session()->getId() . '|' . $sellerId . '|checkout'), 0, 10));
+                $checkoutSellerPayments->push([
+                    'seller_id' => $sellerId,
+                    'seller_name' => $seller->getPaymentBusinessName(),
+                    'upi_id' => $seller->getPaymentUpiId(),
+                    'amount' => $amount,
+                    'upi_uri' => $seller->paymentUriForAmount($amount, $reference),
+                ]);
+            }
+        }
 
-        $onlinePaymentAvailable =
-            $checkoutSellers->isNotEmpty()
-            &&
-            $checkoutSellers->every(
-                fn ($seller) =>
-                    (bool) $seller->online_payments_enabled
-            );
+        $cardPaymentAvailable = app(\App\Services\RazorpayPaymentGateway::class)->isConfigured();
 
+        $couponNow = now();
+        $checkoutCoupons = collect($cartItems)
+            ->map(fn ($item) => is_array($item) ? ($item['product'] ?? null) : ($item->product ?? null))
+            ->filter(fn ($product) => $product
+                && (filled($product->coupon_code) || filled($product->coupon_title))
+                && $product->coupon_starts_at
+                && $product->coupon_ends_at
+                && $product->coupon_starts_at->lte($couponNow)
+                && $product->coupon_ends_at->isAfter($couponNow))
+            ->unique(fn ($product) => strtolower(trim((string) ($product->coupon_code ?: 'product-' . $product->id))))
+            ->map(fn ($product) => [
+                'product_name' => $product->name,
+                'seller_name' => $product->seller?->getPaymentBusinessName() ?: 'Seller',
+                'title' => $product->coupon_title ?: 'Special offer',
+                'code' => strtoupper(trim((string) $product->coupon_code)),
+                'description' => $product->coupon_description,
+                'discount_type' => $product->coupon_discount_type,
+                'discount_value' => $product->coupon_discount_value,
+                'design' => in_array($product->coupon_design, ['royal', 'sunset', 'emerald', 'gold'], true) ? $product->coupon_design : 'royal',
+                'expires_at' => $product->coupon_ends_at,
+            ])
+            ->values();
 
         return view(
             'checkout',
             compact(
                 'cartItems',
                 'total',
-                'onlinePaymentAvailable'
-                , 'addresses'
+                'subtotal',
+                'shippingTotal',
+                'estimatedDeliveryDays',
+                'onlinePaymentAvailable',
+                'addresses',
+                'checkoutCoupons',
+                'cardPaymentAvailable',
+                'checkoutSellerPayments'
             )
         );
 
@@ -1245,9 +1393,7 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware('auth')->group(function () {
 
-    Route::get('/order-success', function () {
-        return view('order-success');
-    })->name('order.success');
+    Route::get('/order-success', [OrderController::class, 'success'])->name('order.success');
 
 
     Route::get('/my-orders', [
@@ -1261,19 +1407,23 @@ Route::middleware('auth')->group(function () {
         'show',
     ])->name('orders.show');
 
+    Route::get('/order-details/{order}/live-location', [DeliveryController::class, 'customerLocation'])->name('orders.live-location');
+
 
     Route::get('/order-details/{order}/receipt', [
         OrderController::class,
         'downloadReceipt',
     ])->name('orders.receipt');
 
+    Route::get('/order-details/{order}/requests', [OrderController::class, 'requestOptions'])->name('returns.options');
 
-    Route::post('/order-details/{order}/cancel', [
-        OrderController::class,
-        'cancel',
-    ])->name('orders.cancel');
+    Route::get('/order-details/{order}/cancel', [OrderController::class, 'createCancellationForm'])->name('orders.cancel.form');
+    Route::post('/order-details/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+
 
     Route::get('/my-returns', [OrderReturnController::class, 'index'])->name('returns.index');
+    Route::get('/order-details/{order}/return', [OrderReturnController::class, 'createForOrder'])->name('returns.order-create');
+    Route::get('/order-details/{order}/returns/{product}', [OrderReturnController::class, 'create'])->name('returns.create');
     Route::post('/order-details/{order}/returns', [OrderReturnController::class, 'store'])->name('returns.store');
     Route::get('/my-returns/{returnRequest}', [OrderReturnController::class, 'show'])->name('returns.show');
     Route::post('/my-returns/{returnRequest}/cancel', [OrderReturnController::class, 'cancel'])->name('returns.cancel');
@@ -1299,6 +1449,11 @@ Route::middleware('auth')->group(function () {
         'show',
     ])->name('payments.show');
 
+    Route::get('/payments/{payment}/seller-upi-status', [
+        PaymentController::class,
+        'sellerUpiStatus',
+    ])->name('payments.seller-upi-status');
+
     Route::post('/payments/{payment}/retry', [
         PaymentController::class,
         'retry',
@@ -1314,6 +1469,11 @@ Route::middleware('auth')->group(function () {
         PaymentController::class,
         'verify',
     ])->name('payments.verify');
+
+    Route::post('/payments/{payment}/seller-upi-reference', [
+        PaymentController::class,
+        'submitSellerUpiReference',
+    ])->name('payments.seller-upi-reference');
 
 
     Route::post('/payments/{payment}/cancel', [
@@ -1819,11 +1979,15 @@ Route::middleware('admin.auth')->group(function () {
         'orderIndex',
     ])->name('admin.orders.index');
 
+    Route::get('/admin/deliveries', [DeliveryController::class, 'adminDeliveryIndex'])->name('admin.deliveries.index');
+
 
     Route::get('/admin/orders/{order}', [
         AdminController::class,
         'orderShow',
     ])->name('admin.orders.show');
+
+    Route::get('/admin/orders/{order}/delivery-location', [DeliveryController::class, 'adminLocation'])->name('admin.orders.delivery.location');
 
 
     /*
@@ -1842,7 +2006,6 @@ Route::middleware('admin.auth')->group(function () {
         AdminController::class,
         'transactionIndex',
     ])->name('admin.transactions.index');
-
 
     Route::get('/admin/revenue', [
         AdminController::class,

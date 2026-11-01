@@ -7,7 +7,8 @@ use App\Models\Order;
 use App\Models\OrderDeliveryDetail;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class SellerOrderController extends Controller
 {
@@ -25,8 +26,9 @@ class SellerOrderController extends Controller
             ->get();
         $this->attachSellerItems($orders, $sellerProductIds);
         $products = Product::whereIn('id', $sellerProductIds)->get()->keyBy('id');
+        $deliveryPartners = DeliveryPartner::where('seller_id', $sellerId)->orderBy('name')->get();
 
-        return view('seller.orders.index', compact('orders', 'products'));
+        return view('seller.orders.index', compact('orders', 'products', 'deliveryPartners'));
     }
 
     public function show(Order $order)
@@ -41,14 +43,18 @@ class SellerOrderController extends Controller
         $order->load('deliveryDetail.deliveryPartner');
         $this->attachSellerItems(collect([$order]), $sellerProductIds);
         $products = Product::whereIn('id', $sellerProductIds)->get()->keyBy('id');
-        $deliveryPartners = DeliveryPartner::latest()->get();
+        if ($order->deliveryDetail?->deliveryPartner && ! $order->deliveryDetail->deliveryPartner->seller_id) {
+            $order->deliveryDetail->deliveryPartner->update(['seller_id' => $sellerId]);
+        }
+        $deliveryPartners = DeliveryPartner::where('seller_id', $sellerId)->orderBy('name')->get();
+        $lastHandoff = $order->deliveryDetail
+            ? DB::table('delivery_partner_order_notifications')->where('delivery_detail_id', $order->deliveryDetail->id)->latest('id')->first()
+            : null;
 
-        return view('seller.orders.show', compact('order', 'products', 'deliveryPartners'));
+        return view('seller.orders.show', compact('order', 'products', 'deliveryPartners', 'lastHandoff'));
     }
 
-    /**
-     * Store (create or update) the delivery boy details for an order.
-     */
+    /** Assign an existing seller-owned delivery profile to an order. */
     public function storeDelivery(Request $request, Order $order)
     {
         if (! session('seller_login')) {
@@ -58,50 +64,53 @@ class SellerOrderController extends Controller
         $this->ensureSellerOwnsOrder($order);
 
         $validated = $request->validate([
-            'name'             => 'required|string|max:255',
-            'phone'            => 'required|string|max:30',
-            'email'            => 'nullable|email|max:255',
-            'vehicle_type'     => 'nullable|string|max:100',
-            'vehicle_number'   => 'nullable|string|max:100',
-            'delivery_date'    => 'nullable|date',
-            'expected_time'    => 'nullable|string|max:100',
-            'notes'            => 'nullable|string|max:1000',
-            'image'            => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-            'status'           => 'nullable|in:Order Placed,Seller Confirmed,Packed,Picked By Delivery Partner,Out For Delivery,Near Customer,Delivered',
+            'delivery_partner_id' => ['required', 'integer', 'exists:delivery_partners,id'],
         ]);
-
-        $partner = $order->deliveryDetail?->deliveryPartner ?? new DeliveryPartner();
-
-        $partner->fill([
-            'name'           => $validated['name'],
-            'phone'          => $validated['phone'],
-            'email'          => $validated['email'] ?? null,
-            'vehicle_type'   => $validated['vehicle_type'] ?? null,
-            'vehicle_number' => $validated['vehicle_number'] ?? null,
-            'delivery_date'  => $validated['delivery_date'] ?? null,
-            'expected_time'  => $validated['expected_time'] ?? null,
-            'notes'          => $validated['notes'] ?? null,
-        ]);
-
-        if ($request->hasFile('image')) {
-            $imageName = time() . '_' . $request->file('image')->getClientOriginalName();
-            File::ensureDirectoryExists(public_path('delivery-partners'));
-            $request->file('image')->move(public_path('delivery-partners'), $imageName);
-            $partner->image = $imageName;
+        $partner = DeliveryPartner::where('seller_id', (int) session('seller_id'))->findOrFail($validated['delivery_partner_id']);
+        $previousDetail = $order->deliveryDetail;
+        $samePartner = $previousDetail && (int) $previousDetail->delivery_partner_id === (int) $partner->id;
+        if ($previousDetail && ! $samePartner) {
+            DB::table('delivery_partner_order_notifications')->where('delivery_detail_id', $previousDetail->id)->delete();
         }
-
-        $partner->save();
-
         OrderDeliveryDetail::updateOrCreate(
             ['order_id' => $order->id],
             [
                 'delivery_partner_id' => $partner->id,
-                'status'              => $validated['status'] ?? ($order->deliveryDetail?->status ?? 'Order Placed'),
-                'assigned_at'         => $order->deliveryDetail?->assigned_at ?? now(),
+                'status'              => $samePartner ? $previousDetail->status : 'Order Placed',
+                'assigned_at'         => $samePartner ? ($previousDetail->assigned_at ?? now()) : now(),
+                'tracking_token'      => $samePartner ? ($previousDetail->tracking_token ?: Str::random(48)) : Str::random(48),
+                'latitude'            => $samePartner ? $previousDetail->latitude : null,
+                'longitude'           => $samePartner ? $previousDetail->longitude : null,
+                'location_updated_at' => $samePartner ? $previousDetail->location_updated_at : null,
+                'delivery_scan_code'  => $samePartner ? $previousDetail->delivery_scan_code : null,
+                'delivered_at'         => $samePartner ? $previousDetail->delivered_at : null,
             ]
         );
+        $order->update(['delivery_status' => $samePartner ? $previousDetail->status : 'Order Placed']);
 
-        return redirect()->route('seller.orders.index')->with('success', 'Delivery boy details saved successfully.');
+        return redirect()->route('seller.orders.show', $order)->with('success', 'Delivery information saved. Review the order details below, then send the order to the delivery partner.');
+    }
+
+    /** Send a saved order assignment to the delivery partner app. */
+    public function notifyDeliveryPartner(Order $order)
+    {
+        if (! session('seller_login')) {
+            return redirect('/seller-login');
+        }
+
+        $this->ensureSellerOwnsOrder($order);
+        $detail = $order->deliveryDetail()->with('deliveryPartner')->firstOrFail();
+        abort_unless((int) $detail->deliveryPartner?->seller_id === (int) session('seller_id'), 404);
+        abort_if(in_array(strtolower((string) $detail->status), ['delivered', 'cancelled'], true), 422, 'A completed order cannot be sent to a delivery partner.');
+
+        DB::table('delivery_partner_order_notifications')->insert([
+            'delivery_detail_id' => $detail->id,
+            'delivery_partner_id' => $detail->delivery_partner_id,
+            'order_id' => $order->id,
+            'created_at' => now(),
+        ]);
+
+        return redirect()->route('seller.orders.show', $order)->with('success', 'Order #' . $order->id . ' sent to ' . $detail->deliveryPartner->name . '. Their delivery app will show the new order alert.');
     }
 
     /**
@@ -129,15 +138,9 @@ class SellerOrderController extends Controller
             return redirect()->route('seller.orders.index')->with('error', 'No delivery details found for this order.');
         }
 
-        $partner = $detail->deliveryPartner;
         $detail->delete();
 
-        // Remove the orphaned delivery partner if it is not linked to any other order.
-        if ($partner && $partner->deliveryDetails()->count() === 0) {
-            $partner->delete();
-        }
-
-        return redirect()->route('seller.orders.index')->with('success', 'Delivery details deleted successfully.');
+        return redirect()->route('seller.orders.index')->with('success', 'Order assignment removed. The saved delivery boy profile was kept.');
     }
 
     /** Supply only the seller-owned portion of each mixed-seller order to Blade. */

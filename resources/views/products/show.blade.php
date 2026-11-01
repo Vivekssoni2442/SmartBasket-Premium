@@ -1624,75 +1624,29 @@
 /* =========================================================
    PRODUCTS PAGE — FULL WIDTH PREMIUM TASKBAR
 ========================================================= */
-:root{
-    --sb-tbar-bg:rgba(255,255,255,.92);
-    --sb-tbar-panel:#ffffff;
-    --sb-tbar-text:#102033;
-    --sb-tbar-muted:#64748b;
-    --sb-tbar-border:rgba(37,99,235,.13);
-    --sb-tbar-blue:#2563eb;
-    --sb-tbar-blue2:#4f46e5;
-    --sb-tbar-soft:#eef4ff;
-    --sb-tbar-shadow:0 16px 45px rgba(15,23,42,.12);
-}
-html[data-theme="dark"],html[data-sb-theme="dark"]{
-    --sb-tbar-bg:rgba(5,11,22,.94);
-    --sb-tbar-panel:#0b1728;
-    --sb-tbar-text:#f7fbff;
-    --sb-tbar-muted:#9aacbf;
-    --sb-tbar-border:rgba(101,165,255,.20);
-    --sb-tbar-blue:#65a5ff;
-    --sb-tbar-blue2:#8b7cff;
-    --sb-tbar-soft:rgba(37,99,235,.16);
-    --sb-tbar-shadow:0 20px 60px rgba(0,0,0,.42);
-}
 
-.sb-products-taskbar{
-    position:sticky;top:0;left:0;right:0;z-index:99990;
-    width:100%;min-height:76px;padding:8px 12px;
-    display:flex;align-items:center;gap:9px;
-    background:var(--sb-tbar-bg);
-    border-bottom:1px solid var(--sb-tbar-border);
-    box-shadow:var(--sb-tbar-shadow);
-    backdrop-filter:blur(24px) saturate(155%);-webkit-backdrop-filter:blur(24px) saturate(155%);
-}
-.sb-products-taskbar:before{
-    content:"";position:absolute;left:0;right:0;bottom:-2px;height:2px;
-    background:linear-gradient(90deg,#00e5ff,#287bff,#8b35ff,#ff20c8,#ff405d,#ffe45c,#00e5ff);
-    background-size:600% 100%;animation:sbTaskbarRGB 8s linear infinite;pointer-events:none;
-}
-@keyframes sbTaskbarRGB{to{background-position:600% 50%}}
-.sb-products-brand{
-    flex:0 0 208px;min-width:190px;height:58px;padding:5px 10px 5px 6px;
-    display:flex;align-items:center;gap:10px;border-radius:18px;
-    color:var(--sb-tbar-text)!important;text-decoration:none!important;
-    border:1px solid transparent;transition:.22s ease;
-}
-.sb-products-brand:hover{background:var(--sb-tbar-soft);border-color:var(--sb-tbar-border);transform:translateY(-1px)}
-.sb-brand-mark{width:45px;height:45px;display:grid;place-items:center;border-radius:14px;color:#fff;
-    background:linear-gradient(135deg,#2563eb,#7c3aed);box-shadow:0 8px 22px rgba(37,99,235,.30),inset 0 1px rgba(255,255,255,.25);font-size:17px}
-.sb-brand-copy{display:flex;flex-direction:column;line-height:1.05;min-width:0}.sb-brand-copy strong{font-size:14px;letter-spacing:.4px}.sb-brand-copy small{margin-top:5px;font-size:8px;letter-spacing:1.25px;color:var(--sb-tbar-muted);font-weight:900}
-.sb-products-nav{display:flex;align-items:center;gap:6px;flex:1;min-width:0}
-.sb-pnav-btn{
-    position:relative;flex:1;min-width:82px;height:50px;padding:0 10px;
-    display:flex;align-items:center;justify-content:center;gap:7px;
-    border:1px solid rgba(37,99,235,.13);border-radius:14px;
-    background:linear-gradient(180deg,var(--sb-tbar-panel),var(--sb-tbar-soft));
-    color:var(--sb-tbar-muted)!important;font-size:11px;font-weight:900;
-    text-decoration:none!important;white-space:nowrap;cursor:pointer;
-    box-shadow:0 5px 16px rgba(37,99,235,.06);transition:.2s ease;
-}
-.sb-pnav-btn i{font-size:13px;width:16px;text-align:center}.sb-pnav-btn:hover{color:var(--sb-tbar-blue)!important;border-color:rgba(37,99,235,.32);transform:translateY(-2px);box-shadow:0 10px 25px rgba(37,99,235,.13)}
-.sb-pnav-btn.is-active{color:#fff!important;border-color:transparent;background:linear-gradient(135deg,#2563eb,#4f46e5);box-shadow:0 10px 28px rgba(37,99,235,.28)}
-.sb-pnav-aihub{color:#2563eb!important}.sb-pnav-aihub:hover{color:#fff!important;background:linear-gradient(135deg,#2563eb,#7c3aed);border-color:transparent}
-.sb-pnav-smart-ai{color:#4f46e5!important}.sb-pnav-smart-ai:hover{color:#fff!important;background:linear-gradient(135deg,#4f46e5,#9333ea);border-color:transparent}
-.sb-smart-orb{width:25px;height:25px;display:grid;place-items:center;border-radius:8px;color:#fff;background:linear-gradient(135deg,#4f46e5,#9333ea);box-shadow:0 5px 14px rgba(79,70,229,.25);font-size:11px}.sb-online-dot{position:absolute;top:7px;right:8px;width:6px;height:6px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.13)}
-.sb-taskbar-user{flex:0 1 145px;min-width:105px;height:50px;padding:0 10px;display:flex;align-items:center;gap:8px;border:1px solid var(--sb-tbar-border);border-radius:14px;background:var(--sb-tbar-panel);box-shadow:0 5px 16px rgba(37,99,235,.05);animation:sbHiFloat 3s ease-in-out infinite}
-@keyframes sbHiFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
-.sb-user-dot{width:31px;height:31px;display:grid;place-items:center;border-radius:10px;background:var(--sb-tbar-soft);color:var(--sb-tbar-blue);flex:0 0 31px}.sb-user-text{display:flex;flex-direction:column;min-width:0;line-height:1.05}.sb-user-text small{font-size:8px;color:var(--sb-tbar-muted);font-weight:800}.sb-user-text strong{margin-top:4px;font-size:10px;color:var(--sb-tbar-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:92px}
-.sb-products-more{flex:0 0 52px;height:50px;border:1px solid var(--sb-tbar-border);border-radius:14px;background:var(--sb-tbar-panel);color:var(--sb-tbar-text);cursor:pointer;font-size:17px;transition:.2s ease;box-shadow:0 5px 16px rgba(37,99,235,.06)}.sb-products-more:hover{color:#fff;background:linear-gradient(135deg,#2563eb,#7c3aed);border-color:transparent;transform:translateY(-2px)}
-.sb-products-more-menu{position:fixed;z-index:100000;top:84px;right:12px;width:290px;max-height:calc(100vh - 100px);overflow:auto;padding:10px;border:1px solid var(--sb-tbar-border);border-radius:22px;background:var(--sb-tbar-bg);box-shadow:0 30px 90px rgba(0,0,0,.28);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);display:none}.sb-products-more-menu.is-open{display:block;animation:sbMenuIn .2s ease}.sb-more-heading{padding:9px 10px 11px;border-bottom:1px solid var(--sb-tbar-border);margin-bottom:5px}.sb-more-heading span{display:block;color:var(--sb-tbar-text);font-size:11px;font-weight:950;letter-spacing:.7px}.sb-more-heading small{display:block;margin-top:4px;color:var(--sb-tbar-muted);font-size:8px}.sb-more-link{width:100%;min-height:42px;padding:0 11px;display:flex;align-items:center;gap:10px;border:0;border-radius:12px;background:transparent;color:var(--sb-tbar-text)!important;text-decoration:none!important;font-size:10px;font-weight:850;cursor:pointer}.sb-more-link i{width:18px;text-align:center;color:var(--sb-tbar-blue)}.sb-more-link:hover{background:var(--sb-tbar-soft);color:var(--sb-tbar-blue)!important;transform:translateX(2px)}.sb-more-separator{height:1px;margin:7px 5px;background:var(--sb-tbar-border)}.sb-more-title{display:flex;gap:8px;align-items:center;padding:5px 10px 7px;color:var(--sb-tbar-muted);font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}.sb-theme-switcher{display:grid;grid-template-columns:1fr 1fr;gap:6px}.sb-theme-choice{height:38px;border:1px solid var(--sb-tbar-border);border-radius:11px;background:var(--sb-tbar-panel);color:var(--sb-tbar-text);font-size:10px;font-weight:850;cursor:pointer}.sb-theme-choice:hover,.sb-theme-choice.is-selected{color:#fff;background:linear-gradient(135deg,#2563eb,#7c3aed);border-color:transparent}.sb-theme-choice i{margin-right:5px}.sb-more-action{font-family:inherit;text-align:left}.sb-logout-form{margin:0}.sb-logout{color:#e05b72!important}.sb-logout i{color:#e05b72!important}
-@keyframes sbMenuIn{from{opacity:0;transform:translateY(-8px) scale(.98)}to{opacity:1;transform:none}}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* AI HUB left button: existing project component remains the single left-side AI HUB launcher */
 .ai-hub-fab{z-index:99980!important}.ai-hub-drawer{z-index:99999!important}
@@ -1704,9 +1658,9 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
 /* Robot launcher is hidden; its original panel remains fully functional */
 
 
-@media(max-width:1350px){.sb-products-brand{flex-basis:185px;min-width:175px}.sb-pnav-btn{min-width:70px;padding:0 7px;font-size:10px}.sb-taskbar-user{flex-basis:125px}}
-@media(max-width:1120px){.sb-brand-copy{display:none}.sb-products-brand{flex-basis:65px;min-width:65px;justify-content:center;padding:5px}.sb-pnav-btn span{display:none}.sb-pnav-btn{min-width:52px;padding:0}.sb-taskbar-user{flex-basis:90px;min-width:90px}.sb-user-text strong{max-width:52px}}
-@media(max-width:700px){.sb-products-taskbar{padding:7px;gap:5px;overflow-x:auto;scrollbar-width:none}.sb-products-taskbar::-webkit-scrollbar{display:none}.sb-products-brand{position:sticky;left:0;z-index:2;flex-basis:52px;min-width:52px;height:48px}.sb-brand-mark{width:39px;height:39px}.sb-products-nav{flex:0 0 auto}.sb-pnav-btn{height:46px;min-width:48px;flex:0 0 48px;border-radius:12px}.sb-taskbar-user{flex:0 0 110px;height:46px}.sb-products-more{flex:0 0 46px;height:46px}.sb-products-more-menu{top:66px;right:7px;width:min(290px,calc(100vw - 14px))}}
+
+
+
 
         /* =====================================================
            PRODUCT DETAIL — PREMIUM REDESIGN
@@ -1812,6 +1766,33 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
         #tryOnPreview{max-height:320px;object-fit:contain;background:var(--card2);padding:6px}
         #tryOnResult,#tryOnOriginal,#tryOnComparisonResult{max-height:520px;object-fit:contain;background:var(--card2);padding:6px}
         #tryOnForm.is-processing{opacity:.72;pointer-events:none}
+        .product-ai-studio{margin-top:26px;padding:clamp(18px,3vw,28px);border:1px solid rgba(112,91,230,.25);border-radius:24px;background:linear-gradient(145deg,color-mix(in srgb,var(--card) 96%,#ebe9ff),var(--card));box-shadow:0 18px 48px rgba(77,65,170,.10)}
+        .product-ai-studio__heading{display:flex;align-items:flex-start;gap:14px}
+        .product-ai-studio__badge,.product-ai-message__avatar{display:grid;place-items:center;flex:0 0 auto;width:42px;height:42px;border:1px solid rgba(125,105,255,.24);border-radius:14px;background:linear-gradient(145deg,#f0edff,#e1e7ff);color:#604ee0;font-size:22px}
+        .product-ai-studio__eyebrow{margin:0 0 4px;color:#6758cc;font-size:10px;font-weight:900;letter-spacing:1.4px}
+        .product-ai-studio__heading h2{margin:0;color:var(--text);font-size:clamp(19px,2.2vw,25px);font-weight:850}
+        .product-ai-studio__heading p:last-child{margin:6px 0 0;color:var(--muted);font-size:13px;line-height:1.6}
+        .product-ai-chat{display:grid;gap:14px;max-height:460px;overflow:auto;margin-top:22px;padding:15px;border:1px solid var(--border);border-radius:18px;background:color-mix(in srgb,var(--card2) 80%,transparent)}
+        .product-ai-message{display:flex;align-items:flex-start;gap:10px;max-width:min(92%,680px)}
+        .product-ai-message--user{justify-self:end;padding:11px 14px;border:1px solid rgba(91,76,220,.16);border-radius:17px 17px 4px 17px;background:linear-gradient(135deg,#f1efff,#e7edff)}
+        .product-ai-message p{margin:0;color:var(--text);font-size:13px;line-height:1.6}
+        .product-ai-message__avatar{width:30px;height:30px;border-radius:10px;font-size:16px}
+        .product-ai-message__result{display:block;width:min(100%,520px);max-height:520px;object-fit:contain;margin:12px 0 0;border:1px solid var(--border);border-radius:16px;background:var(--card)}
+        .product-ai-message__actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+        .product-ai-message__actions a,.product-ai-message__actions button{min-height:36px;padding:7px 11px;border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--text);font-size:12px;font-weight:750;text-decoration:none;cursor:pointer}
+        .product-ai-prompts{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+        .product-ai-prompts button{padding:8px 11px;border:1px solid rgba(112,91,230,.22);border-radius:999px;background:color-mix(in srgb,var(--card) 88%,#e8e6ff);color:var(--text);font-size:11px;font-weight:700;cursor:pointer;transition:transform .2s,border-color .2s,box-shadow .2s}
+        .product-ai-prompts button:hover{transform:translateY(-1px);border-color:#8172ed;box-shadow:0 6px 18px rgba(91,76,220,.12)}
+        .product-ai-composer{padding:11px;border:1px solid var(--border);border-radius:17px;background:var(--card);box-shadow:0 8px 24px rgba(15,23,42,.05)}
+        .product-ai-composer textarea{display:block;width:100%;resize:vertical;min-height:58px;border:0;outline:0;background:transparent;color:var(--text);font:inherit;font-size:13px}
+        .product-ai-composer__bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:9px;border-top:1px solid var(--border)}
+        .product-ai-consent{display:flex;align-items:flex-start;gap:7px;max-width:65%;color:var(--muted);font-size:10px;line-height:1.45}
+        .product-ai-consent input{margin-top:2px;accent-color:#6c5ce7}
+        .product-ai-composer .btnx{min-height:40px;padding:8px 13px;font-size:12px}
+        .product-ai-composer .btnx:disabled{opacity:.5;cursor:not-allowed}
+        .product-ai-status{margin:9px 2px 0;color:var(--muted);font-size:10px;line-height:1.5}
+        .product-ai-status.is-error{color:#c24153}
+        .product-ai-status.is-loading{color:#6758cc}
         @media(max-width:575px){.tryon-product-ref img{width:60px;height:60px}.tryon-product-ref{align-items:flex-start}}
         .product-detail-page .related{max-width:1600px;margin:42px auto 0}
         .product-detail-page .related-card{border-radius:20px;box-shadow:0 14px 42px rgba(15,23,42,.09)}
@@ -1819,7 +1800,7 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
         .product-detail-page .related-body{padding:15px}
 
         /* Canonical Products-page taskbar takes the place of the old detail-page topbar. */
-        .sb-products-taskbar{margin:0!important}
+
 
         @media(max-width:991px){
             .wrap.product-detail-page{padding:18px 14px 60px}
@@ -1836,7 +1817,25 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
             .product-detail-page .title{font-size:32px}
             .product-detail-page .actions>*{width:100%}
             .product-detail-page .btnx{width:100%}
+            .product-ai-composer__bottom{align-items:stretch;flex-direction:column}
+            .product-ai-consent{max-width:100%}
+            .product-ai-composer .btnx{width:100%}
+            .product-ai-message{max-width:100%}
         }
+
+        .product-promotion { margin: 18px 0; padding: 17px 19px; border: 1px solid rgba(114,146,208,.24); border-radius: 18px; color: var(--text); background: linear-gradient(135deg,var(--card),var(--card2)); box-shadow: var(--shadow); }
+        .product-promotion__sale { border-color: rgba(249,115,22,.28); background: linear-gradient(120deg,rgba(249,115,22,.12),var(--card) 55%,rgba(234,179,8,.10)); }
+        .product-promotion__coupon { border-color: rgba(99,102,241,.32); }
+        .product-promotion__coupon[data-design="sunset"] { border-color: rgba(249,115,22,.38); background: linear-gradient(120deg,rgba(249,115,22,.16),var(--card),rgba(236,72,153,.10)); }
+        .product-promotion__coupon[data-design="emerald"] { border-color: rgba(16,185,129,.38); background: linear-gradient(120deg,rgba(16,185,129,.15),var(--card),rgba(20,184,166,.09)); }
+        .product-promotion__coupon[data-design="gold"] { border-color: rgba(234,179,8,.42); background: linear-gradient(120deg,rgba(234,179,8,.16),var(--card),rgba(245,158,11,.09)); }
+        .product-promotion__eyebrow { margin-bottom: 5px; color: var(--muted); font-size: .72rem; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
+        .product-promotion__title { margin: 0; color: var(--text); font-size: 1.08rem; font-weight: 850; }
+        .product-promotion__body { margin: 6px 0 0; color: var(--muted); line-height: 1.55; }
+        .product-promotion__code { display: inline-flex; align-items:center; gap:8px; margin-top:12px; padding:8px 12px; border:1px dashed rgba(99,102,241,.52); border-radius:10px; color:var(--text); background:rgba(99,102,241,.08); font:inherit; font-weight:850; letter-spacing:.08em; cursor:pointer; }
+        .product-countdown { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+        .product-countdown span { min-width:55px; padding:7px 9px; border:1px solid rgba(114,146,208,.22); border-radius:10px; color:var(--text); background:var(--card); text-align:center; font-size:.78rem; font-weight:800; }
+        .product-countdown small { display:block; color:var(--muted); font-size:.58rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
 
     </style>
 
@@ -1860,112 +1859,7 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
     $ordersRoute = Route::has('orders.index') ? 'orders.index' : (Route::has('orders') ? 'orders' : null);
 @endphp
 
-<nav class="sb-products-taskbar" id="sbProductsTaskbar" data-ve="customer.shared.taskbar" aria-label="Customer Navigation">
-    <a href="{{ route('products.index') }}" class="sb-products-brand" aria-label="Smart Basket Products">
-        <span class="sb-brand-mark"><i class="fa-solid fa-basket-shopping"></i></span>
-        <span class="sb-brand-copy">
-            <strong>SMART BASKET</strong>
-            <small>CUSTOMER PANEL</small>
-        </span>
-    </a>
-
-    <div class="sb-products-nav">
-        @if(Route::has('products.index'))
-            <a href="{{ route('products.index') }}" class="sb-pnav-btn {{ $currentRoute === 'products.index' ? 'is-active' : '' }}">
-                <i class="fa-solid fa-store"></i><span>Products</span>
-            </a>
-        @endif
-
-        @if($ordersRoute)
-            <a href="{{ route($ordersRoute) }}" class="sb-pnav-btn {{ $currentRoute === $ordersRoute ? 'is-active' : '' }}">
-                <i class="fa-solid fa-box"></i><span>Orders</span>
-            </a>
-        @endif
-
-        @if(Route::has('cart.index'))
-            <a href="{{ route('cart.index') }}" class="sb-pnav-btn {{ $currentRoute === 'cart.index' ? 'is-active' : '' }}">
-                <i class="fa-solid fa-cart-shopping"></i><span>Cart</span>
-            </a>
-        @endif
-
-        @if(Route::has('wishlist'))
-            <a href="{{ route('wishlist') }}" class="sb-pnav-btn {{ $currentRoute === 'wishlist' ? 'is-active' : '' }}">
-                <i class="fa-regular fa-heart"></i><span>Wishlist</span>
-            </a>
-        @endif
-
-        @if(Route::has('profile'))
-            <a href="{{ route('profile') }}" class="sb-pnav-btn {{ $currentRoute === 'profile' ? 'is-active' : '' }}">
-                <i class="fa-regular fa-user"></i><span>Profile</span>
-            </a>
-        @endif
-
-        @if(Route::has('settings'))
-            <a href="{{ route('settings') }}" class="sb-pnav-btn {{ $currentRoute === 'settings' ? 'is-active' : '' }}">
-                <i class="fa-solid fa-gear"></i><span>Settings</span>
-            </a>
-        @endif
-
-        <button type="button" class="sb-pnav-btn sb-pnav-aihub" id="sbProductsAIHub" data-sb-ai-hub-open title="Open AI Hub">
-            <i class="fa-solid fa-wand-magic-sparkles"></i><span>AI HUB</span>
-        </button>
-
-        <button type="button" class="sb-pnav-btn sb-pnav-smart-ai" id="sbProductsSmartAI" title="Open Smart AI">
-            <span class="sb-smart-orb"><i class="fa-solid fa-robot"></i></span><span>Smart AI</span><b class="sb-online-dot"></b>
-        </button>
-    </div>
-
-    <div class="sb-taskbar-user">
-        <span class="sb-user-dot"><i class="fa-regular fa-user"></i></span>
-        <span class="sb-user-text"><small>Hi,</small><strong>{{ auth()->user()->name ?? 'Customer' }}</strong></span>
-    </div>
-
-    <button type="button" class="sb-products-more" id="sbProductsMore" aria-expanded="false" aria-controls="sbProductsMoreMenu" title="More options">
-        <i class="fa-solid fa-ellipsis-vertical"></i>
-    </button>
-</nav>
-
-<div class="sb-products-more-menu" id="sbProductsMoreMenu" aria-hidden="true">
-    <div class="sb-more-heading"><span>SMART BASKET</span><small>More options</small></div>
-
-    @if(Route::has('products.index'))
-        <a href="{{ route('products.index') }}" class="sb-more-link"><i class="fa-solid fa-house"></i><span>Products Home</span></a>
-    @endif
-    @if($ordersRoute)
-        <a href="{{ route($ordersRoute) }}" class="sb-more-link"><i class="fa-solid fa-box"></i><span>My Orders</span></a>
-    @endif
-    @if(Route::has('cart.index'))
-        <a href="{{ route('cart.index') }}" class="sb-more-link"><i class="fa-solid fa-cart-shopping"></i><span>Cart</span></a>
-    @endif
-    @if(Route::has('wishlist'))
-        <a href="{{ route('wishlist') }}" class="sb-more-link"><i class="fa-regular fa-heart"></i><span>Wishlist</span></a>
-    @endif
-    @if(Route::has('profile'))
-        <a href="{{ route('profile') }}" class="sb-more-link"><i class="fa-regular fa-user"></i><span>Profile</span></a>
-    @endif
-    @if(Route::has('settings'))
-        <a href="{{ route('settings') }}" class="sb-more-link"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
-    @endif
-
-    <div class="sb-more-separator"></div>
-    <div class="sb-more-title"><i class="fa-solid fa-palette"></i><span>Theme</span></div>
-    <div class="sb-theme-switcher">
-        <button type="button" class="sb-theme-choice" data-sb-set-theme="light"><i class="fa-solid fa-sun"></i><span>Light</span></button>
-        <button type="button" class="sb-theme-choice" data-sb-set-theme="dark"><i class="fa-solid fa-moon"></i><span>Dark</span></button>
-    </div>
-
-    <div class="sb-more-separator"></div>
-    <button type="button" class="sb-more-link sb-more-action" data-sb-more-aihub><i class="fa-solid fa-wand-magic-sparkles"></i><span>Open AI HUB</span></button>
-    <button type="button" class="sb-more-link sb-more-action" data-sb-more-smart-ai><i class="fa-solid fa-robot"></i><span>Open Smart AI</span></button>
-
-    @if(Route::has('logout'))
-        <div class="sb-more-separator"></div>
-        <form method="POST" action="{{ route('logout') }}" class="sb-logout-form">
-            @csrf
-            <button type="submit" class="sb-more-link sb-logout"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></button>
-        </form>
-    @endif
-</div>
+<x-products-customer-taskbar :include-robot="false" />
 @endauth
 
 <div class="sb-products-smart-ai-host" aria-hidden="false">
@@ -1974,64 +1868,7 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
 
 <x-ai-hub-sidebar :without-menu="true" />
 
-<script>
-(function(){
-    'use strict';
-    if(window.__SBProductsPremiumTaskbar) return;
-    window.__SBProductsPremiumTaskbar=true;
 
-    const more=document.getElementById('sbProductsMore');
-    const menu=document.getElementById('sbProductsMoreMenu');
-    const aiHubBtn=document.getElementById('sbProductsAIHub');
-    const smartAiBtn=document.getElementById('sbProductsSmartAI');
-
-    function closeMore(){
-        if(menu){menu.classList.remove('is-open');menu.setAttribute('aria-hidden','true');}
-        if(more) more.setAttribute('aria-expanded','false');
-    }
-    function openMore(){
-        if(menu){menu.classList.add('is-open');menu.setAttribute('aria-hidden','false');}
-        if(more) more.setAttribute('aria-expanded','true');
-    }
-    if(more){
-        more.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();menu&&menu.classList.contains('is-open')?closeMore():openMore();});
-    }
-    document.addEventListener('click',function(e){if(menu&&more&&!menu.contains(e.target)&&!more.contains(e.target))closeMore();});
-    document.addEventListener('keydown',function(e){if(e.key==='Escape')closeMore();});
-
-    function openHub(){
-        const trigger=document.querySelector('[data-ai-hub-open]');
-        if(trigger) trigger.click();
-        closeMore();
-    }
-    function openRobot(){
-        const trigger=document.querySelector('[data-smart-ai-open]');
-        if(trigger) trigger.click();
-        closeMore();
-    }
-    if(aiHubBtn) aiHubBtn.addEventListener('click',openHub);
-    if(smartAiBtn) smartAiBtn.addEventListener('click',openRobot);
-    document.querySelectorAll('[data-sb-more-aihub]').forEach(b=>b.addEventListener('click',openHub));
-    document.querySelectorAll('[data-sb-more-smart-ai]').forEach(b=>b.addEventListener('click',openRobot));
-
-    function setTheme(theme){
-        if(!['light','dark'].includes(theme)) return;
-        localStorage.setItem('sb-theme',theme);
-        document.documentElement.setAttribute('data-theme',theme);
-        document.documentElement.setAttribute('data-sb-theme',theme);
-        document.body.setAttribute('data-sb-theme',theme);
-        window.SB_THEME=theme;
-        try{window.dispatchEvent(new CustomEvent('sb-theme-changed',{detail:{theme:theme}}));}catch(e){}
-        try{window.dispatchEvent(new CustomEvent('smartbasket-theme-changed',{detail:{theme:theme}}));}catch(e){}
-        updateThemeButtons(theme);
-    }
-    function updateThemeButtons(theme){
-        document.querySelectorAll('[data-sb-set-theme]').forEach(function(btn){btn.classList.toggle('is-selected',btn.getAttribute('data-sb-set-theme')===theme);});
-    }
-    document.querySelectorAll('[data-sb-set-theme]').forEach(function(btn){btn.addEventListener('click',function(){setTheme(btn.getAttribute('data-sb-set-theme'));});});
-    updateThemeButtons(document.documentElement.getAttribute('data-theme')||localStorage.getItem('sb-theme')||'dark');
-})();
-</script>
 
 
 <div class="wrap product-detail-page">
@@ -2174,15 +2011,8 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
 
                     @php
 
-                        $hasDiscount =
-                            $product->discount_price !== null &&
-                            (float)$product->discount_price <
-                            (float)$product->price;
-
-                        $finalPrice =
-                            $hasDiscount
-                            ? (float)$product->discount_price
-                            : (float)$product->price;
+                        $finalPrice = (float) $product->effective_price;
+                        $hasDiscount = $finalPrice < (float) $product->price;
 
                         $discountPercent =
                             $hasDiscount &&
@@ -2221,6 +2051,42 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
 
                     </div>
 
+                    @php
+                        $promoNow = now();
+                        $saleIsScheduled = $product->sale_price !== null
+                            && $product->sale_starts_at && $product->sale_ends_at
+                            && $product->sale_ends_at->isAfter($promoNow)
+                            && (float) $product->sale_price < (float) $product->price;
+                        $saleIsLive = $saleIsScheduled && $product->sale_starts_at->lte($promoNow);
+                        $saleCountdownTarget = $saleIsLive ? $product->sale_ends_at : $product->sale_starts_at;
+                        $couponIsConfigured = filled($product->coupon_title) || filled($product->coupon_code);
+                        $couponIsActive = $couponIsConfigured
+                            && (!$product->coupon_starts_at || $product->coupon_starts_at->lte($promoNow))
+                            && (!$product->coupon_ends_at || $product->coupon_ends_at->isAfter($promoNow));
+                    @endphp
+
+                    @if($saleIsScheduled)
+                        <section class="product-promotion product-promotion__sale" aria-label="Product sale">
+                            <div class="product-promotion__eyebrow"><i class="fa-solid fa-bolt"></i> {{ $saleIsLive ? 'Live sale' : 'Upcoming sale' }}</div>
+                            <h2 class="product-promotion__title">{{ $product->sale_title ?: 'Limited time sale' }}</h2>
+                            @if($product->sale_offer)<p class="product-promotion__body">{{ $product->sale_offer }}</p>@endif
+                            <div class="product-promotion__body">{{ $saleIsLive ? 'Offer ends in' : 'Sale starts in' }}</div>
+                            <div class="product-countdown" data-countdown="{{ $saleCountdownTarget->toIso8601String() }}" data-countdown-reload>
+                                <span data-days>00<small>Days</small></span><span data-hours>00<small>Hours</small></span><span data-minutes>00<small>Minutes</small></span><span data-seconds>00<small>Seconds</small></span>
+                            </div>
+                        </section>
+                    @endif
+
+                    @if($couponIsActive)
+                        <section class="product-promotion product-promotion__coupon" data-design="{{ in_array($product->coupon_design, ['royal','sunset','emerald','gold'], true) ? $product->coupon_design : 'royal' }}" aria-label="Product coupon">
+                            <div class="product-promotion__eyebrow"><i class="fa-solid fa-ticket"></i> Seller coupon</div>
+                            <h2 class="product-promotion__title">{{ $product->coupon_title ?: 'Special coupon' }}</h2>
+                            @if($product->coupon_description)<p class="product-promotion__body">{{ $product->coupon_description }}</p>@endif
+                            @if($product->coupon_discount_value !== null)<p class="product-promotion__body">{{ $product->coupon_discount_type === 'percent' ? number_format((float) $product->coupon_discount_value, 2) . '% off' : '₹' . number_format((float) $product->coupon_discount_value, 2) . ' off' }}</p>@endif
+                            @if($product->coupon_code)<button type="button" class="product-promotion__code" data-copy-coupon="{{ $product->coupon_code }}"><i class="fa-regular fa-copy"></i> <span>{{ $product->coupon_code }}</span></button>@endif
+                            @if($product->coupon_ends_at)<div class="product-promotion__body">Expires in</div><div class="product-countdown" data-countdown="{{ $product->coupon_ends_at->toIso8601String() }}" data-countdown-reload><span data-days>00<small>Days</small></span><span data-hours>00<small>Hours</small></span><span data-minutes>00<small>Minutes</small></span><span data-seconds>00<small>Seconds</small></span></div>@endif
+                        </section>
+                    @endif
 
                     @if($product->description)
 
@@ -2395,7 +2261,7 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
 
                     <div class="actions">
 
-                       
+
 
 
                         @auth
@@ -2407,7 +2273,7 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
 
                                 @csrf
 
-                               
+
 
                             </form>
 
@@ -2494,6 +2360,45 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
 
                     </form>
 
+
+                    @php
+                        $productImageAiReady = config('services.virtual_tryon.provider') === 'openai'
+                            && filled(config('services.virtual_tryon.openai.key'));
+                    @endphp
+                    <section class="product-ai-studio" id="productAiStudio" aria-labelledby="productAiTitle">
+                        <div class="product-ai-studio__heading">
+                            <div class="product-ai-studio__badge" aria-hidden="true">✦</div>
+                            <div>
+                                <p class="product-ai-studio__eyebrow">SMART BASKET AI</p>
+                                <h2 id="productAiTitle">Create an image with this product</h2>
+                                <p>Describe a scene and AI will create a new image using this exact product as its reference.</p>
+                            </div>
+                        </div>
+
+                        <div class="product-ai-chat" id="productAiChat" aria-live="polite">
+                            <div class="product-ai-message product-ai-message--assistant">
+                                <span class="product-ai-message__avatar" aria-hidden="true">✦</span>
+                                <p>I can create a fresh product scene for <strong>{{ $product->name }}</strong>. Try “on a warm wooden table in soft morning light” or describe your own idea.</p>
+                            </div>
+                        </div>
+
+                        <div class="product-ai-prompts" aria-label="Suggested image ideas">
+                            <button type="button" data-ai-prompt="Show this product in a clean premium studio with soft natural lighting">Premium studio</button>
+                            <button type="button" data-ai-prompt="Place this product in a cozy modern home, with warm daylight and a simple background">At home</button>
+                            <button type="button" data-ai-prompt="Create an elegant festive gift scene around this product, with tasteful warm lights">Festive scene</button>
+                        </div>
+
+                        <form class="product-ai-composer" id="productAiForm" action="{{ route('products.ai-image.generate', $product) }}" method="POST">
+                            @csrf
+                            <label class="visually-hidden" for="productAiPrompt">Describe the image you want</label>
+                            <textarea id="productAiPrompt" name="prompt" rows="2" maxlength="500" placeholder="Describe the scene you want for this product…" required></textarea>
+                            <div class="product-ai-composer__bottom">
+                                <label class="product-ai-consent"><input type="checkbox" name="privacy_consent" value="1" required> I agree to send this catalogue product image and prompt to the configured AI provider.</label>
+                                <button class="btnx primary" id="productAiSubmit" type="submit" {{ $productImageAiReady ? '' : 'disabled' }}><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> Create image</button>
+                            </div>
+                        </form>
+                        <p class="product-ai-status" id="productAiStatus" role="status">@if($productImageAiReady) Generated images are private to your session and expire after 24 hours. @else AI image creation is currently unavailable. The administrator needs to configure the image provider. @endif</p>
+                    </section>
 
                     <!-- AI TRY ON -->
 
@@ -2721,16 +2626,7 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
 
                     @php
 
-                        $relatedPrice =
-                            (float)(
-                                $related->discount_price &&
-                                $related->discount_price <
-                                $related->price
-
-                                    ? $related->discount_price
-
-                                    : $related->price
-                            );
+                            $relatedPrice = (float) $related->effective_price;
 
                     @endphp
 
@@ -3265,5 +3161,153 @@ html[data-theme="dark"] .ai-hub-drawer{background:linear-gradient(145deg,#09111f
 </script>
 
 
+<script>
+(() => {
+    const form = document.getElementById('productAiForm');
+    if (!form) return;
+
+    const prompt = document.getElementById('productAiPrompt');
+    const chat = document.getElementById('productAiChat');
+    const status = document.getElementById('productAiStatus');
+    const submit = document.getElementById('productAiSubmit');
+
+    document.querySelectorAll('[data-ai-prompt]').forEach((button) => {
+        button.addEventListener('click', () => {
+            prompt.value = button.dataset.aiPrompt || '';
+            prompt.focus();
+        });
+    });
+
+    function appendMessage(className, content) {
+        const message = document.createElement('div');
+        message.className = `product-ai-message ${className}`;
+        message.append(content);
+        chat.append(message);
+        chat.scrollTop = chat.scrollHeight;
+        return message;
+    }
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (!form.reportValidity()) return;
+
+        const requestPrompt = prompt.value.trim();
+        const userMessage = document.createElement('p');
+        userMessage.textContent = requestPrompt;
+        appendMessage('product-ai-message--user', userMessage);
+
+        submit.disabled = true;
+        submit.innerHTML = '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Creating…';
+        status.textContent = 'Creating a new product image. This may take a little while…';
+        status.className = 'product-ai-status is-loading';
+
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form),
+                credentials: 'same-origin',
+                headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            });
+            const data = await response.json();
+            if (!response.ok || !data.success) throw new Error(data.message || 'Image generation failed. Please try again.');
+
+            const assistant = document.createElement('div');
+            assistant.className = 'product-ai-message product-ai-message--assistant';
+            const avatar = document.createElement('span');
+            avatar.className = 'product-ai-message__avatar';
+            avatar.setAttribute('aria-hidden', 'true');
+            avatar.textContent = '✦';
+            const body = document.createElement('div');
+            const caption = document.createElement('p');
+            caption.textContent = 'Here is your new scene, created from this product image.';
+            const image = document.createElement('img');
+            image.className = 'product-ai-message__result';
+            image.src = data.result_url;
+            image.alt = 'AI-created product scene';
+            image.loading = 'lazy';
+            const actions = document.createElement('div');
+            actions.className = 'product-ai-message__actions';
+            const download = document.createElement('a');
+            download.href = data.download_url;
+            download.textContent = 'Download image';
+            const discard = document.createElement('button');
+            discard.type = 'button';
+            discard.textContent = 'Delete image';
+            discard.addEventListener('click', async () => {
+                discard.disabled = true;
+                try {
+                    await fetch(data.discard_url, {
+                        method: 'DELETE',
+                        credentials: 'same-origin',
+                        headers: {
+                            Accept: 'application/json',
+                            'X-CSRF-TOKEN': form.querySelector('[name="_token"]').value,
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                    });
+                    assistant.remove();
+                    status.textContent = 'Generated image deleted.';
+                    status.className = 'product-ai-status';
+                } catch {
+                    discard.disabled = false;
+                    status.textContent = 'Could not delete the image just now. Please try again.';
+                    status.className = 'product-ai-status is-error';
+                }
+            });
+            actions.append(download, discard);
+            body.append(caption, image, actions);
+            assistant.append(avatar, body);
+            chat.append(assistant);
+            chat.scrollTop = chat.scrollHeight;
+            prompt.value = '';
+            status.textContent = 'Image ready. It is private to your session and expires after 24 hours.';
+            status.className = 'product-ai-status';
+        } catch (error) {
+            status.textContent = error.message || 'Image generation is temporarily unavailable.';
+            status.className = 'product-ai-status is-error';
+        } finally {
+            submit.disabled = false;
+            submit.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> Create image';
+        }
+    });
+})();
+</script>
+
+
+<script>
+    (() => {
+        const countdowns = [...document.querySelectorAll('[data-countdown]')];
+        const paint = (node) => {
+            const target = new Date(node.dataset.countdown).getTime();
+            const remaining = Math.max(0, target - Date.now());
+            const values = {
+                days: Math.floor(remaining / 86400000),
+                hours: Math.floor((remaining % 86400000) / 3600000),
+                minutes: Math.floor((remaining % 3600000) / 60000),
+                seconds: Math.floor((remaining % 60000) / 1000),
+            };
+            Object.entries(values).forEach(([unit, value]) => {
+                const output = node.querySelector(`[data-${unit}]`);
+                if (output) output.firstChild.textContent = String(value).padStart(2, '0');
+            });
+            if (remaining === 0 && node.hasAttribute('data-countdown-reload') && !node.dataset.reloaded) {
+                node.dataset.reloaded = 'true';
+                window.location.reload();
+            }
+        };
+        countdowns.forEach(paint);
+        window.setInterval(() => countdowns.forEach(paint), 1000);
+        document.querySelectorAll('[data-copy-coupon]').forEach((button) => {
+            button.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(button.dataset.copyCoupon);
+                    button.setAttribute('aria-label', 'Coupon code copied');
+                } catch (_) {
+                    button.querySelector('span').textContent = button.dataset.copyCoupon;
+                }
+            });
+        });
+    })();
+</script>
 </body>
 </html>

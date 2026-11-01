@@ -14,10 +14,16 @@ class OrderReturnRequest extends Model
     public const STATUS_REFUNDED = 'refunded';
     public const STATUS_CANCELLED = 'cancelled';
 
+    protected $hidden = [
+        'refund_upi_id', 'refund_account_holder', 'refund_bank_name',
+        'refund_account_number', 'refund_ifsc',
+    ];
+
     protected $fillable = [
         'order_id', 'user_id', 'items', 'reason', 'description', 'status',
         'seller_note', 'decision_note', 'reviewed_by_admin', 'refund_amount',
-        'history', 'reviewed_at', 'cancelled_at',
+        'history', 'reviewed_at', 'cancelled_at', 'refund_method', 'refund_upi_id',
+        'refund_account_holder', 'refund_bank_name', 'refund_account_number', 'refund_ifsc',
     ];
 
     protected function casts(): array
@@ -28,6 +34,11 @@ class OrderReturnRequest extends Model
             'refund_amount' => 'decimal:2',
             'reviewed_at' => 'datetime',
             'cancelled_at' => 'datetime',
+            'refund_upi_id' => 'encrypted',
+            'refund_account_holder' => 'encrypted',
+            'refund_bank_name' => 'encrypted',
+            'refund_account_number' => 'encrypted',
+            'refund_ifsc' => 'encrypted',
         ];
     }
 

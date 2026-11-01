@@ -13,9 +13,25 @@ resources/views/seller/partials/topbar.blade.php
 
 @php
 
+$sellerPendingUpiCount = 0;
+if (session('seller_id')) {
+    $currentSellerIdForUpi = (int) session('seller_id');
+    $sellerPendingUpiCount = \App\Models\PaymentTransaction::query()
+        ->where('gateway', 'seller_upi')
+        ->where('status', 'manual_review')
+        ->get(['request_metadata'])
+        ->filter(function ($transaction) use ($currentSellerIdForUpi) {
+            $metadata = $transaction->request_metadata ?? [];
+            $ownsPayment = collect($metadata['seller_payments'] ?? [])
+                ->contains(fn ($target) => (int) ($target['seller_id'] ?? 0) === $currentSellerIdForUpi);
+            $review = $metadata['seller_upi_reviews'][(string) $currentSellerIdForUpi]['status'] ?? 'pending';
+
+            return $ownsPayment && $review === 'pending';
+        })
+        ->count();
+}
 
 
-$currentRoute = Route::currentRouteName();
 
 $sellerNavItems = [
 
@@ -52,7 +68,7 @@ $sellerNavItems = [
 
     [
         'route' => 'seller.returns.index',
-        'label' => 'Returns',
+        'label' => 'Returns & Cancellations',
         'icon' => 'fa-solid fa-arrow-rotate-left',
         'match' => [
             'seller.returns.*',
@@ -68,6 +84,16 @@ $sellerNavItems = [
             'seller.payments.show',
             'seller.payments.receipt',
             'seller.payments.premium-receipt',
+        ],
+    ],
+
+    [
+        'route' => 'seller.payments.upi-reviews',
+        'label' => 'UPI Review',
+        'icon' => 'fa-solid fa-money-bill-transfer',
+        'badge' => $sellerPendingUpiCount,
+        'match' => [
+            'seller.payments.upi-reviews',
         ],
     ],
 
@@ -93,6 +119,19 @@ $sellerNavItems = [
 
 
 $threeDotItems = [
+
+    [
+        'route' => 'seller.payments.index',
+        'label' => 'Payments',
+        'icon' => 'fa-solid fa-wallet',
+    ],
+
+    [
+        'route' => 'seller.payments.upi-reviews',
+        'label' => 'UPI Review',
+        'icon' => 'fa-solid fa-money-bill-transfer',
+        'badge' => $sellerPendingUpiCount,
+    ],
 
     [
         'route' => 'seller.product.add',
@@ -178,12 +217,7 @@ $threeDotItems = [
 
             @php
 
-                $isActive =
-                    in_array(
-                        $currentRoute,
-                        $item['match'],
-                        true
-                    );
+                $isActive = request()->routeIs(...$item['match']);
 
             @endphp
 
@@ -208,6 +242,10 @@ $threeDotItems = [
                     {{ $item['label'] }}
                 </span>
 
+                @if(($item['badge'] ?? 0) > 0)
+                    <span class="seller-nav-badge" aria-label="{{ $item['badge'] }} UPI payments waiting for review">{{ $item['badge'] }}</span>
+                @endif
+
             </a>
 
         @endforeach
@@ -223,7 +261,7 @@ $threeDotItems = [
 
         <a
             href="{{ route('seller.product.add') }}"
-            class="seller-quick-add"
+            class="seller-quick-add {{ request()->routeIs('seller.product.add') ? 'active' : '' }}"
             title="Add Product"
             aria-label="Add Product"
         >
@@ -239,136 +277,6 @@ $threeDotItems = [
 
         </a>
 
-
-        {{-- =================================================
-             MORE BUTTON
-        ================================================== --}}
-
-        <div class="seller-more-wrapper">
-
-            <button
-                type="button"
-                class="seller-more-button"
-                data-seller-more-button
-                aria-label="More Seller Options"
-                aria-expanded="false"
-                aria-haspopup="true"
-            >
-
-                <i
-                    class="fa-solid fa-ellipsis-vertical"
-                    aria-hidden="true"
-                ></i>
-
-            </button>
-
-
-            {{-- =================================================
-                 MORE MENU
-            ================================================== --}}
-
-            <div
-                class="seller-more-menu"
-                data-seller-more-menu
-                role="menu"
-                aria-hidden="true"
-            >
-
-                <div class="seller-more-header">
-
-                    <div>
-
-                        <strong>
-                            Seller Menu
-                        </strong>
-
-                        <span>
-                            Quick navigation
-                        </span>
-
-                    </div>
-
-                    <i
-                        class="fa-solid fa-grip"
-                        aria-hidden="true"
-                    ></i>
-
-                </div>
-
-
-                @foreach($threeDotItems as $item)
-
-                    <a
-                        href="{{ route($item['route']) }}"
-                        class="seller-more-item"
-                        role="menuitem"
-                    >
-
-                        <span
-                            class="seller-more-icon"
-                            aria-hidden="true"
-                        >
-
-                            <i class="{{ $item['icon'] }}"></i>
-
-                        </span>
-
-                        <span class="seller-more-label">
-                            {{ $item['label'] }}
-                        </span>
-
-                        <i
-                            class="fa-solid fa-chevron-right seller-more-arrow"
-                            aria-hidden="true"
-                        ></i>
-
-                    </a>
-
-                @endforeach
-
-
-                <div class="seller-more-divider"></div>
-
-
-                <form
-                    action="{{ route('seller.logout') }}"
-                    method="POST"
-                    class="seller-logout-form"
-                >
-
-                    @csrf
-
-                    <button
-                        type="submit"
-                        class="seller-more-item seller-logout-item"
-                        role="menuitem"
-                    >
-
-                        <span
-                            class="seller-more-icon"
-                            aria-hidden="true"
-                        >
-
-                            <i class="fa-solid fa-right-from-bracket"></i>
-
-                        </span>
-
-                        <span class="seller-more-label">
-                            Logout
-                        </span>
-
-                        <i
-                            class="fa-solid fa-chevron-right seller-more-arrow"
-                            aria-hidden="true"
-                        ></i>
-
-                    </button>
-
-                </form>
-
-            </div>
-
-        </div>
 
     </div>
 
@@ -403,9 +311,9 @@ $threeDotItems = [
 .seller-global-topbar span,
 .seller-global-topbar strong {
 
-    font-family:
-        'Poppins',
-        sans-serif !important;
+        font-family:
+            'Inter',
+            sans-serif !important;
 
 }
 
@@ -607,19 +515,19 @@ $threeDotItems = [
 .seller-brand-icon {
 
     width:
-        44px;
+        38px;
 
     height:
-        44px;
+        38px;
 
     min-width:
-        44px;
+        38px;
 
     min-height:
-        44px;
+        38px;
 
     flex:
-        0 0 44px;
+        0 0 38px;
 
     display:
         flex;
@@ -631,20 +539,16 @@ $threeDotItems = [
         center;
 
     border-radius:
-        13px;
+        11px;
 
     background:
-        linear-gradient(
-            135deg,
-            #111827,
-            #334155
-        );
+        #2563eb;
 
     color:
-        #ffffff;
+        #2563eb;
 
     box-shadow:
-        0 8px 20px rgba(15,23,42,.16);
+        0 8px 20px rgba(37,99,235,.18);
 
 }
 
@@ -667,7 +571,7 @@ $threeDotItems = [
         "Font Awesome 6 Free" !important;
 
     font-size:
-        18px;
+        16px;
 
     font-weight:
         900 !important;
@@ -798,8 +702,8 @@ $threeDotItems = [
 
 .seller-main-nav::-webkit-scrollbar {
 
-    display:
-        none;
+    display: block;
+    height: 5px;
 
 }
 
@@ -844,7 +748,7 @@ $threeDotItems = [
         0 !important;
 
     border-radius:
-        12px;
+        14px;
 
     background:
         transparent !important;
@@ -950,7 +854,7 @@ $threeDotItems = [
         inherit !important;
 
     font-family:
-        'Poppins',
+        'Inter',
         sans-serif !important;
 
     font-size:
@@ -990,42 +894,23 @@ $threeDotItems = [
 .seller-nav-link.active {
 
     color:
-        #0f172a !important;
+        #ffffff !important;
 
     background:
-        #e2e8f0 !important;
+        #2563eb !important;
 
     box-shadow:
-        inset 0 0 0 1px rgba(15,23,42,.05);
+        0 7px 18px rgba(37,99,235,.24),
+        inset 0 0 0 1px rgba(255,255,255,.12);
 
 }
 
 
 .seller-nav-link.active::after {
 
-    content:
-        "";
+    content: none !important;
 
-    position:
-        absolute;
-
-    left:
-        18px;
-
-    right:
-        18px;
-
-    bottom:
-        2px;
-
-    height:
-        3px;
-
-    border-radius:
-        50px;
-
-    background:
-        #0f172a;
+    display: none !important;
 
 }
 
@@ -1061,10 +946,10 @@ $threeDotItems = [
 .seller-quick-add {
 
     height:
-        43px;
+        50px;
 
     min-height:
-        43px;
+        50px;
 
     display:
         inline-flex;
@@ -1079,13 +964,16 @@ $threeDotItems = [
         7px;
 
     padding:
-        0 14px;
+        0 10px;
+
+    margin:
+        0 62px 0 0;
 
     border:
         0 !important;
 
     border-radius:
-        12px;
+        14px;
 
     background:
         linear-gradient(
@@ -1117,7 +1005,22 @@ $threeDotItems = [
 
     transition:
         transform .18s ease,
-        box-shadow .18s ease;
+        box-shadow .18s ease,
+        background-position .42s ease;
+
+    background-size:
+        200% 100%;
+
+}
+
+
+.seller-quick-add.active {
+
+    background:
+        #2563eb !important;
+
+    box-shadow:
+        0 8px 20px rgba(37,99,235,.28);
 
 }
 
@@ -1157,7 +1060,7 @@ $threeDotItems = [
         #ffffff !important;
 
     font-family:
-        'Poppins',
+        'Inter',
         sans-serif !important;
 
     font-size:
@@ -1174,12 +1077,26 @@ $threeDotItems = [
     color:
         #ffffff !important;
 
+    background:
+        linear-gradient(115deg, #1d4ed8, #3b82f6, #2563eb) !important;
+
+    background-size:
+        200% 100%;
+
+    animation:
+        seller-add-product-blue-flow 1.4s ease-in-out infinite alternate;
+
     transform:
         translateY(-1px);
 
     box-shadow:
-        0 12px 25px rgba(15,23,42,.20);
+        0 12px 25px rgba(37,99,235,.30);
 
+}
+
+@keyframes seller-add-product-blue-flow {
+    from { background-position: 0% 50%; }
+    to { background-position: 100% 50%; }
 }
 
 
@@ -1260,6 +1177,28 @@ $threeDotItems = [
         transform .18s ease,
         box-shadow .18s ease;
 
+    position: relative;
+
+}
+
+.seller-nav-badge {
+    position: absolute;
+    top: -3px;
+    right: -5px;
+    z-index: 2;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    display: grid;
+    place-items: center;
+    border: 2px solid #fff;
+    border-radius: 999px;
+    background: #e11d48;
+    color: #fff !important;
+    font-size: 10px;
+    font-weight: 900;
+    line-height: 1;
+    box-shadow: 0 2px 8px rgba(225, 29, 72, .3);
 }
 
 
@@ -1444,7 +1383,7 @@ $threeDotItems = [
         #0f172a !important;
 
     font-family:
-        'Poppins',
+        'Inter',
         sans-serif !important;
 
     font-size:
@@ -1468,7 +1407,7 @@ $threeDotItems = [
         #64748b !important;
 
     font-family:
-        'Poppins',
+        'Inter',
         sans-serif !important;
 
     font-size:
@@ -1558,7 +1497,7 @@ $threeDotItems = [
         pointer;
 
     font-family:
-        'Poppins',
+        'Inter',
         sans-serif !important;
 
     font-size:
@@ -1689,7 +1628,7 @@ $threeDotItems = [
         inherit !important;
 
     font-family:
-        'Poppins',
+        'Inter',
         sans-serif !important;
 
     font-size:
@@ -1891,10 +1830,16 @@ $threeDotItems = [
     .seller-quick-add {
 
         width:
-            43px;
+            52px;
 
         min-width:
-            43px;
+            52px;
+
+        height:
+            50px;
+
+        min-height:
+            50px;
 
         padding:
             0;
@@ -1946,19 +1891,19 @@ $threeDotItems = [
     .seller-brand-icon {
 
         width:
-            40px;
+            38px;
 
         height:
-            40px;
+            38px;
 
         min-width:
-            40px;
+            38px;
 
         min-height:
-            40px;
+            38px;
 
         flex-basis:
-            40px;
+            38px;
 
         border-radius:
             11px;
@@ -2122,16 +2067,6 @@ $threeDotItems = [
 
     }
 
-    .seller-nav-link.active::after {
-
-        left:
-            12px;
-
-        right:
-            12px;
-
-    }
-
 }
 
 
@@ -2139,22 +2074,89 @@ $threeDotItems = [
    REDUCE MOTION
 ========================================================= */
 
-@media (prefers-reduced-motion: reduce) {
-
-    .seller-global-topbar *,
-    .seller-global-topbar *::before,
-    .seller-global-topbar *::after {
-
-        transition:
-            none !important;
-
-        animation:
-            none !important;
-
-    }
-
+/* Match the customer taskbar's light navigation button size and shape. */
+.seller-global-topbar .seller-main-nav { gap: 6px; }
+.seller-global-topbar .seller-main-nav .seller-nav-link {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 44px;
+    min-height: 44px;
+    gap: 7px;
+    padding: 0 8px;
+    border: 1px solid rgba(37,99,235,.13) !important;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #fff, #eef4ff) !important;
+    color: #64748b !important;
+    font-size: 11px;
+    font-weight: 900;
+    box-shadow: 0 5px 16px rgba(37,99,235,.06);
+}
+.seller-global-topbar .seller-main-nav .seller-nav-link:hover {
+    border-color: rgba(37,99,235,.32) !important;
+    background: linear-gradient(180deg, #fff, #eef4ff) !important;
+    color: #2563eb !important;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(37,99,235,.13);
+}
+.seller-global-topbar .seller-main-nav .seller-nav-link.active {
+    border-color: transparent !important;
+    background: linear-gradient(135deg, #2563eb, #4f46e5) !important;
+    color: #fff !important;
+    box-shadow: 0 10px 28px rgba(37,99,235,.28);
 }
 
+@media (max-width: 1350px) {
+    .seller-global-topbar .seller-main-nav .seller-nav-link { min-width: 0; padding-inline: 7px; font-size: 10px; }
+}
+@media (max-width: 1120px) {
+    .seller-global-topbar .seller-nav-text { display: none; }
+    .seller-global-topbar .seller-main-nav .seller-nav-link { flex: 0 0 52px; min-width: 52px; padding: 0; }
+}
+@media (max-width: 760px) {
+    .seller-global-topbar .seller-quick-add { width: 46px; min-width: 46px; height: 44px; min-height: 44px; border-radius: 12px; }
+}
+@media (max-width: 700px) {
+    .seller-global-topbar .seller-main-nav .seller-nav-link { flex-basis: 44px; min-width: 44px; height: 42px; min-height: 42px; border-radius: 11px; }
+    .seller-global-topbar .seller-quick-add { width: 44px; min-width: 44px; height: 42px; min-height: 42px; border-radius: 11px; }
+}
+
+
+</style>
+
+<style>
+/* One scrollbar style for every seller view, including legacy standalone pages. */
+html,
+body,
+html *,
+body * {
+    scrollbar-width: thin !important;
+    scrollbar-color: rgba(111, 145, 198, .78) transparent !important;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+html *::-webkit-scrollbar,
+body *::-webkit-scrollbar {
+    width: 5px !important;
+    height: 5px !important;
+}
+
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track,
+html *::-webkit-scrollbar-track,
+body *::-webkit-scrollbar-track {
+    background: transparent !important;
+}
+
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb,
+html *::-webkit-scrollbar-thumb,
+body *::-webkit-scrollbar-thumb {
+    border: 1px solid transparent !important;
+    border-radius: 999px !important;
+    background: linear-gradient(180deg, rgba(145, 177, 226, .9), rgba(78, 111, 164, .8)) !important;
+    background-clip: padding-box !important;
+}
 </style>
 
 <script>

@@ -4,6 +4,7 @@
 
 @section('content')
 
+@push('styles')
 <style>
 /* =========================================================
    SMART BASKET — SELLER APPLICATION SUMMARY
@@ -713,6 +714,7 @@
     }
 }
 </style>
+@endpush
 
 
 <div class="summary-page">

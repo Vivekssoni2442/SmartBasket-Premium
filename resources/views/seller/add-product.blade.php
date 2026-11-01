@@ -2254,25 +2254,7 @@
            REDUCE MOTION
         ========================================================= */
 
-        @media (prefers-reduced-motion: reduce) {
-
-            *,
-            *::before,
-            *::after {
-                scroll-behavior:
-                    auto !important;
-
-                transition-duration:
-                    .01ms !important;
-
-                animation-duration:
-                    .01ms !important;
-
-                animation-iteration-count:
-                    1 !important;
-            }
-        }
-    </style>
+            </style>
 </head>
 
 
@@ -2757,6 +2739,31 @@
                             </section>
 
 
+
+                            <section class="section-card seller-promotion-card">
+                                <div class="section-heading"><div class="section-icon"><i class="fa-solid fa-ticket"></i></div><div><h3>Customer Coupon</h3><p>Design a coupon that customers can view on this product.</p></div></div>
+                                <div class="fields-grid">
+                                    <div class="field"><label class="form-label">Coupon title</label><input class="form-control" name="coupon_title" maxlength="255" value="{{ old('coupon_title') }}" placeholder="Weekend special"></div>
+                                    <div class="field"><label class="form-label">Coupon code</label><input class="form-control" name="coupon_code" maxlength="80" value="{{ old('coupon_code') }}" placeholder="SAVE10"></div>
+                                    <div class="field"><label class="form-label">Discount type</label><select class="form-control" name="coupon_discount_type"><option value="">Display only</option><option value="percent" @selected(old('coupon_discount_type') === 'percent')>Percentage</option><option value="fixed" @selected(old('coupon_discount_type') === 'fixed')>Fixed amount</option></select></div>
+                                    <div class="field"><label class="form-label">Discount value</label><input class="form-control" type="number" name="coupon_discount_value" min="0" step="0.01" value="{{ old('coupon_discount_value') }}" placeholder="10"></div>
+                                    <div class="field"><label class="form-label">Starts at <span class="required">*</span></label><input class="form-control" type="datetime-local" name="coupon_starts_at" value="{{ old('coupon_starts_at') }}"></div>
+                                    <div class="field"><label class="form-label">Expires at <span class="required">*</span></label><input class="form-control" type="datetime-local" name="coupon_ends_at" value="{{ old('coupon_ends_at') }}"></div>
+                                    <div class="field"><label class="form-label">Coupon style</label><select class="form-control" name="coupon_design"><option value="royal" @selected(old('coupon_design', 'royal') === 'royal')>Royal blue</option><option value="sunset" @selected(old('coupon_design') === 'sunset')>Sunset</option><option value="emerald" @selected(old('coupon_design') === 'emerald')>Emerald</option><option value="gold" @selected(old('coupon_design') === 'gold')>Premium gold</option></select></div>
+                                    <div class="field"><label class="form-label">Coupon details</label><input class="form-control" name="coupon_description" maxlength="500" value="{{ old('coupon_description') }}" placeholder="Coupon conditions or customer information"></div>
+                                </div>
+                            </section>
+
+                            <section class="section-card seller-promotion-card">
+                                <div class="section-heading"><div class="section-icon"><i class="fa-solid fa-stopwatch"></i></div><div><h3>Scheduled Sale</h3><p>Set a sale price, offer copy and exact start and end times.</p></div></div>
+                                <div class="fields-grid">
+                                    <div class="field"><label class="form-label">Sale title</label><input class="form-control" name="sale_title" maxlength="255" value="{{ old('sale_title') }}" placeholder="Flash sale"></div>
+                                    <div class="field"><label class="form-label">Sale price (₹)</label><input class="form-control" type="number" name="sale_price" min="0" step="0.01" value="{{ old('sale_price') }}" placeholder="Optional sale price"></div>
+                                    <div class="field"><label class="form-label">Starts at</label><input class="form-control" type="datetime-local" name="sale_starts_at" value="{{ old('sale_starts_at') }}"></div>
+                                    <div class="field"><label class="form-label">Ends at</label><input class="form-control" type="datetime-local" name="sale_ends_at" value="{{ old('sale_ends_at') }}"></div>
+                                    <div class="field"><label class="form-label">Offer information</label><input class="form-control" name="sale_offer" maxlength="500" value="{{ old('sale_offer') }}" placeholder="Limited time offer details"></div>
+                                </div>
+                            </section>
 
                             {{-- =================================================
                                  DESCRIPTION

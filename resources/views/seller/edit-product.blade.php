@@ -2392,24 +2392,6 @@
            REDUCED MOTION
         ========================================================== */
 
-        @media (prefers-reduced-motion: reduce) {
-
-            .sb-edit-product-page *,
-            .sb-edit-product-page *::before,
-            .sb-edit-product-page *::after {
-
-                scroll-behavior:
-                    auto !important;
-
-                transition:
-                    none !important;
-
-                animation:
-                    none !important;
-
-            }
-
-        }
 
     </style>
 
@@ -2891,6 +2873,31 @@
 
                     </section>
 
+
+                    <section class="ep-section seller-promotion-card">
+                        <div class="ep-section-heading"><div class="ep-section-icon"><i class="fa-solid fa-ticket"></i></div><div class="ep-section-title-wrap"><h2 class="ep-section-title">Customer Coupon</h2><p class="ep-section-description">Edit the coupon details and design shown to customers.</p></div></div>
+                        <div class="ep-fields ep-fields-three">
+                            <div class="ep-field"><label class="ep-label">Coupon title</label><input class="ep-control" name="coupon_title" maxlength="255" value="{{ old('coupon_title', $product->coupon_title) }}" placeholder="Weekend special"></div>
+                            <div class="ep-field"><label class="ep-label">Coupon code</label><input class="ep-control" name="coupon_code" maxlength="80" value="{{ old('coupon_code', $product->coupon_code) }}" placeholder="SAVE10"></div>
+                            <div class="ep-field"><label class="ep-label">Discount type</label><select class="ep-control" name="coupon_discount_type"><option value="">Display only</option><option value="percent" @selected(old('coupon_discount_type', $product->coupon_discount_type) === 'percent')>Percentage</option><option value="fixed" @selected(old('coupon_discount_type', $product->coupon_discount_type) === 'fixed')>Fixed amount</option></select></div>
+                            <div class="ep-field"><label class="ep-label">Discount value</label><input class="ep-control" type="number" name="coupon_discount_value" min="0" step="0.01" value="{{ old('coupon_discount_value', $product->coupon_discount_value) }}"></div>
+                            <div class="ep-field"><label class="ep-label">Starts at <span class="ep-required">*</span></label><input class="ep-control" type="datetime-local" name="coupon_starts_at" value="{{ old('coupon_starts_at', $product->coupon_starts_at?->format('Y-m-d\\TH:i')) }}"></div>
+                            <div class="ep-field"><label class="ep-label">Expires at <span class="ep-required">*</span></label><input class="ep-control" type="datetime-local" name="coupon_ends_at" value="{{ old('coupon_ends_at', $product->coupon_ends_at?->format('Y-m-d\\TH:i')) }}"></div>
+                            <div class="ep-field"><label class="ep-label">Coupon style</label><select class="ep-control" name="coupon_design"><option value="royal" @selected(old('coupon_design', $product->coupon_design ?: 'royal') === 'royal')>Royal blue</option><option value="sunset" @selected(old('coupon_design', $product->coupon_design) === 'sunset')>Sunset</option><option value="emerald" @selected(old('coupon_design', $product->coupon_design) === 'emerald')>Emerald</option><option value="gold" @selected(old('coupon_design', $product->coupon_design) === 'gold')>Premium gold</option></select></div>
+                            <div class="ep-field"><label class="ep-label">Coupon details</label><input class="ep-control" name="coupon_description" maxlength="500" value="{{ old('coupon_description', $product->coupon_description) }}" placeholder="Coupon conditions or information"></div>
+                        </div>
+                    </section>
+
+                    <section class="ep-section seller-promotion-card">
+                        <div class="ep-section-heading"><div class="ep-section-icon"><i class="fa-solid fa-stopwatch"></i></div><div class="ep-section-title-wrap"><h2 class="ep-section-title">Scheduled Sale</h2><p class="ep-section-description">Set a live sale window; customer pricing updates during the scheduled time.</p></div></div>
+                        <div class="ep-fields ep-fields-three">
+                            <div class="ep-field"><label class="ep-label">Sale title</label><input class="ep-control" name="sale_title" maxlength="255" value="{{ old('sale_title', $product->sale_title) }}" placeholder="Flash sale"></div>
+                            <div class="ep-field"><label class="ep-label">Sale price (₹)</label><input class="ep-control" type="number" name="sale_price" min="0" step="0.01" value="{{ old('sale_price', $product->sale_price) }}" placeholder="Optional sale price"></div>
+                            <div class="ep-field"><label class="ep-label">Starts at</label><input class="ep-control" type="datetime-local" name="sale_starts_at" value="{{ old('sale_starts_at', $product->sale_starts_at?->format('Y-m-d\\TH:i')) }}"></div>
+                            <div class="ep-field"><label class="ep-label">Ends at</label><input class="ep-control" type="datetime-local" name="sale_ends_at" value="{{ old('sale_ends_at', $product->sale_ends_at?->format('Y-m-d\\TH:i')) }}"></div>
+                            <div class="ep-field"><label class="ep-label">Offer information</label><input class="ep-control" name="sale_offer" maxlength="500" value="{{ old('sale_offer', $product->sale_offer) }}" placeholder="Limited time offer"></div>
+                        </div>
+                    </section>
 
                     {{-- PRODUCT DETAILS --}}
 

@@ -15,9 +15,17 @@
     overflow: hidden;
     border: 1px solid rgba(255,255,255,.18);
     border-radius: 20px;
-    background: linear-gradient(112deg, #271C5E 0%, #312579 58%, #244B83 100%);
+    background: linear-gradient(112deg, #241A5E 0%, #34307F 52%, #24518C 100%) !important;
     box-shadow: 0 15px 34px rgba(39,28,94,.22), inset 0 1px 0 rgba(255,255,255,.13);
     color: #fff;
+}
+body .sb-main .sb-customer-page-hero,
+body .sb-page .sb-customer-page-hero {
+    border: 1px solid rgba(218, 210, 255, .42) !important;
+    border-radius: 20px !important;
+    background: linear-gradient(112deg, #241A5E 0%, #34307F 52%, #24518C 100%) !important;
+    box-shadow: 0 16px 38px rgba(31, 25, 91, .3), inset 0 1px 0 rgba(255,255,255,.17) !important;
+    color: #fff !important;
 }
 
 .sb-customer-page-hero::before {
@@ -35,6 +43,43 @@
 }
 
 .sb-customer-page-hero__copy { min-width: 0; flex: 1 1 auto; }
+
+/* Use the same purple-blue hero treatment for customer page headings even
+   when legacy page styles target the h1 itself. */
+body .sb-customer-page-hero h1.sb-customer-page-title {
+    display: flex !important;
+    align-items: center !important;
+    gap: 13px !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow-wrap: anywhere;
+    color: #fff !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    font-size: clamp(1.3rem, 2.2vw, 1.8rem) !important;
+    font-weight: 780 !important;
+    line-height: 1.25 !important;
+    letter-spacing: -.025em !important;
+}
+body .sb-customer-page-hero h1.sb-customer-page-title::before { content: none !important; }
+.sb-customer-page-title .sb-customer-page-icon {
+    display: inline-grid;
+    flex: 0 0 50px;
+    width: 50px;
+    height: 50px;
+    place-items: center;
+    border: 1px solid rgba(255,255,255,.32);
+    border-radius: 13px;
+    background: linear-gradient(145deg, rgba(255,255,255,.24), rgba(255,255,255,.08));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.24), 0 5px 14px rgba(7,28,75,.2);
+    color: #fff;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+    font-size: 30px;
+}
 
 h1.sb-customer-page-title {
     display: flex !important;
@@ -58,7 +103,27 @@ h1.sb-customer-page-title {
     text-wrap: balance;
 }
 
-h1.sb-customer-page-title::before, h1.sb-customer-page-title::after { content: none !important; }
+h1.sb-customer-page-title::before { content: none !important; }
+.sb-main h1.sb-page-brand-title, .sb-page h1.sb-page-brand-title { position: relative; padding-left: 76px !important; }
+.sb-main h1.sb-page-brand-title::after, .sb-page h1.sb-page-brand-title::after {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    display: grid;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    transform: translateY(-50%);
+    border: 1px solid rgba(255,255,255,.32);
+    border-radius: 13px;
+    background: linear-gradient(145deg, rgba(255,255,255,.24), rgba(255,255,255,.08));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.24), 0 5px 14px rgba(7,28,75,.2);
+    color: #fff;
+    content: "\f291";
+    font-family: "Font Awesome 6 Free";
+    font-size: 19px;
+    font-weight: 900;
+}
 .sb-customer-page-hero__subtitle { margin: 7px 0 0; color: rgba(239,244,255,.82); font-size: .94rem; line-height: 1.5; }
 .sb-customer-page-hero .eyebrow { color: #c8d7ff; }
 .sb-customer-page-hero .hero-subtitle, .sb-customer-page-hero .wishlist-subtitle { color: rgba(239,244,255,.82); }
@@ -84,6 +149,8 @@ h1.sb-customer-page-title::before, h1.sb-customer-page-title::after { content: n
 
 @media (max-width:600px) {
     .sb-customer-page-hero { min-height:86px; gap:12px; margin-bottom:18px; padding:17px 19px; border-radius:17px; }
+    body .sb-customer-page-hero h1.sb-customer-page-title { gap: 10px !important; font-size: 1.25rem !important; }
+    .sb-customer-page-title .sb-customer-page-icon { flex-basis: 44px; width: 44px; height: 44px; border-radius: 13px; font-size: 27px; }
     .sb-customer-page-hero__subtitle { font-size:.86rem; }
     .sb-customer-page-hero__stat { min-width:82px; min-height:64px; padding:9px 12px; border-radius:13px; }
     .cart-header .continue-btn { float:none; display:inline-flex; }

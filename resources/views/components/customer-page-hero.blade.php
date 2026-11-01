@@ -6,7 +6,7 @@
 ])
 
 @once
-    <link rel="stylesheet" href="{{ asset('css/customer-page-title.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/customer-page-title.css') }}?v=20261019-purple-blue-4">
 @endonce
 
 <section {{ $attributes->class(['sb-customer-page-hero']) }}>

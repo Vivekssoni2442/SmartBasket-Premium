@@ -15,6 +15,8 @@ class Order extends Model
         'city',
         'total',
         'amount',
+        'shipping_amount',
+        'estimated_delivery_days',
         'status',
         'payment_method',
         'payment_status',
@@ -22,12 +24,21 @@ class Order extends Model
         'delivery_status',
         'cancellation_reason',
         'cancelled_at',
+        'whatsapp_invoice_opt_in',
+        'whatsapp_invoice_status',
+        'whatsapp_invoice_message_id',
+        'whatsapp_invoice_sent_at',
+        'whatsapp_invoice_error',
         'items',
     ];
 
     protected $casts = [
         'items' => 'array',
+        'shipping_amount' => 'decimal:2',
+        'estimated_delivery_days' => 'integer',
         'cancelled_at' => 'datetime',
+        'whatsapp_invoice_opt_in' => 'boolean',
+        'whatsapp_invoice_sent_at' => 'datetime',
     ];
 
     public function user()
@@ -53,6 +64,11 @@ class Order extends Model
     public function returnRequests()
     {
         return $this->hasMany(OrderReturnRequest::class);
+    }
+
+    public function cancellationRequest()
+    {
+        return $this->hasOne(OrderCancellationRequest::class);
     }
 
     public function scopeForSeller($query, int $sellerId)
@@ -81,8 +97,18 @@ class Order extends Model
 
     public function isCancellable(): bool
     {
-        $status = $this->deliveryDetail?->status ?? $this->order_status ?? $this->status;
-        return in_array($status, ['Placed', 'Confirmed', 'Pending', 'Order Placed', 'Seller Confirmed'], true);
+        $statuses = collect([
+            $this->deliveryDetail?->status,
+            $this->delivery_status,
+            $this->order_status,
+            $this->status,
+        ])->filter()->map(fn ($status) => strtolower(trim((string) $status)));
+
+        if ($statuses->isEmpty() || $statuses->contains(fn ($status) => in_array($status, ['delivered', 'complete', 'completed', 'cancelled', 'canceled'], true))) {
+            return false;
+        }
+
+        return ! $this->seller || $this->seller->allowsCustomerCancellation();
     }
 
     /** COD is collected at delivery, so its customer-facing payment label is Cash. */
@@ -93,10 +119,16 @@ class Order extends Model
         return in_array($method, ['cod', 'cash', 'cash_on_delivery', 'cash on delivery'], true);
     }
 
+    public function isSellerDirectUpi(): bool
+    {
+        return strtolower(trim((string) $this->payment_method)) === 'seller upi';
+    }
+
     public function isPaymentEligibleForReturn(): bool
     {
-        return $this->isCashOnDelivery()
-            || in_array(strtolower(trim((string) $this->payment_status)), ['paid', 'successful'], true);
+        return (! $this->seller || $this->seller->allowsCustomerReturns())
+            && ($this->isCashOnDelivery()
+                || in_array(strtolower(trim((string) $this->payment_status)), ['paid', 'successful'], true));
     }
 
     public function getPaymentStatusLabelAttribute(): string

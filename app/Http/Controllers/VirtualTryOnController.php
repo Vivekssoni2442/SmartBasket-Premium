@@ -18,14 +18,9 @@ class VirtualTryOnController extends Controller
             return $this->reply($request, false, 'Please login to create an AI Virtual Try-On preview.', 401);
         }
 
-        if ($product->status && $product->status !== 'active') {
+        if (! Product::customerVisible()->whereKey($product->getKey())->exists()) {
             return $this->reply($request, false, 'This product is not currently available.', 404);
         }
-
-        if (! $this->supportsCategory((string) $product->category, (string) $product->name)) {
-            return $this->reply($request, false, 'Try-On currently supports clothing and footwear products only. This product is not supported.', 422);
-        }
-
         $validated = $request->validate([
             'photo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'product_image_id' => ['nullable', 'integer'],
@@ -94,6 +89,90 @@ class VirtualTryOnController extends Controller
         ]);
     }
 
+    public function generateProductImage(Request $request, Product $product, VirtualTryOnService $service)
+    {
+        if (! auth()->check()) {
+            return $this->reply($request, false, 'Please login to create an AI product image.', 401);
+        }
+        if (! Product::customerVisible()->whereKey($product->getKey())->exists()) {
+            return $this->reply($request, false, 'This product is not currently available.', 404);
+        }
+        if (! $service->isConfigured()) {
+            return $this->reply($request, false, 'AI product image creation has not been configured by the site administrator yet.', 503);
+        }
+
+        $validated = $request->validate([
+            'prompt' => ['required', 'string', 'min:4', 'max:500'],
+            'product_image_id' => ['nullable', 'integer'],
+            'privacy_consent' => ['accepted'],
+        ]);
+        $productFile = $this->productFile($product, $validated['product_image_id'] ?? null);
+        if (! $productFile) {
+            return $this->reply($request, false, 'A usable product image is unavailable for AI generation.', 422);
+        }
+
+        $result = $service->generateProductImage(
+            $productFile['path'],
+            $productFile['mime'],
+            (string) $product->name,
+            (string) $product->category,
+            (string) $product->description,
+            (string) $validated['prompt']
+        );
+        if (! $result['success']) {
+            return $this->reply($request, false, $result['message'], $result['reason'] === 'not_configured' ? 503 : 502);
+        }
+        if (! $this->isValidPng($result['binary'])) {
+            Log::warning('Product image assistant provider returned invalid image bytes.', ['product_id' => $product->id]);
+            return $this->reply($request, false, 'The AI provider returned an invalid image. Please try again.', 502);
+        }
+
+        $token = Str::random(40);
+        $resultPath = 'ai-product/results/' . $token . '.png';
+        try {
+            Storage::disk('local')->put($resultPath, $result['binary']);
+            $this->removeExpiredResults();
+        } catch (\Throwable $exception) {
+            Log::error('Generated product image could not be saved privately.', ['product_id' => $product->id]);
+            return $this->reply($request, false, 'The generated image could not be saved. Please try again.', 500);
+        }
+        $request->session()->put('product_ai_images.' . $token, [
+            'product_id' => $product->id,
+            'path' => $resultPath,
+            'expires_at' => now()->addHours(24)->timestamp,
+        ]);
+
+        return $this->reply($request, true, 'Your product image is ready.', 200, [
+            'result_url' => route('products.ai-image.result', ['product' => $product, 'token' => $token]),
+            'download_url' => route('products.ai-image.download', ['product' => $product, 'token' => $token]),
+            'discard_url' => route('products.ai-image.discard', ['product' => $product, 'token' => $token]),
+        ]);
+    }
+
+    public function productImageResult(Request $request, Product $product, string $token)
+    {
+        $record = $this->ownedProductImage($request, $product, $token);
+        return response(Storage::disk('local')->get($record['path']), 200, ['Content-Type' => 'image/png', 'Cache-Control' => 'private, no-store']);
+    }
+
+    public function downloadProductImage(Request $request, Product $product, string $token)
+    {
+        $record = $this->ownedProductImage($request, $product, $token);
+        return response()->streamDownload(
+            fn () => print Storage::disk('local')->get($record['path']),
+            'smart-basket-ai-product.png',
+            ['Content-Type' => 'image/png', 'Cache-Control' => 'private, no-store']
+        );
+    }
+
+    public function discardProductImage(Request $request, Product $product, string $token)
+    {
+        $record = $this->ownedProductImage($request, $product, $token);
+        Storage::disk('local')->delete($record['path']);
+        $request->session()->forget('product_ai_images.' . $token);
+        return response()->json(['success' => true]);
+    }
+
     public function result(Request $request, Product $product, string $token)
     {
         $record = $this->ownedResult($request, $product, $token);
@@ -121,6 +200,18 @@ class VirtualTryOnController extends Controller
     private function ownedResult(Request $request, Product $product, string $token): array
     {
         $key = 'virtual_tryon_results.' . $token;
+        $record = $request->session()->get($key);
+        abort_unless(is_array($record)
+            && ($record['product_id'] ?? null) === $product->id
+            && ($record['expires_at'] ?? 0) >= now()->timestamp
+            && isset($record['path'])
+            && Storage::disk('local')->exists($record['path']), 404);
+        return $record;
+    }
+
+    private function ownedProductImage(Request $request, Product $product, string $token): array
+    {
+        $key = 'product_ai_images.' . $token;
         $record = $request->session()->get($key);
         abort_unless(is_array($record)
             && ($record['product_id'] ?? null) === $product->id
@@ -163,18 +254,13 @@ class VirtualTryOnController extends Controller
         return $root && $path && str_starts_with($path, $root . DIRECTORY_SEPARATOR) ? $path : null;
     }
 
-    private function supportsCategory(string $category, string $name): bool
-    {
-        $garment = '/\b(?:t[\s-]?shirts?|tees?|dresses?|tops?|blouses?|jeans?|trousers?|pants?|leggings?|skirts?|jackets?|coats?|hoodies?|sweaters?|suits?|kurtas?|sarees?|clothing|apparel|footwear|shoes?|sneakers?|boots?)\b/i';
-        return (bool) preg_match('/fashion|clothing|apparel|footwear|shoes/i', $category)
-            && (bool) preg_match($garment, $name . ' ' . $category);
-    }
-
     private function removeExpiredResults(): void
     {
-        foreach (Storage::disk('local')->files('virtual-tryon/results') as $path) {
-            if (Storage::disk('local')->lastModified($path) < now()->subHours(24)->timestamp) {
-                Storage::disk('local')->delete($path);
+        foreach (['virtual-tryon/results', 'ai-product/results'] as $directory) {
+            foreach (Storage::disk('local')->files($directory) as $path) {
+                if (Storage::disk('local')->lastModified($path) < now()->subHours(24)->timestamp) {
+                    Storage::disk('local')->delete($path);
+                }
             }
         }
     }

@@ -1,5 +1,5 @@
 @props(['withoutMenu' => false])
 
-@if (request()->path() !== '/')
+@unless (request()->routeIs('delivery.driver'))
     @include('ai-hub.partials.navigation', ['showSiteMenu' => ! $withoutMenu])
-@endif
+@endunless

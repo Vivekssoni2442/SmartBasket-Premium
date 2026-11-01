@@ -29,6 +29,20 @@ In addition, [Laracasts](https://laracasts.com) contains thousands of video tuto
 
 You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
 
+## Private access from phones on different networks
+
+To keep Smart Basket off the public internet while opening it from mobile data or another Wi-Fi network, install Tailscale on the server PC and each phone, then sign every device into the same Tailscale account. In the Tailscale admin DNS settings, enable MagicDNS and HTTPS certificates. On the PC, run `start-private-network.bat`; use the printed `https://...ts.net` address on signed-in phones. The server PC, Laravel process, and Tailscale must stay online. Driver links copied from **Seller → Delivery partners** use that private address.
+
+The private URL is reachable only from the same Tailscale network. A phone without Tailscale access cannot open the site. If public access is preferred, use a separately configured public HTTPS host.
+
+## Google customer sign-in
+
+Create a Google OAuth client with application type **Web application**. Add the exact callback URL `https://YOUR-HOST/auth/google/callback` (or the exact localhost URL used for local development) under **Authorized redirect URIs**. Set `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, and `GOOGLE_OAUTH_REDIRECT_URI` in the server `.env`; the redirect URI must exactly match the Google Cloud value. Then run `php artisan migrate` to add the customer Google ID column and restart/clear Laravel's cached configuration if enabled. Google sign-in only requests `openid`, `email`, and `profile`.
+
+## Seller device face unlock
+
+Seller **Profile > Face unlock for seller login** registers a platform passkey. Login first checks the seller password, then asks the device to verify the user before granting the seller session. The device may use face recognition, fingerprint, or its screen-lock PIN depending on its OS/browser; the site never receives a face scan. WebAuthn requires HTTPS (or localhost), and passkeys are bound to the host used at registration. Use the stable Tailscale HTTPS hostname rather than a rotating quick-tunnel hostname. The two seller-passkey migrations are included in `php artisan migrate`.
+
 ## Agentic Development
 
 Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:

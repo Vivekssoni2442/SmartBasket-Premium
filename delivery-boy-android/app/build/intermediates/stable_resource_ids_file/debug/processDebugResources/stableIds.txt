@@ -1,0 +1,1 @@
+com.smartbasket.deliveryboy:drawable/driver_icon = 0x7f010000

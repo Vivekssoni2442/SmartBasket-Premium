@@ -47,10 +47,10 @@
         padding: 22px 26px;
         margin-bottom: 18px;
         color: #fff;
-        border: 1px solid rgba(88,183,255,.28);
+        border: 1px solid rgba(196,190,255,.38);
         border-radius: 20px;
-        background: linear-gradient(115deg, var(--ve-navy), var(--ve-midnight) 68%, #123a73);
-        box-shadow: 0 14px 34px rgba(7,21,47,.16);
+        background: radial-gradient(ellipse at 92% 0%, rgba(159,138,255,.32), transparent 40%), linear-gradient(115deg, #101F50 0%, #283879 48%, #5143A2 100%);
+        box-shadow: 0 16px 36px rgba(35,34,105,.22), inset 0 1px 0 rgba(255,255,255,.16);
         overflow: hidden;
     }
     .ve-header::after {
@@ -60,9 +60,9 @@
         height: 250px;
         right: -90px;
         top: -155px;
-        border: 1px solid rgba(0,212,255,.25);
+        border: 1px solid rgba(214,207,255,.2);
         border-radius: 50%;
-        box-shadow: 0 0 0 24px rgba(88,183,255,.035), 0 0 0 48px rgba(88,183,255,.025);
+        box-shadow: 0 0 0 24px rgba(214,207,255,.035), 0 0 0 48px rgba(214,207,255,.025);
         pointer-events: none;
     }
     .ve-heading { position: relative; z-index: 1; min-width: 0; }
@@ -73,9 +73,9 @@
         width: 44px;
         height: 44px;
         flex: 0 0 auto;
-        color: #b9efff;
-        background: rgba(41,121,255,.2);
-        border: 1px solid rgba(88,183,255,.32);
+        color: #e0dcff;
+        background: rgba(159,138,255,.18);
+        border: 1px solid rgba(196,190,255,.32);
         border-radius: 13px;
     }
     .ve-heading h1 { margin: 0; color: #fff; font-size: clamp(21px,2.2vw,29px); font-weight: 800; letter-spacing: -.035em; line-height: 1.2; }
@@ -335,10 +335,7 @@
         .ve-actions form .ve-button { width: 100%; }
         .ve-save-state { width: 100%; margin: 0; }
     }
-    @media (prefers-reduced-motion: reduce) {
-        .ve-shell *, .ve-shell *::before, .ve-shell *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
-    }
-</style>
+    </style>
 
 <div class="ve-shell">
     <header class="ve-header">

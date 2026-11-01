@@ -100,6 +100,15 @@
         background: linear-gradient(135deg, var(--primary-gold), #ffb300);
         color: #111;
         font-weight: 900;
+        overflow: hidden;
+        flex: 0 0 42px;
+    }
+
+    .sb-admin-avatar img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
 
     .sb-admin-chip small {
@@ -526,7 +535,7 @@
                 </div>
 
                 <h1 class="sb-hero-title">
-                    Welcome back, {{ $adminName }}
+                    Welcome Back, {{ $adminName }}
                 </h1>
 
                 <p class="sb-hero-description">
@@ -538,7 +547,11 @@
 
             <div class="sb-admin-chip">
                 <div class="sb-admin-avatar">
-                    {{ $initials }}
+                    @if(!empty($currentAdmin?->avatar))
+                        <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url('admin-avatars/' . basename($currentAdmin->avatar)) }}" alt="{{ $adminName }}">
+                    @else
+                        {{ $initials }}
+                    @endif
                 </div>
 
                 <div>

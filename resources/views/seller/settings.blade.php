@@ -4,8 +4,7 @@
 
 @section('content')
 
-@include('seller.partials.seller-menu')
-
+@push('styles')
 <style>
 :root {
     --set-primary: #2563eb;
@@ -1025,6 +1024,7 @@ html.theme-transition * {
 
 }
 </style>
+@endpush
 
 <div class="seller-settings-page">
 
@@ -1217,12 +1217,7 @@ html.theme-transition * {
                     <span>Shipping</span>
                 </button>
 
-                <button type="button"
-                        class="settings-nav-item"
-                        data-section="appearance">
-                    <i class="fa-solid fa-palette"></i>
-                    <span>Appearance</span>
-                </button>
+
 
                 <button type="button"
                         class="settings-nav-item"
@@ -2100,7 +2095,7 @@ html.theme-transition * {
 
                             <div class="info-box" style="margin-top:17px;">
                                 <i class="fa-solid fa-circle-info"></i>
-                                <div>No QR image is needed. No QR image is required. UPI settings are saved to your seller profile. Customer payment status still depends on server-side provider verification.</div>
+                                <div>Save your seller name and UPI ID to generate product and checkout QR codes with the exact amount. Customer UPI transfers remain pending until an admin verifies the seller account credit.</div>
                             </div>
 
                             {{-- =================================================

@@ -1,3 +1,121 @@
+<script>
+(() => {
+    const key = 'smartbasket_seller_theme';
+    const fallback = @json($seller->theme ?? 'light');
+    const normalize = value => ['light', 'dark', 'system'].includes(value) ? value : 'light';
+    const prefersDark = () => Boolean(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    const resolve = value => value === 'system'
+        ? (prefersDark() ? 'dark' : 'light')
+        : value;
+    const apply = value => {
+        const selected = normalize(value);
+        const resolved = resolve(selected);
+        document.documentElement.dataset.theme = resolved;
+        document.documentElement.dataset.sbTheme = resolved;
+        document.documentElement.dataset.sellerTheme = selected;
+    };
+    let saved = fallback;
+    try { saved = localStorage.getItem(key) || fallback; } catch (error) {}
+    apply(saved);
+    window.addEventListener('storage', event => {
+        if (event.key === key && event.newValue) {
+            saved = event.newValue;
+            apply(saved);
+        }
+    });
+    window.addEventListener('smartbasket-theme-changed', event => {
+        if (event.detail?.theme) {
+            saved = event.detail.theme;
+            apply(saved);
+        }
+    });
+    if (window.matchMedia) {
+        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
+        systemTheme.addEventListener?.('change', () => {
+            if (normalize(saved) === 'system') apply(saved);
+        });
+    }
+})();
+</script>
+
+<script>
+(() => {
+    const icons = [
+        [/dashboard|workspace|home/i, '\u{1F3E0}'],
+        [/order|delivery/i, '\u{1F4E6}'],
+        [/product|inventory|catalog/i, '\u{1F6CD}\uFE0F'],
+        [/payment|earning|payout|wallet|bank/i, '\u{1F4B3}'],
+        [/return|refund/i, '\u{21A9}\uFE0F'],
+        [/profile|account/i, '\u{1F464}'],
+        [/setting|preference/i, '\u{2699}\uFE0F'],
+        [/verification|document|identity|kyc|security/i, '\u{1F6E1}\uFE0F'],
+        [/application|business/i, '\u{1F4CB}'],
+        [/store|seller|shop|mart/i, '\u{1F3EA}'],
+    ];
+    function enhanceSellerTitle() {
+        const visible = (heading) => heading.getClientRects().length > 0 && !heading.closest('.modal,[hidden]');
+        const title = Array.from(document.querySelectorAll('main h1')).find((heading) =>
+            visible(heading) && !heading.closest('.brand,.seller-brand')
+        ) || Array.from(document.querySelectorAll('main .title h2')).find(visible);
+        if (!title) return;
+
+        const text = title.textContent.replace(/\s+/g, ' ').trim();
+        const emoji = icons.find(([pattern]) => pattern.test(text))?.[1] || '✨';
+        let hero = title.closest([
+            '.sb-commandbar', '.profile-title-card', '.orders-header', '.order-hero',
+            '.sb-products-header', '.settings-hero', '.sr-hero', '.payment-header',
+            '.summary-hero', '.ep-header', '.bank-header', '.bd-header', '.title',
+            '.seller-page-header', '.page-header', '.seller-title-hero', 'header'
+        ].join(', '));
+        if (!hero) {
+            hero = document.createElement('section');
+            title.parentNode.insertBefore(hero, title);
+            hero.appendChild(title);
+            const subtitle = hero.nextElementSibling;
+            if (subtitle?.tagName === 'P' && !subtitle.closest('form')) hero.appendChild(subtitle);
+        }
+        if (!hero) return;
+
+        hero.classList.add('seller-title-hero');
+        title.classList.remove('sb-page-brand-title');
+        const hasSellerLogo = Boolean(hero.querySelector('.sb-brand-mark'));
+        if (hasSellerLogo) {
+            hero.querySelectorAll('.sb-eyebrow i').forEach((oldIcon) => oldIcon.remove());
+        }
+        hero.querySelectorAll('.header-icon,.sb-header-icon,.title-card-icon,.settings-hero-icon,.payment-title-icon,.sr-hero-icon,.hero-icon,.ep-header-icon,.bank-header-icon,.bd-header-icon,.title-icon')
+            .forEach((oldIcon) => oldIcon.remove());
+
+        const walker = document.createTreeWalker(title, NodeFilter.SHOW_TEXT);
+        const textNodes = [];
+        while (walker.nextNode()) textNodes.push(walker.currentNode);
+        textNodes.forEach((node) => {
+            node.textContent = node.textContent.replace(/[\p{Extended_Pictographic}\uFE0F\u200D]/gu, '').replace(/\s+/g, ' ');
+        });
+
+        title.querySelectorAll('i.fa-solid,i.fa-regular,i.fa-brands,i.fas,i.far,i.fab')
+            .forEach((oldIcon) => oldIcon.remove());
+        let icon = title.querySelector(':scope > .seller-title-emoji');
+        if (hasSellerLogo) {
+            icon?.remove();
+        } else {
+            if (!icon) {
+                icon = document.createElement('span');
+                icon.className = 'seller-title-emoji';
+                icon.setAttribute('aria-hidden', 'true');
+                title.insertBefore(icon, title.firstChild);
+            }
+            icon.textContent = emoji;
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', enhanceSellerTitle, { once: true });
+    } else {
+        enhanceSellerTitle();
+    }
+})();
+</script>
+
 <style>
 /* =========================================================
    SMART BASKET — GLOBAL SELLER MENU
@@ -10,7 +128,7 @@
     right: 18px;
     z-index: 99999;
 
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Inter', sans-serif;
 }
 
 
@@ -27,13 +145,13 @@
     padding: 0;
     margin: 0;
 
-    border: 1px solid rgba(255, 255, 255, .10);
+    border: 1px solid rgba(59, 130, 246, .58);
     border-radius: 15px;
 
     background:
         linear-gradient(
             145deg,
-            #26364d 0%,
+            #172f59 0%,
             #0b1220 100%
         );
 
@@ -45,6 +163,7 @@
 
     box-shadow:
         0 12px 30px rgba(0, 0, 0, .28),
+        0 0 0 3px rgba(37, 99, 235, .12),
         inset 0 1px 0 rgba(255, 255, 255, .13);
 
     transition:
@@ -69,18 +188,18 @@
         translateY(-2px);
 
     border-color:
-        rgba(0, 255, 153, .45);
+        rgba(96, 165, 250, .85);
 
     background:
         linear-gradient(
             145deg,
-            #30445f 0%,
+            #1e40af 0%,
             #0d1728 100%
         );
 
     box-shadow:
         0 16px 36px rgba(0, 0, 0, .34),
-        0 0 0 4px rgba(0, 255, 153, .06),
+        0 0 0 4px rgba(37, 99, 235, .18),
         inset 0 1px 0 rgba(255, 255, 255, .15);
 }
 
@@ -113,7 +232,7 @@
     align-items: center;
     justify-content: center;
 
-    color: #ffffff;
+    color: #60a5fa;
 
     font-family:
         "Font Awesome 6 Free" !important;
@@ -155,7 +274,7 @@
 .sb-menu-logo {
 
     color:
-        #00ff99;
+        #93c5fd;
 
 }
 
@@ -196,7 +315,7 @@
         );
 
     border:
-        1px solid rgba(0, 255, 153, .16);
+        1px solid rgba(59, 130, 246, .30);
 
     border-radius: 20px;
 
@@ -303,7 +422,7 @@
         none;
 
     font-family:
-        'Poppins',
+        'Inter',
         sans-serif !important;
 
     font-size:
@@ -343,12 +462,12 @@
     background:
         linear-gradient(
             90deg,
-            rgba(0, 255, 153, .12),
-            rgba(0, 255, 153, .035)
+            rgba(59, 130, 246, .16),
+            rgba(59, 130, 246, .045)
         );
 
     color:
-        #00ff99;
+        #60a5fa;
 
     transform:
         translateX(3px);
@@ -506,13 +625,13 @@
 .sb-common-menu-icon {
 
     color:
-        #00ff99;
+        #60a5fa;
 
     background:
-        rgba(0, 255, 153, .10);
+        rgba(59, 130, 246, .14);
 
     border-color:
-        rgba(0, 255, 153, .18);
+        rgba(59, 130, 246, .22);
 
     transform:
         scale(1.04);
@@ -527,17 +646,17 @@
 .sb-common-menu a.sb-menu-active {
 
     color:
-        #00ff99;
+        #60a5fa;
 
     background:
         linear-gradient(
             90deg,
-            rgba(0, 255, 153, .15),
-            rgba(0, 255, 153, .035)
+            rgba(59, 130, 246, .16),
+            rgba(59, 130, 246, .045)
         );
 
     box-shadow:
-        inset 3px 0 #00ff99;
+        inset 3px 0 #60a5fa;
 
 }
 
@@ -548,13 +667,13 @@
 .sb-common-menu-icon {
 
     color:
-        #00ff99;
+        #60a5fa;
 
     background:
-        rgba(0, 255, 153, .11);
+        rgba(59, 130, 246, .14);
 
     border-color:
-        rgba(0, 255, 153, .20);
+        rgba(59, 130, 246, .24);
 
 }
 
@@ -654,7 +773,7 @@
 .sb-common-menu button:focus-visible {
 
     outline:
-        2px solid #00ff99;
+        2px solid #60a5fa;
 
     outline-offset:
         2px;
@@ -786,21 +905,139 @@
    REDUCED MOTION
    ========================================================= */
 
-@media (prefers-reduced-motion: reduce) {
 
-    .sb-common-menu,
-    .sb-common-menu-button,
-    .sb-menu-logo,
-    .sb-common-menu a,
-    .sb-common-menu button,
-    .sb-common-menu-icon {
+</style>
 
-        transition:
-            none !important;
-
+<style>
+    .seller-title-hero {
+        position: relative !important;
+        display: flex !important;
+        width: 100% !important;
+        max-width: none !important;
+        box-sizing: border-box !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 20px !important;
+        min-width: 0;
+        min-height: 100px;
+        margin-bottom: 22px !important;
+        padding: clamp(18px, 2.5vw, 26px) !important;
+        overflow: hidden !important;
+        border: 1px solid rgba(196,190,255,.38) !important;
+        border-radius: 20px !important;
+        color: #f8faff !important;
+        background: radial-gradient(ellipse at 92% 0%, rgba(159,138,255,.32), transparent 40%), linear-gradient(115deg,#101F50 0%,#283879 48%,#5143A2 100%) !important;
+        box-shadow: 0 16px 36px rgba(35,34,105,.22), inset 0 1px 0 rgba(255,255,255,.16) !important;
     }
-
-}
+    .seller-title-hero::before,
+    .seller-title-hero::after,
+    .profile-page .card::before,
+    .seller-layout-content .card::before,
+    .seller-page-content .card::before,
+    .sb-edit-product-page .ep-header::before,
+    .sb-products-page .sb-products-header::before,
+    .payment-page .summary-card.received::before,
+    .payment-page .filter-card::before,
+    .payment-page .payment-row::before,
+    .payment-detail-page .hero-card::before,
+    .payment-detail-page .detail-card::before {
+        display: none !important;
+        content: none !important;
+    }
+    .seller-title-hero > * { position: relative; z-index: 1; min-width: 0; }
+    .seller-title-hero h1,
+    .seller-title-hero h2 {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        margin: 0 !important;
+        color: #fff !important;
+        font-size: clamp(1.25rem,2.2vw,1.8rem) !important;
+        font-weight: 850 !important;
+        line-height: 1.25 !important;
+        letter-spacing: -.035em !important;
+        overflow-wrap: anywhere;
+    }
+    .seller-title-hero h1 span:not(.seller-title-emoji),
+    .seller-title-hero h2 span:not(.seller-title-emoji) {
+        color: #f8faff !important;
+        -webkit-text-fill-color: #f8faff !important;
+        background: none !important;
+    }
+    .seller-title-hero .seller-title-emoji {
+        display: inline-grid;
+        width: 50px;
+        height: 50px;
+        flex: 0 0 50px;
+        place-items: center;
+        border: 1px solid rgba(232,226,255,.34);
+        border-radius: 15px;
+        background: linear-gradient(145deg,rgba(255,255,255,.23),rgba(255,255,255,.08));
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.24),0 7px 18px rgba(5,13,43,.2);
+        font-family: "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;
+        font-size: 29px;
+        line-height: 1;
+    }
+    .seller-title-hero p,
+    .seller-title-hero .sb-page-subtitle,
+    .seller-title-hero .settings-subtitle,
+    .seller-title-hero .payment-subtitle,
+    .seller-title-hero .sr-description {
+        position: relative;
+        z-index: 1;
+        margin: 7px 0 0 !important;
+        color: #D2D9F3 !important;
+        font-size: .84rem;
+        line-height: 1.55;
+    }
+    .seller-title-hero .sb-eyebrow,
+    .seller-title-hero .header-eyebrow,
+    .seller-title-hero .hero-eyebrow,
+    .seller-title-hero .title-card-eyebrow,
+    .seller-title-hero .settings-kicker { color: #DCE5FF !important; }
+    .seller-title-hero .title-card-content p,
+    .seller-title-hero .payment-subtitle { color: #DCE5FF !important; }
+    .seller-title-hero .payment-subtitle strong { color: #fff !important; }
+    .seller-title-hero :is([class*="subtitle"], [class*="description"]) { color: #DCE5FF !important; }
+    .seller-title-hero .bank-step,
+    .seller-title-hero .bd-step { color: #DCE5FF !important; }
+    .seller-title-hero .account-live {
+        border-color: rgba(203,255,226,.34) !important;
+        background: rgba(20,125,87,.28) !important;
+        color: #E7FFF2 !important;
+    }
+    .payment-page .summary-card {
+        border: 1px solid rgba(139,157,190,.24) !important;
+        background: linear-gradient(145deg,#fff 0%,#f8faff 100%) !important;
+        box-shadow: 0 10px 28px rgba(25,43,82,.07), inset 0 1px 0 #fff !important;
+    }
+    .payment-page .summary-label { color: #53627b !important; }
+    .payment-page .summary-value { color: #17243d !important; }
+    .payment-page .summary-card.received .summary-value { color: #2857d8 !important; }
+    .payment-page .summary-icon { color: rgba(54,83,145,.42) !important; }
+    .payment-page .filter-card {
+        border-color: rgba(139,157,190,.25) !important;
+        box-shadow: 0 12px 30px rgba(25,43,82,.065) !important;
+    }
+    .payment-page .filter-title { color: #233451 !important; }
+    .payment-page .filter-hint { color: #60718c !important; }
+    .seller-title-hero .header-left,
+    .seller-title-hero .hero-content,
+    .seller-title-hero .title-card-left,
+    .seller-title-hero .settings-hero-left,
+    .seller-title-hero .payment-heading-wrap,
+    .seller-title-hero .sr-hero-content { min-width: 0; }
+    .seller-title-hero .title-card-right,
+    .seller-title-hero .settings-profile,
+    .seller-title-hero .header-status,
+    .seller-title-hero .sb-header-status { color: #eef0ff !important; }
+    .seller-title-hero img { max-width: 100%; }
+    @media(max-width:700px) {
+        .seller-title-hero { align-items: flex-start !important; flex-wrap: wrap; gap: 12px !important; min-height: auto; }
+        .seller-title-hero h1,
+        .seller-title-hero h2 { font-size: 1.28rem !important; }
+        .seller-title-hero .seller-title-emoji { width: 44px; height: 44px; flex-basis: 44px; border-radius: 13px; font-size: 25px; }
+    }
 </style>
 
 
@@ -923,10 +1160,16 @@
 
         </a>
 
+        <a href="{{ route('seller.delivery-boys.index') }}" class="{{ request()->routeIs('seller.delivery-boys.*') ? 'sb-menu-active' : '' }}">
+            <span class="sb-common-menu-icon"><i class="fa-solid fa-motorcycle" aria-hidden="true"></i></span>
+            <span>Delivery Boy</span>
+        </a>
+
         <a href="{{ route('seller.returns.index') }}" class="{{ request()->routeIs('seller.returns.*') ? 'sb-menu-active' : '' }}">
             <span class="sb-common-menu-icon"><i class="fa-solid fa-arrow-rotate-left" aria-hidden="true"></i></span>
-            <span>Returns</span>
+            <span>Returns &amp; Cancellations</span>
         </a>
+
 
 
         <!-- ==================================================
@@ -935,7 +1178,7 @@
 
         <a
             href="{{ route('seller.payments.index') }}"
-            class="{{ request()->routeIs('seller.payments.*') ? 'sb-menu-active' : '' }}"
+            class="{{ request()->routeIs('seller.payments.index', 'seller.payments.show', 'seller.payments.receipt', 'seller.payments.premium-receipt') ? 'sb-menu-active' : '' }}"
         >
 
             <span class="sb-common-menu-icon">
@@ -943,6 +1186,19 @@
             </span>
 
             <span>Payments</span>
+
+        </a>
+
+        <a
+            href="{{ route('seller.payments.upi-reviews') }}"
+            class="{{ request()->routeIs('seller.payments.upi-reviews') ? 'sb-menu-active' : '' }}"
+        >
+
+            <span class="sb-common-menu-icon">
+                <i class="fa-solid fa-money-bill-transfer" aria-hidden="true"></i>
+            </span>
+
+            <span>UPI Review</span>
 
         </a>
 

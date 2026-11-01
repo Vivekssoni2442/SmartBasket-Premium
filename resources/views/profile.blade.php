@@ -1059,17 +1059,7 @@
            CUSTOMER TASKBAR
         ===================================================== */
 
-        :root {
-            --sb-tbar-bg: rgba(255,255,255,.92);
-            --sb-tbar-panel: #ffffff;
-            --sb-tbar-text: #102033;
-            --sb-tbar-muted: #64748b;
-            --sb-tbar-border: rgba(37,99,235,.13);
-            --sb-tbar-blue: #2563eb;
-            --sb-tbar-blue2: #4f46e5;
-            --sb-tbar-soft: #eef4ff;
-            --sb-tbar-shadow: 0 16px 45px rgba(15,23,42,.12);
-        }
+
 
         html[data-theme="dark"],
         html[data-sb-theme="dark"] {
@@ -1084,610 +1074,99 @@
             --sb-tbar-shadow: 0 20px 60px rgba(0,0,0,.42);
         }
 
-        .sb-products-taskbar {
-            position: sticky;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 99990;
-
-            width: 100%;
-            min-height: 76px;
-            padding: 8px 12px;
-
-            display: flex;
-            align-items: center;
-            gap: 9px;
-
-            background: var(--sb-tbar-bg);
-
-            border-bottom:
-                1px solid
-                var(--sb-tbar-border);
-
-            box-shadow:
-                var(--sb-tbar-shadow);
-
-            backdrop-filter:
-                blur(24px)
-                saturate(155%);
-
-            -webkit-backdrop-filter:
-                blur(24px)
-                saturate(155%);
-        }
-
-        .sb-products-taskbar::before {
-            content: "";
-
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: -2px;
-            height: 2px;
-
-            background:
-                linear-gradient(
-                    90deg,
-                    #00e5ff,
-                    #287bff,
-                    #8b35ff,
-                    #ff20c8,
-                    #ff405d,
-                    #ffe45c,
-                    #00e5ff
-                );
-
-            background-size: 600% 100%;
-            animation: sbTaskbarRGB 8s linear infinite;
-            pointer-events: none;
-        }
-
-        @keyframes sbTaskbarRGB {
-            to {
-                background-position: 600% 50%;
-            }
-        }
-
-        .sb-products-brand {
-            flex: 0 0 208px;
-            min-width: 190px;
-            height: 58px;
-
-            padding: 5px 10px 5px 6px;
-
-            display: flex;
-            align-items: center;
-            gap: 10px;
-
-            border-radius: 18px;
-
-            color: var(--sb-tbar-text) !important;
-            text-decoration: none !important;
-
-            border: 1px solid transparent;
-            transition: .22s ease;
-        }
-
-        .sb-products-brand:hover {
-            background: var(--sb-tbar-soft);
-            border-color: var(--sb-tbar-border);
-            transform: translateY(-1px);
-        }
-
-        .sb-brand-mark {
-            width: 45px;
-            height: 45px;
-
-            display: grid;
-            place-items: center;
-
-            border-radius: 14px;
-            color: #fff;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #2563eb,
-                    #7c3aed
-                );
-
-            box-shadow:
-                0 8px 22px rgba(37,99,235,.30),
-                inset 0 1px rgba(255,255,255,.25);
-
-            font-size: 17px;
-        }
-
-        .sb-brand-copy {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.05;
-            min-width: 0;
-        }
-
-        .sb-brand-copy strong {
-            font-size: 14px;
-            letter-spacing: .4px;
-        }
-
-        .sb-brand-copy small {
-            margin-top: 5px;
-            font-size: 8px;
-            letter-spacing: 1.25px;
-            color: var(--sb-tbar-muted);
-            font-weight: 900;
-        }
-
-        .sb-products-nav {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            flex: 1;
-            min-width: 0;
-        }
-
-        .sb-pnav-btn {
-            position: relative;
-
-            flex: 1;
-            min-width: 82px;
-            height: 50px;
-
-            padding: 0 10px;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 7px;
-
-            border:
-                1px solid
-                rgba(37,99,235,.13);
-
-            border-radius: 14px;
-
-            background:
-                linear-gradient(
-                    180deg,
-                    var(--sb-tbar-panel),
-                    var(--sb-tbar-soft)
-                );
-
-            color: var(--sb-tbar-muted) !important;
-
-            font-size: 11px;
-            font-weight: 900;
-
-            text-decoration: none !important;
-            white-space: nowrap;
-
-            cursor: pointer;
-
-            box-shadow:
-                0 5px 16px
-                rgba(37,99,235,.06);
-
-            transition: .2s ease;
-        }
-
-        .sb-pnav-btn i {
-            font-size: 13px;
-            width: 16px;
-            text-align: center;
-        }
-
-        .sb-pnav-btn:hover {
-            color: var(--sb-tbar-blue) !important;
-            border-color: rgba(37,99,235,.32);
-            transform: translateY(-2px);
-
-            box-shadow:
-                0 10px 25px
-                rgba(37,99,235,.13);
-        }
-
-        .sb-pnav-btn.is-active {
-            color: #fff !important;
-            border-color: transparent;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #2563eb,
-                    #4f46e5
-                );
-
-            box-shadow:
-                0 10px 28px
-                rgba(37,99,235,.28);
-        }
-
-        .sb-pnav-aihub {
-            color: #2563eb !important;
-        }
-
-        .sb-pnav-aihub:hover {
-            color: #fff !important;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #2563eb,
-                    #7c3aed
-                );
-
-            border-color: transparent;
-        }
-
-        .sb-pnav-smart-ai {
-            color: #4f46e5 !important;
-        }
-
-        .sb-pnav-smart-ai:hover {
-            color: #fff !important;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #4f46e5,
-                    #9333ea
-                );
-
-            border-color: transparent;
-        }
-
-        .sb-smart-orb {
-            width: 25px;
-            height: 25px;
-
-            display: grid;
-            place-items: center;
-
-            border-radius: 8px;
-            color: #fff;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #4f46e5,
-                    #9333ea
-                );
-
-            box-shadow:
-                0 5px 14px
-                rgba(79,70,229,.25);
-
-            font-size: 11px;
-        }
-
-        .sb-online-dot {
-            position: absolute;
-            top: 7px;
-            right: 8px;
-
-            width: 6px;
-            height: 6px;
-
-            border-radius: 50%;
-            background: #22c55e;
-
-            box-shadow:
-                0 0 0 3px
-                rgba(34,197,94,.13);
-        }
-
-        .sb-taskbar-user {
-            flex: 0 1 145px;
-            min-width: 105px;
-            height: 50px;
-
-            padding: 0 10px;
-
-            display: flex;
-            align-items: center;
-            gap: 8px;
-
-            border:
-                1px solid
-                var(--sb-tbar-border);
-
-            border-radius: 14px;
-
-            background:
-                var(--sb-tbar-panel);
-
-            box-shadow:
-                0 5px 16px
-                rgba(37,99,235,.05);
-
-            animation:
-                sbHiFloat
-                3s
-                ease-in-out
-                infinite;
-        }
-
-        @keyframes sbHiFloat {
-            0%,100% {
-                transform: translateY(0);
-            }
-
-            50% {
-                transform: translateY(-2px);
-            }
-        }
-
-        .sb-user-dot {
-            width: 31px;
-            height: 31px;
-
-            display: grid;
-            place-items: center;
-
-            border-radius: 10px;
-
-            background:
-                var(--sb-tbar-soft);
-
-            color:
-                var(--sb-tbar-blue);
-
-            flex: 0 0 31px;
-        }
-
-        .sb-user-text {
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
-            line-height: 1.05;
-        }
-
-        .sb-user-text small {
-            font-size: 8px;
-            color: var(--sb-tbar-muted);
-            font-weight: 800;
-        }
-
-        .sb-user-text strong {
-            margin-top: 4px;
-            font-size: 10px;
-            color: var(--sb-tbar-text);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 92px;
-        }
-
-        .sb-products-more {
-            flex: 0 0 52px;
-            height: 50px;
-
-            border:
-                1px solid
-                var(--sb-tbar-border);
-
-            border-radius: 14px;
-
-            background:
-                var(--sb-tbar-panel);
-
-            color:
-                var(--sb-tbar-text);
-
-            cursor: pointer;
-            font-size: 17px;
-
-            transition: .2s ease;
-
-            box-shadow:
-                0 5px 16px
-                rgba(37,99,235,.06);
-        }
-
-        .sb-products-more:hover {
-            color: #fff;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #2563eb,
-                    #7c3aed
-                );
-
-            border-color: transparent;
-            transform: translateY(-2px);
-        }
-
-        .sb-products-more-menu {
-            position: fixed;
-            z-index: 100000;
-
-            top: 84px;
-            right: 12px;
-
-            width: 290px;
-            max-height: calc(100vh - 100px);
-
-            overflow: auto;
-            padding: 10px;
-
-            border:
-                1px solid
-                var(--sb-tbar-border);
-
-            border-radius: 22px;
-
-            background:
-                var(--sb-tbar-bg);
-
-            box-shadow:
-                0 30px 90px
-                rgba(0,0,0,.28);
-
-            backdrop-filter: blur(28px);
-            -webkit-backdrop-filter: blur(28px);
-
-            display: none;
-        }
-
-        .sb-products-more-menu.is-open {
-            display: block;
-            animation: sbMenuIn .2s ease;
-        }
-
-        .sb-more-heading {
-            padding: 9px 10px 11px;
-            border-bottom: 1px solid var(--sb-tbar-border);
-            margin-bottom: 5px;
-        }
-
-        .sb-more-heading span {
-            display: block;
-            color: var(--sb-tbar-text);
-            font-size: 11px;
-            font-weight: 950;
-            letter-spacing: .7px;
-        }
-
-        .sb-more-heading small {
-            display: block;
-            margin-top: 4px;
-            color: var(--sb-tbar-muted);
-            font-size: 8px;
-        }
-
-        .sb-more-link {
-            width: 100%;
-            min-height: 42px;
-
-            padding: 0 11px;
-
-            display: flex;
-            align-items: center;
-            gap: 10px;
-
-            border: 0;
-            border-radius: 12px;
-
-            background: transparent;
-
-            color: var(--sb-tbar-text) !important;
-            text-decoration: none !important;
-
-            font-size: 10px;
-            font-weight: 850;
-
-            cursor: pointer;
-        }
-
-        .sb-more-link i {
-            width: 18px;
-            text-align: center;
-            color: var(--sb-tbar-blue);
-        }
-
-        .sb-more-link:hover {
-            background: var(--sb-tbar-soft);
-            color: var(--sb-tbar-blue) !important;
-            transform: translateX(2px);
-        }
-
-        .sb-more-separator {
-            height: 1px;
-            margin: 7px 5px;
-            background: var(--sb-tbar-border);
-        }
-
-        .sb-more-title {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            padding: 5px 10px 7px;
-
-            color: var(--sb-tbar-muted);
-
-            font-size: 9px;
-            font-weight: 900;
-
-            text-transform: uppercase;
-            letter-spacing: .08em;
-        }
-
-        .sb-theme-switcher {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px;
-        }
-
-        .sb-theme-choice {
-            height: 38px;
-
-            border:
-                1px solid
-                var(--sb-tbar-border);
-
-            border-radius: 11px;
-
-            background:
-                var(--sb-tbar-panel);
-
-            color:
-                var(--sb-tbar-text);
-
-            font-size: 10px;
-            font-weight: 850;
-            cursor: pointer;
-        }
-
-        .sb-theme-choice:hover,
-        .sb-theme-choice.is-selected {
-            color: #fff;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #2563eb,
-                    #7c3aed
-                );
-
-            border-color: transparent;
-        }
-
-        .sb-theme-choice i {
-            margin-right: 5px;
-        }
-
-        .sb-more-action {
-            font-family: inherit;
-            text-align: left;
-        }
-
-        .sb-logout-form {
-            margin: 0;
-        }
-
-        .sb-logout {
-            color: #e05b72 !important;
-        }
-
-        .sb-logout i {
-            color: #e05b72 !important;
-        }
-
-        @keyframes sbMenuIn {
-            from {
-                opacity: 0;
-                transform:
-                    translateY(-8px)
-                    scale(.98);
-            }
-
-            to {
-                opacity: 1;
-                transform: none;
-            }
-        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         .ai-hub-fab {
             z-index: 99980 !important;
@@ -1755,119 +1234,40 @@
                 ) !important;
         }
 
-        
 
-        
+
+
 
         /* =====================================================
            MOBILE
         ===================================================== */
 
-        @media (max-width: 1350px) {
-            .sb-products-brand {
-                flex-basis: 185px;
-                min-width: 175px;
-            }
 
-            .sb-pnav-btn {
-                min-width: 70px;
-                padding: 0 7px;
-                font-size: 10px;
-            }
 
-            .sb-taskbar-user {
-                flex-basis: 125px;
-            }
-        }
 
-        @media (max-width: 1120px) {
-            .sb-brand-copy {
-                display: none;
-            }
-
-            .sb-products-brand {
-                flex-basis: 65px;
-                min-width: 65px;
-                justify-content: center;
-                padding: 5px;
-            }
-
-            .sb-pnav-btn span {
-                display: none;
-            }
-
-            .sb-pnav-btn {
-                min-width: 52px;
-                padding: 0;
-            }
-
-            .sb-taskbar-user {
-                flex-basis: 90px;
-                min-width: 90px;
-            }
-
-            .sb-user-text strong {
-                max-width: 52px;
-            }
-        }
 
         @media (max-width: 700px) {
             .page {
                 padding: 22px 10px 70px;
             }
 
-            .sb-products-taskbar {
-                padding: 7px;
-                gap: 5px;
-                overflow-x: auto;
-                scrollbar-width: none;
-            }
 
-            .sb-products-taskbar::-webkit-scrollbar {
-                display: none;
-            }
 
-            .sb-products-brand {
-                position: sticky;
-                left: 0;
-                z-index: 2;
 
-                flex-basis: 52px;
-                min-width: 52px;
-                height: 48px;
-            }
 
-            .sb-brand-mark {
-                width: 39px;
-                height: 39px;
-            }
 
-            .sb-products-nav {
-                flex: 0 0 auto;
-            }
 
-            .sb-pnav-btn {
-                height: 46px;
-                min-width: 48px;
-                flex: 0 0 48px;
-                border-radius: 12px;
-            }
 
-            .sb-taskbar-user {
-                flex: 0 0 110px;
-                height: 46px;
-            }
 
-            .sb-products-more {
-                flex: 0 0 46px;
-                height: 46px;
-            }
 
-            .sb-products-more-menu {
-                top: 66px;
-                right: 7px;
-                width: min(290px, calc(100vw - 14px));
-            }
+
+
+
+
+
+
+
+
 
             .topbar {
                 flex-direction: column;
@@ -1987,297 +1387,7 @@
      CUSTOMER TASKBAR
 ========================================================= --}}
 
-<nav
-    class="sb-products-taskbar"
-    id="sbProductsTaskbar"
-    aria-label="Customer Navigation"
->
-
-    <a
-        href="{{ route('products.index') }}"
-        class="sb-products-brand"
-        aria-label="Smart Basket Products"
-    >
-
-        <span class="sb-brand-mark">
-            <i class="fa-solid fa-basket-shopping"></i>
-        </span>
-
-        <span class="sb-brand-copy">
-            <strong>SMART BASKET</strong>
-            <small>CUSTOMER PANEL</small>
-        </span>
-
-    </a>
-
-    <div class="sb-products-nav">
-
-        @if(Route::has('products.index'))
-            <a
-                href="{{ route('products.index') }}"
-                class="sb-pnav-btn {{ $currentRoute === 'products.index' ? 'is-active' : '' }}"
-            >
-                <i class="fa-solid fa-store"></i>
-                <span>Products</span>
-            </a>
-        @endif
-
-        @if($ordersRoute)
-            <a
-                href="{{ route($ordersRoute) }}"
-                class="sb-pnav-btn {{ $currentRoute === $ordersRoute ? 'is-active' : '' }}"
-            >
-                <i class="fa-solid fa-box"></i>
-                <span>Orders</span>
-            </a>
-        @endif
-
-        @if(Route::has('cart.index'))
-            <a
-                href="{{ route('cart.index') }}"
-                class="sb-pnav-btn {{ $currentRoute === 'cart.index' ? 'is-active' : '' }}"
-            >
-                <i class="fa-solid fa-cart-shopping"></i>
-                <span>Cart</span>
-            </a>
-        @endif
-
-        @if(Route::has('wishlist'))
-            <a
-                href="{{ route('wishlist') }}"
-                class="sb-pnav-btn {{ $currentRoute === 'wishlist' ? 'is-active' : '' }}"
-            >
-                <i class="fa-regular fa-heart"></i>
-                <span>Wishlist</span>
-            </a>
-        @endif
-
-        @if(Route::has('profile'))
-            <a
-                href="{{ route('profile') }}"
-                class="sb-pnav-btn {{ $currentRoute === 'profile' ? 'is-active' : '' }}"
-            >
-                <i class="fa-regular fa-user"></i>
-                <span>Profile</span>
-            </a>
-        @endif
-
-        @if(Route::has('settings'))
-            <a
-                href="{{ route('settings') }}"
-                class="sb-pnav-btn {{ $currentRoute === 'settings' ? 'is-active' : '' }}"
-            >
-                <i class="fa-solid fa-gear"></i>
-                <span>Settings</span>
-            </a>
-        @endif
-
-        <button
-            type="button"
-            class="sb-pnav-btn sb-pnav-aihub"
-            id="sbProductsAIHub"
-            data-sb-ai-hub-open
-            title="Open AI Hub"
-        >
-            <i class="fa-solid fa-wand-magic-sparkles"></i>
-            <span>AI HUB</span>
-        </button>
-
-        <button
-            type="button"
-            class="sb-pnav-btn sb-pnav-smart-ai"
-            id="sbProductsSmartAI"
-            title="Open Smart AI"
-        >
-            <span class="sb-smart-orb">
-                <i class="fa-solid fa-robot"></i>
-            </span>
-
-            <span>Smart AI</span>
-
-            <b class="sb-online-dot"></b>
-        </button>
-
-    </div>
-
-    <div class="sb-taskbar-user">
-
-        <span class="sb-user-dot">
-            <i class="fa-regular fa-user"></i>
-        </span>
-
-        <span class="sb-user-text">
-            <small>Hi,</small>
-
-            <strong>
-                {{ auth()->user()->name ?? 'Customer' }}
-            </strong>
-        </span>
-
-    </div>
-
-    <button
-        type="button"
-        class="sb-products-more"
-        id="sbProductsMore"
-        aria-expanded="false"
-        aria-controls="sbProductsMoreMenu"
-        title="More options"
-    >
-        <i class="fa-solid fa-ellipsis-vertical"></i>
-    </button>
-
-</nav>
-
-
-{{-- =========================================================
-     MORE MENU
-========================================================= --}}
-
-<div
-    class="sb-products-more-menu"
-    id="sbProductsMoreMenu"
-    aria-hidden="true"
->
-
-    <div class="sb-more-heading">
-        <span>SMART BASKET</span>
-        <small>More options</small>
-    </div>
-
-    @if(Route::has('products.index'))
-        <a
-            href="{{ route('products.index') }}"
-            class="sb-more-link"
-        >
-            <i class="fa-solid fa-house"></i>
-            <span>Products Home</span>
-        </a>
-    @endif
-
-    @if($ordersRoute)
-        <a
-            href="{{ route($ordersRoute) }}"
-            class="sb-more-link"
-        >
-            <i class="fa-solid fa-box"></i>
-            <span>My Orders</span>
-        </a>
-    @endif
-
-    @if(Route::has('cart.index'))
-        <a
-            href="{{ route('cart.index') }}"
-            class="sb-more-link"
-        >
-            <i class="fa-solid fa-cart-shopping"></i>
-            <span>Cart</span>
-        </a>
-    @endif
-
-    @if(Route::has('wishlist'))
-        <a
-            href="{{ route('wishlist') }}"
-            class="sb-more-link"
-        >
-            <i class="fa-regular fa-heart"></i>
-            <span>Wishlist</span>
-        </a>
-    @endif
-
-    @if(Route::has('profile'))
-        <a
-            href="{{ route('profile') }}"
-            class="sb-more-link"
-        >
-            <i class="fa-regular fa-user"></i>
-            <span>Profile</span>
-        </a>
-    @endif
-
-    @if(Route::has('settings'))
-        <a
-            href="{{ route('settings') }}"
-            class="sb-more-link"
-        >
-            <i class="fa-solid fa-gear"></i>
-            <span>Settings</span>
-        </a>
-    @endif
-
-    <div class="sb-more-separator"></div>
-
-    <div class="sb-more-title">
-        <i class="fa-solid fa-palette"></i>
-        <span>Theme</span>
-    </div>
-
-    <div class="sb-theme-switcher">
-
-        <button
-            type="button"
-            class="sb-theme-choice"
-            data-sb-set-theme="light"
-        >
-            <i class="fa-solid fa-sun"></i>
-            <span>Light</span>
-        </button>
-
-        <button
-            type="button"
-            class="sb-theme-choice"
-            data-sb-set-theme="dark"
-        >
-            <i class="fa-solid fa-moon"></i>
-            <span>Dark</span>
-        </button>
-
-    </div>
-
-    <div class="sb-more-separator"></div>
-
-    <button
-        type="button"
-        class="sb-more-link sb-more-action"
-        data-sb-more-aihub
-    >
-        <i class="fa-solid fa-wand-magic-sparkles"></i>
-        <span>Open AI HUB</span>
-    </button>
-
-    <button
-        type="button"
-        class="sb-more-link sb-more-action"
-        data-sb-more-smart-ai
-    >
-        <i class="fa-solid fa-robot"></i>
-        <span>Open Smart AI</span>
-    </button>
-
-    @if(Route::has('logout'))
-
-        <div class="sb-more-separator"></div>
-
-        <form
-            method="POST"
-            action="{{ route('logout') }}"
-            class="sb-logout-form"
-        >
-            @csrf
-
-            <button
-                type="submit"
-                class="sb-more-link sb-logout"
-            >
-                <i class="fa-solid fa-right-from-bracket"></i>
-                <span>Logout</span>
-            </button>
-
-        </form>
-
-    @endif
-
-</div>
+<x-products-customer-taskbar :include-robot="false" />
 
 @endauth
 
@@ -3020,6 +2130,42 @@
                             </div>
 
 
+                            <div class="section-title">
+                                <div class="section-icon"><i class="fa-solid fa-building-columns"></i></div>
+                                <div>
+                                    <h2>Refund details</h2>
+                                    <p>Saved securely and filled in automatically when you request a refund.</p>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-4">
+                                <div class="col-12">
+                                    <label class="form-label" for="refundUpiId">UPI ID</label>
+                                    <input class="form-control profile-input" id="refundUpiId" name="refund_upi_id" value="{{ old('refund_upi_id', $user->refund_upi_id) }}" maxlength="120" placeholder="name@bank" autocomplete="off">
+                                    @error('refund_upi_id')<small class="text-danger">{{ $message }}</small>@enderror
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="refundAccountHolder">Bank account holder</label>
+                                    <input class="form-control profile-input" id="refundAccountHolder" name="refund_account_holder" value="{{ old('refund_account_holder', $user->refund_account_holder) }}" maxlength="150" autocomplete="name">
+                                    @error('refund_account_holder')<small class="text-danger">{{ $message }}</small>@enderror
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="refundBankName">Bank name</label>
+                                    <input class="form-control profile-input" id="refundBankName" name="refund_bank_name" value="{{ old('refund_bank_name', $user->refund_bank_name) }}" maxlength="150" autocomplete="organization">
+                                    @error('refund_bank_name')<small class="text-danger">{{ $message }}</small>@enderror
+                                </div>
+                                <div class="col-md-7">
+                                    <label class="form-label" for="refundAccountNumber">Account number</label>
+                                    <input class="form-control profile-input" id="refundAccountNumber" name="refund_account_number" value="{{ old('refund_account_number', $user->refund_account_number) }}" inputmode="numeric" minlength="6" maxlength="20" autocomplete="off">
+                                    @error('refund_account_number')<small class="text-danger">{{ $message }}</small>@enderror
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label" for="refundIfsc">IFSC code</label>
+                                    <input class="form-control profile-input text-uppercase" id="refundIfsc" name="refund_ifsc" value="{{ old('refund_ifsc', $user->refund_ifsc) }}" maxlength="11" autocapitalize="characters" autocomplete="off">
+                                    @error('refund_ifsc')<small class="text-danger">{{ $message }}</small>@enderror
+                                </div>
+                            </div>
+
                             <hr
                                 style="
                                     border-color:var(--border);
@@ -3177,6 +2323,48 @@
             ================================================= --}}
 
             <div class="col-lg-8">
+
+                <section class="card-premium mb-4" id="deliveryAddressesSection">
+                    <div class="section">
+                        <div class="section-title">
+                            <div class="section-icon"><i class="fa-solid fa-location-dot"></i></div>
+                            <div><h2>Saved delivery addresses</h2><p>Save multiple locations with recipient and PIN code details for checkout.</p></div>
+                        </div>
+                        @if(session('success'))<div class="alert-premium">{{ session('success') }}</div>@endif
+                        @if($errors->any())<div class="alert alert-danger rounded-4">{{ $errors->first() }}</div>@endif
+                        <div class="row g-3 mb-4">
+                            @forelse($addresses as $savedAddress)
+                                <div class="col-12 col-xl-6">
+                                    <article class="p-3 h-100 rounded-4 border bg-white">
+                                        <div class="d-flex justify-content-between gap-2"><strong>{{ $savedAddress->label }}</strong>@if($savedAddress->is_default)<span class="badge text-bg-primary">Default</span>@endif</div>
+                                        <div class="mt-2 fw-semibold">{{ $savedAddress->recipient_name }} &middot; {{ $savedAddress->phone }}</div>
+                                        <div class="text-muted small mt-1">{{ $savedAddress->address_line }}, {{ $savedAddress->city }}, {{ $savedAddress->state }} &middot; PIN {{ $savedAddress->pincode }}, {{ $savedAddress->country }}</div>
+                                        <div class="d-flex flex-wrap gap-2 mt-3">
+                                            @unless($savedAddress->is_default)<form method="POST" action="{{ route('addresses.default', $savedAddress) }}">@csrf<button class="btn btn-sm btn-outline-primary" type="submit">Set as default</button></form>@endunless
+                                            <form method="POST" action="{{ route('addresses.destroy', $savedAddress) }}" onsubmit="return confirm('Remove this saved address?')">@csrf @method('DELETE')<button class="btn btn-sm btn-outline-danger" type="submit">Remove</button></form>
+                                        </div>
+                                    </article>
+                                </div>
+                            @empty
+                                <div class="col-12"><p class="text-muted mb-0">No saved delivery addresses yet. Add your first address below.</p></div>
+                            @endforelse
+                        </div>
+                        <h3 class="h5 fw-bold mb-3">Add another address</h3>
+                        <form method="POST" action="{{ route('addresses.store') }}" class="row g-3">
+                            @csrf
+                            <div class="col-sm-4"><label class="form-label" for="addressLabel">Label</label><input class="form-control" id="addressLabel" name="label" value="{{ old('label', 'Home') }}" placeholder="Home, Work" required maxlength="50"></div>
+                            <div class="col-sm-8"><label class="form-label" for="addressRecipient">Recipient</label><input class="form-control" id="addressRecipient" name="recipient_name" value="{{ old('recipient_name', $user->name) }}" required></div>
+                            <div class="col-sm-6"><label class="form-label" for="addressPhone">Delivery phone</label><input class="form-control" id="addressPhone" name="phone" type="tel" value="{{ old('phone', $user->phone) }}" required maxlength="20"></div>
+                            <div class="col-sm-6"><label class="form-label" for="addressPincode">PIN code</label><input class="form-control" id="addressPincode" name="pincode" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" value="{{ old('pincode', $user->pin_code) }}" placeholder="6-digit PIN code" required></div>
+                            <div class="col-12"><label class="form-label" for="addressLine">House, street and area</label><textarea class="form-control" id="addressLine" name="address_line" rows="2" required maxlength="1000">{{ old('address_line') }}</textarea></div>
+                            <div class="col-sm-4"><label class="form-label" for="addressCity">City</label><input class="form-control" id="addressCity" name="city" value="{{ old('city', $user->city) }}" required></div>
+                            <div class="col-sm-4"><label class="form-label" for="addressState">State</label><input class="form-control" id="addressState" name="state" value="{{ old('state', $user->state) }}" required></div>
+                            <div class="col-sm-4"><label class="form-label" for="addressCountry">Country</label><input class="form-control" id="addressCountry" name="country" value="{{ old('country', 'India') }}" required></div>
+                            <div class="col-12"><label class="d-flex align-items-center gap-2"><input class="form-check-input m-0" type="checkbox" name="is_default" value="1"> Use as my default checkout address</label></div>
+                            <div class="col-12"><button class="save-button" type="submit"><i class="fa-solid fa-plus me-2"></i>Save delivery address</button> <a class="back-button ms-2" href="{{ route('addresses.index') }}">Manage all addresses</a></div>
+                        </form>
+                    </div>
+                </section>
 
 
                 {{-- SECURITY --}}
@@ -3564,320 +2752,7 @@
 <x-ai-hub-sidebar :without-menu="true" />
 
 
-<script>
-(function () {
 
-    'use strict';
-
-    /*
-    |--------------------------------------------------------------------------
-    | SMART BASKET CUSTOMER TASKBAR
-    |--------------------------------------------------------------------------
-    */
-
-    if (window.__SBProductsPremiumTaskbar) {
-        return;
-    }
-
-    window.__SBProductsPremiumTaskbar = true;
-
-    const more =
-        document.getElementById('sbProductsMore');
-
-    const menu =
-        document.getElementById('sbProductsMoreMenu');
-
-    const aiHubBtn =
-        document.getElementById('sbProductsAIHub');
-
-    const smartAiBtn =
-        document.getElementById('sbProductsSmartAI');
-
-
-    function closeMore() {
-
-        if (menu) {
-            menu.classList.remove('is-open');
-            menu.setAttribute('aria-hidden', 'true');
-        }
-
-        if (more) {
-            more.setAttribute('aria-expanded', 'false');
-        }
-    }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | GLOBAL closeMenu FIX
-    |--------------------------------------------------------------------------
-    | Old page code was calling closeMenu(), but that function
-    | did not exist. Now both names safely point to same function.
-    |--------------------------------------------------------------------------
-    */
-
-    window.closeMenu = closeMore;
-
-
-    function openMore() {
-
-        if (menu) {
-            menu.classList.add('is-open');
-            menu.setAttribute('aria-hidden', 'false');
-        }
-
-        if (more) {
-            more.setAttribute('aria-expanded', 'true');
-        }
-    }
-
-
-    if (more) {
-
-        more.addEventListener(
-            'click',
-            function (event) {
-
-                event.preventDefault();
-                event.stopPropagation();
-
-                if (
-                    menu &&
-                    menu.classList.contains('is-open')
-                ) {
-                    closeMore();
-                } else {
-                    openMore();
-                }
-
-            }
-        );
-
-    }
-
-
-    document.addEventListener(
-        'click',
-        function (event) {
-
-            if (
-                menu &&
-                more &&
-                !menu.contains(event.target) &&
-                !more.contains(event.target)
-            ) {
-                closeMore();
-            }
-
-        }
-    );
-
-
-    document.addEventListener(
-        'keydown',
-        function (event) {
-
-            if (event.key === 'Escape') {
-                closeMore();
-            }
-
-        }
-    );
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | AI HUB
-    |--------------------------------------------------------------------------
-    */
-
-    function openHub() {
-
-        const trigger =
-            document.querySelector('[data-ai-hub-open]');
-
-        if (trigger) {
-            trigger.click();
-        }
-
-        closeMore();
-    }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | SMART AI
-    |--------------------------------------------------------------------------
-    */
-
-    function openRobot() {
-
-        const trigger =
-            document.querySelector('[data-smart-ai-open]');
-
-        if (trigger) {
-            trigger.click();
-        }
-
-        closeMore();
-    }
-
-
-    if (aiHubBtn) {
-        aiHubBtn.addEventListener('click', openHub);
-    }
-
-    if (smartAiBtn) {
-        smartAiBtn.addEventListener('click', openRobot);
-    }
-
-
-    document
-        .querySelectorAll('[data-sb-more-aihub]')
-        .forEach(function (button) {
-
-            button.addEventListener(
-                'click',
-                openHub
-            );
-
-        });
-
-
-    document
-        .querySelectorAll('[data-sb-more-smart-ai]')
-        .forEach(function (button) {
-
-            button.addEventListener(
-                'click',
-                openRobot
-            );
-
-        });
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | THEME
-    |--------------------------------------------------------------------------
-    */
-
-    function setTheme(theme) {
-
-        if (!['light', 'dark'].includes(theme)) {
-            return;
-        }
-
-        localStorage.setItem(
-            'sb-theme',
-            theme
-        );
-
-        document.documentElement.setAttribute(
-            'data-theme',
-            theme
-        );
-
-        document.documentElement.setAttribute(
-            'data-sb-theme',
-            theme
-        );
-
-        document.body.setAttribute(
-            'data-sb-theme',
-            theme
-        );
-
-        window.SB_THEME = theme;
-
-        try {
-
-            window.dispatchEvent(
-                new CustomEvent(
-                    'sb-theme-changed',
-                    {
-                        detail: {
-                            theme: theme
-                        }
-                    }
-                )
-            );
-
-        } catch (error) {}
-
-
-        try {
-
-            window.dispatchEvent(
-                new CustomEvent(
-                    'smartbasket-theme-changed',
-                    {
-                        detail: {
-                            theme: theme
-                        }
-                    }
-                )
-            );
-
-        } catch (error) {}
-
-
-        updateThemeButtons(theme);
-    }
-
-
-    function updateThemeButtons(theme) {
-
-        document
-            .querySelectorAll('[data-sb-set-theme]')
-            .forEach(function (button) {
-
-                button.classList.toggle(
-                    'is-selected',
-                    button.getAttribute('data-sb-set-theme') === theme
-                );
-
-            });
-
-    }
-
-
-    document
-        .querySelectorAll('[data-sb-set-theme]')
-        .forEach(function (button) {
-
-            button.addEventListener(
-                'click',
-                function () {
-
-                    setTheme(
-                        button.getAttribute(
-                            'data-sb-set-theme'
-                        )
-                    );
-
-                }
-            );
-
-        });
-
-
-    const savedTheme =
-        localStorage.getItem('sb-theme');
-
-    const initialTheme =
-        savedTheme ||
-        document.documentElement.getAttribute('data-theme') ||
-        'light';
-
-    setTheme(
-        ['light', 'dark'].includes(initialTheme)
-            ? initialTheme
-            : 'light'
-    );
-
-})();
-</script>
 
 
 <script>

@@ -37,7 +37,7 @@
         class="sb-sidebar-link {{ request()->routeIs('returns.*') ? 'active' : '' }}"
     >
         <i class="fa-solid fa-arrow-rotate-left"></i>
-        <span>Returns &amp; Refunds</span>
+        <span>Returns &amp; Cancellations</span>
     </a>
 
 

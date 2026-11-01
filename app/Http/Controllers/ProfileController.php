@@ -23,7 +23,9 @@ class ProfileController extends Controller
             return redirect('/login');
         }
 
-        return view('profile', compact('user'));
+        $addresses = $user->addresses()->latest('is_default')->latest()->get();
+
+        return view('profile', compact('user', 'addresses'));
     }
 
     /**
@@ -202,6 +204,12 @@ class ProfileController extends Controller
                 'max:20',
             ],
 
+            'refund_upi_id' => ['nullable', 'string', 'max:120', 'regex:/^[A-Za-z0-9._-]+@[A-Za-z0-9.-]+$/'],
+            'refund_account_holder' => ['nullable', 'string', 'max:150'],
+            'refund_bank_name' => ['nullable', 'string', 'max:150'],
+            'refund_account_number' => ['nullable', 'string', 'regex:/^[0-9]{6,20}$/'],
+            'refund_ifsc' => ['nullable', 'string', 'max:11', 'regex:/^[A-Za-z]{4}0[A-Za-z0-9]{6}$/'],
+
             /*
             |--------------------------------------------------------------------------
             | LANGUAGE
@@ -357,6 +365,15 @@ class ProfileController extends Controller
             array_key_exists('pin_code', $validated)
                 ? $validated['pin_code']
                 : $user->pin_code;
+
+        foreach (['refund_upi_id', 'refund_account_holder', 'refund_bank_name', 'refund_account_number'] as $refundField) {
+            if (array_key_exists($refundField, $validated)) {
+                $user->{$refundField} = filled($validated[$refundField]) ? trim($validated[$refundField]) : null;
+            }
+        }
+        if (array_key_exists('refund_ifsc', $validated)) {
+            $user->refund_ifsc = filled($validated['refund_ifsc']) ? strtoupper(trim($validated['refund_ifsc'])) : null;
+        }
 
         /*
         |--------------------------------------------------------------------------

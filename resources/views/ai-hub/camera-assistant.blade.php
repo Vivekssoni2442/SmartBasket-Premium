@@ -893,16 +893,6 @@
             }
         }
 
-        @media (prefers-reduced-motion: reduce) {
-            *,
-            *::before,
-            *::after {
-                scroll-behavior: auto !important;
-                animation-duration: .01ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: .01ms !important;
-            }
-        }
     </style>
     <link rel="stylesheet" href="{{ asset('css/customer-page-title.css') }}">
 </head>
@@ -928,7 +918,7 @@
                 </span>
 
                 <x-customer-page-hero>
-<h1 class="sb-customer-page-title">AI Camera Assistant 📷</h1>
+<h1 class="sb-customer-page-title">AI Camera Assistant</h1>
 </x-customer-page-hero>
 
                 <p>
@@ -940,13 +930,7 @@
             </div>
 
             @if(Route::has('products.index'))
-                <a
-                    href="{{ route('products.index') }}"
-                    class="btn btn-outline-primary"
-                >
-                    <i class="fa-solid fa-store me-1"></i>
-                    Browse Products
-                </a>
+
             @endif
 
         </header>
@@ -989,12 +973,10 @@
             <i class="fa-solid fa-shield-halved"></i>
 
             <div>
-                <strong>Your privacy matters.</strong>
+                <strong>Your photo stays under your control.</strong>
 
                 <span>
-                    Your image should only be processed and retained
-                    according to the application's actual backend privacy
-                    implementation. Avoid uploading sensitive images.
+                    Camera previews stay in your browser until you choose an AI action. AI product previews require your consent and send the photo and selected product image to the configured image service. The temporary source photo is deleted after processing; the generated result is kept privately for up to 24 hours.
                 </span>
             </div>
         </div>
@@ -1016,7 +998,7 @@
 
                         <div>
                             <h2>Live Camera</h2>
-                            <small>Front camera / webcam · full-body framing</small>
+                            <small>Front camera / webcam Â· full-body framing</small>
                         </div>
                     </div>
 
@@ -1138,7 +1120,7 @@
 
                         <div>
                             <h2>AI Style Analysis</h2>
-                            <small>Style ideas · colors · outfits · product recommendations</small>
+                            <small>Style ideas Â· colors Â· outfits Â· product recommendations</small>
                         </div>
                     </div>
 
@@ -1165,6 +1147,45 @@
                         </button>
 
                     </form>
+
+                    <section class="ai-ca-tryon" id="caTryOn" data-search-url="{{ route('ai-camera-assistant.products') }}" data-generate-url-template="{{ route('products.virtual-try-on.generate', ['product' => '__PRODUCT__']) }}">
+                        <div class="ai-ca-tryon-heading">
+                            <span class="ai-ca-card-icon ai-ca-icon-ai"><i class="fa-solid fa-shirt"></i></span>
+                            <div>
+                                <h3>Preview a product on your photo</h3>
+                                <small>Search the Smart Basket catalog. Selecting a product starts its AI preview.</small>
+                            </div>
+                        </div>
+
+                        @unless($tryOnConfigured ?? false)
+                            <div class="alert alert-warning ai-ca-provider-notice" role="status">
+                                AI image generation is not configured yet. Set <code>VIRTUAL_TRYON_PROVIDER=openai</code> and <code>VIRTUAL_TRYON_API_KEY</code> in the server environment to create previews.
+                            </div>
+                        @endunless
+
+                        <label class="visually-hidden" for="caProductSearch">Search products</label>
+                        <input type="search" class="form-control" id="caProductSearch" placeholder="Search any product by name, brand or category" autocomplete="off">
+                        <div class="ai-ca-product-search-status" id="caProductSearchStatus" aria-live="polite">Upload a photo, then search for a product.</div>
+                        <div class="ai-ca-tryon-products" id="caTryOnProducts" aria-live="polite"></div>
+
+                        <label class="ai-ca-tryon-consent">
+                            <input type="checkbox" id="caTryOnConsent">
+                            <span>I agree to send my photo and the selected product image to the configured AI image service. The source photo is deleted after processing; the generated preview is private to this session for up to 24 hours.</span>
+                        </label>
+
+                        <div class="ai-ca-tryon-progress d-none" id="caTryOnProgress" role="status">
+                            <span class="ai-ca-tryon-spinner"></span>
+                            <span id="caTryOnProgressText">Creating your product previewâ€¦</span>
+                        </div>
+
+                        <div class="ai-ca-tryon-result d-none" id="caTryOnResult">
+                            <h4 id="caTryOnResultTitle">Your AI preview</h4>
+                            <img id="caTryOnResultImage" alt="AI generated preview with the selected product" loading="lazy">
+                            <a class="btn btn-primary btn-sm" id="caTryOnDownload" href="#" download="smart-basket-ai-preview.png">
+                                <i class="fa-solid fa-download me-1"></i>Download preview
+                            </a>
+                        </div>
+                    </section>
 
                     {{-- ACTION BUTTONS --}}
 
@@ -1292,7 +1313,7 @@
 
                                     <small class="ai-ca-confidence">
                                         Confidence:
-                                        {{ $analysis['detection']['skin_tone']['confidence'] ?? '—' }}%
+                                        {{ $analysis['detection']['skin_tone']['confidence'] ?? 'â€”' }}%
                                     </small>
                                 </div>
 
@@ -1306,7 +1327,7 @@
 
                                     <small class="ai-ca-confidence">
                                         Confidence:
-                                        {{ $analysis['detection']['face_shape']['confidence'] ?? '—' }}%
+                                        {{ $analysis['detection']['face_shape']['confidence'] ?? 'â€”' }}%
                                     </small>
                                 </div>
 
@@ -1347,9 +1368,9 @@
                                     <strong>Face Features</strong>
 
                                     <span>
-                                        {{ $analysis['face_features']['skin_tone'] ?? '—' }}
-                                        ·
-                                        {{ $analysis['face_features']['tone'] ?? '—' }}
+                                        {{ $analysis['face_features']['skin_tone'] ?? 'â€”' }}
+                                        Â·
+                                        {{ $analysis['face_features']['tone'] ?? 'â€”' }}
                                     </span>
                                 </div>
 
@@ -1358,7 +1379,7 @@
                                     <strong>Appearance Notes</strong>
 
                                     <span>
-                                        {{ $analysis['body_appearance']['frame'] ?? '—' }}
+                                        {{ $analysis['body_appearance']['frame'] ?? 'â€”' }}
                                     </span>
                                 </div>
 
@@ -1368,7 +1389,7 @@
 
                                     <span>
                                         {{ ucfirst($analysis['style_preference']['suggested_style'] ?? 'casual') }}
-                                        ·
+                                        Â·
                                         {{ $analysis['style_preference']['fit'] ?? 'regular' }} fit
                                     </span>
                                 </div>
@@ -1482,14 +1503,14 @@
 
                                             <p>
                                                 {{ $product->category ?: 'Smart Basket product' }}
-                                                ·
-                                                <span class="text-warning">★</span>
+                                                Â·
+                                                <span class="text-warning">â˜…</span>
                                                 {{ number_format((float) ($product->rating ?? 0), 1) }}
                                             </p>
 
                                             @if(!empty($item['reasons']))
                                                 <small class="ai-ca-reason">
-                                                    {{ collect($item['reasons'])->implode(' · ') }}
+                                                    {{ collect($item['reasons'])->implode(' Â· ') }}
                                                 </small>
                                             @endif
 
@@ -1498,7 +1519,7 @@
                                         <div class="ai-ca-product-actions">
 
                                             <span class="ai-ca-price">
-                                                ₹{{ number_format((float) $product->price, 2) }}
+                                                â‚¹{{ number_format((float) $product->price, 2) }}
                                             </span>
 
                                             <div class="ai-ca-product-btn-group">

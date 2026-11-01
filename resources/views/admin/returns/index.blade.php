@@ -22,7 +22,7 @@
                 @if($return->status === 'requested')
                     <form method="POST" action="{{ route('admin.returns.review',$return) }}" class="d-grid gap-2 mb-2">@csrf @method('PATCH')<textarea name="note" class="admin-input" rows="2" maxlength="2000" required placeholder="Decision note for customer"></textarea><button class="admin-btn admin-btn-primary" name="decision" value="approved">Approve return</button><button class="admin-btn admin-btn-danger" name="decision" value="rejected">Reject return</button></form>
                 @elseif($return->status === 'approved')
-                    @if($return->order?->isCashOnDelivery())<small class="text-secondary">COD return: provider refund unavailable; follow offline cash refund process.</small>@else<form method="POST" action="{{ route('admin.returns.refund',$return) }}" onsubmit="return confirm('Submit the calculated refund to the payment provider?')">@csrf<button class="admin-btn admin-btn-primary">Process provider refund</button></form>@endif
+                    @if($return->order?->isCashOnDelivery())<small class="text-secondary">COD return: provider refund unavailable; follow offline cash refund process.</small>@elseif($return->order?->isSellerDirectUpi())<small class="text-secondary">Seller UPI return: refund offline through the seller's UPI account.</small>@else<form method="POST" action="{{ route('admin.returns.refund',$return) }}" onsubmit="return confirm('Submit the calculated refund to the payment provider?')">@csrf<button class="admin-btn admin-btn-primary">Process provider refund</button></form>@endif
                 @else
                     <small>{{ $return->decision_note }}</small>
                 @endif

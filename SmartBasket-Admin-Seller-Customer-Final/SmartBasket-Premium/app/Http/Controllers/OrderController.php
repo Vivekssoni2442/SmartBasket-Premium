@@ -62,7 +62,9 @@ class OrderController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        if (! $checkout->isOnlineMethod($paymentMethod)) {
+        // Confirm immediately only for COD. Card payments must wait for the
+        // payment provider's verification callback before creating an order.
+        if ($paymentMethod === 'COD') {
 
             $checkout->createConfirmedOrders(
                 $itemsBySeller,

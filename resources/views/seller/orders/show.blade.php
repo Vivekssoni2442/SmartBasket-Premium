@@ -3,6 +3,10 @@
 
 <head>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -389,72 +393,7 @@
             line-height: 1.75;
         }
 
-
-        .hero-actions {
-
-            position: relative;
-            z-index: 3;
-
-            display: flex;
-            align-items: center;
-
-            gap: 9px;
-
-            flex-shrink: 0;
-        }
-
-
-        .hero-btn {
-
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-
-            gap: 8px;
-
-            min-height: 44px;
-
-            padding: 0 16px;
-
-            border: 1px solid var(--sb-order-border);
-
-            border-radius: 13px;
-
-            color: var(--sb-order-text);
-
-            background: var(--sb-order-card-2);
-
-            text-decoration: none;
-
-            font-size: 11px;
-            font-weight: 850;
-
-            white-space: nowrap;
-
-            transition:
-                transform .22s ease,
-                border-color .22s ease,
-                background .22s ease,
-                color .22s ease;
-        }
-
-
-        .hero-btn:hover {
-
-            color: var(--sb-order-green);
-
-            border-color: rgba(0,245,160,.30);
-
-            background: var(--sb-order-green-soft);
-
-            transform: translateY(-2px);
-        }
-
-
-        .hero-btn:first-child {
-
-            border-color: rgba(0,245,160,.18);
-        }
+        .seller-whatsapp-share{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:44px;margin-top:15px;padding:0 16px;border:1px solid rgba(37,211,102,.45);border-radius:13px;background:linear-gradient(120deg,#087c49,#12a565);box-shadow:0 10px 24px rgba(18,165,101,.2);color:#fff!important;font-size:12px;font-weight:900;text-decoration:none!important;transition:transform .2s ease,box-shadow .2s ease;cursor:pointer}.seller-whatsapp-share:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(18,165,101,.3)}.seller-whatsapp-share:disabled{opacity:.65;cursor:wait;transform:none}.seller-whatsapp-note{margin:7px 0 0;color:var(--sb-order-muted);font-size:10px;line-height:1.55}
 
 
         /* =========================================================
@@ -2134,22 +2073,6 @@
             }
 
 
-            .hero-actions {
-
-                width: 100%;
-            }
-
-
-            .hero-btn {
-
-                flex: 1;
-
-                min-width: 0;
-
-                padding: 0 10px;
-            }
-
-
             .seller-card {
 
                 border-radius: 20px;
@@ -2237,20 +2160,6 @@
             .stat-sub {
 
                 font-size: 8px;
-            }
-
-
-            .hero-actions {
-
-                flex-direction: column;
-            }
-
-
-            .hero-btn {
-
-                width: 100%;
-
-                flex: none;
             }
 
 
@@ -2394,17 +2303,6 @@
            REDUCED MOTION
         ========================================================= */
 
-        @media (prefers-reduced-motion: reduce) {
-
-            .seller-order-page *,
-            .seller-order-page *::before,
-            .seller-order-page *::after {
-
-                animation: none !important;
-
-                transition: none !important;
-            }
-        }
 
     </style>
 
@@ -2555,36 +2453,8 @@
 
                 </p>
 
-            </div>
-
-
-            <div class="hero-actions">
-
-                <a
-                    href="{{ route('seller.orders.index') }}"
-                    class="hero-btn"
-                >
-
-                    <i class="fa-solid fa-arrow-left"></i>
-
-                    All Orders
-
-                </a>
-
-
-                <a
-                    href="{{ route('seller.dashboard') }}"
-                    class="hero-btn"
-                >
-
-                    <i class="fa-solid fa-gauge-high"></i>
-
-                    Dashboard
-
-                </a>
 
             </div>
-
         </section>
 
 
@@ -3640,246 +3510,80 @@
                         @endif
 
 
-                        <div class="assignment-intro">
-
-                            <i class="fa-solid fa-circle-info"></i>
-
-                            Select an existing partner or create/update
-                            delivery partner details for this order.
-
-                        </div>
-
-
-                        <form
-                            action="{{ route('delivery.assign', $order) }}"
-                            method="POST"
-                            enctype="multipart/form-data"
-                            class="assignment-form"
-                        >
-
-                            @csrf
-
-
-                            @if($deliveryPartners->isNotEmpty())
-
-                                <div class="field-group">
-
-                                    <label class="field-label">
-
-                                        <i class="fa-solid fa-users"></i>
-
-                                        Existing Partner
-
-                                    </label>
-
-
-                                    <select
-                                        name="delivery_partner_id"
-                                        class="seller-form-select"
-                                    >
-
-                                        <option value="">
-
-                                            + Create New Partner
-
-                                        </option>
-
-
-                                        @foreach($deliveryPartners as $partner)
-
-                                            <option
-                                                value="{{ $partner->id }}"
-                                                {{ $order->deliveryDetail?->delivery_partner_id == $partner->id ? 'selected' : '' }}
-                                            >
-
-                                                {{ $partner->name }}
-                                                —
-                                                {{ $partner->phone }}
-
-                                            </option>
-
-                                        @endforeach
-
-                                    </select>
-
-                                </div>
-
-                            @endif
-
-
-                            <div class="field-group">
-
-                                <label class="field-label">
-
-                                    <i class="fa-solid fa-user"></i>
-
-                                    Delivery Person Name
-
-                                </label>
-
-
-                                <input
-                                    type="text"
-                                    name="name"
-                                    class="seller-form-control"
-                                    value="{{ old('name', $order->deliveryDetail?->deliveryPartner?->name) }}"
-                                    placeholder="Enter delivery partner name"
-                                >
-
-                            </div>
-
-
-                            <div class="field-group">
-
-                                <label class="field-label">
-
-                                    <i class="fa-solid fa-camera"></i>
-
-                                    Profile Image
-
-                                </label>
-
-
-                                <input
-                                    type="file"
-                                    name="image"
-                                    class="seller-form-control file-control"
-                                    accept="image/jpeg,image/png,image/webp"
-                                >
-
-                            </div>
-
-
-                            <div class="field-group">
-
-                                <label class="field-label">
-
-                                    <i class="fa-solid fa-phone"></i>
-
-                                    Mobile Number
-
-                                </label>
-
-
-                                <input
-                                    type="text"
-                                    name="phone"
-                                    class="seller-form-control"
-                                    value="{{ old('phone', $order->deliveryDetail?->deliveryPartner?->phone) }}"
-                                    placeholder="Enter mobile number"
-                                >
-
-                            </div>
-
-
-                            <div class="field-group">
-
-                                <label class="field-label">
-
-                                    <i class="fa-solid fa-motorcycle"></i>
-
-                                    Vehicle Number
-
-                                </label>
-
-
-                                <input
-                                    type="text"
-                                    name="vehicle_number"
-                                    class="seller-form-control"
-                                    value="{{ old('vehicle_number', $order->deliveryDetail?->deliveryPartner?->vehicle_number) }}"
-                                    placeholder="GJ01AB1234"
-                                >
-
-                            </div>
-
-
-                            <div class="field-group">
-
-                                <label class="field-label">
-
-                                    <i class="fa-solid fa-location-crosshairs"></i>
-
-                                    Current Location
-
-                                </label>
-
-
-                                <input
-                                    type="text"
-                                    name="current_location"
-                                    class="seller-form-control"
-                                    value="{{ old('current_location', $order->deliveryDetail?->current_location) }}"
-                                    placeholder="Seller warehouse"
-                                >
-
-                            </div>
-
-
-                            <div class="field-group">
-
-                                <label class="field-label">
-
-                                    <i class="fa-solid fa-bars-progress"></i>
-
-                                    Tracking Status
-
-                                </label>
-
-
-                                <select
-                                    name="status"
-                                    class="seller-form-select"
-                                >
-
-                                    @foreach($statusSteps as $status)
-
-                                        <option
-                                            value="{{ $status }}"
-                                            {{ old(
-                                                'status',
-                                                $order->deliveryDetail?->status
-                                                ?? 'Seller Confirmed'
-                                            ) == $status ? 'selected' : '' }}
-                                        >
-
-                                            {{ $status }}
-
-                                        </option>
-
-                                    @endforeach
-
-                                </select>
-
-                            </div>
-
-
-                            <button
-                                type="submit"
-                                class="assign-button"
-                            >
-
-                                <i class="fa-solid fa-truck-fast"></i>
-
-                                Save Delivery Assignment
-
-                            </button>
-
-
-                            <div class="security-note">
-
-                                <i class="fa-solid fa-shield-halved"></i>
-
+                        <div class="assignment-intro"><i class="fa-solid fa-circle-info"></i>Choose a saved delivery boy for this order. <a href="{{ route('seller.delivery-boys.index') }}">Manage delivery profiles</a>.</div>
+<form action="{{ route('seller.orders.delivery.store', $order) }}" method="POST" class="assignment-form">
+    @csrf
+    <div class="field-group"><label class="field-label" for="driverSearch">Search delivery boys</label><input id="driverSearch" type="search" class="seller-form-control" placeholder="Search name, phone or vehicle"></div>
+    <div class="field-group"><label class="field-label" for="deliveryPartnerSelect">Select saved delivery boy</label>
+        <select id="deliveryPartnerSelect" name="delivery_partner_id" class="seller-form-select" required>
+            <option value="">Choose a delivery boy</option>
+            @foreach($deliveryPartners as $partner)
+                <option value="{{ $partner->id }}" data-search="{{ strtolower($partner->name.' '.$partner->phone.' '.$partner->vehicle_type.' '.$partner->vehicle_number) }}" @selected($order->deliveryDetail?->delivery_partner_id == $partner->id)>{{ $partner->name }} · {{ $partner->phone }} · {{ $partner->vehicle_type ?: 'Vehicle not set' }}</option>
+            @endforeach
+        </select>
+    </div>
+    @if($deliveryPartners->isEmpty())<p>No saved delivery profiles yet. <a href="{{ route('seller.delivery-boys.index') }}">Add a delivery boy first</a>.</p>@endif
+    <button type="submit" class="assign-button" @disabled($deliveryPartners->isEmpty())><i class="fa-solid fa-truck-fast"></i> Assign delivery boy</button>
+    <div class="security-note"><i class="fa-solid fa-shield-halved"></i><div>Only this selected delivery boy's private app will receive this order.</div></div>
+</form>
+<script>
+(() => { const input=document.getElementById('driverSearch'), select=document.getElementById('deliveryPartnerSelect'); input?.addEventListener('input',()=>{const q=input.value.trim().toLowerCase();[...select.options].forEach((option,index)=>{if(index) option.hidden=!option.dataset.search.includes(q);});if(select.selectedOptions[0]?.hidden)select.value='';}); })();
+</script>
+
+                        @if($deliveryPartner?->portal_token)
+                            @php($driverPortalLink = \App\Support\DriverPortalLink::for($deliveryPartner))
+                            <div class="security-note" style="margin-top:14px">
+                                <i class="fa-solid fa-location-dot"></i>
                                 <div>
-
-                                    Delivery information is linked to this
-                                    order and can be updated by the seller.
-
+                                    <strong>Private delivery-partner app link</strong><br>
+                                    @if($driverPortalLink)
+                                        <a href="{{ $driverPortalLink }}" target="_blank" rel="noopener">Open driver app</a>
+                                        · <button type="button" class="btn btn-link btn-sm p-0 align-baseline" data-copy-driver-link="{{ $driverPortalLink }}">Copy private link</button>
+                                    @else
+                                        <span>Configure private Tailscale access before sharing a driver link.</span>
+                                    @endif
+                                    <br><small>Send this link only to {{ $deliveryPartner->name }}. It opens their assigned orders on mobile.</small>
                                 </div>
-
                             </div>
+                        @endif
 
-                        </form>
+                        @if($deliveryPartner && $order->deliveryDetail)
+                            <div class="security-note" style="display:block;margin-top:14px;padding:16px;background:#f4f8ff;border-color:#cbdaf5">
+                                <strong style="display:block;margin-bottom:8px"><i class="fa-solid fa-paper-plane"></i> Order handoff</strong>
+                                <div style="font-size:13px;line-height:1.8;color:#42516a">
+                                    <strong>Order #{{ $order->id }}</strong> · {{ $order->deliveryDetail->status }} · Rs. {{ number_format((float) ($order->total ?? $order->amount ?? 0), 2) }}<br>
+                                    Customer: {{ $order->name }} · {{ $order->mobile }}<br>
+                                    Address: {{ $order->address }}{{ $order->city ? ', '.$order->city : '' }}<br>
+                                    Delivery boy: {{ $deliveryPartner->name }} · {{ $deliveryPartner->phone }} · {{ $deliveryPartner->vehicle_type ?: 'Vehicle not set' }}{{ $deliveryPartner->vehicle_number ? ' · '.$deliveryPartner->vehicle_number : '' }}
+                                </div>
+                                @if($lastHandoff)
+                                    <small style="display:block;margin-top:8px;color:#087d5b">Last sent {{ \Illuminate\Support\Carbon::parse($lastHandoff->created_at)->format('d M Y, h:i A') }}</small>
+                                @else
+                                    <small style="display:block;margin-top:8px;color:#805400">Saved and ready to send to the delivery partner.</small>
+                                @endif
+                                <form action="{{ route('seller.orders.delivery.notify', $order) }}" method="POST" style="margin-top:11px">
+                                    @csrf
+                                    <button type="submit" class="assign-button"><i class="fa-solid fa-bell"></i> {{ $lastHandoff ? 'Send order again' : 'Send order to boy' }}</button>
+                                </form>
+                            </div>
+                        @endif
+
+                        @if($order->deliveryDetail)
+                            <div id="sellerDeliveryProof" class="security-note" style="display:{{ $order->deliveryDetail->delivered_at ? 'flex' : 'none' }};margin-top:12px;background:#eaf8f2;border-color:#b8ead4">
+                                    <i class="fa-solid fa-circle-check" style="color:#087d5b"></i>
+                                    <div><strong>Delivery confirmed by driver scan</strong><br>
+                                        <small id="sellerDeliveryProofText">Scanned code: {{ $order->deliveryDetail->delivery_scan_code }} · {{ $order->deliveryDetail->delivered_at?->format('d M Y, h:i A') }}</small>
+                                </div>
+                            </div>
+                            <div class="security-note" style="margin-top:12px" id="sellerDriverLocationPanel" data-location-url="{{ route('seller.orders.delivery.location', $order) }}">
+                                <i class="fa-solid fa-satellite-dish"></i>
+                                <div>
+                                    <strong>Live delivery location</strong><br>
+                                    <span id="sellerDriverLocation">Waiting for the driver to share GPS.</span><br>
+                                    <small id="sellerDriverUpdate">{{ $order->deliveryDetail->status }} · Location updates while the driver app is open.</small>
+                                </div>
+                            </div>
+                        @endif
 
                     </div>
 
@@ -3903,12 +3607,44 @@
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
 ></script>
 
+<script>
+document.querySelectorAll('[data-copy-driver-link]').forEach((button) => button.addEventListener('click', async () => {
+    const driverLink = new URL(button.dataset.copyDriverLink, window.location.href).href;
+    try { await navigator.clipboard.writeText(driverLink); button.textContent = 'Copied'; }
+    catch (_) { window.prompt('Copy the private driver app link:', driverLink); }
+}));
+(() => {
+    const panel = document.getElementById('sellerDriverLocationPanel');
+    if (!panel) return;
+    const locationLabel = document.getElementById('sellerDriverLocation');
+    const updateLabel = document.getElementById('sellerDriverUpdate');
+    const refresh = async () => {
+        try {
+            const response = await fetch(panel.dataset.locationUrl, {headers:{Accept:'application/json'},cache:'no-store'});
+            if (!response.ok) return;
+            const point = await response.json();
+            if (point.delivered_at) {
+                const proof = document.getElementById('sellerDeliveryProof');
+                const proofText = document.getElementById('sellerDeliveryProofText');
+                if (proof && proofText) { proof.style.display = 'flex'; proofText.textContent = `Scanned code: ${point.delivery_scan_code || 'Recorded'} · ${new Date(point.delivered_at).toLocaleString()}`; }
+            }
+            if (!point.available) { locationLabel.textContent = ['delivered','cancelled'].includes(String(point.status || '').toLowerCase()) ? 'Delivery tracking has ended.' : 'Waiting for the driver to share GPS.'; updateLabel.textContent = point.status || 'Pending'; return; }
+            locationLabel.textContent = `${Number(point.latitude).toFixed(5)}, ${Number(point.longitude).toFixed(5)}${point.vehicle_type ? ' · ' + point.vehicle_type : ''}`;
+            updateLabel.textContent = `${point.status || 'In progress'}${point.updated_at ? ' · Updated ' + new Date(point.updated_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : ''}`;
+        } catch (_) {}
+    };
+    refresh();
+    window.setInterval(refresh, 10000);
+})();
+</script>
+
 
 {{-- =========================================================
      SMART BASKET THEME SYNC
 ========================================================= --}}
 
 <script>
+
 
 (function () {
 

@@ -256,9 +256,10 @@ body {
 .sb-fireworks {
     position: absolute;
     inset: 0;
+    display: block;
     width: 100%;
     height: 100%;
-    z-index: -1;
+    z-index: 0;
     pointer-events: none;
 }
 
@@ -300,7 +301,7 @@ body {
         logoFloat 5s ease-in-out 1.3s infinite;
 }
 
-/* Continuously rotating rainbow border */
+/* Crisp, continuously flowing RGB border */
 
 .sb-logo-frame::before {
     content: "";
@@ -308,59 +309,44 @@ body {
     inset: -1px;
     padding: 3px;
     border-radius: inherit;
-    background: conic-gradient(
-        from 0deg,
-        #ffc400,
-        #ff8a00,
-        #ff2bd6,
-        #9b4dff,
-        #1769ff,
-        #00eaff,
-        #00ff88,
-        #ffc400
+    background: linear-gradient(
+        90deg,
+        #ff315f,
+        #ffb52e,
+        #fff34a,
+        #38f27a,
+        #27e9ff,
+        #477dff,
+        #c24dff,
+        #ff42c8,
+        #ff315f,
+        #ffb52e,
+        #fff34a,
+        #38f27a,
+        #27e9ff,
+        #477dff,
+        #c24dff,
+        #ff42c8,
+        #ff315f
     );
+    background-size: 220% 100%;
     -webkit-mask:
         linear-gradient(#fff 0 0) content-box,
         linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     z-index: -1;
-    animation: borderRotate 3.5s linear infinite;
-    filter:
-        drop-shadow(0 0 5px rgba(255,196,0,.8))
-        drop-shadow(0 0 13px rgba(0,234,255,.55))
-        drop-shadow(0 0 22px rgba(255,43,214,.35));
+    animation: borderColorFlow 4s linear infinite;
 }
 
-/* Soft RGB aura outside the border */
+/* Keep the frame clean: no blurred aura around the image. */
 
 .sb-logo-frame::after {
-    content: "";
-    position: absolute;
-    inset: -10px;
-    border-radius: 30px;
-    background: conic-gradient(
-        from 180deg,
-        rgba(255,196,0,.36),
-        rgba(255,43,214,.28),
-        rgba(23,105,255,.35),
-        rgba(0,234,255,.30),
-        rgba(0,255,136,.25),
-        rgba(255,196,0,.36)
-    );
-    filter: blur(22px);
-    opacity: .6;
-    z-index: -2;
-    animation: auraPulse 4s ease-in-out infinite;
+    content: none;
 }
 
-@keyframes borderRotate {
-    to { transform: rotate(360deg); }
-}
-
-@keyframes auraPulse {
-    0%, 100% { opacity: .35; transform: scale(.98); }
-    50% { opacity: .8; transform: scale(1.025); }
+@keyframes borderColorFlow {
+    to { background-position: 220% 0; }
 }
 
 @keyframes logoReveal {
@@ -409,30 +395,17 @@ body {
 /* ================= LOADING INDICATOR ================= */
 
 .sb-loading {
-    width: min(300px, 78vw);
+    width: min(245px, 78vw);
     margin-top: clamp(15px, 2.5vh, 24px);
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 10px;
     opacity: 0;
     animation: loadingReveal .8s ease-out 1s forwards;
 }
 
-.sb-loading-text {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    text-align: center;
-    color: rgba(255,255,255,.82);
-    text-shadow: 0 0 14px rgba(0,234,255,.22);
-}
-
 .sb-loader {
     position: relative;
-    width: 165px;
-    max-width: 75%;
+    width: 100%;
     height: 4px;
     border-radius: 100px;
     overflow: hidden;
@@ -448,36 +421,9 @@ body {
     left: -65%;
     width: 65%;
     border-radius: inherit;
-    background: linear-gradient(
-        90deg,
-        transparent,
-        #ffc400,
-        #ff2bd6,
-        #9b4dff,
-        #1769ff,
-        #00eaff,
-        #00ff88,
-        transparent
-    );
-    box-shadow: 0 0 12px rgba(0,234,255,.65);
+    background: linear-gradient(90deg, transparent, #fff1bd, #ffb347, #fff8df, #d88432, transparent);
+    box-shadow: 0 0 12px rgba(255,190,90,.55);
     animation: loaderMove 1.6s ease-in-out infinite;
-}
-
-.sb-loader-track {
-    position: relative;
-    width: min(245px, 80vw);
-    height: 1px;
-    background: rgba(255,255,255,.07);
-    overflow: hidden;
-}
-
-.sb-loader-track::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    width: 35%;
-    background: linear-gradient(90deg, transparent, #00eaff, #ffc400, transparent);
-    animation: trackMove 2.4s linear infinite;
 }
 
 @keyframes loadingReveal {
@@ -488,11 +434,6 @@ body {
 @keyframes loaderMove {
     0% { left: -65%; }
     55%, 100% { left: 100%; }
-}
-
-@keyframes trackMove {
-    from { transform: translateX(-120%); }
-    to { transform: translateX(350%); }
 }
 
 /* ================= TABLET ================= */
@@ -531,15 +472,9 @@ body {
 
     .sb-loading {
         margin-top: 13px;
-        gap: 8px;
     }
 
-    .sb-loading-text {
-        font-size: 8px;
-        letter-spacing: 2px;
-    }
-
-    .sb-loader { width: 140px; }
+    .sb-loader { width: 78%; }
 
     .sb-corner {
         width: 36px;
@@ -566,37 +501,11 @@ body {
 
     .sb-loading {
         margin-top: 8px;
-        gap: 6px;
-    }
-
-    .sb-loading-text {
-        font-size: 8px;
     }
 
     .sb-loader { height: 3px; }
 }
 
-/* ================= REDUCED MOTION ================= */
-
-@media (prefers-reduced-motion: reduce) {
-    .sb-stars,
-    .sb-light,
-    .sb-grid,
-    .sb-line,
-    .sb-corner,
-    .sb-logo-frame,
-    .sb-logo-frame::before,
-    .sb-logo-frame::after,
-    .sb-loading,
-    .sb-loader::before,
-    .sb-loader-track::after {
-        animation: none !important;
-    }
-
-    .sb-loading {
-        opacity: 1;
-    }
-}
 </style>
 </head>
 
@@ -646,13 +555,7 @@ body {
 
         <div class="sb-loading">
 
-            <div class="sb-loading-text">
-                PREMIUM SHOPPING EXPERIENCE
-            </div>
-
-            <div class="sb-loader" aria-label="Loading"></div>
-
-            <div class="sb-loader-track" aria-hidden="true"></div>
+            <div class="sb-loader" role="progressbar" aria-label="Loading"></div>
 
         </div>
 
@@ -672,12 +575,6 @@ body {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const reducedMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)"
-    ).matches;
-
-    if (reducedMotion) return;
-
     const isMobile = window.matchMedia(
         "(max-width: 600px)"
     ).matches;
@@ -694,19 +591,18 @@ body {
     const particles = [];
     const flashes = [];
 
-    const MAX_PARTICLES = isMobile ? 380 : 780;
-    const MAX_ROCKETS = isMobile ? 3 : 5;
+    const MAX_PARTICLES = isMobile ? 500 : 1100;
+    const MAX_ROCKETS = isMobile ? 4 : 7;
 
     const colors = [
-        "#fff4c2",
-        "#ffc400",
-        "#ff9d00",
-        "#ff3d81",
-        "#ff2bd6",
-        "#b45cff",
-        "#4f8dff",
-        "#00eaff",
-        "#00ff88"
+        "#fff4d6",
+        "#ffd166",
+        "#ff9f43",
+        "#ff5e5b",
+        "#ff77a8",
+        "#c084fc",
+        "#7dd3fc",
+        "#ffffff"
     ];
 
     const random = (min, max) =>
@@ -730,21 +626,22 @@ body {
     function launchRocket() {
         if (rockets.length >= MAX_ROCKETS) return;
 
-        const targetX = random(width * .07, width * .93);
-        const targetY = random(height * .10, height * .43);
-        const startX = targetX + random(-width * .10, width * .10);
+        const targetX = random(width * .12, width * .88);
+        const targetY = random(height * .12, height * .43);
+        const startX = targetX + random(-width * .16, width * .16);
+        const flightFrames = random(44, 64);
 
         rockets.push({
             x: startX,
             y: height + 10,
-            vx: (targetX - startX) / random(32, 46),
-            vy: -random(8, 11),
-            gravity: .12,
+            vx: (targetX - startX) / flightFrames,
+            vy: -(height - targetY) / flightFrames * 1.8,
+            gravity: (height - targetY) / (flightFrames * flightFrames) * 1.8,
             targetY,
             color: colors[Math.floor(Math.random() * colors.length)],
             trail: [],
             age: 0,
-            maxAge: random(45, 70)
+            maxAge: flightFrames
         });
     }
 
@@ -838,10 +735,10 @@ body {
             ctx.beginPath();
             ctx.moveTo(a.x, a.y);
             ctx.lineTo(b.x, b.y);
-            ctx.strokeStyle = rocket.color;
-            ctx.globalAlpha = i / rocket.trail.length * .55;
-            ctx.lineWidth = 1.7;
-            ctx.shadowBlur = 8;
+            ctx.strokeStyle = i > rocket.trail.length * .72 ? "#fff2c6" : rocket.color;
+            ctx.globalAlpha = i / rocket.trail.length * .68;
+            ctx.lineWidth = 2.3 * i / rocket.trail.length;
+            ctx.shadowBlur = 12;
             ctx.shadowColor = rocket.color;
             ctx.stroke();
         }
@@ -981,8 +878,8 @@ body {
         ctx.clearRect(0, 0, width, height);
 
         const launchInterval = isMobile
-            ? random(1050, 1650)
-            : random(750, 1350);
+            ? random(850, 1350)
+            : random(600, 1050);
 
         if (
             timestamp - lastLaunch > launchInterval &&
@@ -1022,7 +919,7 @@ body {
     launchRocket();
     launchRocket();
 
-    lastLaunch = performance.now();
+    lastLaunch = performance.now() - 450;
     frameId = requestAnimationFrame(animate);
 })();
 </script>
